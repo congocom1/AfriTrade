@@ -1,42 +1,11 @@
-import { motion, AnimatePresence } from 'framer-motion';
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Outlet } from 'react-router-dom';
 import TopBar from './TopBar';
 import LegalFooter from '@/components/legal/LegalFooter';
 import { applyTenantBranding, clearTenantBranding, resolveTenantByHost } from '@/lib/tenancy';
 import BackButton from '@/components/BackButton';
 
-// Page transition variants — Apple Design §4/§7
-// Spatial consistency: enter from right, exit to right (same axis, mirrored)
-// Springs: critically damped by default (bounce: 0), only bounce on momentum-driven transitions
-const pageVariants = {
-  initial: {
-    opacity: 0,
-    x: 24,
-  },
-  animate: {
-    opacity: 1,
-    x: 0,
-    transition: {
-      type: 'spring',
-      bounce: 0,
-      duration: 0.35,
-    },
-  },
-  exit: {
-    opacity: 0,
-    x: -8,
-    transition: {
-      type: 'spring',
-      bounce: 0,
-      duration: 0.25,
-    },
-  },
-};
-
 export default function AppLayout() {
-  // White label: a visitor arriving on a tenant's verified domain sees that
-  // tenant's colours. Everything else keeps the platform theme.
   useEffect(() => {
     let alive = true;
     resolveTenantByHost()
@@ -53,11 +22,7 @@ export default function AppLayout() {
       <TopBar />
       <main className="mx-auto w-full min-w-0 max-w-6xl px-3 py-5 md:px-6 md:py-7">
         <BackButton fallback="/" className="mb-4 md:hidden" />
-        <AnimatePresence>
-          <motion.div variants={pageVariants} initial="initial" animate="animate" exit="exit">
-            <Outlet />
-          </motion.div>
-        </AnimatePresence>
+        <Outlet />
         <LegalFooter />
       </main>
     </div>
