@@ -52,7 +52,7 @@ export default function Cart() {
   const total = Math.round((subtotal + shipping) * 100) / 100;
 
   return (
-      <div className="space-y-5 pb-6">
+      <div className="space-y-5 pb-6" aria-live="polite" aria-atomic="false">
         <h1 className="text-2xl font-bold tracking-tight md:text-3xl">{t('cart.title', { count })}</h1>
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
