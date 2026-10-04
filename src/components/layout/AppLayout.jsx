@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import TopBar from './TopBar';
 import LegalFooter from '@/components/legal/LegalFooter';

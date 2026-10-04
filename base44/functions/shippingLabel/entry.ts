@@ -3,7 +3,27 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
 const fail = (error, status = 400) => Response.json({ error }, { status });
 const ESC = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const lower = (v) => String(v ?? '').trim().toLowerCase();
+// Package figures go straight into the label markup, so they are coerced to
+// numbers: a string like '<img src=x onerror=...>' becomes 0 instead of being
+// stored as live HTML on the ShippingLabel record.
+const num = (v) => Number(v) || 0;
 const isAdmin = (user) => String(user?.role || '') === 'admin';
+
+/**
+ * Package figures are interpolated into the label markup AND stored on the
+ * ShippingLabel record, so they are coerced to numbers in one place: a
+ * caller-supplied string such as '<img src=x onerror=...>' becomes 0 instead of
+ * being written into the HTML.
+ */
+function normalizePackage(pkg) {
+  return {
+    weight_kg: num(pkg?.weight_kg),
+    length_cm: num(pkg?.length_cm),
+    width_cm: num(pkg?.width_cm),
+    height_cm: num(pkg?.height_cm),
+    items_count: num(pkg?.items_count),
+  };
+}
 
 /**
  * A label carries the recipient's name, street address and phone, and it
@@ -78,7 +98,8 @@ async function generateLabel(db, body, user) {
   const tracking_number = generateTracking(carrier);
 
   const sender = body.sender || { name: 'Congo Commerce', address: 'Kinshasa, RDC', city: 'Kinshasa', country: 'CD', phone: '+243 000 000 000' };
-  const label_data = buildLabelHTML(label_id, tracking_number, sender, recipient, package_info, carrier, order_number);
+  const pkg = normalizePackage(package_info);
+  const label_data = buildLabelHTML(label_id, tracking_number, sender, recipient, pkg, carrier, order_number);
   const now = new Date().toISOString();
 
   const label = await db.entities.ShippingLabel.create({
@@ -87,7 +108,7 @@ async function generateLabel(db, body, user) {
     label_id, order_number, fulfillment_number: fulfillment_number || '',
     carrier, tracking_number, status: 'generated',
     label_data, label_url: '',
-    sender, recipient, package: package_info || {},
+    sender, recipient, package: pkg,
     shipping_cost_usd: Number(shipping_cost_usd) || 0,
     generated_at: now,
   });
@@ -166,8 +187,8 @@ function buildLabelHTML(label_id, tracking_number, sender, recipient, pkg, carri
       <div style="font-size:10px;color:#666">${ESC(carrier)}</div>
     </div>
     <div style="display:flex;justify-content:space-between;font-size:10px">
-      <span>Poids: ${pkg.weight_kg || 0}kg | ${pkg.length_cm || 0}×${pkg.width_cm || 0}×${pkg.height_cm || 0}cm</span>
-      <span>Articles: ${pkg.items_count || 0}</span>
+      <span>Poids: ${num(pkg?.weight_kg)}kg | ${num(pkg?.length_cm)}×${num(pkg?.width_cm)}×${num(pkg?.height_cm)}cm</span>
+      <span>Articles: ${num(pkg?.items_count)}</span>
     </div>
     <div style="margin-top:4px;font-size:9px;color:#888">ID: ${ESC(label_id)}</div>
   </div>`;

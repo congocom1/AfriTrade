@@ -4,7 +4,8 @@
 // AffiliateClick and Shipment (create) can be locked to admin without breaking
 // this function.
 //
-// Self-contained Deno module — the ONLY external import is npm:@base44/sdk.
+// Self-contained Deno module — its only imports are npm:@base44/sdk and the
+// shared wallet ledger (base44/shared/walletLedger.ts).
 // No imports from src/lib/ (those use Vite aliases/at-imports that do not
 // resolve in Deno).
 //
@@ -26,6 +27,7 @@
 // src/lib/session.js and src/lib/tenancy.js.
 //
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.49";
+import { postWalletEntry } from "../../shared/walletLedger.ts";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Pure helpers — operate on plain JS values, no Base44 SDK, no network calls.
@@ -212,79 +214,89 @@ async function getOrCreateWallet(
   },
 ) {
   const db = client;
+  // Matched on owner_type + owner_id, never on owner_name: both ids are derived
+  // from stored records (the Seller / Creator row, or a fixed platform/courier
+  // id), so a caller cannot pick — or create — another party's wallet.
   const rows = await db.entities.Wallet.filter({
     owner_type,
-    owner_name,
-  });
-  if (rows[0]) return rows[0];
+    owner_id,
+  }).catch(() => []);
+  if (rows?.[0]) return rows[0];
   return db.entities.Wallet.create({
     owner_type,
     owner_name,
     owner_email: owner_email ?? "",
     owner_id: owner_id ?? "",
     created_by_id: owner_id ?? "",
-    balance_cents: 0,
-    pending_cents: 0,
+    balance_usd: 0,
     balance_cdf: 0,
-    pending_cdf: 0,
-    balance_usd_cents: 0,
-    pending_usd_cents: 0,
-    currency: "CDF",
+    pending_usd: 0,
+    currency: "USD",
     tenant_id: tenant_id ?? "",
-    metadata: { ownerType: owner_type, ownerName: owner_name },
   });
 }
 
-/** Post a single ledger transaction on a wallet. */
-async function postTransaction(client, wallet, payload) {
+// ─────────────────────────────────────────────────────────────────────────────
+// Abuse control — checkout is open to anonymous buyers, so the only server-side
+// brake on a script is this per-client ceiling on how many orders one caller may
+// start per hour. Without it a single client can drain every product's stock and
+// flood the order / fulfillment / notification tables with junk records.
+// ─────────────────────────────────────────────────────────────────────────────
+
+const ORDER_RATE_LIMIT_PER_HOUR = 30;
+// Backstop for callers the runtime gives us no address for: a shared ceiling,
+// high enough that ordinary traffic never reaches it and low enough that a
+// script still cannot drain the catalogue.
+const ORDER_RATE_LIMIT_UNIDENTIFIED_PER_HOUR = 300;
+const RATE_WINDOW_MS = 3600 * 1000;
+
+/** Best-effort client identity for rate limiting (the closest proxy's view). */
+function clientKeyFor(request) {
+  const candidates = [
+    request.headers.get("x-forwarded-for"),
+    request.headers.get("x-real-ip"),
+    request.headers.get("cf-connecting-ip"),
+  ];
+  for (const raw of candidates) {
+    // The last hop is the one the nearest proxy appended, so it is the value a
+    // caller cannot forge by pre-seeding the header.
+    const parts = String(raw || "")
+      .split(",")
+      .map((p) => p.trim())
+      .filter(Boolean);
+    if (parts.length) return parts[parts.length - 1];
+  }
+  return "";
+}
+
+/** Counts one order attempt against the caller's hourly window. */
+async function checkOrderRateLimit(client, clientKey, limit) {
   const db = client;
-  const amount = round2(payload.amount);
-  if (amount <= 0) return null;
-  const isCredit = payload.direction !== "debit";
-
-  const balance = isCredit
-    ? round2((wallet.balance_cents || 0) + amount)
-    : round2(Math.max(0, (wallet.balance_cents || 0) - amount));
-  const balanceCdf = isCredit
-    ? round2((wallet.balance_cdf || 0) + amount * USD_TO_CDF)
-    : round2(Math.max(0, (wallet.balance_cdf || 0) - amount * USD_TO_CDF));
-  const pending = isCredit
-    ? round2((wallet.pending_cents || 0) + amount)
-    : round2(Math.max(0, (wallet.pending_cents || 0) - amount));
-  const pendingCdf = isCredit
-    ? round2((wallet.pending_cdf || 0) + amount * USD_TO_CDF)
-    : round2(Math.max(0, (wallet.pending_cdf || 0) - amount * USD_TO_CDF));
-  const balanceUsdCents = isCredit
-    ? round2((wallet.balance_usd_cents || 0) + (payload.amount_usd || 0))
-    : round2(Math.max(0, (wallet.balance_usd_cents || 0) - (payload.amount_usd || 0)));
-  const pendingUsdCents = isCredit
-    ? round2((wallet.pending_usd_cents || 0) + (payload.amount_usd || 0))
-    : round2(Math.max(0, (wallet.pending_usd_cents || 0) - (payload.amount_usd || 0)));
-
-  const updated = await db.entities.Wallet.update(wallet.id, {
-    balance_cents: balance,
-    pending_cents: pending,
-    balance_cdf: balanceCdf,
-    pending_cdf: pendingCdf,
-    balance_usd_cents: balanceUsdCents,
-    pending_usd_cents: pendingUsdCents,
-  });
-
-  const transaction = await db.entities.WalletTransaction.create({
-    wallet_id: wallet.id,
-    type: payload.type ?? "transfer",
-    direction: payload.direction ?? "credit",
-    amount_cents: amount,
-    amount_cdf: round2(amount * USD_TO_CDF),
-    amount_usd_cents: round2(payload.amount_usd || 0),
-    description: payload.description ?? "",
-    detail: payload.detail ?? "",
-    reference_type: payload.reference_type ?? "",
-    reference_id: payload.reference_id ?? "",
-    metadata: payload.metadata ?? {},
-  });
-
-  return { wallet: updated, transaction };
+  const key_prefix = "place_order:" + clientKey;
+  const window_start = new Date(
+    Math.floor(Date.now() / RATE_WINDOW_MS) * RATE_WINDOW_MS,
+  ).toISOString();
+  const rows = await db.entities.ApiRateLimit
+    .filter({ key_prefix, window_start })
+    .catch(() => []);
+  const row = rows?.[0] ?? null;
+  const used = Number(row?.request_count ?? 0);
+  if (used >= limit) {
+    return { ok: false, used, limit };
+  }
+  const next = used + 1;
+  const payload = {
+    request_count: next,
+    last_reset_at: new Date().toISOString(),
+  };
+  if (row) {
+    await db.entities.ApiRateLimit.update(row.id, payload).catch(() => {});
+  } else {
+    await db.entities.ApiRateLimit
+      .create({ key_prefix, window_start, ...payload })
+      .catch(() => {});
+  }
+  return { ok: true, used: next, limit };
 }
 
 /** Emit a platform event through the dispatchPlatformEvent server function. */
@@ -666,6 +678,18 @@ export async function placeOrder(db, params) {
     validatedLines.reduce((a, l) => a + l.weight_kg, 0),
   );
 
+  // The parties who get paid are resolved from stored Seller rows, keyed by the
+  // seller_id that came off the Product record — never from the checkout intent.
+  const sellerRecords = new Map();
+  for (const seller_id of sellerIds) {
+    const record = await db.entities.Seller.get(seller_id).catch(() => null);
+    if (record) sellerRecords.set(seller_id, record);
+  }
+  const tenantOwnerEmail =
+    Array.from(sellerRecords.values())
+      .map((s) => s.tenant_owner_email || s.email || "")
+      .find(Boolean) ?? "";
+
   const couponPayload = couponRecord
     ? {
         coupon_id: couponRecord.id,
@@ -723,7 +747,10 @@ export async function placeOrder(db, params) {
     source: "web",
     customer_email: userEmail ?? "",
     created_by_id: userEmail ?? "",
-    tenant_owner_email: userEmail ?? "",
+    // The tenant owner is the seller's tenant, resolved from the Seller record.
+    // The buyer's own address must never be stamped here: RLS lets whoever
+    // holds that email read the order.
+    tenant_owner_email: tenantOwnerEmail,
     metadata: {
       buyer_name: profile?.name ?? "",
       buyer_phone: userPhone,
@@ -761,6 +788,7 @@ export async function placeOrder(db, params) {
       "FO-" + orderNumber + "-" + (seller_id?.toString()?.slice(0, 8) ?? "SELL");
     const foPayload = {
       order_number: orderNumber,
+      fulfillment_number: foNumber,
       fulfillment_order_number: foNumber,
       status: "RELEASED",
       order_id: order.id,
@@ -802,6 +830,8 @@ export async function placeOrder(db, params) {
     const shipment = await db.entities.Shipment.create(shipmentPayload);
     if (shipment) shipments.push(shipment);
   }
+
+  const foBySeller = new Map(fulfillmentOrders.map((f) => [f.seller_id, f]));
 
   if (couponRecord && couponRecord.id) {
     try {
@@ -854,24 +884,33 @@ export async function placeOrder(db, params) {
     );
     if (sellerNet_cents <= 0) continue;
 
+    const seller = sellerRecords.get(seller_id) || null;
+    const sellerName = String(seller?.name || seller?.owner_name || "Vendeur");
+    const sellerEmail = String(seller?.email || seller?.tenant_owner_email || "");
     const sellerWallet = await getOrCreateWallet(db, {
       owner_type: "seller",
-      owner_name: profile?.name ?? "Vendeur",
-      owner_email: userEmail,
+      owner_name: sellerName,
+      owner_email: sellerEmail,
       owner_id: seller_id,
       tenant_id,
     });
-    await postTransaction(db, sellerWallet, {
+    // Held as a pending entry, not a spendable balance: an order that has not
+    // been paid for must not hand anyone withdrawable money.
+    await postWalletEntry(db, sellerWallet, {
       type: "seller_credit",
       direction: "credit",
-      amount: sellerNet_cents,
-      amount_cdf: round2(sellerNet_cents * USD_TO_CDF),
-      amount_usd: round2(sellerNet_cents / 100),
+      amount: round2(sellerNet_cents / 100),
+      amount_cdf: round2((sellerNet_cents / 100) * USD_TO_CDF),
+      status: "pending",
       description: "Vente/" + orderNumber,
-      detail: { order_number: orderNumber, seller_id },
-      reference_type: "order",
-      reference_id: order.id,
-      metadata: { seller_id, tenant_id },
+      reference: foBySeller.get(seller_id)?.fulfillment_number || orderNumber,
+      order_id: order.id,
+      order_number: orderNumber,
+      idempotencyKey: "seller_credit:" + order.id + ":" + seller_id,
+      owner_type: "seller",
+      owner_name: sellerName,
+      owner_email: sellerEmail,
+      tenant_id,
     });
   }
 
@@ -882,16 +921,21 @@ export async function placeOrder(db, params) {
     owner_id: "platform",
     tenant_id,
   });
-  await postTransaction(db, platformWallet, {
+  await postWalletEntry(db, platformWallet, {
     type: "platform_fee",
     direction: "credit",
-    amount: platform_fee_cents,
-    amount_cdf: round2(platform_fee_cents * USD_TO_CDF),
-    amount_usd: platform_fee_usd,
+    amount: round2(platform_fee_cents / 100),
+    amount_cdf: round2((platform_fee_cents / 100) * USD_TO_CDF),
+    status: "pending",
     description: "Frais plateforme/" + orderNumber,
-    reference_type: "order",
-    reference_id: order.id,
-    metadata: { tenant_id },
+    reference: orderNumber,
+    order_id: order.id,
+    order_number: orderNumber,
+    idempotencyKey: "platform_fee:" + order.id,
+    owner_type: "platform",
+    owner_name: "Congo Commerce Platform",
+    owner_email: "platform@congo-commerce.com",
+    tenant_id,
   });
 
   const creatorIds = Array.from(
@@ -909,23 +953,31 @@ export async function placeOrder(db, params) {
       creatorLines.reduce((a, l) => a + l.creator_cents, 0),
     );
     if (creatorTotal_cents <= 0) continue;
+    const creator = await db.entities.Creator.get(creator_id).catch(() => null);
+    const creatorName = String(creator?.name || "Créateur");
+    const creatorEmail = String(creator?.email || "");
     const creatorWallet = await getOrCreateWallet(db, {
       owner_type: "creator",
-      owner_name: "Créateur",
-      owner_email: userEmail,
+      owner_name: creatorName,
+      owner_email: creatorEmail,
       owner_id: creator_id,
       tenant_id,
     });
-    await postTransaction(db, creatorWallet, {
+    await postWalletEntry(db, creatorWallet, {
       type: "creator_commission",
       direction: "credit",
-      amount: creatorTotal_cents,
-      amount_cdf: round2(creatorTotal_cents * USD_TO_CDF),
-      amount_usd: round2(creatorTotal_cents / 100),
+      amount: round2(creatorTotal_cents / 100),
+      amount_cdf: round2((creatorTotal_cents / 100) * USD_TO_CDF),
+      status: "pending",
       description: "Commission créateur/" + orderNumber,
-      reference_type: "order",
-      reference_id: order.id,
-      metadata: { creator_id, tenant_id },
+      reference: orderNumber,
+      order_id: order.id,
+      order_number: orderNumber,
+      idempotencyKey: "creator_commission:" + order.id + ":" + creator_id,
+      owner_type: "creator",
+      owner_name: creatorName,
+      owner_email: creatorEmail,
+      tenant_id,
     });
   }
 
@@ -942,16 +994,21 @@ export async function placeOrder(db, params) {
         owner_id: courierId,
         tenant_id,
       });
-      await postTransaction(db, courierWallet, {
+      await postWalletEntry(db, courierWallet, {
         type: "courier_earning",
         direction: "credit",
-        amount: courierEarningsCents,
-        amount_cdf: round2(courierEarningsCents * USD_TO_CDF),
-        amount_usd: round2(courierEarningsCents / 100),
+        amount: round2(courierEarningsCents / 100),
+        amount_cdf: round2((courierEarningsCents / 100) * USD_TO_CDF),
+        status: "pending",
         description: "Livraison/" + orderNumber,
-        reference_type: "fulfillment",
-        reference_id: fulfillmentOrders[0]?.id ?? "",
-        metadata: { courier_id: courierId, tenant_id },
+        reference: orderNumber,
+        order_id: order.id,
+        order_number: orderNumber,
+        idempotencyKey: "courier_earning:" + order.id + ":" + courierId,
+        owner_type: "courier",
+        owner_name: courier.name,
+        owner_email: "",
+        tenant_id,
       });
     }
   }
@@ -1079,6 +1136,34 @@ export default async function (request) {
       });
     }
 
+    // Anonymous checkout, so a per-client ceiling is the only brake on a script
+    // draining stock. Requests we cannot attribute to a client are left alone
+    // rather than funnelled into one shared bucket.
+    const clientKey = clientKeyFor(request);
+    if (!clientKey) {
+      // Never silent: no client address means the shared ceiling below applies.
+      console.warn(
+        "[place-order] no client address on the request — applying the shared order ceiling",
+      );
+    }
+    const gate = await checkOrderRateLimit(
+      db,
+      clientKey || "unidentified",
+      clientKey
+        ? ORDER_RATE_LIMIT_PER_HOUR
+        : ORDER_RATE_LIMIT_UNIDENTIFIED_PER_HOUR,
+    );
+    if (!gate.ok) {
+      return new Response(
+        JSON.stringify({
+          error: "Trop de commandes en cours. Réessayez plus tard.",
+          status: "rate_limited",
+          limit: gate.limit,
+        }),
+        { status: 429, headers: { "Content-Type": "application/json" } },
+      );
+    }
+
     const result = await placeOrder(db, intent);
 
     return new Response(JSON.stringify(result), {
@@ -1102,4 +1187,3 @@ export default async function (request) {
     );
   }
 }
-

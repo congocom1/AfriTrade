@@ -12,6 +12,26 @@ import { requireAdmin } from '../../shared/security.ts';
 
 const HASH_LENGTH = 64; // SHA-256 hex
 
+/**
+ * Cryptographically strong body for a bearer credential.
+ *
+ * Math.random is a non-cryptographic PRNG: its xorshift128+ state is
+ * recoverable from a handful of outputs, so two `Math.random()` fragments give
+ * a key an attacker can predict. 32 CSPRNG bytes = 256 bits of entropy.
+ */
+function randomSecretBody(bytes = 32): string {
+  const buf = new Uint8Array(bytes);
+  crypto.getRandomValues(buf);
+  return Array.from(buf, (b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+/** SHA-256 hex of the secret — the only form ever persisted. */
+async function hashSecret(secret: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(secret));
+  return Array.from(new Uint8Array(hashBuffer), (b) => b.toString(16).padStart(2, '0')).join('');
+}
+
 export default async function (req: Request) {
   try {
     const base44 = createClientFromRequest(req);
@@ -63,11 +83,8 @@ async function createKey(db: any, body: any) {
   if (!tenant) return Response.json({ error: `Tenant introuvable : ${tenantId}` }, { status: 404 });
 
   const prefix = `cg_${Date.now().toString(36).toUpperCase()}_`;
-  const secret = `${prefix}${Math.random().toString(36).slice(2, 26)}${Math.random().toString(36).slice(2, 26)}`;
-  const encoder = new TextEncoder();
-  const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(secret));
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const keyHash = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+  const secret = `${prefix}${randomSecretBody()}`;
+  const keyHash = await hashSecret(secret);
   const created = await db.entities.ApiKey.create({
     tenant_id: tenantId,
     tenant_name: tenant.name || '',
@@ -171,11 +188,8 @@ async function rotateKey(db: any, body: any) {
   if (!key.active) return Response.json({ error: 'Clé déjà révoquée — révotre d\'abord avant rotation' }, { status: 400 });
 
   const prefix = `cg_${Date.now().toString(36).toUpperCase()}_`;
-  const secret = `${prefix}${Math.random().toString(36).slice(2, 26)}${Math.random().toString(36).slice(2, 26)}`;
-  const encoder = new TextEncoder();
-  const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(secret));
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const keyHash = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+  const secret = `${prefix}${randomSecretBody()}`;
+  const keyHash = await hashSecret(secret);
 
   const updated = await db.entities.ApiKey.update(id, {
     key_prefix: prefix,

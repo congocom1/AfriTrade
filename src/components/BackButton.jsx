@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft } from 'lucide-react';
-import ButtonWithSpring from './ButtonWithSpring';
+import { ButtonWithSpring } from './ButtonWithSpring';
 
 const BackButton = ({
   fallback = '/',

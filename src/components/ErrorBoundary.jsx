@@ -78,7 +78,7 @@ class ErrorBoundaryClass extends Component {
               <RefreshCw className="h-4 w-4" aria-hidden="true" />
               {t('errorBoundary.retry')}
             </button>
-            {process.env.NODE_ENV !== 'production' && error && (
+            {import.meta.env.DEV && error && (
               <details className="text-left text-xs text-muted-foreground mt-4 max-w-md mx-auto">
                 <summary className="cursor-pointer select-none mb-1">
                   {t('errorBoundary.details')}
