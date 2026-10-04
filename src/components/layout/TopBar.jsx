@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Search, Heart, Bell, MessageCircle, User, LogOut, ChevronDown, Store, ShieldCheck, MoreHorizontal, X } from 'lucide-react';
+import { Search, Heart, Bell, MessageCircle, User, LogOut, ChevronDown, Store, ShieldCheck, MoreHorizontal, X, Home, Compass, Grid } from 'lucide-react';
 import { useCart } from '@/lib/cart';
 import { useAuth } from '@/lib/AuthContext';
 import CurrencyToggle from '@/components/CurrencyToggle';
@@ -362,4 +362,3 @@ export default function TopBar() {
     </header>
   );
 }
-
