@@ -5,7 +5,7 @@
 export const name = 'chinaToDomestic'
 export const description = 'Create domestic orders from approved Chinese warehouse receipts'
 
-import { createClientFromRequest } from "file://C:/Users/miche/congo-commerce1/test/chinaToDomestic.client.mjs"
+import { createClientFromRequest } from "file://C:/Users/miche/congo-commerce1/.claude/worktrees/clever-nash-f2e447/test/chinaToDomestic.client.mjs"
 
 function round2(value) {
   return Math.round((Number(value) || 0) * 100) / 100
