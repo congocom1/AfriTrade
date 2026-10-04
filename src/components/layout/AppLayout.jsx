@@ -16,15 +16,4 @@ export default function AppLayout() {
       clearTenantBranding();
     };
   }, []);
-
-  return (
-    <div className="min-h-screen bg-background pb-8 md:pb-8">
-      <TopBar />
-      <main className="mx-auto w-full min-w-0 max-w-6xl px-3 py-5 md:px-6 md:py-7">
-        <BackButton fallback="/" className="mb-4 md:hidden" />
-        <Outlet />
-        <LegalFooter />
-      </main>
-    </div>
-  );
 }
