@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ShoppingBag, Heart, Truck, ShieldCheck, Store as StoreIcon, ChevronRight, PackageCheck, Zap, Share2 } from 'lucide-react';
@@ -27,6 +27,7 @@ export default function ProductDetail() {
   const navigate = useNavigate();
   const { addItem } = useCart();
   const { format } = useCurrency();
+  const toastTimer = useRef(null);
 
   const [product, setProduct] = useState(null);
   const [related, setRelated] = useState([]);
@@ -43,38 +44,62 @@ export default function ProductDetail() {
   const [toast, setToast] = useState('');
 
   useEffect(() => {
+    return () => {
+      if (toastTimer.current) {
+        window.clearTimeout(toastTimer.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
     let alive = true;
     setLoading(true);
     setNotFound(false);
     setView3d(false);
     setActiveImage(0);
+
     (async () => {
       try {
         const bySlug = await base44.entities.Product.filter({ slug });
         const p = bySlug[0] || (await base44.entities.Product.get(slug));
         const scope = await resolveStorefrontScope();
+
         if (!alive) return;
-        if (!inTenantScope(p, scope)) {
+
+        if (!p || !inTenantScope(p, scope)) {
           setNotFound(true);
           return;
         }
+
+        const initial = {};
+        (p.variants || []).forEach((variant) => {
+          if (variant?.name && variant?.options?.length) {
+            initial[variant.name] = variant.options[0];
+          }
+        });
+
         setProduct(p);
         setLiked(isWishlisted(p.id));
-        const initial = {};
-        (p.variants || []).forEach((v) => {
-          if (v?.name && v?.options?.length) initial[v.name] = v.options[0];
-        });
         setSelection(initial);
 
-        const city = getProfile().city;
-        const [rel, zones, seller, category] = await Promise.all([
-          base44.entities.Product.filter({ category_id: p.category_id, status: 'published' }, '-sold_count', 12).catch(() => []),
-          base44.entities.DeliveryZone.filter({ city }).catch(() => []),
-          p.seller_id ? base44.entities.Seller.get(p.seller_id).catch(() => null) : Promise.resolve(null),
-          p.category_id ? base44.entities.Category.get(p.category_id).catch(() => null) : Promise.resolve(null),
+        const city = getProfile()?.city || '';
+        const [relatedResult, zoneResult, sellerResult, categoryResult] = await Promise.allSettled([
+          p.category_id
+            ? base44.entities.Product.filter({ category_id: p.category_id, status: 'published' }, '-sold_count', 12)
+            : Promise.resolve([]),
+          city ? base44.entities.DeliveryZone.filter({ city }) : Promise.resolve([]),
+          p.seller_id ? base44.entities.Seller.get(p.seller_id) : Promise.resolve(null),
+          p.category_id ? base44.entities.Category.get(p.category_id) : Promise.resolve(null),
         ]);
+
         if (!alive) return;
-        setRelated(scopeRecords(rel, scope).filter((r) => r.id !== p.id).slice(0, 8));
+
+        const relatedItems = relatedResult.status === 'fulfilled' ? relatedResult.value : [];
+        const zones = zoneResult.status === 'fulfilled' ? zoneResult.value : [];
+        const seller = sellerResult.status === 'fulfilled' ? sellerResult.value : null;
+        const category = categoryResult.status === 'fulfilled' ? categoryResult.value : null;
+
+        setRelated(scopeRecords(relatedItems, scope).filter((item) => item.id !== p.id).slice(0, 8));
         setZone(zones[0] || null);
         setSellerSlug(seller?.slug || '');
         setCategorySlug(category?.slug || '');
@@ -84,30 +109,33 @@ export default function ProductDetail() {
         if (alive) setLoading(false);
       }
     })();
+
     return () => {
       alive = false;
     };
   }, [slug]);
 
-  const breakdown = useMemo(() => (product ? computePriceBreakdown(product) : null), [product]);
+  const breakdown = product ? computePriceBreakdown(product) : null;
 
-  const variantLabel = useMemo(() => {
-    const parts = Object.entries(selection).map(([k, v]) => `${k}: ${v}`);
-    return parts.length ? parts.join(', ') : null;
-  }, [selection]);
+  const variantLabel = Object.entries(selection)
+    .map(([key, value]) => `${key}: ${value}`)
+    .join(', ') || null;
 
-  // WhatsApp share: the product link carries the visitor's active referral code.
-  const whatsAppHref = useMemo(() => {
-    if (!product) return '#';
-    const page = `${window.location.origin}/product/${product.slug || product.id}`;
-    const code = getReferralCode();
-    const url = code ? `${page}?ref=${encodeURIComponent(code)}` : page;
-    return `https://wa.me/?text=${encodeURIComponent(`${product.title} — ${url}`)}`;
-  }, [product]);
+  const whatsAppHref = product
+    ? (() => {
+        const page = `${window.location.origin}/product/${product.slug || product.id}`;
+        const code = getReferralCode();
+        const url = code ? `${page}?ref=${encodeURIComponent(code)}` : page;
+        return `https://wa.me/?text=${encodeURIComponent(`${product.title} — ${url}`)}`;
+      })()
+    : '#';
 
   const flash = (msg) => {
     setToast(msg);
-    setTimeout(() => setToast(''), 1800);
+    if (toastTimer.current) {
+      window.clearTimeout(toastTimer.current);
+    }
+    toastTimer.current = window.setTimeout(() => setToast(''), 1800);
   };
 
   const add = (goToCheckout = false) => {
@@ -151,16 +179,15 @@ export default function ProductDetail() {
   const outOfStock = Number(product.stock) <= 0;
 
   return (
-      <div className="space-y-6 pb-28 md:pb-6">
-        <BackButton fallback="/categories" className="md:hidden" />
-        {toast && (
+    <div className="space-y-6 pb-28 md:pb-6">
+      <BackButton fallback="/categories" className="md:hidden" />
+      {toast && (
         <div className="fixed bottom-24 left-1/2 z-50 -translate-x-1/2 rounded-full bg-foreground px-4 py-2 text-xs font-semibold text-background">
           {toast}
         </div>
       )}
 
       <div className="grid gap-5 md:grid-cols-2 md:gap-8">
-        {/* Gallery */}
         <div className="space-y-2">
           {product.model_3d_url && (
             <div className="flex gap-2">
@@ -204,22 +231,21 @@ export default function ProductDetail() {
             <div className="flex gap-2 overflow-x-auto" role="tablist" aria-label="Miniatures du produit">
               {product.images.map((img, i) => (
                 <button
-                  key={img + i}
+                  key={`${img}-${i}`}
                   type="button"
                   role="tab"
                   aria-selected={i === activeImage}
                   aria-label={`${t('productDetail.image')} ${i + 1} sur ${product.images.length}`}
                   onClick={() => setActiveImage(i)}
-                  className={`min-h-16 min-w-16 shrink-0 overflow-hidden rounded-lg border-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring ${i === activeImage ? 'border-primary' : 'border-transparent'}`}
+                  className={`min-h-16 min-w-16 shrink-0 overflow-hidden rounded-lg border-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring ${i === activeImage ? 'border-primary bg-primary/5' : 'border-transparent'}`}
                 >
-
+                  <img src={img} alt={`${product.title} preview ${i + 1}`} className="h-16 w-16 object-cover" />
                 </button>
               ))}
             </div>
           )}
         </div>
 
-        {/* Info */}
         <div className="space-y-4">
           <div>
             <div className="mb-1.5 flex flex-wrap items-center gap-2">
@@ -259,22 +285,22 @@ export default function ProductDetail() {
             </p>
           </div>
 
-          {(product.variants || []).map((v) => (
-            <div key={v.name}>
-              <p className="mb-1.5 text-xs font-semibold text-muted-foreground">{v.name}</p>
-              <div className="flex flex-wrap gap-2" role="group" aria-label={v.name}>
-                {(v.options || []).map((opt) => (
+          {(product.variants || []).map((variant) => (
+            <div key={variant.name}>
+              <p className="mb-1.5 text-xs font-semibold text-muted-foreground">{variant.name}</p>
+              <div className="flex flex-wrap gap-2" role="group" aria-label={variant.name}>
+                {(variant.options || []).map((option) => (
                   <button
-                    key={opt}
+                    key={option}
                     type="button"
-                    aria-pressed={selection[v.name] === opt}
-                    aria-label={`${v.name} ${opt}`}
-                    onClick={() => setSelection((s) => ({ ...s, [v.name]: opt }))}
+                    aria-pressed={selection[variant.name] === option}
+                    aria-label={`${variant.name} ${option}`}
+                    onClick={() => setSelection((current) => ({ ...current, [variant.name]: option }))}
                     className={`rounded-full border px-3.5 py-1.5 text-xs font-medium min-h-10 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                      selection[v.name] === opt ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-card'
+                      selection[variant.name] === option ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-card'
                     }`}
                   >
-                    {opt}
+                    {option}
                   </button>
                 ))}
               </div>
@@ -309,7 +335,6 @@ export default function ProductDetail() {
             </button>
           </div>
 
-          {/* Delivery */}
           <div className="space-y-2 rounded-xl border border-border bg-card p-3 text-xs">
             <div className="flex items-start gap-2">
               <Truck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
@@ -367,23 +392,22 @@ export default function ProductDetail() {
         </div>
       </div>
 
-      {/* Description */}
       <section className="space-y-2">
         <h2 className="text-base font-bold">{t('productDetail.description')}</h2>
         <p className="whitespace-pre-line text-sm leading-relaxed text-muted-foreground">{product.description}</p>
         {product.attributes && Object.keys(product.attributes).length > 0 && (
           <div className="mt-2 grid gap-2 rounded-xl border border-border bg-card p-3 md:grid-cols-2">
-            {Object.entries(product.attributes).map(([k, v]) => (
-              <div key={k} className="flex justify-between gap-3 text-xs">
-                <span className="text-muted-foreground">{k}</span>
-                <span className="font-medium">{String(v)}</span>
+            {Object.entries(product.attributes).map(([key, value]) => (
+              <div key={key} className="flex justify-between gap-3 text-xs">
+                <span className="text-muted-foreground">{key}</span>
+                <span className="font-medium">{String(value)}</span>
               </div>
             ))}
           </div>
         )}
       </section>
 
-      <ProductReviews product={product} onChanged={(updated) => setProduct((p) => ({ ...p, ...updated }))} />
+      <ProductReviews product={product} onChanged={(updated) => setProduct((current) => ({ ...current, ...updated }))} />
 
       {!!related.length && (
         <section>
