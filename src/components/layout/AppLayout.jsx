@@ -1,4 +1,3 @@
-// eslint-disable-next-line no-unused-imports
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import TopBar from './TopBar';
