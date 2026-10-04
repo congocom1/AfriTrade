@@ -1,8 +1,15 @@
 import fr from './fr.js';
+import frExtended from './fr-extended.js';
 import en from './en.js';
 import ln from './ln.js';
 import sw from './sw.js';
 import intlShipment from './intlShipment.js';
+
+export const mergeNamespaces = (base, extra) =>
+  Object.entries(extra).reduce((out, [ns, values]) => ({ ...out, [ns]: { ...(out[ns] || {}), ...values } }), { ...base });
+
+// Merge extended French translations (fixes missing keys test)
+const frWithExtensions = mergeNamespaces(fr, frExtended);
 
 /**
  * The dictionaries the app actually runs on.
@@ -14,12 +21,9 @@ import intlShipment from './intlShipment.js';
  * does. Lingala and Kiswahili fall back to the French copy for the newer
  * namespaces.
  */
-export const mergeNamespaces = (base, extra) =>
-  Object.entries(extra).reduce((out, [ns, values]) => ({ ...out, [ns]: { ...(out[ns] || {}), ...values } }), { ...base });
-
 export const translations = {
-  fr: mergeNamespaces(fr, intlShipment.fr),
+  fr: mergeNamespaces(frWithExtensions, intlShipment.fr),
   en: mergeNamespaces(en, intlShipment.en),
-  ln: mergeNamespaces(ln, intlShipment.fr),
-  sw: mergeNamespaces(sw, intlShipment.fr),
+  ln: mergeNamespaces(mergeNamespaces(ln, frExtended), intlShipment.fr),
+  sw: mergeNamespaces(mergeNamespaces(sw, frExtended), intlShipment.fr),
 };
