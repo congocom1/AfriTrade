@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { useReducedMotion } from '@react-aria/ssr'; // optional, fallback
+import { useReducedMotion } from '../hooks/useReducedMotion';
 
 export function ButtonWithSpring({
   onClick,
