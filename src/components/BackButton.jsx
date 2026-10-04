@@ -1,10 +1,9 @@
-import { FunctionComponent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft } from 'lucide-react';
 import ButtonWithSpring from './ButtonWithSpring';
 
-export const BackButton: FunctionComponent<{fallback?: string; className?: string; variant?: 'ghost' | 'outline' | 'primary' | 'secondary'; children?: React.ReactNode; [k:string]: any;}> = ({
+const BackButton = ({
   fallback = '/',
   className = '',
   variant = 'ghost',
@@ -14,7 +13,7 @@ export const BackButton: FunctionComponent<{fallback?: string; className?: strin
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const handleClick = (e: React.MouseEvent) => {
+  const handleClick = (e) => {
     if (
       window.history.length > 1 &&
       document.referrer &&
@@ -48,3 +47,5 @@ export const BackButton: FunctionComponent<{fallback?: string; className?: strin
     </ButtonWithSpring>
   );
 };
+
+export default BackButton;
