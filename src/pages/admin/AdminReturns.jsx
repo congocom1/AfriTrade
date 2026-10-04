@@ -35,17 +35,28 @@ export default function AdminReturns() {
 
   const updateReturn = async (ret, status) => {
     setMessage('');
+    const amount = Number(ret.refund_amount_usd) || 0;
+    if (status === 'refunded' && !(amount > 0)) {
+      setMessage(t('adminReturns.refundFailed'));
+      return;
+    }
+
     const updated = await base44.entities.Return.update(ret.id, { status, resolution_notes: notes[ret.id] || ret.resolution_notes || '' });
     setReturns((prev) => prev.map((x) => (x.id === ret.id ? updated : x)));
 
     if (status === 'refunded') {
-      const amount = Number(ret.refund_amount_usd) || 0;
-      const res = await base44.functions.invoke('refund-payment', {
-        order_number: ret.order_number,
-        amount,
-        reason: `Retour ${ret.return_number}`,
-        return_number: ret.return_number,
-      });
+      let res;
+      try {
+        res = await base44.functions.invoke('refund-payment', {
+          order_number: ret.order_number,
+          amount,
+          reason: `Retour ${ret.return_number}`,
+          return_number: ret.return_number,
+        });
+      } catch (e) {
+        setMessage(e?.response?.data?.error || t('adminReturns.refundFailed'));
+        return;
+      }
       if (!res?.data?.order) {
         setMessage(res?.data?.error || t('adminReturns.refundFailed'));
         return;
