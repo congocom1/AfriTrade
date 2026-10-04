@@ -212,7 +212,7 @@ export default function ProductDetail() {
                   onClick={() => setActiveImage(i)}
                   className={`min-h-16 min-w-16 shrink-0 overflow-hidden rounded-lg border-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring ${i === activeImage ? 'border-primary' : 'border-transparent'}`}
                 >
-                  <Image src={img} alt={`${product.title} - vue ${i + 1}`} className="h-full w-full object-cover" />
+
                 </button>
               ))}
             </div>
