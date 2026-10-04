@@ -66,13 +66,13 @@ export default function TopBar() {
   const Avatar = ({ name, email, size = 32, className }) => {
     const initials = getInitials(name || email);
     const colors = [
-      'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
-      'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
-      'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300',
-      'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
-      'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300',
-      'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300',
-    ];
+    'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
+    'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
+    'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300',
+    'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
+    'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300',
+    'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300'];
+
     const colorIndex = initials.charCodeAt(0) % colors.length;
     return (
       <div
@@ -82,73 +82,73 @@ export default function TopBar() {
           className
         )}
         style={{ width: size, height: size, fontSize: size * 0.4 }}
-        aria-hidden="true"
-      >
+        aria-hidden="true">
+        
         {initials}
-      </div>
-    );
+      </div>);
+
   };
 
   const NavLink = ({ to, children, icon: Icon }) => {
-    const isActive = location.pathname === to || (to !== '/' && location.pathname.startsWith(to));
+    const isActive = location.pathname === to || to !== '/' && location.pathname.startsWith(to);
     return (
       <Link
         to={to}
         className={cn(
           'flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-xl transition-all duration-150 ease-out',
-          isActive
-            ? 'bg-primary/10 text-primary dark:bg-primary/20'
-            : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+          isActive ?
+          'bg-primary/10 text-primary dark:bg-primary/20' :
+          'text-muted-foreground hover:bg-accent hover:text-foreground'
         )}
-        aria-current={isActive ? 'page' : undefined}
-      >
+        aria-current={isActive ? 'page' : undefined}>
+        
         {Icon && <Icon className="h-4.5 w-4.5 shrink-0" aria-hidden="true" />}
         <span className="hidden sm:inline">{children}</span>
-      </Link>
-    );
+      </Link>);
+
   };
 
   const IconButton = ({ onClick, children, ariaLabel, variant = 'ghost', className }) => {
     const base = 'flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-150 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
     const variants = {
       ghost: 'text-muted-foreground hover:bg-accent hover:text-foreground active:scale-[0.96]',
-      primary: 'bg-primary text-primary-foreground hover:bg-primary/90 active:scale-[0.96] shadow-sm',
+      primary: 'bg-primary text-primary-foreground hover:bg-primary/90 active:scale-[0.96] shadow-sm'
     };
     return (
       <button
         type="button"
         onClick={onClick}
         className={cn(base, variants[variant], className)}
-        aria-label={ariaLabel}
-      >
+        aria-label={ariaLabel}>
+        
         {children}
-      </button>
-    );
+      </button>);
+
   };
 
-  const DropdownItem = ({ onClick, children, icon: Icon, destructive = false, className }) => (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        'flex w-full items-center gap-3 px-4 py-2.5 text-sm transition-colors duration-100',
-        destructive
-          ? 'text-destructive hover:bg-destructive/10'
-          : 'text-foreground hover:bg-accent',
-        className
-      )}
-      onMouseDown={(e) => e.preventDefault()}
-    >
+  const DropdownItem = ({ onClick, children, icon: Icon, destructive = false, className }) =>
+  <button
+    type="button"
+    onClick={onClick}
+    className={cn(
+      'flex w-full items-center gap-3 px-4 py-2.5 text-sm transition-colors duration-100',
+      destructive ?
+      'text-destructive hover:bg-destructive/10' :
+      'text-foreground hover:bg-accent',
+      className
+    )}
+    onMouseDown={(e) => e.preventDefault()}>
+    
       {Icon && <Icon className="h-4.5 w-4.5 shrink-0" aria-hidden="true" />}
       <span>{children}</span>
-    </button>
-  );
+    </button>;
+
 
   return (
     <header
       className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 pt-[env(safe-area-inset-top)]"
-      role="banner"
-    >
+      role="banner">
+      
       {/* Main bar */}
       <div className="mx-auto flex w-full max-w-7xl items-center gap-3 px-4 py-2.5 md:px-8 md:py-3">
         {/* Mobile menu button */}
@@ -158,8 +158,8 @@ export default function TopBar() {
           className="md:hidden flex h-10 w-10 items-center justify-center rounded-xl hover:bg-accent active:scale-[0.96] transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           aria-label={t('nav.menu')}
           aria-expanded={drawerOpen}
-          aria-controls="mobile-drawer"
-        >
+          aria-controls="mobile-drawer">
+          
           <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
           </svg>
@@ -169,16 +169,16 @@ export default function TopBar() {
         <Link
           to="/"
           className="flex shrink-0 items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg"
-          aria-label="Congo Commerce — Home"
-        >
+          aria-label="Congo Commerce — Home">
+          
           <BrandLogo className="h-7 w-auto" />
         </Link>
 
         {/* Primary navigation — desktop only */}
         <nav className="hidden lg:flex items-center gap-1 mx-2" aria-label={t('nav.primary')}>
-          <NavLink to="/" icon={Home} >{t('nav.home')}</NavLink>
-          <NavLink to="/discover" icon={Compass} >{t('nav.discover')}</NavLink>
-          <NavLink to="/categories" icon={Grid} >{t('nav.categories')}</NavLink>
+          <NavLink to="/" icon={Home}>{t('nav.home')}</NavLink>
+          <NavLink to="/discover" icon={Compass}>{t('nav.discover')}</NavLink>
+          <NavLink to="/categories" icon={Grid}>{t('nav.categories')}</NavLink>
         </nav>
 
         {/* Search — centered, expands on focus */}
@@ -205,19 +205,22 @@ export default function TopBar() {
                   placeholder:text-muted-foreground/50
                   focus:border-primary focus:ring-2 focus:ring-primary/20
                   md:placeholder:text-muted-foreground/40"
-                aria-label={t('nav.searchPlaceholder')}
-              />
-              {term && (
-                <button
-                  type="button"
-                  onClick={() => setTerm('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-full hover:bg-accent text-muted-foreground/60 transition-colors"
-                  aria-label="Clear search"
-                  tabIndex={-1}
-                >
+
+
+
+                aria-label={t('nav.searchPlaceholder')} />
+              
+              {term &&
+              <button
+                type="button"
+                onClick={() => setTerm('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-full hover:bg-accent text-muted-foreground/60 transition-colors"
+                aria-label="Clear search"
+                tabIndex={-1}>
+                
                   <X className="h-4 w-4" />
                 </button>
-              )}
+              }
               <Search className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground/60" aria-hidden="true" />
             </div>
           </form>
@@ -226,16 +229,16 @@ export default function TopBar() {
         {/* Right section — grouped utilities */}
         <div className="flex items-center gap-1.5">
           {/* Seller/Admin quick access — only if relevant */}
-          {user && (user.role === 'seller' || user.role === 'admin') && (
-            <Link
-              to={user.role === 'admin' ? '/admin' : '/seller'}
-              className="hidden lg:flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
-              aria-label={user.role === 'admin' ? t('nav.admin') : t('nav.sellerSpace')}
-            >
+          {user && (user.role === 'seller' || user.role === 'admin') &&
+          <Link
+            to={user.role === 'admin' ? '/admin' : '/seller'}
+            className="hidden lg:flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+            aria-label={user.role === 'admin' ? t('nav.admin') : t('nav.sellerSpace')}>
+            
               {user.role === 'admin' ? <ShieldCheck className="h-4 w-4" /> : <Store className="h-4 w-4" />}
               <span className="hidden sm:inline">{user.role === 'admin' ? t('nav.admin') : t('nav.sellerSpace')}</span>
             </Link>
-          )}
+          }
 
           {/* Utilities dropdown — groups less-frequent actions */}
           <div className="relative" ref={utilsRef}>
@@ -243,13 +246,13 @@ export default function TopBar() {
               onClick={() => setUtilsOpen(!utilsOpen)}
               ariaLabel={t('nav.more')}
               ariaExpanded={utilsOpen}
-              ariaHaspopup="true"
-            >
+              ariaHaspopup="true">
+              
               <MoreHorizontal className="h-5 w-5" />
             </IconButton>
 
-            {utilsOpen && (
-              <>
+            {utilsOpen &&
+            <>
                 <div className="fixed inset-0 z-40" onClick={() => setUtilsOpen(false)} aria-hidden="true" />
                 <div className="absolute right-0 top-full z-50 mt-2 w-56 origin-top-right rounded-xl border border-border bg-card py-2 shadow-xl animate-in fade-in-0 zoom-in-95">
                   <div className="px-3 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">{t('nav.utilities')}</div>
@@ -267,30 +270,30 @@ export default function TopBar() {
                   </div>
                 </div>
               </>
-            )}
+            }
           </div>
 
           {/* Divider */}
           <div className="hidden lg:block h-8 w-px bg-border mx-1" aria-hidden="true" />
 
           {/* User actions */}
-          {user ? (
-            <div className="relative flex items-center gap-1" ref={userMenuRef}>
+          {user ?
+          <div className="relative flex items-center gap-1" ref={userMenuRef}>
               {/* User avatar button */}
               <button
-                type="button"
-                onClick={() => setUserMenuOpen(!userMenuOpen)}
-                className="relative flex h-10 w-10 items-center justify-center rounded-xl hover:bg-accent active:scale-[0.96] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                aria-expanded={userMenuOpen}
-                aria-haspopup="true"
-                aria-label={t('nav.profile')}
-              >
+              type="button"
+              onClick={() => setUserMenuOpen(!userMenuOpen)}
+              className="relative flex h-10 w-10 items-center justify-center rounded-xl hover:bg-accent active:scale-[0.96] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              aria-expanded={userMenuOpen}
+              aria-haspopup="true"
+              aria-label={t('nav.profile')}>
+              
                 <Avatar name={user.name} email={user.email} size={32} />
                 <ChevronDown className="absolute bottom-1 right-1 h-3.5 w-3.5 text-muted-foreground/50" aria-hidden="true" />
               </button>
 
-              {userMenuOpen && (
-                <>
+              {userMenuOpen &&
+            <>
                   <div className="fixed inset-0 z-40" onClick={() => setUserMenuOpen(false)} aria-hidden="true" />
                   <div className="absolute right-0 top-full z-50 mt-2 w-64 origin-top-right rounded-xl border border-border bg-card py-2 shadow-xl animate-in fade-in-0 zoom-in-95">
                     <div className="px-4 py-3 border-b border-border">
@@ -299,68 +302,68 @@ export default function TopBar() {
                       <p className="text-center text-xs text-muted-foreground truncate">{user.email}</p>
                     </div>
                     <div className="flex flex-col gap-1 px-2 py-2">
-                      <DropdownItem onClick={() => { navigate('/profile'); setUserMenuOpen(false); }} icon={User}>{t('nav.profile')}</DropdownItem>
-                      <DropdownItem onClick={() => { navigate('/wishlist'); setUserMenuOpen(false); }} icon={Heart}>{t('nav.wishlist')}</DropdownItem>
-                      <DropdownItem onClick={() => { navigate('/messages'); setUserMenuOpen(false); }} icon={MessageCircle}>{t('nav.messages')}</DropdownItem>
-                      <DropdownItem onClick={() => { navigate('/notifications'); setUserMenuOpen(false); }} icon={Bell}>{t('nav.notifications')}</DropdownItem>
-                      {user.role === 'seller' && (
-                        <DropdownItem onClick={() => { navigate('/seller'); setUserMenuOpen(false); }} icon={Store}>{t('nav.sellerSpace')}</DropdownItem>
-                      )}
-                      {user.role === 'admin' && (
-                        <DropdownItem onClick={() => { navigate('/admin'); setUserMenuOpen(false); }} icon={ShieldCheck}>{t('nav.admin')}</DropdownItem>
-                      )}
+                      <DropdownItem onClick={() => {navigate('/profile');setUserMenuOpen(false);}} icon={User}>{t('nav.profile')}</DropdownItem>
+                      <DropdownItem onClick={() => {navigate('/wishlist');setUserMenuOpen(false);}} icon={Heart}>{t('nav.wishlist')}</DropdownItem>
+                      <DropdownItem onClick={() => {navigate('/messages');setUserMenuOpen(false);}} icon={MessageCircle}>{t('nav.messages')}</DropdownItem>
+                      <DropdownItem onClick={() => {navigate('/notifications');setUserMenuOpen(false);}} icon={Bell}>{t('nav.notifications')}</DropdownItem>
+                      {user.role === 'seller' &&
+                  <DropdownItem onClick={() => {navigate('/seller');setUserMenuOpen(false);}} icon={Store}>{t('nav.sellerSpace')}</DropdownItem>
+                  }
+                      {user.role === 'admin' &&
+                  <DropdownItem onClick={() => {navigate('/admin');setUserMenuOpen(false);}} icon={ShieldCheck}>{t('nav.admin')}</DropdownItem>
+                  }
                       <hr className="my-2 border-border" />
                       <DropdownItem
-                        onClick={() => { logout(); setUserMenuOpen(false); }}
-                        icon={LogOut}
-                        destructive
-                      >
+                    onClick={() => {logout();setUserMenuOpen(false);}}
+                    icon={LogOut}
+                    destructive>
+                    
                         {t('nav.logout')}
                       </DropdownItem>
                     </div>
                   </div>
                 </>
-              )}
-            </div>
-          ) : (
-            <div className="hidden lg:flex items-center gap-1">
+            }
+            </div> :
+
+          <div className="hidden lg:flex items-center gap-1">
               <Link
-                to="/login"
-                className="px-3 py-2 text-sm font-medium rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-              >
+              to="/login"
+              className="px-3 py-2 text-sm font-medium rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
+              
                 {t('nav.login')}
               </Link>
               <Link
-                to="/register"
-                className="px-4 py-2 text-sm font-semibold rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-all"
-              >
+              to="/register"
+              className="px-4 py-2 text-sm font-semibold rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-all">
+              
                 {t('nav.register')}
               </Link>
             </div>
-          )}
+          }
 
           {/* Cart — always visible */}
           <Link
             to="/cart"
             className="relative flex h-10 w-10 items-center justify-center rounded-xl hover:bg-accent active:scale-[0.96] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            aria-label={t('nav.cart')}
-          >
+            aria-label={t('nav.cart')}>
+            
             <svg className="h-5.5 w-5.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a2 2 0 00-2-2H6a2 2 0 00-2 2v7m6 0l-3 3m3-3l3 3m0 0V3M3 3h18" />
             </svg>
-            {count > 0 && (
-              <span className="absolute -right-1 -top-1 min-w-[18px] h-5 rounded-full bg-primary px-1.5 text-[10px] font-bold leading-none text-primary-foreground flex items-center justify-center">
+            {count > 0 &&
+            <span className="absolute -right-1 -top-1 min-w-[18px] h-5 rounded-full bg-primary px-1.5 text-[10px] font-bold leading-none text-primary-foreground flex items-center justify-center">
                 {count > 99 ? '99+' : count}
               </span>
-            )}
+            }
           </Link>
         </div>
       </div>
 
       {/* Mobile drawer */}
       <MobileDrawer isOpen={drawerOpen} onClose={() => setDrawerOpen(false)} />
-    </header>
-  );
+    </header>);
+
 }
 
 // Supporting icons
@@ -368,7 +371,7 @@ function Home({ className }) {
   return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 001 1h3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>;
 }
 function Compass({ className }) {
-  return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19l9 2m-9-18l-9 2m0 0v10.005a2.25 2.25 0 002.25 2.248c.81 0 1.578-.417 2-1.062a2.25 2.25 0 012.25-2.248V5.005A2.25 2.25 0 0113.5 2.75a2.25 2.25 0 012.25 2.25V19m-9 0l-2.25-2.25L12 12l2.25 2.25 2.25 2.25M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>;
+  return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19l9 2m-9-18l-9 2m0 0v10.005a2.25 2.25 0 002.25 2.248c.81 0 1.578-.417 2-1.062a2.25 2.25 0 012.25-2.248V5.005A2.25 2.25 0 0113.5 2.75a2.25 2.25 0 012.25 2.25V19m-9 0l-2.25-2.25L12 12l2.25 2.25 2.25 2.25M15 12a3 3 0 11-6 0 3 3 0 016 0z" className="hidden" /></svg>;
 }
 function Grid({ className }) {
   return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>;
