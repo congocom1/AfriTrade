@@ -208,6 +208,9 @@ export default function TopBar() {
 
 
 
+
+
+
                 aria-label={t('nav.searchPlaceholder')} />
               
               {term &&
@@ -368,7 +371,7 @@ export default function TopBar() {
 
 // Supporting icons
 function Home({ className }) {
-  return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 001 1h3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>;
+  return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"></svg>;
 }
 function Compass({ className }) {
   return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19l9 2m-9-18l-9 2m0 0v10.005a2.25 2.25 0 002.25 2.248c.81 0 1.578-.417 2-1.062a2.25 2.25 0 012.25-2.248V5.005A2.25 2.25 0 0113.5 2.75a2.25 2.25 0 012.25 2.25V19m-9 0l-2.25-2.25L12 12l2.25 2.25 2.25 2.25M15 12a3 3 0 11-6 0 3 3 0 016 0z" className="hidden" /></svg>;
