@@ -6,6 +6,7 @@ export const name = 'chinaToDomestic'
 export const description = 'Create domestic orders from approved Chinese warehouse receipts'
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.49'
+import { requireAdmin } from '../../shared/security.ts'
 
 function round2(value) {
   return Math.round((Number(value) || 0) * 100) / 100
@@ -15,6 +16,11 @@ export default async function (req) {
   try {
     if (req.method !== 'POST') return Response.json({ error: 'Method not allowed' }, { status: 405 })
     const base44 = createClientFromRequest(req)
+    // Conversion runs as the service role and mutates product stock, creates
+    // fulfillment orders and closes the receipt, so it is reserved to
+    // administrators (matching chinaSourcing / chinaWarehouse).
+    const gate = await requireAdmin(base44)
+    if (!gate.ok) return gate.response
     const body = await req.json().catch(() => ({}))
     const receiptId = Number(body.receiptId || 0)
     if (!receiptId) return Response.json({ error: 'receiptId is required' }, { status: 400 })

@@ -122,7 +122,7 @@ function SkeletonOrderList({ className = '', ...props }) {
             <SkeletonRect className="h-4 w-24" />
           </div>
         </div>
-      )}
+      ))}
     </div>
   );
 }

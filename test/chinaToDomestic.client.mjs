@@ -7,6 +7,10 @@ const ST = globalThis.__chinaToDomesticTestState;
 
 export function createClientFromRequest() {
   return {
+    // The function gates on requireAdmin before any service-role work.
+    auth: {
+      me: async () => ({ role: 'admin', email: 'admin@demo.test' }),
+    },
     asServiceRole: {
       entities: {
         ChinaWarehouseReceipt: {

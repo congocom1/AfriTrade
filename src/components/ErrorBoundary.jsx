@@ -18,7 +18,7 @@ class ErrorBoundary extends React.Component {
       errorInfo: errorInfo
     });
     // Log to console in development
-    if (process.env.NODE_ENV !== 'production') {
+    if (import.meta.env.DEV) {
       console.error('ErrorBoundary caught an error:', error, errorInfo);
     }
     // Could send to error reporting service here (Sentry, LogRocket, etc.)
@@ -68,7 +68,7 @@ function FallbackContent({ error, errorInfo, onRetry }) {
           <RefreshCw className="h-4 w-4" aria-hidden="true" />
           {t('errorBoundary.retry')}
         </button>
-        {process.env.NODE_ENV !== 'production' && error && (
+        {import.meta.env.DEV && error && (
           <details className="text-left text-xs text-muted-foreground mt-4 max-w-md mx-auto">
             <summary className="cursor-pointer select-none mb-1">
               {t('errorBoundary.details')}
