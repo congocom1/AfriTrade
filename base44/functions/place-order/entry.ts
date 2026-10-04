@@ -79,13 +79,13 @@ function getPricingConfig() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function hasStockFor(product, quantity) {
-  const s = Number(product?.stock_quantity ?? 0);
+  const s = Number(product?.stock ?? 0);
   const n = Math.max(1, Number(quantity) || 1);
   return Number.isFinite(s) && s >= n;
 }
 
 function quantityWithinStock(product, quantity) {
-  const s = product?.stock_quantity;
+  const s = product?.stock;
   if (s == null || s === undefined) {
     return Math.max(1, Number(quantity) || 1);
   }
@@ -250,23 +250,17 @@ const ORDER_RATE_LIMIT_PER_HOUR = 30;
 const ORDER_RATE_LIMIT_UNIDENTIFIED_PER_HOUR = 300;
 const RATE_WINDOW_MS = 3600 * 1000;
 
-/** Best-effort client identity for rate limiting (the closest proxy's view). */
+/**
+ * Client identity for rate limiting. Only a header the edge sets is trusted:
+ * x-forwarded-for and x-real-ip arrive from the caller, who can rotate them on
+ * every request, and a multi-hop chain has no hop we can prove the proxy
+ * appended. When the edge gives us no address we return "" and the caller
+ * falls into the shared ceiling instead of a bucket it can name itself.
+ */
 function clientKeyFor(request) {
-  const candidates = [
-    request.headers.get("x-forwarded-for"),
-    request.headers.get("x-real-ip"),
-    request.headers.get("cf-connecting-ip"),
-  ];
-  for (const raw of candidates) {
-    // The last hop is the one the nearest proxy appended, so it is the value a
-    // caller cannot forge by pre-seeding the header.
-    const parts = String(raw || "")
-      .split(",")
-      .map((p) => p.trim())
-      .filter(Boolean);
-    if (parts.length) return parts[parts.length - 1];
-  }
-  return "";
+  const raw = String(request.headers.get("cf-connecting-ip") || "").trim();
+  if (!raw || raw.includes(",")) return "";
+  return raw;
 }
 
 /** Counts one order attempt against the caller's hourly window. */
@@ -357,8 +351,8 @@ async function loadCartLines(client, items) {
       product,
       product_name: product.name ?? item.product_name ?? "",
       product_image: product.image_url ?? item.product_image ?? "",
-      unit_price_cents: product.price_cents ?? item.unit_price_cents ?? 0,
-      stock_quantity: product.stock_quantity ?? null,
+      unit_price_cents: round2(Number(product.price_usd ?? 0) * 100),
+      stock_quantity: product.stock ?? null,
       tenant_id: product.tenant_id ?? item.tenant_id ?? "",
       seller_id: product.seller_id ?? item.seller_id ?? "",
     };
@@ -386,7 +380,7 @@ async function buildCheckoutQuote(client, params) {
       throw new Error("Product not found: " + l.product_id);
     }
     const qty = quantityWithinStock(product, l.quantity);
-    const unit = round2(product.price_cents ?? 0);
+    const unit = round2(Number(product.price_usd ?? 0) * 100);
     const line = round2(unit * qty);
     const splits = splitSells(line, cfg.platformFeePct, 0, cfg.sellerMinUsd);
     return {
@@ -397,7 +391,7 @@ async function buildCheckoutQuote(client, params) {
       platform_cents: splits.platform,
       seller_cents: splits.seller,
       creator_cents: 0,
-      stock_quantity: product.stock_quantity ?? null,
+      stock_quantity: product.stock ?? null,
       tenant_id: product.tenant_id ?? l.tenant_id ?? "",
       seller_id: product.seller_id ?? l.seller_id ?? "",
       weight_kg: Number(product.weight_kg ?? 0) || 0,
@@ -587,16 +581,24 @@ export async function placeOrder(db, params) {
     if (!hasStockFor(product, line.quantity)) {
       throw new Error(
         "Plus de stock pour " +
-          product.name +
+          (product.title ?? line.product_id) +
           " (disponible: " +
-          (product.stock_quantity ?? 0) +
+          (product.stock ?? 0) +
           ", demandé: " +
           line.quantity +
           ")",
       );
     }
     const qty = quantityWithinStock(product, line.quantity);
-    const unitPrice = round2(product.price_cents ?? 0);
+    const unitPrice = round2(Number(product.price_usd ?? 0) * 100);
+    // Fail closed on schema drift: a product whose price cannot be resolved is
+    // never sold at zero (the old code read a field the schema does not define
+    // and priced every such line at 0).
+    if (!(unitPrice > 0)) {
+      throw new Error(
+        "Prix indisponible pour " + (product.title ?? line.product_id),
+      );
+    }
     const line_total_cents = round2(unitPrice * qty);
     const seller_id = product.seller_id ?? line.seller_id ?? "";
     const tenant_id = product.tenant_id ?? line.tenant_id ?? "";
@@ -705,6 +707,10 @@ export async function placeOrder(db, params) {
     order_number: orderNumber,
     status: "PENDING_PAYMENT",
     payment_method: paymentMethodId ?? "",
+    // create-checkout and payments-webhook both gate card fulfilment on this
+    // field, so it has to be written here or a paid card order can never be
+    // machine-fulfilled.
+    payment_provider: paymentMethodId ?? "",
     payment_status: "PENDING",
     payer_email: userEmail,
     payer_phone: userPhone,
@@ -1016,11 +1022,11 @@ export async function placeOrder(db, params) {
   for (const line of validatedLines) {
     const product = line.product;
     if (!product?.id) continue;
-    const currentStock = Number(product.stock_quantity ?? 0);
+    const currentStock = Number(product.stock ?? 0);
     const newStock = Math.max(0, currentStock - line.quantity);
     try {
       await db.entities.Product.update(product.id, {
-        stock_quantity: newStock,
+        stock: newStock,
         sold_count: round2(
           Number(product.sold_count ?? 0) + line.quantity,
         ),

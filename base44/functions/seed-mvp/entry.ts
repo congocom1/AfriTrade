@@ -1,7 +1,21 @@
+// Seed MVP — base44/functions/seed-mvp/entry.ts
+//
+// One-off seed for the demo catalogue (the "Kin Market" seller and its three
+// products). Idempotent: each record is created only if its slug is absent.
+//
+// Administrator-only. This endpoint writes with service-role privileges, which
+// bypasses the admin-only create RLS on Seller and Product, and a deployed
+// function URL is reachable by anyone — so the caller is verified before any
+// read or write happens. Anonymous callers receive 401 and no data.
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
+import { requireAdmin } from '../../shared/security.ts';
 
 export default async function handler(req) {
   const caller = createClientFromRequest(req);
+  // Anyone can reach a deployed function URL, and this one writes with
+  // service-role privileges, so only an administrator may run it.
+  const auth = await requireAdmin(caller);
+  if (!auth.ok) return auth.response;
   // Service-role client for server-side writes (bypasses RLS)
   const db = caller.asServiceRole || caller;
 
@@ -83,8 +97,9 @@ export default async function handler(req) {
       results.seller = await db.entities.Seller.create(SELLER);
     }
   } catch (e) {
-    const any = await db.entities.Seller.filter({}).catch(() => []);
-    results.seller = any[0] || null;
+    // Never echo a Seller row back to the caller — the read that used to happen
+    // here existed only to make the seed idempotent, not to serve data.
+    console.error('[seed-mvp] seller seed failed: ' + (e?.message ?? e));
   }
 
   // Products (idempotent)
