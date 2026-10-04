@@ -117,6 +117,15 @@ export default {
     deleteAccount: "Supprimer compte",
     deleteAccountSub: "Supprimer sous-compte",
   },
+  sellerNav: {
+    dashboard: "Tableau de bord vendeur",
+    products: "Mes produits",
+    orders: "Mes commandes",
+    wallet: "Mon portefeuille",
+    payouts: "Retraits",
+    payment: "Paiement",
+    export: "Export",
+  },
   myWallet: {
     partnerTitle: "Titre du partenaire",
   },

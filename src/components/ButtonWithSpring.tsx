@@ -32,3 +32,5 @@ export function ButtonWithSpring({
     </motion.button>
   );
 }
+
+export default ButtonWithSpring;

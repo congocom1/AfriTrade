@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import NavLinks from '@/components/NavLinks';
 import { useTranslation } from 'react-i18next';
 import { Zap, Truck, Play, ArrowRight, Store as StoreIcon } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
@@ -265,6 +266,9 @@ export default function Home() {
           ))}
         </div>
       </section>
+
+      {/* Navigation grid - all application entry points */}
+      <NavLinks />
     </div>
   );
 }
