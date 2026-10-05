@@ -2,6 +2,9 @@
 .env
 .env.*
 
+# Test generated files
+*.testmod.mjs
+
 # Logs
 /logs
 *.log
