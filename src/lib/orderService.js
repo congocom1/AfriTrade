@@ -1,7 +1,7 @@
 import { base44 } from '@/api/base44Client';
 import { getPricingConfig } from './config';
 import { intlFee, intlLines, intlWeightKg } from './intlDelivery';
-import { round2, usdToCdf } from './format';
+import { round2Cents, usdCentsToCdfCents, formatUSD, formatCDF } from './format';
 import { getSessionId, rememberOrder, getReferralCode } from './session';
 import { notifyFulfillmentStatus } from './orderNotifications';
 import { assessCheckoutRisk } from './fraud';
@@ -25,29 +25,34 @@ export async function loadCartLines(client, items) {
       const product = byId[i.product_id];
       if (!product) return null;
       const quantity = Math.max(1, Number(i.quantity) || 1);
-      const unit = round2(Number(product.price_usd) || 0);
-      const cost = round2(Number(product.supplier_price ?? product.price_usd) || 0);
+      // Convert USD to cents for integer arithmetic
+      const unitCents = round2Cents(Number(product.price_usd) * 100);
+      const costCents = round2Cents(Number(product.supplier_price ?? product.price_usd) * 100);
       return {
         product,
         quantity,
         variant: i.variant || null,
-        unit_price_usd: unit,
-        line_total_usd: round2(unit * quantity),
-        line_cost_usd: round2(cost * quantity),
+        unit_price_usd_cents: unitCents,
+        line_total_usd_cents: round2Cents(unitCents * quantity),
+        line_cost_usd_cents: round2Cents(costCents * quantity),
         stock_ok: (product.stock ?? 0) >= quantity,
       };
     })
     .filter(Boolean);
 }
 
-export function computeCouponDiscount(coupon, subtotal) {
+export function computeCouponDiscount(coupon, subtotalDollars) {
   if (!coupon) return 0;
   if (coupon.type === 'percent') {
-    const raw = round2(subtotal * ((Number(coupon.value) || 0) / 100));
-    const cap = Number(coupon.max_discount_usd) || 0;
-    return cap > 0 ? Math.min(raw, cap) : raw;
+    // Calculate discount in dollars
+    const rawDollars = subtotalDollars * ((Number(coupon.value) || 0) / 100);
+    const capDollars = (Number(coupon.max_discount_usd) || 0);
+    return capDollars > 0 ? Math.min(rawDollars, capDollars) : rawDollars;
   }
-  if (coupon.type === 'fixed') return Math.min(round2(Number(coupon.value) || 0), subtotal);
+  if (coupon.type === 'fixed') {
+    const fixedDollars = Number(coupon.value) || 0;
+    return Math.min(fixedDollars, subtotalDollars);
+  }
   return 0;
 }
 
@@ -66,35 +71,38 @@ export async function buildCheckoutQuote(client, { items, deliveryFee = 0, coupo
   const db = client || base44;
   const cfg = pricingConfig || getPricingConfig();
   const lines = await loadCartLines(items);
-  const subtotal = round2(lines.reduce((s, l) => s + l.line_total_usd, 0));
-  const discount = computeCouponDiscount(coupon, subtotal);
+  // All amounts in integer cents
+  const subtotalCents = round2Cents(lines.reduce((s, l) => s + l.line_total_usd_cents, 0));
+  const discountCents = round2Cents(computeCouponDiscount(coupon, subtotalCents / 100) * 100);
 
-  const threshold = Number(cfg.free_shipping_threshold_usd) || 0;
-  const freeShipping = coupon?.type === 'free_shipping' || (threshold > 0 && subtotal - discount >= threshold);
+  const thresholdCents = round2Cents((Number(cfg.free_shipping_threshold_usd) || 0) * 100);
+  const freeShipping = coupon?.type === 'free_shipping' || (thresholdCents > 0 && subtotalCents - discountCents >= thresholdCents);
 
   // Local delivery and the international leg are priced apart: the local fee
   // only applies when the cart holds local goods, and the local free-shipping
   // threshold never waives international freight.
   const imports = intlLines(lines);
   const intlWeight = intlWeightKg(lines);
-  const localShipping = lines.some((l) => l.product.source_type === 'local_seller') && !freeShipping
-    ? round2(deliveryFee)
+  const deliveryFeeCents = round2Cents(deliveryFee * 100);
+  const localShippingCents = lines.some((l) => l.product.source_type === 'local_seller') && !freeShipping
+    ? deliveryFeeCents
     : 0;
-  const intlShipping = imports.length ? intlFee(intlOption, intlWeight) : 0;
-  const shipping = round2(localShipping + intlShipping);
+  const intlShippingCents = imports.length ? round2Cents(intlFee(intlOption, intlWeight) * 100) : 0;
+  const shippingCents = round2Cents(localShippingCents + intlShippingCents);
 
-  const total = round2(Math.max(0, subtotal - discount) + shipping);
+  const totalCents = round2Cents(Math.max(0, subtotalCents - discountCents) + shippingCents);
   return {
     lines,
-    subtotal,
-    discount,
-    shipping,
-    localShipping,
-    intlShipping,
+    subtotal: subtotalCents / 100,
+    discount: discountCents / 100,
+    shipping: shippingCents / 100,
+    localShipping: localShippingCents / 100,
+    intlShipping: intlShippingCents / 100,
     intlWeight,
     freeShipping,
-    total,
-    total_cdf: usdToCdf(total),
+    total: totalCents / 100,
+    total_cdf: usdCentsToCdfCents(totalCents),
+    total_cdf_formatted: formatCDF(usdCentsToCdfCents(totalCents)),
     has_stock_issue: lines.some((l) => !l.stock_ok),
   };
 }
@@ -151,7 +159,7 @@ export async function placeOrder(client, { items, profile, delivery, couponCode,
 
   await assessCheckoutRisk({
     order: finalOrder,
-    amountUsd: data?.quote?.total || finalOrder.total_usd,
+    amountUsdCents: round2Cents((data?.quote?.total || finalOrder.total_usd) * 100),
     sessionId,
     profile,
     couponCode: couponCode || '',

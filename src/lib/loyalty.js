@@ -1,5 +1,5 @@
 import { base44 } from '@/api/base44Client';
-import { round2 } from './format';
+import { round2Cents } from './format';
 import { fetchMyOrders } from '@/lib/customerAccount';
 
 /**
@@ -45,11 +45,11 @@ export const LOYALTY_TIERS = [
 ];
 
 export const LOYALTY_REWARDS = [
-  { code: 'SHIP_OFFERED', labelKey: 'loyalty.rewardShip', points: 800, value_usd: 3.5, noteKey: 'loyalty.rewardShipNote' },
-  { code: 'DISCOUNT_5', labelKey: 'loyalty.rewardDiscount5', points: 1200, value_usd: 5, noteKey: 'loyalty.rewardDiscount5Note' },
-  { code: 'PRIORITY_PACK', labelKey: 'loyalty.rewardPriority', points: 1500, value_usd: 0, noteKey: 'loyalty.rewardPriorityNote' },
-  { code: 'DISCOUNT_10PCT', labelKey: 'loyalty.rewardDiscount10', points: 1800, value_usd: 0, noteKey: 'loyalty.rewardDiscount10Note' },
-  { code: 'GIFT_BOX', labelKey: 'loyalty.rewardGift', points: 3000, value_usd: 12, noteKey: 'loyalty.rewardGiftNote' },
+  { code: 'SHIP_OFFERED', labelKey: 'loyalty.rewardShip', points: 800, value_usd_cents: 350, noteKey: 'loyalty.rewardShipNote' },
+  { code: 'DISCOUNT_5', labelKey: 'loyalty.rewardDiscount5', points: 1200, value_usd_cents: 500, noteKey: 'loyalty.rewardDiscount5Note' },
+  { code: 'PRIORITY_PACK', labelKey: 'loyalty.rewardPriority', points: 1500, value_usd_cents: 0, noteKey: 'loyalty.rewardPriorityNote' },
+  { code: 'DISCOUNT_10PCT', labelKey: 'loyalty.rewardDiscount10', points: 1800, value_usd_cents: 0, noteKey: 'loyalty.rewardDiscount10Note' },
+  { code: 'GIFT_BOX', labelKey: 'loyalty.rewardGift', points: 3000, value_usd_cents: 1200, noteKey: 'loyalty.rewardGiftNote' },
 ];
 
 export function tierFor(points) {
@@ -66,24 +66,25 @@ export function nextTierFor(points) {
 export function pointsFromOrders(orders = []) {
   let earned = 0;
   let pending = 0;
-  let lifetimeUsd = 0;
+  let lifetimeUsdCents = 0;
   orders.forEach((order) => {
     const refunded = order.payment_status === 'REFUNDED' || order.payment_status === 'CANCELLED';
     if (refunded || order.status === 'CANCELLED') return;
-    const total = Number(order.total_usd) || 0;
-    const points = Math.round(total * POINTS_PER_USD);
+    const totalUsd = Number(order.total_usd) || 0;
+    const totalUsdCents = Math.round(totalUsd * 100);
+    const points = Math.round(totalUsd * POINTS_PER_USD);
     if (order.status === 'DELIVERED') {
       earned += points;
-      lifetimeUsd += total;
+      lifetimeUsdCents += totalUsdCents;
     } else if (order.payment_status === 'PAID' || order.payment_status === 'AUTHORIZED') {
       pending += points;
     }
   });
-  return { earned, pending, lifetimeUsd: round2(lifetimeUsd) };
+  return { earned, pending, lifetimeUsdCents: round2Cents(lifetimeUsdCents) };
 }
 
 export function loyaltySummary({ orders = [], redemptions = [] } = {}) {
-  const { earned, pending, lifetimeUsd } = pointsFromOrders(orders);
+  const { earned, pending, lifetimeUsdCents } = pointsFromOrders(orders);
   const spent = redemptions.reduce((sum, r) => sum + (Number(r.points_spent) || 0), 0);
   const balance = Math.max(0, earned - spent);
   const tier = tierFor(balance);
@@ -95,7 +96,7 @@ export function loyaltySummary({ orders = [], redemptions = [] } = {}) {
     pending,
     spent,
     balance,
-    lifetimeUsd,
+    lifetimeUsdCents,
     tier,
     next,
     progress,
@@ -133,7 +134,7 @@ export async function redeemReward({ reward, customer, sessionId }) {
     reward_code: reward.code,
     reward_label: reward.label,
     points_spent: reward.points,
-    value_usd: reward.value_usd || 0,
+    value_usd_cents: reward.value_usd_cents || 0,
     coupon_code: generateRewardCode(reward.code.slice(0, 3)),
     status: 'active',
   });

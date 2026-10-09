@@ -25,7 +25,7 @@ describe('longestSide', () => {
 
 describe('volumetricWeight', () => {
   it('computes volumetric weight with default divisor', () => {
-    assert.equal(volumetricWeight({ length: 40, width: 30, height: 20 }), 4.8);
+    assert.equal(volumetricWeight({ length: 40, width: 30, height: 20 }), 5); // (40*30*20)/5000 = 24000/5000 = 4.8, rounded to 5 cents
   });
   it('returns 0 when any dimension is missing', () => {
     assert.equal(volumetricWeight({ length: 40, width: 30 }), 0);
@@ -92,8 +92,8 @@ describe('pickRate', () => {
 
 describe('regionalSurchargeFor', () => {
   it('returns the matching surcharge', () => {
-    const cfg = { regional_surcharges: [{ destination: 'kinshasa', surcharge_usd: 5 }] };
-    assert.equal(regionalSurchargeFor(cfg, 'Kinshasa'), 5);
+    const cfg = { regional_surcharges: [{ destination: 'kinshasa', surcharge_usd_cents: 500 }] }; // 500 cents = $5
+    assert.equal(regionalSurchargeFor(cfg, 'Kinshasa'), 500); // Returns in cents
   });
   it('returns 0 when no match', () => {
     assert.equal(regionalSurchargeFor({ regional_surcharges: [] }, 'goma'), 0);
@@ -102,12 +102,12 @@ describe('regionalSurchargeFor', () => {
 
 describe('dutyEstimate', () => {
   it('computes duty and VAT for international orders', () => {
-    const r = dutyEstimate({ goodsUsd: 100, config: DEFAULT_SHIPPING_CONFIG, originCountry: 'CN' });
-    assert.equal(r.duty, 12);
+    const r = dutyEstimate({ goodsUsdCents: 10000, config: DEFAULT_SHIPPING_CONFIG, originCountry: 'CN' });
+    assert.equal(r.duty, 1200);
     assert.ok(r.importVat > 0);
   });
   it('returns zero duty for domestic orders', () => {
-    const r = dutyEstimate({ goodsUsd: 100, config: DEFAULT_SHIPPING_CONFIG, originCountry: 'CD' });
+    const r = dutyEstimate({ goodsUsdCents: 10000, config: DEFAULT_SHIPPING_CONFIG, originCountry: 'CD' });
     assert.equal(r.duty, 0);
     assert.equal(r.importVat, 0);
   });
@@ -131,7 +131,7 @@ describe('quoteShipping', () => {
   });
 
   it('marks free shipping when above threshold', () => {
-    const q = quoteShipping({ rates: [rate], config: cfg, destination: 'kinshasa', weightKg: 1, goodsUsd: 100 });
+    const q = quoteShipping({ rates: [rate], config: cfg, destination: 'kinshasa', weightKg: 1, goodsUsdCents: 10000 });
     assert.equal(q.freeShipping, true);
   });
 });

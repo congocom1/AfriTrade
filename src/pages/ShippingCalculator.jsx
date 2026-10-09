@@ -6,7 +6,7 @@ import { base44 } from '@/api/base44Client';
 import InfoPage, { InfoSection } from '@/components/InfoPage';
 import { getProfile } from '@/lib/session';
 import { listCouriers } from '@/lib/logistics';
-import { formatUSD, round2 } from '@/lib/format';
+import { formatUSD, round2Cents } from '@/lib/format';
 
 export default function ShippingCalculator() {
   const { t } = useTranslation();
@@ -47,17 +47,18 @@ export default function ShippingCalculator() {
       .map((c) => ({ name: c.name, quote: c.calculateRate({ weightKg: kg, city }) }))
       .filter((o) => o.quote.available)
       .sort((a, b) => a.quote.fee - b.quote.fee);
-    const pickup = points.filter((p) => p.city === city).sort((a, b) => (a.fee_usd || 0) - (b.fee_usd || 0))[0] || null;
-    const zoneFee = zone?.fee_usd || 0;
+    const pickup = points.filter((p) => p.city === city).sort((a, b) => Math.round((a.fee_usd || 0) * 100) - Math.round((b.fee_usd || 0) * 100))[0] || null;
+    const zoneFeeCents = Math.round((zone?.fee_usd || 0) * 100);
     const carrier = couriers[0] || null;
+    const carrierFeeCents = carrier?.quote.fee || 0;
     setResult({
       kg,
       zone,
       couriers,
       pickup,
-      zoneFee,
+      zoneFeeCents,
       carrier,
-      homeTotal: round2(zoneFee + (carrier?.quote.fee || 0)),
+      homeTotalCents: round2Cents(zoneFeeCents + carrierFeeCents),
     });
   };
 

@@ -29,11 +29,11 @@ describe('formatInvoiceNumber', () => {
 
 describe('computeCouponDiscount', () => {
   it('applies percent with cap', () => {
-    assert.equal(computeCouponDiscount({ type: 'percent', value: 10, max_discount_usd: 5 }, 100), 5);
-    assert.equal(computeCouponDiscount({ type: 'percent', value: 10 }, 100), 10);
+    assert.equal(computeCouponDiscount({ type: 'percent', value: 10, max_discount_usd: 5 }, 1), 0.10);
+    assert.equal(computeCouponDiscount({ type: 'percent', value: 10 }, 1), 0.10);
   });
   it('caps fixed discounts at the subtotal', () => {
-    assert.equal(computeCouponDiscount({ type: 'fixed', value: 50 }, 30), 30);
+    assert.equal(computeCouponDiscount({ type: 'fixed', value: 50 }, 0.30), 0.30);
   });
   it('gives nothing for free_shipping and null coupons', () => {
     assert.equal(computeCouponDiscount({ type: 'free_shipping' }, 100), 0);
@@ -69,8 +69,8 @@ describe('loadCartLines', () => {
     };
     const lines = await loadCartLines(fakeDb, [{ product_id: 'p1', quantity: 3 }]);
     assert.equal(lines.length, 1);
-    assert.equal(lines[0].unit_price_usd, 25);
-    assert.equal(lines[0].line_total_usd, 75);
+    assert.equal(lines[0].unit_price_usd_cents, 2500); // $25.00 in cents
+    assert.equal(lines[0].line_total_usd_cents, 7500); // $75.00 in cents
     assert.equal(lines[0].stock_ok, true);
   });
 
@@ -96,6 +96,6 @@ describe('loadCartLines', () => {
     };
     const lines = await loadCartLines(fakeDb, [{ product_id: 'p1', quantity: 'bogus', price_usd: 999 }]);
     assert.equal(lines[0].quantity, 1);
-    assert.equal(lines[0].unit_price_usd, 100);
+    assert.equal(lines[0].unit_price_usd_cents, 10000); // $100.00 in cents
   });
 });

@@ -3,7 +3,7 @@ import { Banknote, Check, X } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import DashboardNav from '@/components/DashboardNav';
 import { ADMIN_LINKS } from '@/lib/navLinks';
-import { formatUSD, formatDateTime, round2 } from '@/lib/format';
+import { formatUSD, formatDateTime, round2Cents } from '@/lib/format';
 import { useTranslation } from 'react-i18next';
 
 const TAB_IDS = ['pending', 'posted', 'reversed'];
@@ -38,10 +38,15 @@ export default function AdminPayouts() {
     await base44.entities.WalletTransaction.update(tx.id, { status: approve ? 'posted' : 'reversed' });
 
     if (!approve && wallet) {
-      const amount = Number(tx.amount_usd) || 0;
+      const amountCents = Math.round(Number(tx.amount_usd) || 0) * 100;
+      const amountFloat = amountCents / 100;
+      const walletBalanceCents = Math.round((wallet?.balance_usd || 0) * 100);
+      const walletLifetimeDebitCents = Math.round((wallet?.lifetime_debit_usd || 0) * 100);
+      const newBalanceCents = walletBalanceCents + amountCents;
+      const newLifetimeDebitCents = Math.max(0, walletLifetimeDebitCents - amountCents);
       const refunded = await base44.entities.Wallet.update(wallet.id, {
-        balance_usd: round2((wallet.balance_usd || 0) + amount),
-        lifetime_debit_usd: Math.max(0, round2((wallet.lifetime_debit_usd || 0) - amount)),
+        balance_usd: newBalanceCents / 100,
+        lifetime_debit_usd: newLifetimeDebitCents / 100,
       });
       await base44.entities.WalletTransaction.create({
         wallet_id: wallet.id,
@@ -50,7 +55,7 @@ export default function AdminPayouts() {
         owner_email: wallet.owner_email || '',
         type: 'REFUND',
         direction: 'credit',
-        amount_usd: amount,
+        amount_usd: amountFloat,
         balance_after_usd: refunded.balance_usd,
         currency: 'USD',
         description: 'Retrait refusé — montant recrédité',
@@ -70,16 +75,16 @@ export default function AdminPayouts() {
 
     setMessage(
       approve
-        ? t('adminPayouts.paidMsg', { amount: formatUSD(tx.amount_usd), owner: tx.owner_name })
-        : t('adminPayouts.rejectedMsg', { amount: formatUSD(tx.amount_usd) }),
+        ? t('adminPayouts.paidMsg', { amount: formatUSD(Math.round(Number(tx.amount_usd) * 100)), owner: tx.owner_name })
+        : t('adminPayouts.rejectedMsg', { amount: formatUSD(Math.round(Number(tx.amount_usd) * 100)) }),
     );
     await load();
   };
 
   const visible = requests.filter((r) => r.status === tab);
-  const pendingTotal = requests
+  const pendingTotalCents = requests
     .filter((r) => r.status === 'pending')
-    .reduce((s, r) => s + (Number(r.amount_usd) || 0), 0);
+    .reduce((sum, r) => sum + (Math.round(Number(r.amount_usd) * 100)), 0);
 
   if (loading) return <div className="h-64 animate-pulse rounded-2xl bg-secondary" />;
 
@@ -91,7 +96,7 @@ export default function AdminPayouts() {
         <p className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
           <Banknote className="h-4 w-4 text-primary" /> {t('adminPayouts.pendingTitle')}
         </p>
-        <p className="mt-1 text-2xl font-black">{formatUSD(pendingTotal)}</p>
+        <p className="mt-1 text-2xl font-black">{formatUSD(pendingTotalCents)}</p>
         <p className="mt-1 text-[11px] text-muted-foreground">
           {t('adminPayouts.description')}
         </p>
@@ -125,7 +130,7 @@ export default function AdminPayouts() {
                 </p>
                 <p className="text-[11px] text-muted-foreground">{r.description}</p>
               </div>
-              <span className="text-sm font-bold">{formatUSD(r.amount_usd)}</span>
+              <span className="text-sm font-bold">{formatUSD(Math.round(Number(r.amount_usd) * 100))}</span>
             </div>
 
             {r.status === 'pending' && (

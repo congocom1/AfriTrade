@@ -23,11 +23,11 @@ describe('formatInvoiceNumber', () => {
 
 describe('computeCouponDiscount', () => {
   it('applies percent with cap', () => {
-    assert.equal(computeCouponDiscount({ type: 'percent', value: 10, max_discount_usd: 5 }, 100), 5);
-    assert.equal(computeCouponDiscount({ type: 'percent', value: 10 }, 100), 10);
+    assert.equal(computeCouponDiscount({ type: 'percent', value: 10, max_discount_usd: 5 }, 1), 0.10); // $1 subtotal, 10% = $0.10, capped at $5 = $0.10
+    assert.equal(computeCouponDiscount({ type: 'percent', value: 10 }, 1), 0.10); // $1 subtotal, 10% = $0.10
   });
   it('caps fixed discounts at the subtotal', () => {
-    assert.equal(computeCouponDiscount({ type: 'fixed', value: 50 }, 30), 30);
+    assert.equal(computeCouponDiscount({ type: 'fixed', value: 50 }, 0.30), 0.30); // $50 fixed discount on $0.30 subtotal = capped at $0.30
   });
   it('gives nothing for free_shipping and null coupons', () => {
     assert.equal(computeCouponDiscount({ type: 'free_shipping' }, 100), 0);

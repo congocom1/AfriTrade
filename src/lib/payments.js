@@ -1,4 +1,4 @@
-import { round2 } from './format';
+import { round2Cents, round2 } from './format';
 
 /**
  * PAYMENT ABSTRACTION
@@ -12,9 +12,9 @@ import { round2 } from './format';
  *     feePercent: number,
  *     instructions: string,
  *     isMock: boolean,
- *     async charge({ amount, currency, phone, orderNumber, metadata })
+ *     async charge({ amountCents, currency, phone, orderNumber, metadata })
  *       -> { status, provider_txn_id, redirect_url?, message }
- *     async refund({ provider_txn_id, amount })
+ *     async refund({ provider_txn_id, amountCents })
  *       -> { status, provider_txn_id }
  *   }
  */
@@ -45,7 +45,7 @@ function mockTxn(prefix) {
 // These functions will only be called if the corresponding env vars are set.
 // Otherwise, the mock providers below will be used.
 
-async function realMpesaCharge({ amount, phone, orderNumber }) {
+async function realMpesaCharge({ amountCents, phone, orderNumber }) {
   const token = getEnvVar('VITE_MPESA_TOKEN', '');
   if (!token) throw new Error('M-Pesa token not configured');
   // Placeholder: Implement actual Safaricom M-Pesa Daraja API call
@@ -53,60 +53,60 @@ async function realMpesaCharge({ amount, phone, orderNumber }) {
   // For now, we simulate success but in real implementation you would make the HTTP call.
   // We'll still return a mock transaction but note that real implementation would parse the response.
   console.warn('[M-Pesa] Using mock charge - replace with real API call');
-  return { status: 'PAID', provider_txn_id: `MPESA-${Date.now()}`, amount: round2(amount), message: `Paiement M-Pesa confirmé pour la commande ${orderNumber}.` };
+  return { status: 'PAID', provider_txn_id: `MPESA-${Date.now()}`, amount: amountCents, message: `Paiement M-Pesa confirmé pour la commande ${orderNumber}.` };
 }
 
-async function realMpesaRefund({ provider_txn_id, amount }) {
+async function realMpesaRefund({ provider_txn_id, amountCents }) {
   const token = getEnvVar('VITE_MPESA_TOKEN', '');
   if (!token) throw new Error('M-Pesa token not configured');
   console.warn('[M-Pesa] Using mock refund - replace with real API call');
-  return { status: 'REFUNDED', provider_txn_id: `RF-${provider_txn_id}`, amount: round2(amount) };
+  return { status: 'REFUNDED', provider_txn_id: `RF-${provider_txn_id}`, amount: amountCents };
 }
 
-async function realAirtelCharge({ amount, phone, orderNumber }) {
+async function realAirtelCharge({ amountCents, phone, orderNumber }) {
   const token = getEnvVar('VITE_AIRTEL_TOKEN', '');
   if (!token) throw new Error('Airtel token not configured');
-  console.warn('[Airtel 직접] Using mock charge - replace with real API call');
-  return { status: 'PAID', provider_txn_id: `AIRTEL-${Date.now()}`, amount: round2(amount), message: `Paiement Airtel Money confirmé pour la commande ${orderNumber}.` };
+  console.warn('[Airtel] Using mock charge - replace with real API call');
+  return { status: 'PAID', provider_txn_id: `AIRTEL-${Date.now()}`, amount: amountCents, message: `Paiement Airtel Money confirmé pour la commande ${orderNumber}.` };
 }
 
-async function realAirtelRefund({ provider_txn_id, amount }) {
+async function realAirtelRefund({ provider_txn_id, amountCents }) {
   const token = getEnvVar('VITE_AIRTEL_TOKEN', '');
   if (!token) throw new Error('Airtel token not configured');
   console.warn('[Airtel] Using mock refund - replace with real API call');
-  return { status: 'REFUNDED', provider_txn_id: `RF-${provider_txn_id}`, amount: round2(amount) };
+  return { status: 'REFUNDED', provider_txn_id: `RF-${provider_txn_id}`, amount: amountCents };
 }
 
-async function realOrangeCharge({ amount, phone, orderNumber }) {
+async function realOrangeCharge({ amountCents, phone, orderNumber }) {
   const token = getEnvVar('VITE_ORANGE_TOKEN', '');
   if (!token) throw new Error('Orange token not configured');
   console.warn('[Orange] Using mock charge - replace with real API call');
-  return { status: 'PAID', provider_txn_id: `ORANGE-${Date.now()}`, amount: round2(amount), message: `Paiement Orange Money confirmé pour la commande ${orderNumber}.` };
+  return { status: 'PAID', provider_txn_id: `ORANGE-${Date.now()}`, amount: amountCents, message: `Paiement Orange Money confirmé pour la commande ${orderNumber}.` };
 }
 
-async function realOrangeRefund({ provider_txn_id, amount }) {
+async function realOrangeRefund({ provider_txn_id, amountCents }) {
   const token = getEnvVar('VITE_ORANGE_TOKEN', '');
   if (!token) throw new Error('Orange token not configured');
   console.warn('[Orange] Using mock refund - replace with real API call');
-  return { status: 'REFUNDED', provider_txn_id: `RF-${provider_txn_id}`, amount: round2(amount) };
+  return { status: 'REFUNDED', provider_txn_id: `RF-${provider_txn_id}`, amount: amountCents };
 }
 
 // Card provider: we assume a hosted checkout (like Stripe) where the frontend handles the redirect.
 // The charge function returns PENDING and the webhook confirms.
-async function realCardCharge({ amount, orderNumber }) {
+async function realCardCharge({ amountCents, orderNumber }) {
   const publishableKey = getEnvVar('VITE_STRIPE_PUBLISHABLE_KEY', '');
   if (!publishableKey) throw new Error('Stripe publishable key not configured');
   // In real implementation, you would create a PaymentIntent and return its client_secret.
   // For now, we keep the same behavior as mock but note that real implementation would differ.
   console.warn('[Card] Using mock charge - replace with real PaymentIntent creation');
-  return { status: 'PENDING', provider_txn_id: '', amount: round2(amount), message: `Redirection vers le paiement sécurisé pour ${orderNumber}.` };
+  return { status: 'PENDING', provider_txn_id: '', amount: amountCents, message: `Redirection vers le paiement sécurisé pour ${orderNumber}.` };
 }
 
-async function realCardRefund({ provider_txn_id, amount }) {
+async function realCardRefund({ provider_txn_id, amountCents }) {
   const secretKey = getEnvVar('VITE_STRIPE_SECRET_KEY', '');
   if (!secretKey) throw new Error('Stripe secret key not configured');
   console.warn('[Card] Using mock refund - replace with real Refund API');
-  return { status: 'REFUNDED', provider_txn_id: `RF-${provider_txn_id}`, amount: round2(amount) };
+  return { status: 'REFUNDED', provider_txn_id: `RF-${provider_txn_id}`, amount: amountCents };
 }
 
 // COD and Wallet remain mock as they are offline.
@@ -122,19 +122,19 @@ export const PAYMENT_PROVIDERS = {
     instructions: 'Vous recevrez une demande de paiement sur votre téléphone. Entrez votre code secret M-Pesa.',
     instructionsKey: 'pay.mpesaInstructions',
     isMock: !(getEnvVar('VITE_MPESA_TOKEN', '') && getEnvVar('VITE_MPESA_TOKEN', '') !== ''),
-    async charge({ amount, phone, orderNumber }) {
+    async charge({ amountCents, phone, orderNumber }) {
       const token = getEnvVar('VITE_MPESA_TOKEN', '');
       if (token) {
-        return await realMpesaCharge({ amount, phone, orderNumber });
+        return await realMpesaCharge({ amountCents, phone, orderNumber });
       }
-      return mockTxnBasedCharge('MPESA', amount, orderNumber, `Paiement M-Pesa confirmé pour la commande ${orderNumber}.`);
+      return mockTxnBasedCharge('MPESA', amountCents, orderNumber, `Paiement M-Pesa confirmé pour la commande ${orderNumber}.`);
     },
-    async refund({ provider_txn_id, amount }) {
+    async refund({ provider_txn_id, amountCents }) {
       const token = getEnvVar('VITE_MPESA_TOKEN', '');
       if (token) {
-        return await realMpesaRefund({ provider_txn_id, amount });
+        return await realMpesaRefund({ provider_txn_id, amountCents });
       }
-      return mockTxnBasedRefund('MPESA', provider_txn_id, amount);
+      return mockTxnBasedRefund('MPESA', provider_txn_id, amountCents);
     },
   },
   airtel: {
@@ -148,19 +148,19 @@ export const PAYMENT_PROVIDERS = {
     instructions: 'Validez la demande de paiement Airtel Money reçue sur votre téléphone.',
     instructionsKey: 'pay.airtelInstructions',
     isMock: !(getEnvVar('VITE_AIRTEL_TOKEN', '') && getEnvVar('VITE_AIRTEL_TOKEN', '') !== ''),
-    async charge({ amount, phone, orderNumber }) {
+    async charge({ amountCents, phone, orderNumber }) {
       const token = getEnvVar('VITE_AIRTEL_TOKEN', '');
       if (token) {
-        return await realAirtelCharge({ amount, phone, orderNumber });
+        return await realAirtelCharge({ amountCents, phone, orderNumber });
       }
-      return mockTxnBasedCharge('AIRTEL', amount, orderNumber, `Paiement Airtel Money confirmé pour la commande ${orderNumber}.`);
+      return mockTxnBasedCharge('AIRTEL', amountCents, orderNumber, `Paiement Airtel Money confirmé pour la commande ${orderNumber}.`);
     },
-    async refund({ provider_txn_id, amount }) {
+    async refund({ provider_txn_id, amountCents }) {
       const token = getEnvVar('VITE_AIRTEL_TOKEN', '');
       if (token) {
-        return await realAirtelRefund({ provider_txn_id, amount });
+        return await realAirtelRefund({ provider_txn_id, amountCents });
       }
-      return mockTxnBasedRefund('AIRTEL', provider_txn_id, amount);
+      return mockTxnBasedRefund('AIRTEL', provider_txn_id, amountCents);
     },
   },
   orange: {
@@ -174,19 +174,19 @@ export const PAYMENT_PROVIDERS = {
     instructions: 'Validez la demande de paiement Orange Money reçue sur votre téléphone.',
     instructionsKey: 'pay.orangeInstructions',
     isMock: !(getEnvVar('VITE_ORANGE_TOKEN', '') && getEnvVar('VITE_ORANGE_TOKEN', '') !== ''),
-    async charge({ amount, phone, orderNumber }) {
+    async charge({ amountCents, phone, orderNumber }) {
       const token = getEnvVar('VITE_ORANGE_TOKEN', '');
       if (token) {
-        return await realOrangeCharge({ amount, phone, orderNumber });
+        return await realOrangeCharge({ amountCents, phone, orderNumber });
       }
-      return mockTxnBasedCharge('ORANGE', amount, orderNumber, `Paiement Orange Money confirmé pour la commande ${orderNumber}.`);
+      return mockTxnBasedCharge('ORANGE', amountCents, orderNumber, `Paiement Orange Money confirmé pour la commande ${orderNumber}.`);
     },
-    async refund({ provider_txn_id, amount }) {
+    async refund({ provider_txn_id, amountCents }) {
       const token = getEnvVar('VITE_ORANGE_TOKEN', '');
       if (token) {
-        return await realOrangeRefund({ provider_txn_id, amount });
+        return await realOrangeRefund({ provider_txn_id, amountCents });
       }
-      return mockTxnBasedRefund('ORANGE', provider_txn_id, amount);
+      return mockTxnBasedRefund('ORANGE', provider_txn_id, amountCents);
     },
   },
   card: {
@@ -200,20 +200,20 @@ export const PAYMENT_PROVIDERS = {
     instructions: 'Vous serez redirigé vers la page sécurisée de notre prestataire. Aucune donnée de carte ne transite par Congo Commerce.',
     instructionsKey: 'pay.cardInstructions',
     isMock: !(getEnvVar('VITE_STRIPE_PUBLISHABLE_KEY', '') && getEnvVar('VITE_STRIPE_SECRET_KEY', '') !== ''),
-    async charge({ amount, orderNumber }) {
+    async charge({ amountCents, orderNumber }) {
       const pk = getEnvVar('VITE_STRIPE_PUBLISHABLE_KEY', '');
       const sk = getEnvVar('VITE_STRIPE_SECRET_KEY', '');
       if (pk && sk) {
-        return await realCardCharge({ amount, orderNumber });
+        return await realCardCharge({ amountCents, orderNumber });
       }
-      return { status: 'PENDING', provider_txn_id: '', amount: round2(amount), message: `Redirection vers le paiement sécurisé pour ${orderNumber}.` };
+      return { status: 'PENDING', provider_txn_id: '', amount: amountCents, message: `Redirection vers le paiement sécurisé pour ${orderNumber}.` };
     },
-    async refund({ provider_txn_id, amount }) {
+    async refund({ provider_txn_id, amountCents }) {
       const sk = getEnvVar('VITE_STRIPE_SECRET_KEY', '');
       if (sk) {
-        return await realCardRefund({ provider_txn_id, amount });
+        return await realCardRefund({ provider_txn_id, amountCents });
       }
-      return { status: 'REFUNDED', provider_txn_id: `RF-${provider_txn_id}`, amount: round2(amount) };
+      return { status: 'REFUNDED', provider_txn_id: `RF-${provider_txn_id}`, amount: amountCents };
     },
   },
   cod: {
@@ -227,8 +227,8 @@ export const PAYMENT_PROVIDERS = {
     instructions: 'Vous payez en espèces au livreur ou au point de retrait, à la réception du colis.',
     instructionsKey: 'pay.codInstructions',
     isMock: true,
-    async charge({ amount, orderNumber }) {
-      return { status: 'PENDING', provider_txn_id: mockTxn('COD'), amount: round2(amount), message: `Commande ${orderNumber} enregistrée. Paiement à la livraison.` };
+    async charge({ amountCents, orderNumber }) {
+      return { status: 'PENDING', provider_txn_id: mockTxn('COD'), amount: amountCents, message: `Commande ${orderNumber} enregistrée. Paiement à la livraison.` };
     },
     async refund() {
       return { status: 'CANCELLED', provider_txn_id: null };
@@ -245,11 +245,11 @@ export const PAYMENT_PROVIDERS = {
     instructions: 'Le montant est débité de votre solde portefeuille.',
     instructionsKey: 'pay.walletInstructions',
     isMock: true,
-    async charge({ amount, orderNumber }) {
-      return { status: 'PAID', provider_txn_id: mockTxn('WALLET'), amount: round2(amount), message: `Payé avec le portefeuille pour ${orderNumber}.` };
+    async charge({ amountCents, orderNumber }) {
+      return { status: 'PAID', provider_txn_id: mockTxn('WALLET'), amount: amountCents, message: `Payé avec le portefeuille pour ${orderNumber}.` };
     },
-    async refund({ provider_txn_id, amount }) {
-      return { status: 'REFUNDED', provider_txn_id: `RF-${provider_txn_id}`, amount: round2(amount) };
+    async refund({ provider_txn_id, amountCents }) {
+      return { status: 'REFUNDED', provider_txn_id: `RF-${provider_txn_id}`, amount: amountCents };
     },
   },
 };
@@ -258,11 +258,11 @@ export const PAYMENT_PROVIDERS = {
  * Fallback mock implementations used when env vars are not set.
  * These are the original mock implementations kept for backward compatibility.
  */
-function mockTxnBasedCharge(prefix, amount, orderNumber, message) {
-  return { status: 'PAID', provider_txn_id: mockTxn(prefix), amount: round2(amount), message };
+function mockTxnBasedCharge(prefix, amountCents, orderNumber, message) {
+  return { status: 'PAID', provider_txn_id: mockTxn(prefix), amount: amountCents, message };
 }
-function mockTxnBasedRefund(prefix, provider_txn_id, amount) {
-  return { status: 'REFUNDED', provider_txn_id: `RF-${provider_txn_id}`, amount: round2(amount) };
+function mockTxnBasedRefund(prefix, provider_txn_id, amountCents) {
+  return { status: 'REFUNDED', provider_txn_id: `RF-${provider_txn_id}`, amount: amountCents };
 }
 
 export function listPaymentProviders() {

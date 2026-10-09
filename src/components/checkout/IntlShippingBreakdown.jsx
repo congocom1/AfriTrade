@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Plane } from 'lucide-react';
-import { formatUSD, round2 } from '@/lib/format';
+import { formatUSD, round2Cents } from '@/lib/format';
 import { INTL_CARRIER, intlFee } from '@/lib/intlDelivery';
 
 /**
@@ -20,11 +20,11 @@ export default function IntlShippingBreakdown({ options, weightKg, selectedId })
     eta: o.eta_days,
     base: Number(o.base_usd) || 0,
     perKg: Number(o.per_kg_usd) || 0,
-    total: intlFee(o, weightKg),
+    total: intlFee(o, weightKg), // returns integer cents
   }));
   const cheapest = Math.min(...rows.map((r) => r.total));
   const selected = rows.find((r) => r.id === selectedId) || rows[0];
-  const extra = round2(selected.total - cheapest);
+  const extra = round2Cents(selected.total - cheapest);
 
   return (
     <div className="space-y-2 rounded-xl border border-border bg-card p-3">

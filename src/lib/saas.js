@@ -1,10 +1,11 @@
 import { base44 } from '@/api/base44Client';
-import { round2 } from './format';
+import { round2Cents } from './format';
 import { planAmount } from './plans';
 
 /**
  * SaaS billing engine: subscription lifecycle, period arithmetic and invoice
  * issuance. Every amount comes from the plan record — never from a constant.
+ * All amounts in integer cents.
  */
 
 export const BILLING_CYCLES = [
@@ -66,7 +67,7 @@ export async function startSubscription({ tenant, plan, cycle = 'monthly', me })
     plan_code: plan.code,
     billing_cycle: cycle,
     status: trialEnd ? 'trialing' : 'active',
-    amount_usd: planAmount(plan, cycle),
+    amount_usd_cents: planAmount(plan, cycle),
     currency: tenant.currency || 'USD',
     started_at: now.toISOString(),
     trial_end: trialEnd ? trialEnd.toISOString() : '',
@@ -83,7 +84,7 @@ export async function changePlan(subscription, plan, cycle) {
     plan_id: plan?.id || '',
     plan_code: plan.code,
     billing_cycle: cycle || subscription.billing_cycle,
-    amount_usd: planAmount(plan, cycle || subscription.billing_cycle),
+    amount_usd_cents: planAmount(plan, cycle || subscription.billing_cycle),
     status: subscription.status === 'cancelled' ? 'active' : subscription.status,
     cancel_at_period_end: false,
     cancelled_at: '',
@@ -107,7 +108,7 @@ export async function renewSubscription(subscription, plan, cycle) {
   const invoice = await issueInvoice({ subscription, plan, cycle: activeCycle });
   const updated = await base44.entities.Subscription.update(subscription.id, {
     status: 'active',
-    amount_usd: planAmount(plan, activeCycle),
+    amount_usd_cents: planAmount(plan, activeCycle),
     plan_code: plan?.code || subscription.plan_code,
     billing_cycle: activeCycle,
     current_period_start: now.toISOString(),
@@ -138,8 +139,8 @@ export async function nextInvoiceNumber() {
 }
 
 export async function issueInvoice({ subscription, plan, cycle, vatRate = 0 }) {
-  const subtotal = planAmount(plan, cycle || subscription.billing_cycle);
-  const vat = round2(subtotal * (Number(vatRate) || 0) / 100);
+  const subtotalCents = planAmount(plan, cycle || subscription.billing_cycle);
+  const vatCents = round2Cents(subtotalCents * (Number(vatRate) || 0) / 100);
   const now = new Date();
   return base44.entities.TenantInvoice.create({
     tenant_id: subscription.tenant_id,
@@ -150,9 +151,9 @@ export async function issueInvoice({ subscription, plan, cycle, vatRate = 0 }) {
     billing_cycle: cycle || subscription.billing_cycle,
     period_start: now.toISOString(),
     period_end: periodEnd(now, cycle || subscription.billing_cycle),
-    subtotal_usd: subtotal,
-    vat_usd: vat,
-    total_usd: round2(subtotal + vat),
+    subtotal_usd_cents: subtotalCents,
+    vat_usd_cents: vatCents,
+    total_usd_cents: round2Cents(subtotalCents + vatCents),
     status: 'paid',
     issued_at: now.toISOString(),
     due_at: addDays(now, 7).toISOString(),
@@ -163,13 +164,13 @@ export async function issueInvoice({ subscription, plan, cycle, vatRate = 0 }) {
 
 /** Monthly recurring revenue, normalised from both billing cycles. */
 export function monthlyRecurring(rows) {
-  return round2((rows || [])
+  return round2Cents((rows || [])
     .filter((s) => ['active', 'trialing'].includes(s.status))
-    .reduce((sum, s) => sum + (Number(s.amount_usd) || 0) / (s.billing_cycle === 'yearly' ? 12 : 1), 0));
+    .reduce((sum, s) => sum + (Number(s.amount_usd_cents) || Number(s.amount_usd) * 100 || 0) / (s.billing_cycle === 'yearly' ? 12 : 1), 0));
 }
 
 export function annualRunRate(rows) {
-  return round2(monthlyRecurring(rows) * 12);
+  return round2Cents(monthlyRecurring(rows) * 12);
 }
 
 export function subscriptionLabel(status) {

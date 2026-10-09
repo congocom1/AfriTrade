@@ -1,5 +1,5 @@
 import { base44 } from '@/api/base44Client';
-import { setCdfRate } from './format';
+import { setCdfRateCents } from './format';
 
 /**
  * Every commercial rule lives here (or in the PlatformSetting records that override it).
@@ -78,7 +78,8 @@ export async function loadPlatformConfig(force = false) {
     } catch {
       // Settings unavailable — fall back to defaults so the storefront still works.
     }
-    setCdfRate(country.usd_to_cdf_rate);
+    // Convert rate to cents per USD (rate * 100) for integer arithmetic
+    setCdfRateCents(Math.round(country.usd_to_cdf_rate * 100));
     cache = { pricing, country, tax, company };
     return cache;
   })();

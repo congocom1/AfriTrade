@@ -69,36 +69,30 @@ export function scoreSignals(signals, rules) {
 export async function collectSignals(client, { amountUsd = 0, sessionId = '', phone = '', couponCode = '', affiliateCode = '', orderNumber = '' }) {
   const db = client || base44;
   const signals = [];
-  // Order history is read directly from the DB when the caller has access (server
-  // function / admin), or through the server's aggregate API when the caller is a
-  // browser without tenant-level read access. The risk desk never sees other
-  // customers' record contents — only the counts used for scoring.
-  let byPhone = [];
-  let bySession = [];
-  let prior = [];
-  let priorSession = [];
+  // Fetch aggregated risk signals from the server function
+  const history = await fetchRiskSignals({ phone, sessionId, couponCode, orderNumber });
+
+
+
+  // Convert amountUsd to cents for consistency with thresholds
+  const amountUsdCents = Math.round(parseFloat(amountUsd) * 100);
+  if (amountUsdCents > 0) signals.push({ signal: 'high_value', value: amountUsdCents });
   if (phone) {
-    byPhone = await db.entities.Order.filter({ customer_phone: phone }, '-created_date', 50).catch(() => []);
-    prior = byPhone.filter((o) => o.order_number !== orderNumber);
-  }
-  if (sessionId) {
-    bySession = await db.entities.Order.filter({ session_id: sessionId }, '-created_date', 50).catch(() => []);
-    priorSession = bySession.filter((o) => o.order_number !== orderNumber);
-  }
-
-
-
-  if (amountUsd > 0) signals.push({ signal: 'high_value', value: amountUsd });
-  if (phone) {
-    signals.push({ signal: 'phone_velocity', value: prior + 1 });
+    // For phone_velocity, we need to know how many previous orders this phone has
+    // The history should contain this information from the server-side aggregation
+    signals.push({ signal: 'phone_velocity', value: Number(history.phone_velocity) || 0 });
     signals.push({ signal: 'shared_phone', value: Number(history.shared_phone) || 0 });
     signals.push({ signal: 'failed_payments', value: Number(history.failed_payments) || 0 });
     signals.push({ signal: 'refund_abuse', value: Number(history.refunds) || 0 });
   }
-  if (sessionId) signals.push({ signal: 'session_velocity', value: priorSession + 1 });
+  if (sessionId) {
+    // For session_velocity, we need to know how many previous orders in this session
+    signals.push({ signal: 'session_velocity', value: Number(history.session_velocity) || 0 });
+  }
 
   if (couponCode && phone) {
-    signals.push({ signal: 'coupon_abuse', value: (Number(history.coupon_count) || 0) + 1 });
+    // For coupon_abuse, we need to know how many times this coupon was used with this phone
+    signals.push({ signal: 'coupon_abuse', value: Number(history.coupon_abuse) || 0 });
   }
   if (affiliateCode && sessionId) {
     const clicks = await db.entities.AffiliateClick.filter({ session_id: sessionId, referral_code: affiliateCode }).catch(() => []);
@@ -119,10 +113,10 @@ export async function evaluateRisk(client, input) {
 /** Checkout hook. Records a review case when the score is above zero. It never
  *  blocks a paid order — the risk desk decides, from the admin console.
  *  Accepts an optional Base44 client. */
-export async function assessCheckoutRisk(client, { order, amountUsd, sessionId, profile, couponCode, affiliateCode }) {
+export async function assessCheckoutRisk(client, { order, amountUsdCents, sessionId, profile, couponCode, affiliateCode }) {
   const db = client || base44;
   const assessment = await evaluateRisk(db, {
-    amountUsd,
+    amountUsdCents,
     sessionId,
     phone: order?.customer_phone || profile?.phone || '',
     couponCode,

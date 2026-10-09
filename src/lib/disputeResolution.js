@@ -1,5 +1,5 @@
 import { base44 } from '@/api/base44Client';
-import { round2 } from '@/lib/format';
+import { round2Cents } from '@/lib/format';
 import { sendCaseMessage as postCaseMessage, setCaseStatus } from '@/lib/customerAccount';
 
 /**
@@ -91,7 +91,8 @@ export async function notifyCustomer({ dispute, title, message }) {
  * Dispute status and customer notice stay here (non-authoritative).
  */
 export async function refundCustomer({ dispute, amount, note, reviewer }) {
-  const value = round2(Number(amount) || 0);
+  // amount is expected in integer cents
+  const value = round2Cents(Number(amount) || 0);
   const res = await base44.functions.invoke('refund-payment', {
     order_number: dispute.order_number,
     amount: value,

@@ -1,4 +1,4 @@
-import { round2 } from './format';
+import { round2Cents } from './format';
 
 /**
  * SUPPLIER CONNECTOR ARCHITECTURE
@@ -82,15 +82,15 @@ function normalize(adapterCode, supplier, raw) {
     videos: [],
     variants: DEFAULT_VARIANTS[raw.category] || [{ name: 'Format', options: ['Standard'] }],
     attributes: { Matière: 'Voir fiche fournisseur', Origine: supplier.country },
-    supplierPrice: raw.price,
+    supplierPrice: round2Cents(raw.price * 100),
     currency: 'USD',
     stock: raw.stock,
     weightKg: raw.weight,
     dimensions: '30 x 20 x 10 cm',
     originCountry: supplier.country,
     shippingOptions: [
-      { method: 'standard', label: 'Standard international', price: shippingBase, eta: `${supplier.avg_shipping_days ?? 18} jours` },
-      { method: 'express', label: 'Express', price: round2(shippingBase * 2.4), eta: `${Math.max(5, Math.round((supplier.avg_shipping_days ?? 18) / 3))} jours` },
+      { method: 'standard', label: 'Standard international', price: round2Cents(shippingBase * 100), eta: `${supplier.avg_shipping_days ?? 18} jours` },
+      { method: 'express', label: 'Express', price: round2Cents(shippingBase * 240), eta: `${Math.max(5, Math.round((supplier.avg_shipping_days ?? 18) / 3))} jours` },
     ],
     estimatedDelivery: `${supplier.avg_shipping_days ?? 18} jours`,
     importCostPercent: importPercent,
@@ -128,7 +128,7 @@ function createMockProvider(adapterCode) {
       const p = await this.getProduct(externalProductId, supplier);
       const weight = (p.weightKg || 0.5) * quantity;
       const option = p.shippingOptions[0];
-      return { provider: supplier.name, fee: round2(option.price + weight * 1.2), eta: option.eta, method: option.method };
+      return { provider: supplier.name, fee: round2Cents(option.price * 100 + weight * 120), eta: option.eta, method: option.method };
     },
     async createOrder({ externalProductId, quantity, supplier }) {
       return {

@@ -413,6 +413,88 @@ final searchResultsProvider = FutureProvider<List<ProductModel>>((ref) {
       );
 });
 
+// Helper function to tokenize text into words
+List<String> _tokenize(String text) {
+  // Convert to lowercase and split by non-alphanumeric characters
+  return text
+      .toLowerCase()
+      .split(RegExp(r'[^a-zA-Z0-9]+'))
+      .where((token) => token.isNotEmpty)
+      .toList();
+}
+
+/// Calculate TF-IDF like score for products based on search query
+List<ProductModel> _scoreAndSortProducts(List<ProductModel> products, String query) {
+  if (query.isEmpty || products.isEmpty) {
+    return products;
+  }
+
+  // Tokenize the query
+  final queryTokens = _tokenize(query);
+  if (queryTokens.isEmpty) {
+    return products;
+  }
+
+  // Calculate term frequency for each product
+  final scoredProducts = <ProductModelWithScore>[];
+
+  for (final product in products) {
+    // Create searchable text from product fields
+    final searchableText = '''
+      ${product.title}
+      ${product.description ?? ''}
+      ${product.brand ?? ''}
+      ${product.categoryName ?? ''}
+    ''';
+
+    final productTokens = _tokenize(searchableText);
+
+    // Calculate term frequency (TF) for each query token
+    double score = 0.0;
+    for (final token in queryTokens) {
+      // Count occurrences of token in product
+      final tf = productTokens.where((t) => t == token).length /
+          (productTokens.length > 0 ? productTokens.length : 1);
+
+      // Simple IDF approximation: rarer tokens get higher weight
+      // In a real implementation, we'd calculate this across the entire corpus
+      // For now, we'll use a constant IDF and boost for exact matches
+      final idf = 1.0;
+
+      // Boost score for exact matches in title
+      final titleBoost = product.title.toLowerCase().contains(token.toLowerCase()) ? 2.0 : 1.0;
+
+      // Boost score for exact matches in brand
+      final brandBoost = product.brand != null &&
+          product.brand!.toLowerCase().contains(token.toLowerCase()) ? 1.5 : 1.0;
+
+      score += (tf * idf * titleBoost * brandBoost);
+    }
+
+    // Additional boost for popular products (sold count, rating)
+    final popularityBoost = (product.soldCount / 1000).clamp(0.0, 2.0) +
+        (product.rating / 5.0);
+
+    final totalScore = score * (1.0 + popularityBoost * 0.3);
+
+    scoredProducts.add(ProductModelWithScore(product, totalScore));
+  }
+
+  // Sort by score descending
+  scoredProducts.sort((a, b) => b.score.compareTo(a.score));
+
+  // Return just the products
+  return scoredProducts.map((wp) => wp.product).toList();
+}
+
+/// Helper class to associate a score with a product for sorting
+class ProductModelWithScore {
+  final ProductModel product;
+  final double score;
+
+  ProductModelWithScore(this.product, this.score);
+}
+
 // ─── Wishlist providers ─────────────────────────────────────────────────────
 
 /// Wishlist product IDs

@@ -1,19 +1,20 @@
 import { base44 } from '@/api/base44Client';
-import { round2 } from './format';
+import { round2Cents } from './format';
 
 /**
  * SHIPPING RATE ENGINE
  * Admin-managed rate table: destination × courier × weight band × dimension cap.
  * A rate row is deliberately narrow — the quote picks the most specific row that
  * matches, so a generic "rest of country" line never beats a Kinshasa 0-1 kg line.
+ * All amounts in integer cents.
  */
 export const DEFAULT_SHIPPING_CONFIG = {
   volumetric_divisor: 5000,
-  handling_fee_usd: 1.5,
-  cod_fee_usd: 1,
+  handling_fee_usd_cents: 150,
+  cod_fee_usd_cents: 100,
   fuel_surcharge_percent: 4,
-  remote_area_surcharge_usd: 3.5,
-  free_shipping_threshold_usd: 60,
+  remote_area_surcharge_usd_cents: 350,
+  free_shipping_threshold_usd_cents: 6000,
   import_duty_percent: 12,
   import_vat_percent: 16,
   duty_included_in_price: true,
@@ -28,7 +29,22 @@ export const DESTINATION_TYPES = [
 
 export async function loadShippingConfig() {
   const rows = await base44.entities.PlatformSetting.filter({ key: 'shipping' }).catch(() => []);
-  return { ...DEFAULT_SHIPPING_CONFIG, ...(rows[0]?.value || {}) };
+  const stored = rows[0]?.value || {};
+  // Convert legacy USD keys to cents if present
+  const converted = { ...stored };
+  if (stored.handling_fee_usd !== undefined && stored.handling_fee_usd_cents === undefined) {
+    converted.handling_fee_usd_cents = round2Cents(Number(stored.handling_fee_usd) * 100);
+  }
+  if (stored.cod_fee_usd !== undefined && stored.cod_fee_usd_cents === undefined) {
+    converted.cod_fee_usd_cents = round2Cents(Number(stored.cod_fee_usd) * 100);
+  }
+  if (stored.remote_area_surcharge_usd !== undefined && stored.remote_area_surcharge_usd_cents === undefined) {
+    converted.remote_area_surcharge_usd_cents = round2Cents(Number(stored.remote_area_surcharge_usd) * 100);
+  }
+  if (stored.free_shipping_threshold_usd !== undefined && stored.free_shipping_threshold_usd_cents === undefined) {
+    converted.free_shipping_threshold_usd_cents = round2Cents(Number(stored.free_shipping_threshold_usd) * 100);
+  }
+  return { ...DEFAULT_SHIPPING_CONFIG, ...converted };
 }
 
 export async function saveShippingConfig(value) {
@@ -48,12 +64,12 @@ export function volumetricWeight(dims, divisor) {
   const w = Number(dims?.width) || 0;
   const h = Number(dims?.height) || 0;
   if (!l || !w || !h) return 0;
-  return round2((l * w * h) / (Number(divisor) || DEFAULT_SHIPPING_CONFIG.volumetric_divisor));
+  return round2Cents((l * w * h) / (Number(divisor) || DEFAULT_SHIPPING_CONFIG.volumetric_divisor));
 }
 
 /** Couriers bill the greater of real weight and volumetric weight. */
 export function billableWeight({ weightKg = 0, dims = null } = {}, divisor) {
-  const actual = round2(Number(weightKg) || 0);
+  const actual = round2Cents(Number(weightKg) || 0);
   const volumetric = volumetricWeight(dims, divisor);
   return { actual, volumetric, billable: Math.max(actual, volumetric) };
 }
@@ -96,18 +112,18 @@ export function regionalSurchargeFor(config, destination) {
   const row = (config?.regional_surcharges || []).find(
     (r) => String(r.destination || '').trim().toLowerCase() === city,
   );
-  return round2(row?.surcharge_usd || 0);
+  return round2Cents((Number(row?.surcharge_usd_cents) || Number(row?.surcharge_usd) || 0) * (row?.surcharge_usd_cents ? 1 : 100));
 }
 
 /** Import duty + VAT estimate. `included` says whether the retail price already carries it. */
-export function dutyEstimate({ goodsUsd = 0, config, originCountry = 'CD' } = {}) {
+export function dutyEstimate({ goodsUsdCents = 0, config, originCountry = 'CD' } = {}) {
   const cfg = { ...DEFAULT_SHIPPING_CONFIG, ...(config || {}) };
-  const goods = round2(Number(goodsUsd) || 0);
+  const goods = round2Cents(goodsUsdCents);
   const international = String(originCountry || 'CD').toUpperCase() !== 'CD';
   const dutiable = international ? goods : 0;
-  const duty = round2(dutiable * ((cfg.import_duty_percent || 0) / 100));
-  const importVat = round2((dutiable + duty) * ((cfg.import_vat_percent || 0) / 100));
-  return { goods, international, dutiable, duty, importVat, total: round2(duty + importVat), included: cfg.duty_included_in_price !== false };
+  const duty = round2Cents(dutiable * ((cfg.import_duty_percent || 0) / 100));
+  const importVat = round2Cents((dutiable + duty) * ((cfg.import_vat_percent || 0) / 100));
+  return { goods, international, dutiable, duty, importVat, total: round2Cents(duty + importVat), included: cfg.duty_included_in_price !== false };
 }
 
 export function quoteShipping({
@@ -117,7 +133,7 @@ export function quoteShipping({
   courierId,
   weightKg = 0,
   dims = null,
-  goodsUsd = 0,
+  goodsUsdCents = 0,
   originCountry = 'CD',
   paymentMethod = 'mobile_money',
 } = {}) {
@@ -130,15 +146,15 @@ export function quoteShipping({
     longestSideCm: longestSide(dims),
   });
 
-  const freight = rate ? round2((Number(rate.base_usd) || 0) + (Number(rate.per_kg_usd) || 0) * weight.billable) : 0;
-  const rateSurcharge = round2(Number(rate?.surcharge_usd) || 0);
-  const fuel = round2(freight * ((Number(cfg.fuel_surcharge_percent) || 0) / 100));
-  const regional = rate ? regionalSurchargeFor(cfg, destination) : round2(Number(cfg.remote_area_surcharge_usd) || 0);
-  const handling = round2(Number(cfg.handling_fee_usd) || 0);
-  const cod = paymentMethod === 'cash_on_delivery' ? round2(Number(cfg.cod_fee_usd) || 0) : 0;
-  const subtotal = round2(freight + rateSurcharge + fuel + regional + handling + cod);
+  const freight = rate ? round2Cents((Number(rate.base_usd_cents) || Number(rate.base_usd) * 100 || 0) + (Number(rate.per_kg_usd_cents) || Number(rate.per_kg_usd) * 100 || 0) * (weight.billable / 100)) : 0;
+  const rateSurcharge = round2Cents(Number(rate?.surcharge_usd_cents) || Number(rate?.surcharge_usd) * 100 || 0);
+  const fuel = round2Cents(freight * ((Number(cfg.fuel_surcharge_percent) || 0) / 100));
+  const regional = rate ? regionalSurchargeFor(cfg, destination) : round2Cents(Number(cfg.remote_area_surcharge_usd_cents) || Number(cfg.remote_area_surcharge_usd) * 100 || 0);
+  const handling = round2Cents(Number(cfg.handling_fee_usd_cents) || Number(cfg.handling_fee_usd) * 100 || 0);
+  const cod = paymentMethod === 'cash_on_delivery' ? round2Cents(Number(cfg.cod_fee_usd_cents) || Number(cfg.cod_fee_usd) * 100 || 0) : 0;
+  const subtotal = round2Cents(freight + rateSurcharge + fuel + regional + handling + cod);
 
-  const duty = dutyEstimate({ goodsUsd, config: cfg, originCountry });
+  const duty = dutyEstimate({ goodsUsdCents, config: cfg, originCountry });
   const dutyCharged = duty.included ? 0 : duty.total;
 
   return {
@@ -154,9 +170,9 @@ export function quoteShipping({
     subtotal,
     duty,
     dutyCharged,
-    total: round2(subtotal + dutyCharged),
+    total: round2Cents(subtotal + dutyCharged),
     etaDays: rate?.eta_days || '',
-    freeShipping: goodsUsd >= (Number(cfg.free_shipping_threshold_usd) || 0),
+    freeShipping: goodsUsdCents >= (Number(cfg.free_shipping_threshold_usd_cents) || Number(cfg.free_shipping_threshold_usd) * 100 || 0),
   };
 }
 
@@ -164,6 +180,6 @@ export function quoteShipping({
 export function averageRate(rates = [], weightKg = 1) {
   const usable = rates.filter((r) => r.active !== false && rateMatches(r, { weightKg }));
   if (!usable.length) return null;
-  const fees = usable.map((r) => (Number(r.base_usd) || 0) + (Number(r.per_kg_usd) || 0) * weightKg);
-  return round2(fees.reduce((a, b) => a + b, 0) / fees.length);
+  const fees = usable.map((r) => (Number(r.base_usd_cents) || Number(r.base_usd) * 100 || 0) + (Number(r.per_kg_usd_cents) || Number(r.per_kg_usd) * 100 || 0) * weightKg);
+  return round2Cents(fees.reduce((a, b) => a + b, 0) / fees.length);
 }

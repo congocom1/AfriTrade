@@ -2,7 +2,7 @@ import React from 'react';
 import { Minus, Plus } from 'lucide-react';
 
 export default function QuantityStepper({ value, onChange, min = 1, max = 99, size = 'md' }) {
-  const btn = 'min-h-11 min-w-11';
+  const btn = 'h-12 w-12 p-3';
   return (
     <div className="inline-flex items-center rounded-full border border-border/60 bg-card/90 backdrop-blur-sm" role="group" aria-label="Quantité">
       <button

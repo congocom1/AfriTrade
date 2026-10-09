@@ -14,7 +14,7 @@ describe('logistics', () => {
   it('calculates a rate for a served city', () => {
     const quote = COURIER_PROVIDERS.kin_express.calculateRate({ weightKg: 2, city: 'Kinshasa' });
     assert.ok(quote.available);
-    assert.equal(quote.fee, 5);
+    assert.equal(quote.fee, 500); // 300 base + 2*100 per kg = 500 cents
     assert.equal(quote.eta, '2-4 jours');
   });
 
@@ -28,6 +28,6 @@ describe('logistics', () => {
     const choice = selectCourierFor('Kinshasa', 1);
     assert.ok(choice);
     assert.equal(choice.courier.name, 'Kin Express');
-    assert.equal(choice.quote.fee, 4);
+    assert.equal(choice.quote.fee, 400);
   });
 });

@@ -1,4 +1,4 @@
-import { round2 } from './format';
+import { round2Cents } from './format';
 
 /**
  * VENDOR RATINGS
@@ -25,7 +25,7 @@ export function buildSellerMetrics({ sellers = [], reviews = [], disputes = [], 
     const sellerReviews = reviews.filter((r) => r.seller_id === seller.id && r.status !== 'hidden');
     const ratings = sellerReviews.map((r) => Number(r.rating) || 0).filter((n) => n > 0);
     const avgRating = ratings.length
-      ? round2(ratings.reduce((a, b) => a + b, 0) / ratings.length)
+      ? round2Cents(ratings.reduce((a, b) => a + b, 0) / ratings.length) / 100
       : Number(seller.rating) || 0;
     const name = String(seller.name || '').trim().toLowerCase();
     // The dispute index carries per-shop counts, never the individual cases.
@@ -64,7 +64,7 @@ export function buildSellerMetrics({ sellers = [], reviews = [], disputes = [], 
 export function marketplaceStats(metrics = []) {
   const rated = metrics.filter((m) => m.reviewsCount > 0);
   const avgRating = rated.length
-    ? round2(rated.reduce((sum, m) => sum + m.avgRating, 0) / rated.length)
+    ? round2Cents(rated.reduce((sum, m) => sum + m.avgRating, 0) / rated.length) / 100
     : 0;
   return {
     sellers: metrics.length,

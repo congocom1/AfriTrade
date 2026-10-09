@@ -7,7 +7,7 @@ import OpsHeader from '@/components/ops/OpsHeader';
 import StatCard from '@/components/ops/StatCard';
 import ReconciliationTable from '@/components/finance/ReconciliationTable';
 import { providerLabel } from '@/lib/payments';
-import { formatUSD, formatDateTime, round2 } from '@/lib/format';
+import { formatUSD, formatDateTime, round2Cents } from '@/lib/format';
 import { useTranslation } from 'react-i18next';
 
 const PAID = ['PAID', 'AUTHORIZED'];
@@ -47,8 +47,8 @@ export default function FinancePortal() {
     return Object.values(map).sort((a, b) => b.paid - a.paid);
   }, [orders]);
 
-  const sum = (key) => round2(rows.reduce((s, r) => s + r[key], 0));
-  const vat = round2(orders.filter((o) => PAID.includes(o.payment_status)).reduce((s, o) => s + (Number(o.vat_usd) || 0), 0));
+  const sum = (key) => rows.reduce((s, r) => s + (Number(r[key]) || 0), 0);
+  const vat = orders.filter((o) => PAID.includes(o.payment_status)).reduce((s, o) => s + (Number(o.vat_usd) || 0), 0);
   const pendingPayouts = payouts.filter((p) => p.status === 'pending');
   const byNumber = Object.fromEntries(orders.map((o) => [o.order_number, o]));
   const mismatches = purchases.filter((p) => p.status === 'paid' && byNumber[p.productId]?.payment_status !== 'PAID');
@@ -65,7 +65,7 @@ export default function FinancePortal() {
         <StatCard label={t('financePortal.collected')} value={formatUSD(sum('paid'))} tone="good" />
         <StatCard label={t('financePortal.pending')} value={formatUSD(sum('pending'))} tone="warn" />
         <StatCard label={t('financePortal.vat')} value={formatUSD(vat)} />
-        <StatCard label={t('financePortal.payoutsDue')} value={formatUSD(round2(pendingPayouts.reduce((s, p) => s + (Number(p.amount_usd) || 0), 0)))} hint={t('financePortal.requestCount', { count: pendingPayouts.length })} tone={pendingPayouts.length ? 'warn' : 'default'} />
+        <StatCard label={t('financePortal.payoutsDue')} value={formatUSD(pendingPayouts.reduce((s, p) => s + (Number(p.amount_usd) || 0), 0))} hint={t('financePortal.requestCount', { count: pendingPayouts.length })} tone={pendingPayouts.length ? 'warn' : 'default'} />
         <StatCard label={t('financePortal.cardGaps')} value={mismatches.length} tone={mismatches.length ? 'bad' : 'good'} hint={t('financePortal.cardGapsHint')} />
       </div>
       <ReconciliationTable rows={rows} />

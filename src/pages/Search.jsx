@@ -18,7 +18,7 @@ function normalize(value) {
 
 /** Lightweight typo tolerance: direct hit, prefix hit, or ≥60% character overlap. */
 function score(product, term) {
-  if (!term) return 1;
+  if (!term || !term.trim()) return 0;
   const haystack = normalize(
     [product.title, product.brand, product.category_name, product.seller_name, (product.tags || []).join(' ')].join(' '),
   );
@@ -76,24 +76,40 @@ export default function Search() {
   }, [category, categories]);
 
   const results = useMemo(() => {
-    const tx = normalize(term.trim());
-    let list = products.map((p) => ({ p, s: score(p, tx) }));
-    if (tx) list = list.filter((x) => x.s > 0);
-    let out = list.map((x) => x.p);
-    if (categoryId) out = out.filter((p) => p.category_id === categoryId);
-    if (source === 'local') out = out.filter((p) => p.source_type !== 'international_supplier');
-    if (source === 'international') out = out.filter((p) => p.source_type === 'international_supplier');
-    if (maxPrice) out = out.filter((p) => Number(p.price_usd) <= Number(maxPrice));
-    if (minRating) out = out.filter((p) => Number(p.rating) >= minRating);
-    if (inStock) out = out.filter((p) => Number(p.stock) > 0);
+    // Score products using enhanced relevance algorithm
+    const scoredProducts = products.map(product => ({
+      product,
+      score: scoreProductRelevance(product, term)
+    }));
 
-    const sorted = [...out];
-    if (sort === 'price_asc') sorted.sort((a, b) => a.price_usd - b.price_usd);
-    else if (sort === 'price_desc') sorted.sort((a, b) => b.price_usd - a.price_usd);
-    else if (sort === 'rating') sorted.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-    else if (sort === 'sold') sorted.sort((a, b) => (b.sold_count || 0) - (a.sold_count || 0));
-    else if (sort === 'new') sorted.sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
-    return sorted;
+    // Filter out products with zero score if there's a search term
+    let filteredProducts = scoredProducts;
+    if (term.trim()) {
+      filteredProducts = scoredProducts.filter(item => item.score > 0);
+    }
+
+    // Extract just the product objects
+    let productsList = filteredProducts.map(item => item.product);
+
+    // Apply category filter
+    productsList = filterByCategory(productsList, categoryId);
+
+    // Apply source filter
+    productsList = filterBySource(productsList, source);
+
+    // Apply price filter
+    productsList = filterByMaxPrice(productsList, maxPrice);
+
+    // Apply rating filter
+    productsList = filterByMinRating(productsList, minRating);
+
+    // Apply stock filter
+    productsList = filterByInStock(productsList, inStock);
+
+    // Sort products
+    const sortedProducts = sortProducts(productsList, sort);
+
+    return sortedProducts;
   }, [products, term, categoryId, source, sort, maxPrice, minRating, inStock]);
 
   const applyTerm = (value) => {

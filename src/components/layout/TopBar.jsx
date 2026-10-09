@@ -95,7 +95,7 @@ export default function TopBar() {
       <Link
         to={to}
         className={cn(
-          'flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-xl transition-all duration-150 ease-out',
+          'flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-xl transition-all duration-150 ease-out active:scale-90',
           isActive
             ? 'bg-primary/10 text-primary dark:bg-primary/20'
             : 'text-muted-foreground hover:bg-accent hover:text-foreground'

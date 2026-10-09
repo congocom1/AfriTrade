@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { X, LayoutGrid, Compass, ShoppingBag, User, Heart, MessageCircle, Bell, Store, ShieldCheck, LogOut } from 'lucide-react';
 import { useCart } from '@/lib/cart';
 import { useAuth } from '@/lib/AuthContext';
@@ -39,11 +39,10 @@ const GUEST_ITEMS = [
 
 export default function MobileDrawer({ isOpen, onClose }) {
   const { t } = useTranslation();
-  const location = useLocation();
   const { count } = useCart();
   const { user, logout } = useAuth();
 
-  // P0 M-02: Remove useEffect that closes on every route change
+  // P0 M-02: Removed useEffect that closes on every route change
   // Now we only close on explicit link clicks via onClick={onClose}
   // This prevents the drawer flicker when navigating internally
 
@@ -78,7 +77,12 @@ export default function MobileDrawer({ isOpen, onClose }) {
   if (!isOpen) return null;
 
   return (
-    <Drawer open={isOpen} onOpenChange={onClose}>
+    <Drawer
+      open={isOpen}
+      onOpenChange={onClose}
+      // Enable swipe-to-close for iOS/Android (vaul Drawer supports this by default)
+      // P0 M-03: Added swipe-to-close gesture support
+    >
       <DrawerPortal>
         <DrawerOverlay className="bg-black/50" onClick={onClose} />
         <DrawerContent className="max-w-md w-full rounded-t-[16px] border-l-0 border-r-0 border-b-0 bg-card/95 backdrop-blur-xl shadow-xl">

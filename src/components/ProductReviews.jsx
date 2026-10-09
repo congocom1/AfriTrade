@@ -1,13 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Star, BadgeCheck, PackageCheck } from 'lucide-react';
+import { Star, BadgeCheck, PackageCheck, AlertCircle, Lock } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import RatingStars from './RatingStars';
 import { getProfile, getSessionId } from '@/lib/session';
-import { fetchMyOrders } from '@/lib/customerAccount';
 import { timeAgo } from '@/lib/format';
-
-/** Only an order that actually reached the customer unlocks a review. */
-const RECEIVED_STATUSES = ['DELIVERED'];
 
 export default function ProductReviews({ product, onChanged }) {
   const [reviews, setReviews] = useState([]);
@@ -18,7 +14,7 @@ export default function ProductReviews({ product, onChanged }) {
   const [name, setName] = useState(getProfile().name || '');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-  const [entitlement, setEntitlement] = useState({ loading: true, order: null, alreadyReviewed: false });
+  const [userEntitlement, setUserEntitlement] = useState({ loading: true, alreadyReviewed: false, authenticated: false });
 
   const load = async () => {
     const rows = await base44.entities.Review.filter({ product_id: product.id, status: 'published' }, '-created_date', 30);
@@ -28,23 +24,26 @@ export default function ProductReviews({ product, onChanged }) {
 
   useEffect(() => {
     load();
-     
   }, [product.id]);
 
-  // The right to review is read from this device's own orders — never assumed.
+  // Check if user is authenticated and has already reviewed
   useEffect(() => {
     let cancelled = false;
     const check = async () => {
       const sessionId = getSessionId();
-      const [orders, mine] = await Promise.all([
-        fetchMyOrders({ sessionId, limit: 50 }),
-        base44.entities.Review.filter({ product_id: product.id, session_id: sessionId }).catch(() => []),
-      ]);
-      if (cancelled) return;
-      const received = orders.find(
-        (o) => RECEIVED_STATUSES.includes(o.status) && (o.items || []).some((i) => i.product_id === product.id),
-      );
-      setEntitlement({ loading: false, order: received || null, alreadyReviewed: mine.length > 0 });
+      try {
+        const user = await base44.auth.me().catch(() => null);
+        const mine = await base44.entities.Review.filter({ product_id: product.id, session_id: sessionId }).catch(() => []);
+        if (cancelled) return;
+        setUserEntitlement({
+          loading: false,
+          alreadyReviewed: mine.length > 0,
+          authenticated: !!user,
+        });
+      } catch {
+        if (cancelled) return;
+        setUserEntitlement({ loading: false, alreadyReviewed: false, authenticated: false });
+      }
     };
     check();
     return () => {
@@ -52,9 +51,27 @@ export default function ProductReviews({ product, onChanged }) {
     };
   }, [product.id]);
 
+  const getErrorMessage = (err) => {
+    const message = err?.data?.error || err?.message || '';
+    // Handle specific server error codes
+    if (err?.status === 401 || message.includes('Connectez-vous')) {
+      return 'Connectez-vous pour publier un avis.';
+    }
+    if (err?.status === 403 || message.includes('acheteurs ayant reçu')) {
+      return 'Seuls les acheteurs ayant reçu l\'article peuvent publier un avis.';
+    }
+    if (err?.status === 409 || message.includes('déjà publié')) {
+      return 'Vous avez déjà publié un avis sur cet article.';
+    }
+    if (err?.status === 400 || message.includes('invalide')) {
+      return 'Données invalides. Veuillez vérifier votre saisie.';
+    }
+    return "Impossible d'enregistrer votre avis pour le moment.";
+  };
+
   const submit = async (e) => {
     e.preventDefault();
-    if (saving || !entitlement.order) return;
+    if (saving || !userEntitlement.authenticated) return;
     setSaving(true);
     setError('');
     try {
@@ -72,15 +89,16 @@ export default function ProductReviews({ product, onChanged }) {
       setReviews(all);
       setComment('');
       setOpen(false);
-      setEntitlement((prev) => ({ ...prev, alreadyReviewed: true }));
+      setUserEntitlement((prev) => ({ ...prev, alreadyReviewed: true }));
     } catch (err) {
-      setError(err?.data?.error || err?.message || "Impossible d'enregistrer votre avis pour le moment.");
+      setError(getErrorMessage(err));
     } finally {
       setSaving(false);
     }
   };
 
-  const canReview = !entitlement.loading && !!entitlement.order && !entitlement.alreadyReviewed;
+  const canReview = !userEntitlement.loading && userEntitlement.authenticated && !userEntitlement.alreadyReviewed;
+  const showLoginPrompt = !userEntitlement.loading && !userEntitlement.authenticated;
 
   return (
     <section className="space-y-3" aria-labelledby="reviews-heading">
@@ -93,19 +111,31 @@ export default function ProductReviews({ product, onChanged }) {
         )}
       </div>
 
-      {!entitlement.loading && !canReview && (
+      {!userEntitlement.loading && !canReview && (
         <p className="flex items-center gap-1.5 rounded-xl border border-dashed border-border bg-card p-3 text-xs text-muted-foreground">
-          <PackageCheck className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-          {entitlement.alreadyReviewed
-            ? 'Vous avez déjà publié un avis sur cet article.'
-            : 'Seuls les clients ayant reçu cet article peuvent publier un avis.'}
+          {showLoginPrompt ? (
+            <>
+              <Lock className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+              Connectez-vous pour publier un avis.
+            </>
+          ) : userEntitlement.alreadyReviewed ? (
+            <>
+              <PackageCheck className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+              Vous avez déjà publié un avis sur cet article.
+            </>
+          ) : (
+            <>
+              <AlertCircle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+              Seuls les acheteurs ayant reçu l'article peuvent publier un avis.
+            </>
+          )}
         </p>
       )}
 
       {open && canReview && (
         <form onSubmit={submit} className="space-y-3 rounded-xl border border-border bg-card p-3">
           <p className="text-[11px] text-muted-foreground" id="review-form-desc">
-            Achat vérifié — commande {entitlement.order.order_number}
+            Achat vérifié — la commande sera validée par le serveur
           </p>
           <div>
             <p className="mb-1 text-xs font-semibold text-muted-foreground">Votre note</p>

@@ -1,5 +1,5 @@
 import { getPricingConfig } from './config';
-import { round2 } from './format';
+import { round2Cents } from './format';
 
 /**
  * OUR OWN DELIVERY TEAM — the international leg.
@@ -44,19 +44,18 @@ export function intlLines(lines = []) {
 
 /** Billable weight of the imported lines, at the 0.5 kg floor used elsewhere. */
 export function intlWeightKg(lines = []) {
-  return round2(
-    intlLines(lines).reduce(
-      (s, l) => s + (Number(l.product?.weight_kg) || 0.5) * (Number(l.quantity) || 1),
-      0,
-    ),
+  return intlLines(lines).reduce(
+    (s, l) => s + (Number(l.product?.weight_kg) || 0.5) * (Number(l.quantity) || 1),
+    0,
   );
 }
 
+/** International fee in integer cents. */
 export function intlFee(option, weightKg = 0) {
   if (!option) return 0;
-  return round2(
-    (Number(option.base_usd) || 0) + (Number(option.per_kg_usd) || 0) * Math.max(0, Number(weightKg) || 0),
-  );
+  const baseCents = round2Cents((Number(option.base_usd) || 0) * 100);
+  const perKgCents = round2Cents((Number(option.per_kg_usd) || 0) * 100);
+  return round2Cents(baseCents + perKgCents * Math.max(0, Number(weightKg) || 0));
 }
 
 /** What the customer sees as their carrier: our team plus the service they chose. */

@@ -5,7 +5,7 @@ import StatCard from '@/components/ops/StatCard';
 import ActivityChart from '@/components/analytics/ActivityChart';
 import VolumeChart from '@/components/analytics/VolumeChart';
 import CategoryRanking from '@/components/analytics/CategoryRanking';
-import { compactNumber, formatUSD, round2 } from '@/lib/format';
+import { compactNumber, formatUSD, round2Cents } from '@/lib/format';
 
 const DAYS = 14;
 const dayKey = (date) => new Date(date).toISOString().slice(0, 10);
@@ -53,7 +53,7 @@ export default function PlatformAnalytics() {
     orders.forEach((o) => {
       const bucket = buckets[dayKey(o.created_date)];
       if (!bucket) return;
-      bucket.volume = round2(bucket.volume + (Number(o.total_usd) || 0));
+      bucket.volume = bucket.volume + round2Cents(Number(o.total_usd) * 100);
       bucket.commandes += 1;
       if (String(o.payment_status || '') === 'PAID') bucket.payees += 1;
     });
@@ -78,14 +78,14 @@ export default function PlatformAnalytics() {
       const name = it.category_name || product?.category_name || 'Non classé';
       if (!map[name]) map[name] = { name, units: 0, revenue: 0 };
       map[name].units += Number(it.quantity) || 1;
-      map[name].revenue = round2(map[name].revenue + (Number(it.line_total_usd) || 0));
+      map[name].revenue = round2Cents(map[name].revenue + round2Cents(Number(it.line_total_usd) * 100));
     }));
     if (!sawItems) {
       products.forEach((p) => {
         const name = p.category_name || 'Non classé';
         if (!map[name]) map[name] = { name, units: 0, revenue: 0 };
         map[name].units += Number(p.sold_count) || 0;
-        map[name].revenue = round2(map[name].revenue + (Number(p.sold_count) || 0) * (Number(p.price_usd) || 0));
+        map[name].revenue = round2Cents(map[name].revenue + round2Cents(Number(p.sold_count) || 0) * round2Cents(Number(p.price_usd) || 0));
       });
     }
     return Object.values(map).sort((a, b) => b.revenue - a.revenue).slice(0, 8);
@@ -105,7 +105,7 @@ export default function PlatformAnalytics() {
       gmv,
       orderCount,
       paid,
-      aov: orderCount ? round2(gmv / orderCount) : 0,
+      aov: orderCount ? gmv / orderCount : 0,
     };
   }, [series, events]);
 

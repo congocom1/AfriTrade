@@ -37,18 +37,44 @@ import { postWalletEntry } from "../../shared/walletLedger.ts";
 // ─────────────────────────────────────────────────────────────────────────────
 
 /** Central Bank of Congo USD→CDF rate (cf. src/lib/config.js).
- * Hard-coded here so the server function is self-contained.
+ * Read from PlatformSetting at runtime, with fallback to default (2800).
+ * The rate is stored as CDF cents per USD (e.g., 2800 * 100 = 280000).
  */
-const USD_TO_CDF = 3_000;
+const DEFAULT_USD_TO_CDF_RATE_CENTS = 280_000; // 2800 * 100
+let usdToCdfRateCents = DEFAULT_USD_TO_CDF_RATE_CENTS;
 
+/** Load the exchange rate from PlatformSetting on first use. */
+async function loadUsdToCdfRate(client) {
+  try {
+    const rows = await client.entities.PlatformSetting.list();
+    const byKey = {};
+    rows.forEach((r) => { byKey[r.key] = r.value || {}; });
+    const country = { ...{ usd_to_cdf_rate: 2800 }, ...(byKey.country || {}) };
+    const rateCents = Math.round(Number(country.usd_to_cdf_rate) * 100);
+    if (rateCents > 0) {
+      usdToCdfRateCents = rateCents;
+    }
+  } catch {
+    // Fallback to default if settings unavailable
+  }
+}
+
+/** Get the current USD→CDF rate in CDF cents per USD. */
+function getUsdToCdfRateCents() {
+  return usdToCdfRateCents;
+}
+
+// Legacy round2 for floating-point amounts.
+// @deprecated Use integer cent arithmetic instead.
 function round2(n) {
   if (n == null || isNaN(n)) return 0;
   return Math.round(Number(n) * 100) / 100;
 }
 
 function usdToCdf(usd) {
-  const u = round2(Number(usd) || 0);
-  return round2(u * USD_TO_CDF);
+  const usdCents = Math.round(Number(usd) || 0) * 100;
+  // Convert USD cents to CDF cents: (usdCents * rateCents) / 100
+  return Math.round((usdCents * getUsdToCdfRateCents()) / 100);
 }
 
 function usdDisplay(v) {
@@ -401,7 +427,7 @@ async function buildCheckoutQuote(client, params) {
   const subtotalCents = round2(
     lines.reduce((a, l) => a + l.line_total_cents, 0),
   );
-  const subtotalCdf = round2(subtotalCents * USD_TO_CDF);
+  const subtotalCdf = round2((subtotalCents * getUsdToCdfRateCents()) / 100);
 
   const couponResult = coupon
     ? computeCouponDiscount(coupon, subtotalCdf)

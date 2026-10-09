@@ -1,4 +1,4 @@
-import { round2 } from './format';
+import { round2Cents } from './format';
 
 /**
  * LOGISTICS ABSTRACTION
@@ -7,6 +7,7 @@ import { round2 } from './format';
  *     calculateRate({ weightKg, city }), createShipment({...}),
  *     trackShipment(trackingNumber), cancelShipment(id) }
  * Congolese couriers plug in here later without touching the order engine.
+ * All amounts in integer cents.
  */
 
 const TRACKING_EVENTS = [
@@ -23,7 +24,7 @@ function makeCourier(config) {
       if (city && config.serviceAreas.length && !config.serviceAreas.includes(city)) {
         return { available: false, fee: 0, eta: null, reason: `${config.name} ne dessert pas encore ${city}.` };
       }
-      const fee = round2(config.baseRate + config.perKg * Math.max(0, weightKg));
+      const fee = round2Cents(config.baseRateUsdCents + config.perKgUsdCents * Math.max(0, weightKg));
       return { available: true, fee, eta: config.etaDays, provider: config.name };
     },
     createShipment({ orderNumber }) {
@@ -65,8 +66,8 @@ export const COURIER_PROVIDERS = {
     supportsTracking: true,
     supportsCod: true,
     serviceAreas: ALL_CITIES,
-    baseRate: 3,
-    perKg: 1,
+    baseRateUsdCents: 300,
+    perKgUsdCents: 100,
     etaDays: '2-4 jours',
   }),
   congo_logistique: makeCourier({
@@ -77,8 +78,8 @@ export const COURIER_PROVIDERS = {
     supportsTracking: true,
     supportsCod: true,
     serviceAreas: ['Kinshasa', 'Matadi', 'Lubumbashi'],
-    baseRate: 4.5,
-    perKg: 0.8,
+    baseRateUsdCents: 450,
+    perKgUsdCents: 80,
     etaDays: '3-6 jours',
   }),
   katanga_moves: makeCourier({
@@ -89,8 +90,8 @@ export const COURIER_PROVIDERS = {
     supportsTracking: false,
     supportsCod: true,
     serviceAreas: ['Lubumbashi', 'Kolwezi', 'Kinshasa'],
-    baseRate: 3.5,
-    perKg: 1.2,
+    baseRateUsdCents: 350,
+    perKgUsdCents: 120,
     etaDays: '4-7 jours',
   }),
 };

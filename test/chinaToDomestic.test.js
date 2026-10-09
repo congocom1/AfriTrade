@@ -40,9 +40,20 @@ function resetState() {
 
 function writeTestModule() {
   const clientPath = 'file://' + path.join(__dirname, 'chinaToDomestic.client.mjs').replace(/\\/g, '/');
-  const rewritten = originalSrc.replace(
+  const securityPath = 'file://' + path.join(__dirname, '..', 'base44', 'shared', 'security.ts').replace(/\\/g, '/');
+  let rewritten = originalSrc.replace(
     /import\s+\{[^}]*createClientFromRequest[^}]*\}\s+from\s+['"]npm:@base44\/sdk@[^'"]+['"]/,
     `import { createClientFromRequest } from "${clientPath}"`
+  );
+  // Also rewrite the relative import for shared/security.ts to an absolute file:// URL
+  rewritten = rewritten.replace(
+    /from\s+['"]\.\.\/\.\.\/shared\/security\.ts['"]/,
+    `from "${securityPath}"`
+  );
+  // Also handle the case where it uses double quotes
+  rewritten = rewritten.replace(
+    /from\s+["']\.\.\/\.\.\/shared\/security\.ts["']/,
+    `from "${securityPath}"`
   );
   const testModPath = path.join(__dirname, 'chinaToDomestic.testmod.mjs');
   fs.writeFileSync(testModPath, rewritten);

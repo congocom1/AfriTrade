@@ -201,6 +201,7 @@ export default {
     emptyDesc: 'Parcourez les catégories ou découvrez les vidéos des créateurs.',
     emptyAction: 'Commencer mes achats',
     title: 'Mon panier ({{count}})',
+    items: '{{count}} articles',
     intlImport: 'Import international',
     localSeller: 'Vendeur local',
     remove: 'Retirer du panier',
