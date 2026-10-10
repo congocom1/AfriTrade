@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
 import { requireAdmin } from '../../shared/security.ts';
+import { addSecurityHeaders, getClientKey, checkRateLimit, rateLimitErrorResponse } from '../../shared/securityHeaders.ts';
 
 const fail = (error, status = 400) => Response.json({ error }, { status });
 

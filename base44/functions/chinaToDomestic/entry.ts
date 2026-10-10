@@ -7,6 +7,11 @@ export const description = 'Create domestic orders from approved Chinese warehou
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.49'
 import { requireAdmin } from '../../shared/security.ts'
+import { addSecurityHeaders, getClientKey, checkRateLimit, rateLimitErrorResponse } from '../../shared/securityHeaders.ts'
+
+// Rate limiting configuration for chinaToDomestic
+const CHINA_TO_DOMESTIC_RATE_LIMIT_PER_HOUR = 30; // Allow 30 requests per hour (more restrictive for warehouse operations)
+const RATE_WINDOW_MS = 3600 * 1000;
 
 function round2(value) {
   return Math.round((Number(value) || 0) * 100) / 100
@@ -14,27 +19,65 @@ function round2(value) {
 
 export default async function (req) {
   try {
-    if (req.method !== 'POST') return Response.json({ error: 'Method not allowed' }, { status: 405 })
+    if (req.method !== 'POST') return addSecurityHeaders(Response.json({ error: 'Method not allowed' }, { status: 405 }))
     const base44 = createClientFromRequest(req)
+
+    // Rate limiting for chinaToDomestic - check before auth
+    const clientKey = getClientKey(req);
+    if (!clientKey) {
+      console.warn(
+        "[chinaToDomestic] no client address on the request — applying shared rate limit",
+      );
+    }
+
+    const rateLimitResult = await checkRateLimit(
+      null, // We'll check this later after we have db
+      clientKey || "unidentified",
+      {
+        keyPrefix: "china_to_domestic",
+        limit: CHINA_TO_DOMESTIC_RATE_LIMIT_PER_HOUR,
+        windowMs: RATE_WINDOW_MS,
+      }
+    );
+
+    if (!rateLimitResult.ok) {
+      return rateLimitErrorResponse(rateLimitResult);
+    }
+
     // Conversion runs as the service role and mutates product stock, creates
     // fulfillment orders and closes the receipt, so it is reserved to
     // administrators (matching chinaSourcing / chinaWarehouse).
     const gate = await requireAdmin(base44)
-    if (!gate.ok) return gate.response
+    if (!gate.ok) return addSecurityHeaders(gate.response)
+
+    // Re-check rate limit now that we have db connection
+    const rateLimitResultDb = await checkRateLimit(
+      base44.asServiceRole,
+      clientKey || "unidentified",
+      {
+        keyPrefix: "china_to_domestic",
+        limit: CHINA_TO_DOMESTIC_RATE_LIMIT_PER_HOUR,
+        windowMs: RATE_WINDOW_MS,
+      }
+    );
+
+    if (!rateLimitResultDb.ok) {
+      return rateLimitErrorResponse(rateLimitResultDb);
+    }
     const body = await req.json().catch(() => ({}))
     const receiptId = Number(body.receiptId || 0)
-    if (!receiptId) return Response.json({ error: 'receiptId is required' }, { status: 400 })
+    if (!receiptId) return addSecurityHeaders(Response.json({ error: 'receiptId is required' }, { status: 400 }))
 
     // Validate the receipt exists and is approved
     const receipts = await base44.asServiceRole.entities.ChinaWarehouseReceipt
       .filter({ id: receiptId })
       .catch(() => [])
     const receipt = receipts[0] || null
-    if (!receipt) return Response.json({ error: 'Receipt not found' }, { status: 404 })
-    if (receipt.status !== 'approved') return Response.json({ error: 'Receipt not approved', status: receipt.status }, { status: 409 })
+    if (!receipt) return addSecurityHeaders(Response.json({ error: 'Receipt not found' }, { status: 404 }))
+    if (receipt.status !== 'approved') return addSecurityHeaders(Response.json({ error: 'Receipt not approved', status: receipt.status }, { status: 409 }))
 
     const items = receipt.items || []
-    if (!items.length) return Response.json({ error: 'Receipt has no items' }, { status: 400 })
+    if (!items.length) return addSecurityHeaders(Response.json({ error: 'Receipt has no items' }, { status: 400 }))
 
     const tenant = {
       tenant_id: String(receipt.tenant_id || ''),
@@ -90,8 +133,8 @@ export default async function (req) {
       details: { receiptId, itemsCount: items.length, ordersCreated: createdOrders.length },
     })
 
-    return Response.json({ status: 'converted', receiptId, ordersCreated: createdOrders.length })
+    return addSecurityHeaders(Response.json({ status: 'converted', receiptId, ordersCreated: createdOrders.length }))
   } catch (error) {
-    return Response.json({ error: String(error?.message || error) }, { status: 500 })
+    return addSecurityHeaders(Response.json({ error: String(error?.message || error) }, { status: 500 }))
   }
 }

@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.49';
 import { requireAdmin } from '../../shared/security.ts';
+import { addSecurityHeaders } from '../../shared/securityHeaders.ts';
 
 /**
  * Runs 24 h after a fulfillment order is created (see the "Pending Pickup
@@ -39,12 +40,12 @@ export default async function (req) {
     const base44 = createClientFromRequest(req);
     const body = await req.json().catch(() => ({}));
     const fulfillmentId = String(body.fulfillment_id || '').trim();
-    if (!fulfillmentId) return Response.json({ error: 'fulfillment_id is required' }, { status: 400 });
+    if (!fulfillmentId) return addSecurityHeaders(Response.json({ error: 'fulfillment_id is required' }, { status: 400 }));
 
     // Opens operations tickets and alerts, so only the follow-up workflow (or
     // an administrator) may raise one.
     const auth = await requireAdmin(base44);
-    if (!auth.ok) return auth.response;
+    if (!auth.ok) return addSecurityHeaders(auth.response);
 
     const fulfillment = await base44.asServiceRole.entities.FulfillmentOrder
       .get(fulfillmentId)

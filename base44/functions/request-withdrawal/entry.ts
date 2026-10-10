@@ -5,6 +5,11 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.49";
 import { requireAdmin } from "../../shared/security.ts";
 import { postWalletEntry } from "../../shared/walletLedger.ts";
+import { addSecurityHeaders, getClientKey, checkRateLimit, rateLimitErrorResponse } from "../../shared/securityHeaders.ts";
+
+// Rate limiting configuration for request-withdrawal
+const REQUEST_WITHDRAWAL_RATE_LIMIT_PER_HOUR = 10; // Allow 10 requests per hour (more restrictive for financial operations)
+const RATE_WINDOW_MS = 3600 * 1000;
 
 /**
  * request-withdrawal — base44/functions/request-withdrawal/entry.ts
@@ -23,17 +28,55 @@ function round2(n: unknown): number {
 }
 
 function err(message: string, status = 400) {
-  return Response.json({ error: message }, { status });
+  return addSecurityHeaders(Response.json({ error: message }, { status }));
 }
 
 export default async function (req: Request) {
   try {
     if (req.method !== "POST") return err("Method not allowed", 405);
     const base44 = createClientFromRequest(req);
+
+    // Rate limiting for request-withdrawal - check before auth
+    const clientKey = getClientKey(req);
+    if (!clientKey) {
+      console.warn(
+        "[request-withdrawal] no client address on the request — applying shared rate limit",
+      );
+    }
+
+    const rateLimitResult = await checkRateLimit(
+      null, // We'll check this later after we have db
+      clientKey || "unidentified",
+      {
+        keyPrefix: "request_withdrawal",
+        limit: REQUEST_WITHDRAWAL_RATE_LIMIT_PER_HOUR,
+        windowMs: RATE_WINDOW_MS,
+      }
+    );
+
+    if (!rateLimitResult.ok) {
+      return rateLimitErrorResponse(rateLimitResult);
+    }
+
     const user = await base44.auth.me().catch(() => null);
     if (!user?.email) return err("Connectez-vous pour demander un retrait.", 401);
     const db = base44.asServiceRole;
     const body = await req.json().catch(() => ({}));
+
+    // Re-check rate limit now that we have db connection
+    const rateLimitResultDb = await checkRateLimit(
+      db,
+      clientKey || "unidentified",
+      {
+        keyPrefix: "request_withdrawal",
+        limit: REQUEST_WITHDRAWAL_RATE_LIMIT_PER_HOUR,
+        windowMs: RATE_WINDOW_MS,
+      }
+    );
+
+    if (!rateLimitResultDb.ok) {
+      return rateLimitErrorResponse(rateLimitResultDb);
+    }
 
     const method = String(body.method || "").toLowerCase();
     if (!METHODS.includes(method)) return err("Moyen de retrait invalide.");
@@ -80,7 +123,7 @@ export default async function (req: Request) {
       severity: "info",
       details: { amount_usd: amount, method },
     });
-    return Response.json({ wallet: updated, transaction: tx });
+    return addSecurityHeaders(Response.json({ wallet: updated, transaction: tx }));
   } catch (e) {
     console.error("request-withdrawal: unhandled error", e);
     return err("Retrait impossible pour le moment. Réessayez.", 500);

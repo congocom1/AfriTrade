@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.49';
 import { requireAdmin } from '../../shared/security.ts';
+import { addSecurityHeaders, getClientKey, checkRateLimit, rateLimitErrorResponse } from '../../shared/securityHeaders.ts';
 import {
   buildCsv,
   dedupeById,
@@ -8,6 +9,10 @@ import {
   toBase64,
   typeLabel,
 } from '../../shared/dataRequests.ts';
+
+// Rate limiting configuration for emailDataReport
+const EMAIL_DATA_REPORT_RATE_LIMIT_PER_HOUR = 10; // Allow 10 requests per hour (restrictive for data export)
+const RATE_WINDOW_MS = 3600 * 1000;
 
 /**
  * Step 3: the compliance team moved the request to "ready", so the data report
@@ -23,9 +28,32 @@ const LIMIT = 200;
 export default async function (req) {
   try {
     const base44 = createClientFromRequest(req);
+
+    // Rate limiting for emailDataReport - check before auth
+    const clientKey = getClientKey(req);
+    if (!clientKey) {
+      console.warn(
+        "[emailDataReport] no client address on the request — applying shared rate limit",
+      );
+    }
+
+    const rateLimitResult = await checkRateLimit(
+      null, // We'll check this later after we have db
+      clientKey || "unidentified",
+      {
+        keyPrefix: "email_data_report",
+        limit: EMAIL_DATA_REPORT_RATE_LIMIT_PER_HOUR,
+        windowMs: RATE_WINDOW_MS,
+      }
+    );
+
+    if (!rateLimitResult.ok) {
+      return rateLimitErrorResponse(rateLimitResult);
+    }
+
     const body = await req.json().catch(() => ({}));
     const requestId = String(body.request_id || '').trim();
-    if (!requestId) return Response.json({ error: 'request_id is required' }, { status: 400 });
+    if (!requestId) return addSecurityHeaders(Response.json({ error: 'request_id is required' }, { status: 400 }));
 
     // This report carries a person's whole purchase history, so an administrator
     // must ask for it on every path. The platform's own lifecycle calls this

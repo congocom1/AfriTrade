@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.49';
 import { orderNumber, resolveFulfillment } from '../../shared/fulfillments.ts';
 import { requireAdmin } from '../../shared/security.ts';
+import { addSecurityHeaders } from '../../shared/securityHeaders.ts';
 
 /**
  * The customer paid: the follow-up stops and the payment is recorded as an
@@ -17,7 +18,7 @@ export default async function (req) {
     const body = await req.json().catch(() => ({}));
     const fulfillmentId = String(body.fulfillment_id || '').trim();
     const stage = String(body.stage || '1h').toLowerCase() === '24h' ? '24h' : '1h';
-    if (!fulfillmentId) return Response.json({ error: 'fulfillment_id is required' }, { status: 400 });
+    if (!fulfillmentId) return addSecurityHeaders(Response.json({ error: 'fulfillment_id is required' }, { status: 400 }));
 
     // Writes analytics and audit rows, so only the follow-up workflow (or an
     // administrator) may log one.

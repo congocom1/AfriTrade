@@ -2,6 +2,11 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.49';
 import { escapeHtml, pageUrl } from '../../shared/app.ts';
 import { orderNumber, resolveFulfillment, tenantOf } from '../../shared/fulfillments.ts';
 import { requireAdmin } from '../../shared/security.ts';
+import { addSecurityHeaders, getClientKey, checkRateLimit, rateLimitErrorResponse } from '../../shared/securityHeaders.ts';
+
+// Rate limiting configuration for requestDeliveryFeedback
+const REQUEST_DELIVERY_FEEDBACK_RATE_LIMIT_PER_HOUR = 60; // Allow 60 requests per hour per user
+const RATE_WINDOW_MS = 3600 * 1000;
 
 /**
  * Three days after a fulfillment order is delivered (see the "Delivered
@@ -42,22 +47,60 @@ export default async function (req) {
     const base44 = createClientFromRequest(req);
     const body = await req.json().catch(() => ({}));
     const fulfillmentId = String(body.fulfillment_id || '').trim();
-    if (!fulfillmentId) return Response.json({ error: 'fulfillment_id is required' }, { status: 400 });
+    if (!fulfillmentId) return addSecurityHeaders(Response.json({ error: 'fulfillment_id is required' }, { status: 400 }));
+
+    // Rate limiting for requestDeliveryFeedback
+    const clientKey = getClientKey(req);
+    if (!clientKey) {
+      console.warn(
+        "[requestDeliveryFeedback] no client address on the request — applying shared rate limit",
+      );
+    }
+
+    const rateLimitResult = await checkRateLimit(
+      null, // We'll check this later after we have db
+      clientKey || "unidentified",
+      {
+        keyPrefix: "request_delivery_feedback",
+        limit: REQUEST_DELIVERY_FEEDBACK_RATE_LIMIT_PER_HOUR,
+        windowMs: RATE_WINDOW_MS,
+      }
+    );
+
+    if (!rateLimitResult.ok) {
+      return rateLimitErrorResponse(rateLimitResult);
+    }
 
     // A customer-facing e-mail goes out, so only the platform's own follow-up
     // workflow (or an administrator) may trigger it.
     const auth = await requireAdmin(base44);
-    if (!auth.ok) return auth.response;
+    if (!auth.ok) return addSecurityHeaders(auth.response);
+    const db = base44.asServiceRole;
+
+    // Re-check rate limit now that we have db connection
+    const rateLimitResultDb = await checkRateLimit(
+      db,
+      clientKey || "unidentified",
+      {
+        keyPrefix: "request_delivery_feedback",
+        limit: REQUEST_DELIVERY_FEEDBACK_RATE_LIMIT_PER_HOUR,
+        windowMs: RATE_WINDOW_MS,
+      }
+    );
+
+    if (!rateLimitResultDb.ok) {
+      return rateLimitErrorResponse(rateLimitResultDb);
+    }
 
     const { fulfillment, order } = await resolveFulfillment(base44, fulfillmentId);
-    if (!fulfillment) return Response.json({ error: 'FulfillmentOrder not found' }, { status: 404 });
+    if (!fulfillment) return addSecurityHeaders(Response.json({ error: 'FulfillmentOrder not found' }, { status: 404 }));
 
     const status = String(fulfillment.status || '').toUpperCase();
     if (!DELIVERED.includes(status)) {
-      return Response.json({ skipped: true, reason: `fulfillment is ${status || 'unknown'}` });
+      return addSecurityHeaders(Response.json({ skipped: true, reason: `fulfillment is ${status || 'unknown'}` }));
     }
     if (String(order?.status || '').toUpperCase() === 'CANCELLED') {
-      return Response.json({ skipped: true, reason: 'order was cancelled' });
+      return addSecurityHeaders(Response.json({ skipped: true, reason: 'order was cancelled' }));
     }
 
     const reference = orderNumber(fulfillment, order);
@@ -66,19 +109,19 @@ export default async function (req) {
       ? await base44.asServiceRole.entities.Review.filter({ order_number: reference }).catch(() => [])
       : [];
     if (reviews.length) {
-      return Response.json({
+      return addSecurityHeaders(Response.json({
         skipped: true,
         reason: 'review already submitted',
         order_number: reference,
         review_id: reviews[0].id,
-      });
+      }));
     }
 
     const alreadySent = await base44.asServiceRole.entities.OrderNotification
       .filter({ order_number: reference, event: EVENT, status: 'sent' })
       .catch(() => []);
     if (alreadySent.length) {
-      return Response.json({ skipped: true, reason: 'feedback request already sent', order_number: reference });
+      return addSecurityHeaders(Response.json({ skipped: true, reason: 'feedback request already sent', order_number: reference }));
     }
 
     const links = await itemLinks(base44, fulfillment, order);
@@ -119,7 +162,7 @@ export default async function (req) {
         status: 'skipped',
         error: 'Aucun e-mail client',
       });
-      return Response.json({ sent: false, skipped: true, reason: 'no customer email', order_number: reference });
+      return addSecurityHeaders(Response.json({ sent: false, skipped: true, reason: 'no customer email', order_number: reference }));
     }
 
     const html = `
@@ -166,7 +209,7 @@ export default async function (req) {
         severity: 'warning',
         details: { error: String(error?.message || error).slice(0, 300) },
       });
-      return Response.json({ sent: false, reason: 'email refused', order_number: reference });
+      return addSecurityHeaders(Response.json({ sent: false, reason: 'email refused', order_number: reference }));
     }
 
     await base44.asServiceRole.entities.AuditLog.create({
@@ -179,8 +222,8 @@ export default async function (req) {
       details: { items: links.length, to: email },
     });
 
-    return Response.json({ sent: true, order_number: reference, items: links.length, to: email });
+    return addSecurityHeaders(Response.json({ sent: true, order_number: reference, items: links.length, to: email }));
   } catch (error) {
-    return Response.json({ error: String(error?.message || error) }, { status: 500 });
+    return addSecurityHeaders(Response.json({ error: String(error?.message || error) }, { status: 500 }));
   }
 }

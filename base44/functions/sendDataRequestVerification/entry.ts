@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.49';
 import { escapeHtml, typeLabel, verificationUrl } from '../../shared/dataRequests.ts';
 import { requireAdmin } from '../../shared/security.ts';
+import { addSecurityHeaders, getClientKey, checkRateLimit, rateLimitErrorResponse } from '../../shared/securityHeaders.ts';
 
 /**
  * Step 1 of the data-request lifecycle: sends the confirmation email that

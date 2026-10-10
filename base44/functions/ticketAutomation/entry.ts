@@ -1,7 +1,12 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
 import { requireAdmin } from '../../shared/security.ts';
+import { addSecurityHeaders, getClientKey, checkRateLimit, rateLimitErrorResponse } from '../../shared/securityHeaders.ts';
 
-const fail = (error, status = 400) => Response.json({ error }, { status });
+// Rate limiting configuration for ticketAutomation
+const TICKET_AUTOMATION_RATE_LIMIT_PER_HOUR = 60; // Allow 60 requests per hour for ticket automation
+const RATE_WINDOW_MS = 3600 * 1000;
+
+const fail = (error, status = 400) => addSecurityHeaders(Response.json({ error }, { status }));
 
 const CATEGORIES = ['payment', 'order', 'delivery', 'product', 'refund', 'supplier', 'account', 'technical'];
 const PRIORITY_MAP = {
@@ -15,12 +20,51 @@ export default async function(req: Request): Promise<Response> {
   try {
     if (req.method !== 'POST') return fail('Méthode non autorisée', 405);
     const base44 = createClientFromRequest(req);
+
+    // Rate limiting for ticketAutomation
+    const clientKey = getClientKey(req);
+    if (!clientKey) {
+      console.warn(
+        "[ticketAutomation] no client address on the request — applying shared rate limit",
+      );
+    }
+
+    const rateLimitResult = await checkRateLimit(
+      null, // We'll check this later after we have db
+      clientKey || "unidentified",
+      {
+        keyPrefix: "ticket_automation",
+        limit: TICKET_AUTOMATION_RATE_LIMIT_PER_HOUR,
+        windowMs: RATE_WINDOW_MS,
+      }
+    );
+
+    if (!rateLimitResult.ok) {
+      return rateLimitErrorResponse(rateLimitResult);
+    }
+
     // This reads and mutates support tickets across the whole platform — they
     // carry customer PII — so it is reserved to administrators.
     const gate = await requireAdmin(base44);
-    if (!gate.ok) return gate.response;
+    if (!gate.ok) return addSecurityHeaders(gate.response);
     const user = gate.user;
     const db = base44.asServiceRole;
+
+    // Re-check rate limit now that we have db connection
+    const rateLimitResultDb = await checkRateLimit(
+      db,
+      clientKey || "unidentified",
+      {
+        keyPrefix: "ticket_automation",
+        limit: TICKET_AUTOMATION_RATE_LIMIT_PER_HOUR,
+        windowMs: RATE_WINDOW_MS,
+      }
+    );
+
+    if (!rateLimitResultDb.ok) {
+      return rateLimitErrorResponse(rateLimitResultDb);
+    }
+
     const body = await req.json().catch(() => ({}));
     const action = String(body.action || '');
 
@@ -70,7 +114,7 @@ async function autoRoute(db, body, user) {
     order_number,
   });
   await db.entities.AuditLog.create({ action: 'ticket.auto_routed', actor: user.email, entity: 'SupportTicket', entity_id: ticket_id, reference: order_number, details: { category, priority, assigned_team } });
-  return Response.json({ ticket, assigned_team, sla_deadline });
+  return addSecurityHeaders(Response.json({ ticket, assigned_team, sla_deadline }));
 }
 
 async function listTickets(db, body) {
@@ -80,7 +124,7 @@ async function listTickets(db, body) {
   if (assigned_team) filters.assigned_team = assigned_team;
   if (priority) filters.priority = priority;
   const tickets = await db.entities.SupportTicket.filter(filters, '-created_date', 100).catch(() => []);
-  return Response.json({ tickets });
+  return addSecurityHeaders(Response.json({ tickets }));
 }
 
 async function escalate(db, body, user) {
@@ -94,7 +138,7 @@ async function escalate(db, body, user) {
     escalated_at: new Date().toISOString(),
   });
   await db.entities.AuditLog.create({ action: 'ticket.escalated', actor: user.email, entity: 'SupportTicket', entity_id: ticket_id, details: { reason } });
-  return Response.json({ ticket });
+  return addSecurityHeaders(Response.json({ ticket }));
 }
 
 async function slaBreach(db) {
@@ -114,7 +158,7 @@ async function slaBreach(db) {
       audience: 'admin',
     });
   }
-  return Response.json({ breached_count: breached.length, breached_tickets: breached.map((t) => t.id) });
+  return addSecurityHeaders(Response.json({ breached_count: breached.length, breached_tickets: breached.map((t) => t.id) }));
 }
 
 async function stats(db) {
@@ -127,5 +171,5 @@ async function stats(db) {
     byPriority[t.priority] = (byPriority[t.priority] || 0) + 1;
     byTeam[t.assigned_team || 'unassigned'] = (byTeam[t.assigned_team || 'unassigned'] || 0) + 1;
   }
-  return Response.json({ total: tickets.length, by_status: byStatus, by_priority: byPriority, by_team: byTeam });
+  return addSecurityHeaders(Response.json({ total: tickets.length, by_status: byStatus, by_priority: byPriority, by_team: byTeam }));
 }

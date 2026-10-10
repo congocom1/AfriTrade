@@ -1,4 +1,5 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.49";
+import { addSecurityHeaders, getClientKey, checkRateLimit, rateLimitErrorResponse } from "../../shared/securityHeaders.ts";
 
 /**
  * get-order — base44/functions/get-order/entry.ts
@@ -11,34 +12,60 @@ import { createClientFromRequest } from "npm:@base44/sdk@0.8.49";
  * read a stranger's order.
  */
 
+// Rate limiting configuration for get-order
+const GET_ORDER_RATE_LIMIT_PER_HOUR = 120; // Allow 120 requests per hour per user
+const RATE_WINDOW_MS = 3600 * 1000;
+
 function err(message: string, status = 400) {
   return Response.json({ error: message }, { status });
 }
 
 export default async function (req: Request) {
   try {
-    if (req.method !== "POST") return err("Method not allowed", 405);
+    if (req.method !== "POST") return addSecurityHeaders(err("Method not allowed", 405));
     const base44 = createClientFromRequest(req);
     const db = base44.asServiceRole;
 
+    // Rate limiting for get-order
+    const clientKey = getClientKey(req);
+    if (!clientKey) {
+      console.warn(
+        "[get-order] no client address on the request — applying shared rate limit",
+      );
+    }
+
+    const rateLimitResult = await checkRateLimit(
+      db,
+      clientKey || "unidentified",
+      {
+        keyPrefix: "get_order",
+        limit: GET_ORDER_RATE_LIMIT_PER_HOUR,
+        windowMs: RATE_WINDOW_MS,
+      }
+    );
+
+    if (!rateLimitResult.ok) {
+      return rateLimitErrorResponse(rateLimitResult);
+    }
+
     // Only a signed-in account may look an order up, and only its own.
     const user = await base44.auth.me().catch(() => null);
-    if (!user) return err("Connectez-vous pour suivre votre commande.", 401);
+    if (!user) return addSecurityHeaders(err("Connectez-vous pour suivre votre commande.", 401));
 
     const body = await req.json().catch(() => ({}));
     const orderNumber = String(body.order_number || "").trim();
-    if (!orderNumber) return err("Le numéro de commande est requis.");
+    if (!orderNumber) return addSecurityHeaders(err("Le numéro de commande est requis."));
 
     const orders = await db.entities.Order.filter({ order_number: orderNumber }).catch(() => []);
     const order = orders?.[0];
-    if (!order) return err("Commande introuvable.", 404);
+    if (!order) return addSecurityHeaders(err("Commande introuvable.", 404));
 
     const email = String(user.email || "").trim().toLowerCase();
     const owns =
       String(user.role || "") === "admin" ||
       String(order.created_by_id || "") === String(user.id || "") ||
       (!!email && String(order.customer_email || "").trim().toLowerCase() === email);
-    if (!owns) return err("Commande introuvable.", 404);
+    if (!owns) return addSecurityHeaders(err("Commande introuvable.", 404));
 
     const fulfillments = await db.entities.FulfillmentOrder.filter({ order_number: orderNumber }).catch(() => []);
     const shipments = await Promise.all(

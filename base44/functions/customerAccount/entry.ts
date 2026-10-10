@@ -1,4 +1,5 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.52";
+import { addSecurityHeaders, getClientKey, checkRateLimit, rateLimitErrorResponse } from "../../shared/securityHeaders.ts";
 
 /**
  * customerAccount — base44/functions/customerAccount/entry.ts
@@ -15,6 +16,10 @@ import { createClientFromRequest } from "npm:@base44/sdk@0.8.52";
  * tickets. Because this function acts with the service role, it establishes for
  * itself who is calling and scopes every query to that account.
  */
+
+// Rate limiting configuration for customerAccount
+const CUSTOMER_ACCOUNT_RATE_LIMIT_PER_HOUR = 60; // Allow 60 requests per hour per user
+const RATE_WINDOW_MS = 3600 * 1000;
 
 function err(message: string, status = 400) {
   return Response.json({ error: message }, { status });
@@ -43,14 +48,36 @@ const RESOLUTION_IDS = new Set(["refund", "replacement", "goodwill", "reject"]);
 
 export default async function (req: Request) {
   try {
-    if (req.method !== "POST") return err("Method not allowed", 405);
+    if (req.method !== "POST") return addSecurityHeaders(err("Method not allowed", 405));
     const base44 = createClientFromRequest(req);
     const db = base44.asServiceRole;
     const body = await req.json().catch(() => ({}));
 
+    // Rate limiting for customerAccount
+    const clientKey = getClientKey(req);
+    if (!clientKey) {
+      console.warn(
+        "[customerAccount] no client address on the request — applying shared rate limit",
+      );
+    }
+
+    const rateLimitResult = await checkRateLimit(
+      db,
+      clientKey || "unidentified",
+      {
+        keyPrefix: "customer_account",
+        limit: CUSTOMER_ACCOUNT_RATE_LIMIT_PER_HOUR,
+        windowMs: RATE_WINDOW_MS,
+      }
+    );
+
+    if (!rateLimitResult.ok) {
+      return rateLimitErrorResponse(rateLimitResult);
+    }
+
     // ---- Trust boundary -----------------------------------------------------
     const user = await base44.auth.me().catch(() => null);
-    if (!user) return err("Connectez-vous pour accéder à votre compte.", 401);
+    if (!user) return addSecurityHeaders(err("Connectez-vous pour accéder à votre compte.", 401));
     const email = lower(user.email);
     const isAdmin = String(user.role || "") === "admin";
 
@@ -81,7 +108,7 @@ export default async function (req: Request) {
 
     if (action === "orders") {
       const limit = Math.min(Number(body.limit) || 50, 100);
-      return Response.json({ orders: await myOrders(limit) });
+      return addSecurityHeaders(Response.json({ orders: await myOrders(limit) }));
     }
 
     if (action === "order") {
@@ -89,12 +116,12 @@ export default async function (req: Request) {
       if (!orderNumber) return err("Numéro de commande requis.");
       const rows = await db.entities.Order.filter({ order_number: orderNumber }).catch(() => []);
       const order = rows?.[0];
-      if (!ownOrder(order)) return err("Commande introuvable.", 404);
+      if (!ownOrder(order)) return addSecurityHeaders(err("Commande introuvable.", 404));
 
       const fulfillments = await db.entities.FulfillmentOrder
         .filter({ order_id: order.id }, "fulfillment_number", 50)
         .catch(() => []);
-      return Response.json({ order, fulfillments: fulfillments || [] });
+      return addSecurityHeaders(Response.json({ order, fulfillments: fulfillments || [] }));
     }
 
     if (action === "confirm_fulfillment") {
@@ -106,9 +133,9 @@ export default async function (req: Request) {
       if (!ownOrder(order)) return err("Commande introuvable.", 404);
 
       const fulfillment = await db.entities.FulfillmentOrder.get(fulfillmentId).catch(() => null);
-      if (!fulfillment || fulfillment.order_id !== order.id) return err("Expédition introuvable.", 404);
-      if (fulfillment.source_type !== "international_supplier") return err("Confirmation non requise.", 409);
-      if (fulfillment.status !== "AWAITING_CUSTOMER_APPROVAL") return err("Cette expédition est déjà confirmée.", 409);
+      if (!fulfillment || fulfillment.order_id !== order.id) return addSecurityHeaders(err("Expédition introuvable.", 404));
+      if (fulfillment.source_type !== "international_supplier") return addSecurityHeaders(err("Confirmation non requise.", 409));
+      if (fulfillment.status !== "AWAITING_CUSTOMER_APPROVAL") return addSecurityHeaders(err("Cette expédition est déjà confirmée.", 409));
 
       // The approval does not dispatch the parcel: it releases it to our own
       // packing bench. Packing is the hand-over point to our delivery team.
@@ -135,7 +162,7 @@ export default async function (req: Request) {
         reference: order.order_number,
         details: { warehouse: fulfillment.origin_warehouse || "", approved_by: user.email || "session" },
       });
-      return Response.json({ fulfillment: updated });
+      return addSecurityHeaders(Response.json({ fulfillment: updated }));
     }
 
     if (action === "wallet") {

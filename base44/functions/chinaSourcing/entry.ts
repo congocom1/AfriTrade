@@ -1,16 +1,59 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
 import { requireAdmin } from '../../shared/security.ts';
+import { addSecurityHeaders, getClientKey, checkRateLimit, rateLimitErrorResponse } from '../../shared/securityHeaders.ts';
 
-const fail = (error, status = 400) => Response.json({ error }, { status });
+// Rate limiting configuration for chinaSourcing
+const CHINA_SOURCING_RATE_LIMIT_PER_HOUR = 30; // Allow 30 requests per hour (more restrictive for sourcing operations)
+const RATE_WINDOW_MS = 3600 * 1000;
+
+const fail = (error, status = 400) => addSecurityHeaders(Response.json({ error }, { status }));
 
 export default async function(req: Request): Promise<Response> {
   try {
     if (req.method !== 'POST') return fail('Méthode non autorisée', 405);
     const base44 = createClientFromRequest(req);
+
+    // Rate limiting for chinaSourcing - check before auth
+    const clientKey = getClientKey(req);
+    if (!clientKey) {
+      console.warn(
+        "[chinaSourcing] no client address on the request — applying shared rate limit",
+      );
+    }
+
+    const rateLimitResult = await checkRateLimit(
+      null, // We'll check this later after we have db
+      clientKey || "unidentified",
+      {
+        keyPrefix: "china_sourcing",
+        limit: CHINA_SOURCING_RATE_LIMIT_PER_HOUR,
+        windowMs: RATE_WINDOW_MS,
+      }
+    );
+
+    if (!rateLimitResult.ok) {
+      return rateLimitErrorResponse(rateLimitResult);
+    }
+
     // Sourcing runs as the service role and mutates purchase orders, receipts
     // and consolidations, so it is reserved to administrators.
     const gate = await requireAdmin(base44);
     if (!gate.ok) return gate.response;
+
+    // Re-check rate limit now that we have db connection
+    const rateLimitResultDb = await checkRateLimit(
+      base44.asServiceRole,
+      clientKey || "unidentified",
+      {
+        keyPrefix: "china_sourcing",
+        limit: CHINA_SOURCING_RATE_LIMIT_PER_HOUR,
+        windowMs: RATE_WINDOW_MS,
+      }
+    );
+
+    if (!rateLimitResultDb.ok) {
+      return rateLimitErrorResponse(rateLimitResultDb);
+    }
     const user = gate.user;
     const db = base44.asServiceRole;
     const body = await req.json().catch(() => ({}));

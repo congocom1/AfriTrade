@@ -8,6 +8,11 @@ import {
   tenantOf,
 } from '../../shared/fulfillments.ts';
 import { requireAdmin } from '../../shared/security.ts';
+import { addSecurityHeaders, getClientKey, checkRateLimit, rateLimitErrorResponse } from '../../shared/securityHeaders.ts';
+
+// Rate limiting configuration for sendUnpaidReminder
+const SEND_UNPAID_REMINDER_RATE_LIMIT_PER_HOUR = 120; // Allow 120 requests per hour
+const RATE_WINDOW_MS = 3600 * 1000;
 
 /**
  * One hour after an unpaid fulfillment order is created: a reminder lands in

@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
 import { requireAdmin } from '../../shared/security.ts';
+import { addSecurityHeaders, getClientKey, checkRateLimit, rateLimitErrorResponse } from '../../shared/securityHeaders.ts';
 import { RULES_SEED } from './fraud-rules.json';
 
 /**
@@ -15,12 +16,55 @@ import { RULES_SEED } from './fraud-rules.json';
  * jour du fichier fraud-rules.json quand de nouvelles règles sont ajoutées.
  */
 
+// Rate limiting configuration for seed-fraud-rules (admin function, lower limit)
+const SEED_FRAUD_RULES_RATE_LIMIT_PER_HOUR = 5; // Very low limit for admin seed function
+const RATE_WINDOW_MS = 3600 * 1000;
+
 export default async function (req: Request) {
   try {
     const base44 = createClientFromRequest(req);
+
+    // Rate limiting for seed-fraud-rules
+    const clientKey = getClientKey(req);
+    if (!clientKey) {
+      console.warn(
+        "[seed-fraud-rules] no client address on the request — applying shared rate limit",
+      );
+    }
+
+    const rateLimitResult = await checkRateLimit(
+      null, // We'll check this later after we have db
+      clientKey || "unidentified",
+      {
+        keyPrefix: "seed_fraud_rules",
+        limit: SEED_FRAUD_RULES_RATE_LIMIT_PER_HOUR,
+        windowMs: RATE_WINDOW_MS,
+      }
+    );
+
+    if (!rateLimitResult.ok) {
+      return rateLimitErrorResponse(rateLimitResult);
+    }
+
     const auth = await requireAdmin(base44);
-    if (!auth.ok) return auth.response;
+    if (!auth.ok) return addSecurityHeaders(auth.response);
     const db = base44.asServiceRole;
+
+    // Re-check rate limit now that we have db connection
+    const rateLimitResultDb = await checkRateLimit(
+      db,
+      clientKey || "unidentified",
+      {
+        keyPrefix: "seed_fraud_rules",
+        limit: SEED_FRAUD_RULES_RATE_LIMIT_PER_HOUR,
+        windowMs: RATE_WINDOW_MS,
+      }
+    );
+
+    if (!rateLimitResultDb.ok) {
+      return rateLimitErrorResponse(rateLimitResultDb);
+    }
+
     const body = await req.json().catch(() => ({}));
 
     // Si l'appelant passe explicitement "dry_run": true, on n'écrit rien.
@@ -65,18 +109,18 @@ export default async function (req: Request) {
       }
     }
 
-    return Response.json({
+    return addSecurityHeaders(Response.json({
       dry_run: dryRun,
       total_rules: RULES_SEED.length,
       seeded: results.seeded,
       skipped: results.skipped,
       errors: results.errors,
       rows: results.rows,
-    });
+    }));
   } catch (err) {
-    return Response.json(
+    return addSecurityHeaders(Response.json(
       { error: String(err?.message || err).slice(0, 500), fatal: true },
       { status: 500 }
-    );
+    ));
   }
 }

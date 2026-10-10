@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
 import { requireAdmin } from '../../shared/security.ts';
+import { addSecurityHeaders, getClientKey, checkRateLimit, rateLimitErrorResponse } from '../../shared/securityHeaders.ts';
 
 /**
  * BILLING CRON — base44/functions/billing-cron/entry.ts
@@ -21,11 +22,49 @@ import { requireAdmin } from '../../shared/security.ts';
 export default async function (req: Request) {
   try {
     const base44 = createClientFromRequest(req);
+
+    // Rate limiting for billing-cron - check before auth
+    const clientKey = getClientKey(req);
+    if (!clientKey) {
+      console.warn(
+        "[billing-cron] no client address on the request — applying shared rate limit",
+      );
+    }
+
+    const rateLimitResult = await checkRateLimit(
+      null, // We'll check this later after we have db
+      clientKey || "unidentified",
+      {
+        keyPrefix: "billing_cron",
+        limit: BILLING_CRON_RATE_LIMIT_PER_HOUR,
+        windowMs: RATE_WINDOW_MS,
+      }
+    );
+
+    if (!rateLimitResult.ok) {
+      return rateLimitErrorResponse(rateLimitResult);
+    }
+
     await req.json().catch(() => ({}));
     const auth = await requireAdmin(base44);
-    if (!auth.ok) return auth.response;
+    if (!auth.ok) return addSecurityHeaders(auth.response);
     const db = base44.asServiceRole;
     const action = (await req.json().catch(() => ({}))).action || 'generate-invoices';
+
+    // Re-check rate limit now that we have db connection
+    const rateLimitResultDb = await checkRateLimit(
+      db,
+      clientKey || "unidentified",
+      {
+        keyPrefix: "billing_cron",
+        limit: BILLING_CRON_RATE_LIMIT_PER_HOUR,
+        windowMs: RATE_WINDOW_MS,
+      }
+    );
+
+    if (!rateLimitResultDb.ok) {
+      return rateLimitErrorResponse(rateLimitResultDb);
+    }
 
     if (action === 'generate-invoices') {
       return generateInvoices(db);
@@ -44,6 +83,10 @@ export default async function (req: Request) {
     );
   }
 }
+
+// Rate limiting configuration for billing-cron
+const BILLING_CRON_RATE_LIMIT_PER_HOUR = 120; // Allow 120 requests per hour
+const RATE_WINDOW_MS = 3600 * 1000;
 
 // ── Invoice generation ──────────────────────────────────────────────────────
 

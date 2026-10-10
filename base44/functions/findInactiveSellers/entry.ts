@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.49';
 import { daysSince, loadPlanContext, sellerEmail, sellerPlan } from '../../shared/sellers.ts';
 import { requireAdmin } from '../../shared/security.ts';
+import { addSecurityHeaders } from '../../shared/securityHeaders.ts';
 
 /**
  * Weekly scan behind the "Inactive Seller Outreach" workflow: sellers whose
@@ -22,7 +23,7 @@ export default async function (req) {
     // Returns sellers' names and e-mail addresses, so it answers only the
     // weekly outreach workflow (or an administrator).
     const auth = await requireAdmin(base44);
-    if (!auth.ok) return auth.response;
+    if (!auth.ok) return addSecurityHeaders(auth.response);
 
     const requested = Number(body.inactive_days);
     const days = Number.isFinite(requested) && requested >= 0 ? requested : INACTIVE_DAYS;

@@ -1,4 +1,9 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
+import { addSecurityHeaders, getClientKey, checkRateLimit, rateLimitErrorResponse } from '../../shared/securityHeaders.ts';
+
+// Rate limiting configuration for manageTenantTeam
+const MANAGE_TENANT_TEAM_RATE_LIMIT_PER_HOUR = 60; // Allow 60 requests per hour
+const RATE_WINDOW_MS = 3600 * 1000;
 
 const ROLES = ['TENANT_ADMIN', 'FINANCE_ADMIN', 'SUPPORT', 'SELLER', 'CREATOR', 'COURIER'];
 const KEYS = ['PRODUCT_CREATE', 'PRODUCT_UPDATE', 'PRODUCT_DELETE', 'ORDER_READ', 'ORDER_UPDATE', 'REFUND_CREATE', 'SELLER_APPROVE', 'SELLER_SUSPEND', 'FINANCE_READ', 'PAYOUT_APPROVE', 'SUPPLIER_MANAGE', 'ANALYTICS_READ', 'DOMAIN_MANAGE', 'TEAM_MANAGE'];
@@ -14,8 +19,46 @@ const DEFAULTS = {
 export default async function(req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
+
+    // Rate limiting for manageTenantTeam - check before auth
+    const clientKey = getClientKey(req);
+    if (!clientKey) {
+      console.warn(
+        "[manageTenantTeam] no client address on the request — applying shared rate limit",
+      );
+    }
+
+    const rateLimitResult = await checkRateLimit(
+      null, // We'll check this later after we have db
+      clientKey || "unidentified",
+      {
+        keyPrefix: "manage_tenant_team",
+        limit: MANAGE_TENANT_TEAM_RATE_LIMIT_PER_HOUR,
+        windowMs: RATE_WINDOW_MS,
+      }
+    );
+
+    if (!rateLimitResult.ok) {
+      return rateLimitErrorResponse(rateLimitResult);
+    }
+
     const user = await base44.auth.me().catch(() => null);
     if (!user) return Response.json({ error: 'Authentification requise' }, { status: 401 });
+
+    // Re-check rate limit now that we have db connection
+    const rateLimitResultDb = await checkRateLimit(
+      base44.asServiceRole,
+      clientKey || "unidentified",
+      {
+        keyPrefix: "manage_tenant_team",
+        limit: MANAGE_TENANT_TEAM_RATE_LIMIT_PER_HOUR,
+        windowMs: RATE_WINDOW_MS,
+      }
+    );
+
+    if (!rateLimitResultDb.ok) {
+      return rateLimitErrorResponse(rateLimitResultDb);
+    }
     const input = await req.json();
     const tenantId = String(input.tenantId || '');
     if (!tenantId) return Response.json({ error: 'Enseigne requise' }, { status: 400 });

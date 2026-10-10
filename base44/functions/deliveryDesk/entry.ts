@@ -1,4 +1,5 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.52";
+import { addSecurityHeaders } from "../../shared/securityHeaders.ts";
 
 /**
  * deliveryDesk — base44/functions/deliveryDesk/entry.ts
@@ -13,7 +14,7 @@ import { createClientFromRequest } from "npm:@base44/sdk@0.8.52";
  */
 
 function fail(message: string, status = 400) {
-  return Response.json({ error: message }, { status });
+  return addSecurityHeaders(Response.json({ error: message }, { status }));
 }
 
 const lower = (value: any) => String(value || "").trim().toLowerCase();

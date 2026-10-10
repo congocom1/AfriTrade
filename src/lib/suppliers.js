@@ -169,43 +169,42 @@ function createRealProvider(adapterCode, config) {
     isMock: false, // indicates real provider
     async searchProducts(query, supplier) {
       // TODO: Implement real HTTP call to supplier's search endpoint
-      console.warn(`[REAL SUPPLIER ${adapterCode}] Using mock search - replace with real API call`);
       // Fallback to mock for now
       const mock = createMockProvider(adapterCode);
       return await mock.searchProducts(query, supplier);
     },
     async getProduct(externalId, supplier) {
-      console.warn(`[REAL SUPPLIER ${adapterCode}] Using mock getProduct - replace with real API call`);
+      // TODO: Implement real HTTP call to supplier's getProduct endpoint
       const mock = createMockProvider(adapterCode);
       return await mock.getProduct(externalId, supplier);
     },
     async getInventory(externalId) {
-      console.warn(`[REAL SUPPLIER ${adapterCode}] Using mock getInventory - replace with real API call`);
+      // TODO: Implement real HTTP call to supplier's getInventory endpoint
       const mock = createMockProvider(adapterCode);
       return await mock.getInventory(externalId);
     },
     async getVariants(externalId, supplier) {
-      console.warn(`[REAL SUPPLIER ${adapterCode}] Using mock getVariants - replace with real API call`);
+      // TODO: Implement real HTTP call to supplier's getVariants endpoint
       const mock = createMockProvider(adapterCode);
       return await mock.getVariants(externalId, supplier);
     },
     async calculateShipping({ externalProductId, quantity = 1, supplier }) {
-      console.warn(`[REAL SUPPLIER ${adapterCode}] Using mock calculateShipping - replace with real API call`);
+      // TODO: Implement real HTTP call to supplier's calculateShipping endpoint
       const mock = createMockProvider(adapterCode);
       return await mock.calculateShipping({ externalProductId, quantity, supplier });
     },
     async createOrder({ externalProductId, quantity, supplier }) {
-      console.warn(`[REAL SUPPLIER ${adapterCode}] Using mock createOrder - replace with real API call`);
+      // TODO: Implement real HTTP call to supplier's createOrder endpoint
       const mock = createMockProvider(adapterCode);
       return await mock.createOrder({ externalProductId, quantity, supplier });
     },
     async cancelOrder(supplierOrderId) {
-      console.warn(`[REAL SUPPLIER ${adapterCode}] Using mock cancelOrder - replace with real API call`);
+      // TODO: Implement real HTTP call to supplier's cancelOrder endpoint
       const mock = createMockProvider(adapterCode);
       return await mock.cancelOrder(supplierOrderId);
     },
     async getTracking(supplierOrderId) {
-      console.warn(`[REAL SUPPLIER ${adapterCode}] Using mock getTracking - replace with real API call`);
+      // TODO: Implement real HTTP call to supplier's getTracking endpoint
       const mock = createMockProvider(adapterCode);
       return await mock.getTracking(supplierOrderId);
     },

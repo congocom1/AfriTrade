@@ -28,6 +28,7 @@
 //
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.49";
 import { postWalletEntry } from "../../shared/walletLedger.ts";
+import { addSecurityHeaders, getClientKey, checkRateLimit, rateLimitErrorResponse } from "../../shared/securityHeaders.ts";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Pure helpers — operate on plain JS values, no Base44 SDK, no network calls.
@@ -275,49 +276,6 @@ const ORDER_RATE_LIMIT_PER_HOUR = 30;
 // script still cannot drain the catalogue.
 const ORDER_RATE_LIMIT_UNIDENTIFIED_PER_HOUR = 300;
 const RATE_WINDOW_MS = 3600 * 1000;
-
-/**
- * Client identity for rate limiting. Only a header the edge sets is trusted:
- * x-forwarded-for and x-real-ip arrive from the caller, who can rotate them on
- * every request, and a multi-hop chain has no hop we can prove the proxy
- * appended. When the edge gives us no address we return "" and the caller
- * falls into the shared ceiling instead of a bucket it can name itself.
- */
-function clientKeyFor(request) {
-  const raw = String(request.headers.get("cf-connecting-ip") || "").trim();
-  if (!raw || raw.includes(",")) return "";
-  return raw;
-}
-
-/** Counts one order attempt against the caller's hourly window. */
-async function checkOrderRateLimit(client, clientKey, limit) {
-  const db = client;
-  const key_prefix = "place_order:" + clientKey;
-  const window_start = new Date(
-    Math.floor(Date.now() / RATE_WINDOW_MS) * RATE_WINDOW_MS,
-  ).toISOString();
-  const rows = await db.entities.ApiRateLimit
-    .filter({ key_prefix, window_start })
-    .catch(() => []);
-  const row = rows?.[0] ?? null;
-  const used = Number(row?.request_count ?? 0);
-  if (used >= limit) {
-    return { ok: false, used, limit };
-  }
-  const next = used + 1;
-  const payload = {
-    request_count: next,
-    last_reset_at: new Date().toISOString(),
-  };
-  if (row) {
-    await db.entities.ApiRateLimit.update(row.id, payload).catch(() => {});
-  } else {
-    await db.entities.ApiRateLimit
-      .create({ key_prefix, window_start, ...payload })
-      .catch(() => {});
-  }
-  return { ok: true, used: next, limit };
-}
 
 /** Emit a platform event through the dispatchPlatformEvent server function. */
 async function emitEvent(client, name, options = {}) {
@@ -1133,10 +1091,12 @@ export default async function (request) {
   const url = new URL(request.url);
 
   if (request.method !== "POST") {
-    return new Response(JSON.stringify({ error: "Method not allowed" }), {
-      status: 405,
-      headers: { "Content-Type": "application/json" },
-    });
+    return addSecurityHeaders(
+      new Response(JSON.stringify({ error: "Method not allowed" }), {
+        status: 405,
+        headers: { "Content-Type": "application/json" },
+      })
+    );
   }
 
   try {
@@ -1155,67 +1115,70 @@ export default async function (request) {
       const body = await request.json();
       intent = body?.params ?? body ?? null;
     } catch {
-      return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
+      return addSecurityHeaders(
+        new Response(JSON.stringify({ error: "Invalid JSON body" }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        })
+      );
     }
 
     if (!intent || typeof intent !== "object") {
-      return new Response(JSON.stringify({ error: "Missing params" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
+      return addSecurityHeaders(
+        new Response(JSON.stringify({ error: "Missing params" }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        })
+      );
     }
 
     // Anonymous checkout, so a per-client ceiling is the only brake on a script
     // draining stock. Requests we cannot attribute to a client are left alone
     // rather than funnelled into one shared bucket.
-    const clientKey = clientKeyFor(request);
+    const clientKey = getClientKey(request);
     if (!clientKey) {
       // Never silent: no client address means the shared ceiling below applies.
       console.warn(
         "[place-order] no client address on the request — applying the shared order ceiling",
       );
     }
-    const gate = await checkOrderRateLimit(
+    const rateLimitResult = await checkRateLimit(
       db,
       clientKey || "unidentified",
-      clientKey
-        ? ORDER_RATE_LIMIT_PER_HOUR
-        : ORDER_RATE_LIMIT_UNIDENTIFIED_PER_HOUR,
+      {
+        keyPrefix: "place_order",
+        limit: clientKey ? ORDER_RATE_LIMIT_PER_HOUR : ORDER_RATE_LIMIT_UNIDENTIFIED_PER_HOUR,
+        windowMs: RATE_WINDOW_MS,
+      }
     );
-    if (!gate.ok) {
-      return new Response(
-        JSON.stringify({
-          error: "Trop de commandes en cours. Réessayez plus tard.",
-          status: "rate_limited",
-          limit: gate.limit,
-        }),
-        { status: 429, headers: { "Content-Type": "application/json" } },
-      );
+    if (!rateLimitResult.ok) {
+      return rateLimitErrorResponse(rateLimitResult);
     }
 
     const result = await placeOrder(db, intent);
 
-    return new Response(JSON.stringify(result), {
-      status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        "Cache-Control": "no-store",
-      },
-    });
+    return addSecurityHeaders(
+      new Response(JSON.stringify(result), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "no-store",
+        },
+      })
+    );
   } catch (error) {
     console.error("[place-order] Unhandled error:", error);
-    return new Response(
-      JSON.stringify({
-        error: error?.message ?? "Internal server error",
-        status: "failed",
-      }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      },
+    return addSecurityHeaders(
+      new Response(
+        JSON.stringify({
+          error: error?.message ?? "Internal server error",
+          status: "failed",
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        },
+      )
     );
   }
 }

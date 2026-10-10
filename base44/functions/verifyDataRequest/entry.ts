@@ -1,5 +1,10 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.49';
 import { escapeHtml } from '../../shared/dataRequests.ts';
+import { addSecurityHeaders, getClientKey, checkRateLimit, rateLimitErrorResponse } from '../../shared/securityHeaders.ts';
+
+// Rate limiting configuration for verifyDataRequest
+const VERIFY_DATA_REQUEST_RATE_LIMIT_PER_HOUR = 60; // Allow 60 requests per hour
+const RATE_WINDOW_MS = 3600 * 1000;
 
 /**
  * Target of the verification link in the confirmation email.
@@ -29,7 +34,7 @@ function page(status, title, message) {
     </main>
   </body>
 </html>`;
-  return new Response(html, { status, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+  return addSecurityHeaders(new Response(html, { status, headers: { 'Content-Type': 'text/html; charset=utf-8' } }));
 }
 
 export default async function (req) {
@@ -40,6 +45,28 @@ export default async function (req) {
       return page(400, 'Lien incomplet', "Ce lien ne contient pas de jeton de vérification. Ouvrez le lien reçu par e-mail.");
     }
 
+    // Rate limiting for verifyDataRequest - check before auth
+    const clientKey = getClientKey(req);
+    if (!clientKey) {
+      console.warn(
+        "[verifyDataRequest] no client address on the request — applying shared rate limit",
+      );
+    }
+
+    const rateLimitResult = await checkRateLimit(
+      null, // We'll check this later after we have db
+      clientKey || "unidentified",
+      {
+        keyPrefix: "verify_data_request",
+        limit: VERIFY_DATA_REQUEST_RATE_LIMIT_PER_HOUR,
+        windowMs: RATE_WINDOW_MS,
+      }
+    );
+
+    if (!rateLimitResult.ok) {
+      return rateLimitErrorResponse(rateLimitResult);
+    }
+
     const rows = await base44.asServiceRole.entities.DataRequest.filter({ verification_token: token }).catch(() => []);
     const request = rows[0];
     if (!request) {
@@ -48,6 +75,21 @@ export default async function (req) {
 
     if (request.verified_at) {
       return page(200, 'Demande déjà vérifiée', 'Votre adresse est déjà confirmée. Notre équipe conformité traite votre demande.');
+    }
+
+    // Re-check rate limit now that we have db connection
+    const rateLimitResultDb = await checkRateLimit(
+      base44.asServiceRole,
+      clientKey || "unidentified",
+      {
+        keyPrefix: "verify_data_request",
+        limit: VERIFY_DATA_REQUEST_RATE_LIMIT_PER_HOUR,
+        windowMs: RATE_WINDOW_MS,
+      }
+    );
+
+    if (!rateLimitResultDb.ok) {
+      return rateLimitErrorResponse(rateLimitResultDb);
     }
 
     await base44.asServiceRole.entities.DataRequest.update(request.id, {

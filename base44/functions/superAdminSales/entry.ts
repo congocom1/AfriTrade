@@ -1,4 +1,10 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
+import { addSecurityHeaders, getClientKey, checkRateLimit, rateLimitErrorResponse } from '../../shared/securityHeaders.ts';
+import { requireAdmin } from '../../shared/security.ts';
+
+// Rate limiting configuration for superAdminSales
+const SUPER_ADMIN_SALES_RATE_LIMIT_PER_HOUR = 60; // Allow 60 requests per hour
+const RATE_WINDOW_MS = 3600 * 1000;
 
 const PAGE_SIZE = 500;
 const MAX_PAGES = 20;
@@ -16,8 +22,46 @@ async function recent(entity, since) {
 export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
+
+    // Rate limiting for superAdminSales - check before auth
+    const clientKey = getClientKey(req);
+    if (!clientKey) {
+      console.warn(
+        "[superAdminSales] no client address on the request — applying shared rate limit",
+      );
+    }
+
+    const rateLimitResult = await checkRateLimit(
+      null, // We'll check this later after we have db
+      clientKey || "unidentified",
+      {
+        keyPrefix: "super_admin_sales",
+        limit: SUPER_ADMIN_SALES_RATE_LIMIT_PER_HOUR,
+        windowMs: RATE_WINDOW_MS,
+      }
+    );
+
+    if (!rateLimitResult.ok) {
+      return rateLimitErrorResponse(rateLimitResult);
+    }
+
     const user = await base44.auth.me().catch(() => null);
-    if (user?.role !== 'admin') return Response.json({ error: 'Accès réservé aux administrateurs.' }, { status: 403 });
+    if (user?.role !== 'admin') return addSecurityHeaders(Response.json({ error: 'Accès réservé aux administrateurs.' }, { status: 403 }));
+
+    // Re-check rate limit now that we have db connection
+    const rateLimitResultDb = await checkRateLimit(
+      base44.asServiceRole,
+      clientKey || "unidentified",
+      {
+        keyPrefix: "super_admin_sales",
+        limit: SUPER_ADMIN_SALES_RATE_LIMIT_PER_HOUR,
+        windowMs: RATE_WINDOW_MS,
+      }
+    );
+
+    if (!rateLimitResultDb.ok) {
+      return rateLimitErrorResponse(rateLimitResultDb);
+    }
 
     const now = new Date();
     const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 29));
@@ -71,7 +115,7 @@ export default async function(req) {
       conversions: c.conversions.size, rate: c.sessions.size ? Math.round(1000 * c.conversions.size / c.sessions.size) / 10 : 0 }))
       .sort((a, b) => b.rate - a.rate || b.clicks - a.clicks).slice(0, 10);
 
-    return Response.json({ daily, categories, creators, totalRevenue: Math.round(paid.reduce((s, o) => s + (Number(o.total_usd) || 0), 0) * 100) / 100, totalOrders: paid.length });
+    return addSecurityHeaders(Response.json({ daily, categories, creators, totalRevenue: Math.round(paid.reduce((s, o) => s + (Number(o.total_usd) || 0), 0) * 100) / 100, totalOrders: paid.length }));
   } catch (error) {
     console.error('superAdminSales:', error);
     return Response.json({ error: 'Impossible de charger les ventes.' }, { status: 500 });

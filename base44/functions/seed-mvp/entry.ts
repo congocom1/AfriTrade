@@ -9,15 +9,58 @@
 // read or write happens. Anonymous callers receive 401 and no data.
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
 import { requireAdmin } from '../../shared/security.ts';
+import { addSecurityHeaders, getClientKey, checkRateLimit, rateLimitErrorResponse } from '../../shared/securityHeaders.ts';
+
+// Rate limiting configuration for seed-mvp
+const SEED_MVP_RATE_LIMIT_PER_HOUR = 5; // Allow 5 requests per hour (very restrictive for seeding operations)
+const RATE_WINDOW_MS = 3600 * 1000;
 
 export default async function handler(req) {
   const caller = createClientFromRequest(req);
+
+  // Rate limiting for seed-mvp - check before auth
+  const clientKey = getClientKey(req);
+  if (!clientKey) {
+    console.warn(
+      "[seed-mvp] no client address on the request — applying shared rate limit",
+    );
+  }
+
+  const rateLimitResult = await checkRateLimit(
+    null, // We'll check this later after we have db
+    clientKey || "unidentified",
+    {
+      keyPrefix: "seed_mvp",
+      limit: SEED_MVP_RATE_LIMIT_PER_HOUR,
+      windowMs: RATE_WINDOW_MS,
+    }
+  );
+
+  if (!rateLimitResult.ok) {
+    return rateLimitErrorResponse(rateLimitResult);
+  }
+
   // Anyone can reach a deployed function URL, and this one writes with
   // service-role privileges, so only an administrator may run it.
   const auth = await requireAdmin(caller);
-  if (!auth.ok) return auth.response;
+  if (!auth.ok) return addSecurityHeaders(auth.response);
   // Service-role client for server-side writes (bypasses RLS)
   const db = caller.asServiceRole || caller;
+
+  // Re-check rate limit now that we have db connection
+  const rateLimitResultDb = await checkRateLimit(
+    db,
+    clientKey || "unidentified",
+    {
+      keyPrefix: "seed_mvp",
+      limit: SEED_MVP_RATE_LIMIT_PER_HOUR,
+      windowMs: RATE_WINDOW_MS,
+    }
+  );
+
+  if (!rateLimitResultDb.ok) {
+    return rateLimitErrorResponse(rateLimitResultDb);
+  }
 
   const SELLER = {
     name: 'Kin Market',
@@ -118,5 +161,5 @@ export default async function handler(req) {
     }
   }
 
-  return Response.json(results);
+  return addSecurityHeaders(Response.json(results));
 }

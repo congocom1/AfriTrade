@@ -1,18 +1,62 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
 import { requireAdmin } from '../../shared/security.ts';
+import { addSecurityHeaders, getClientKey, checkRateLimit, rateLimitErrorResponse } from '../../shared/securityHeaders.ts';
+
+// Rate limiting configuration for advancedAnalytics (admin-only endpoint)
+const ADVANCED_ANALYTICS_RATE_LIMIT_PER_HOUR = 30; // Lower limit for expensive admin operations
+const RATE_WINDOW_MS = 3600 * 1000;
 
 const fail = (error, status = 400) => Response.json({ error }, { status });
 
 export default async function(req: Request): Promise<Response> {
   try {
-    if (req.method !== 'POST') return fail('Méthode non autorisée', 405);
+    if (req.method !== 'POST') return addSecurityHeaders(fail('Méthode non autorisée', 405));
     const base44 = createClientFromRequest(req);
+
+    // Rate limiting for advancedAnalytics
+    const clientKey = getClientKey(req);
+    if (!clientKey) {
+      console.warn(
+        "[advancedAnalytics] no client address on the request — applying shared rate limit",
+      );
+    }
+
+    const rateLimitResult = await checkRateLimit(
+      null, // We'll check this later after we have db
+      clientKey || "unidentified",
+      {
+        keyPrefix: "advanced_analytics",
+        limit: ADVANCED_ANALYTICS_RATE_LIMIT_PER_HOUR,
+        windowMs: RATE_WINDOW_MS,
+      }
+    );
+
+    if (!rateLimitResult.ok) {
+      return rateLimitErrorResponse(rateLimitResult);
+    }
+
     // These figures are platform-wide revenue and customer counts, read with
     // the service role — operator-only business intelligence, so the caller
     // must be an administrator.
     const auth = await requireAdmin(base44);
-    if (!auth.ok) return auth.response;
+    if (!auth.ok) return addSecurityHeaders(auth.response);
     const db = base44.asServiceRole;
+
+    // Re-check rate limit now that we have db connection
+    const rateLimitResultDb = await checkRateLimit(
+      db,
+      clientKey || "unidentified",
+      {
+        keyPrefix: "advanced_analytics",
+        limit: ADVANCED_ANALYTICS_RATE_LIMIT_PER_HOUR,
+        windowMs: RATE_WINDOW_MS,
+      }
+    );
+
+    if (!rateLimitResultDb.ok) {
+      return rateLimitErrorResponse(rateLimitResultDb);
+    }
+
     const body = await req.json().catch(() => ({}));
     const action = String(body.action || '');
 

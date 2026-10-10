@@ -1,4 +1,5 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.49";
+import { addSecurityHeaders } from "../../shared/securityHeaders.ts";
 
 /**
  * submit-review — base44/functions/submit-review/entry.ts
@@ -17,34 +18,34 @@ function err(message: string, status = 400) {
 
 export default async function (req: Request) {
   try {
-    if (req.method !== "POST") return err("Method not allowed", 405);
+    if (req.method !== "POST") return addSecurityHeaders(err("Method not allowed", 405));
     const base44 = createClientFromRequest(req);
     const db = base44.asServiceRole;
 
     // Only a signed-in account may post a review.
     const user = await base44.auth.me().catch(() => null);
-    if (!user) return err("Connectez-vous pour publier un avis.", 401);
+    if (!user) return addSecurityHeaders(err("Connectez-vous pour publier un avis.", 401));
 
     const body = await req.json().catch(() => ({}));
 
     const productId = String(body.product_id || "").trim();
     const rating = Number(body.rating);
-    if (!productId) return err("Produit invalide.");
-    if (!Number.isInteger(rating) || rating < 1 || rating > 5) return err("Note invalide.");
+    if (!productId) return addSecurityHeaders(err("Produit invalide."));
+    if (!Number.isInteger(rating) || rating < 1 || rating > 5) return addSecurityHeaders(err("Note invalide."));
     const comment = String(body.comment || "").slice(0, 1000);
     const name = String(body.name || "").slice(0, 80) || "Client Congo Commerce";
     const sessionId = String(body.session_id || "").slice(0, 128);
     const phone = String(body.phone || "").replace(/\D/g, "");
 
     const product = await db.entities.Product.get(productId).catch(() => null);
-    if (!product || product.status !== "published") return err("Produit indisponible.");
+    if (!product || product.status !== "published") return addSecurityHeaders(err("Produit indisponible."));
 
     // One review per account per product — the reviewer is the signed-in account,
     // never a value the browser states about itself.
     const dupes = await db.entities.Review
       .filter({ product_id: productId, customer_email: user.email }, "-created_date", 1)
       .catch(() => []);
-    if (dupes?.length) return err("Vous avez déjà publié un avis sur cet article.", 409);
+    if (dupes?.length) return addSecurityHeaders(err("Vous avez déjà publié un avis sur cet article.", 409));
 
     // Entitlement: a DELIVERED order of this account that contains the product.
     const [byEmail, byId] = await Promise.all([
@@ -54,7 +55,7 @@ export default async function (req: Request) {
     const entitled = [...(byEmail || []), ...(byId || [])].some(
       (o: any) => o.status === "DELIVERED" && (o.items || []).some((i: any) => i.product_id === productId),
     );
-    if (!entitled) return err("Seuls les acheteurs ayant reçu l’article peuvent publier un avis.", 403);
+    if (!entitled) return addSecurityHeaders(err("Seuls les acheteurs ayant reçu l’article peuvent publier un avis.", 403));
 
     const review = await db.entities.Review.create({
       tenant_id: product.tenant_id || "",
@@ -83,9 +84,9 @@ export default async function (req: Request) {
       reviews_count: all?.length || 0,
     }).catch(() => null);
 
-    return Response.json({ review, product: updatedProduct });
+    return addSecurityHeaders(Response.json({ review, product: updatedProduct }));
   } catch (e) {
     console.error("submit-review: unhandled error", e);
-    return err("Impossible d’enregistrer votre avis pour le moment.", 500);
+    return addSecurityHeaders(err("Impossible d’enregistrer votre avis pour le moment.", 500));
   }
 }

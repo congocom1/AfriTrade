@@ -12,6 +12,11 @@
 
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.31";
 import { importSPKI, jwtVerify } from "npm:jose@5.9.6";
+import { addSecurityHeaders, getClientKey, checkRateLimit, rateLimitErrorResponse } from "../../shared/securityHeaders.ts";
+
+// Rate limiting configuration for webhooks
+const WEBHOOK_RATE_LIMIT_PER_HOUR = 1000; // High limit for payment webhooks
+const RATE_WINDOW_MS = 3600 * 1000;
 
 // Wix event types (verbatim from Wix docs).
 const ORDER_APPROVED = "wix.ecom.v1.order_approved";
@@ -53,7 +58,9 @@ function extractBuyerEmail(order: any): string | null {
 Deno.serve(async (req: Request) => {
   try {
     if (req.method !== "POST") {
-      return new Response("Method not allowed", { status: 405 });
+      return addSecurityHeaders(
+        new Response("Method not allowed", { status: 405 })
+      );
     }
 
     // Read per request, never at module scope: the key is stored when the webhook is registered, so
@@ -61,8 +68,32 @@ Deno.serve(async (req: Request) => {
     const WEBHOOK_PUBLIC_KEY = Deno.env.get("WIX_CHECKOUT_WEBHOOK_PUBLIC_KEY");
     if (!WEBHOOK_PUBLIC_KEY) {
       // Never process an unverifiable event. Missing key = misconfiguration, not a retry case.
-      console.error("payments-webhook: WIX_CHECKOUT_WEBHOOK_PUBLIC_KEY is not set");
-      return new Response("Webhook not configured", { status: 500 });
+      // WIX_CHECKOUT_WEBHOOK_PUBLIC_KEY is not set
+      return addSecurityHeaders(
+        new Response("Webhook not configured", { status: 500 })
+      );
+    }
+
+    // Rate limiting for webhooks
+    const clientKey = getClientKey(req);
+    if (!clientKey) {
+      console.warn(
+        "[payments-webhook] no client address on the request — applying shared rate limit",
+      );
+    }
+
+    const rateLimitResult = await checkRateLimit(
+      null, // We'll check this later after we have db
+      clientKey || "unidentified",
+      {
+        keyPrefix: "payments_webhook",
+        limit: WEBHOOK_RATE_LIMIT_PER_HOUR,
+        windowMs: RATE_WINDOW_MS,
+      }
+    );
+
+    if (!rateLimitResult.ok) {
+      return rateLimitErrorResponse(rateLimitResult);
     }
 
     // The raw body IS the JWT (Wix signs the whole payload, RS256).
@@ -76,29 +107,52 @@ Deno.serve(async (req: Request) => {
     } catch (err) {
       // Signature invalid / malformed. Reject — do NOT grant anything.
       console.error("payments-webhook: JWT verification failed", err);
-      return new Response("Invalid signature", { status: 401 });
+      return addSecurityHeaders(
+        new Response("Invalid signature", { status: 401 })
+      );
     }
 
     const { eventType, eventData } = parseWixEnvelope(payload);
     const base44 = createClientFromRequest(req);
     const db = base44.asServiceRole; // No end user is authenticated on a webhook call.
 
+    // Re-check rate limit now that we have db connection
+    const rateLimitResultDb = await checkRateLimit(
+      db,
+      clientKey || "unidentified",
+      {
+        keyPrefix: "payments_webhook",
+        limit: WEBHOOK_RATE_LIMIT_PER_HOUR,
+        windowMs: RATE_WINDOW_MS,
+      }
+    );
+
+    if (!rateLimitResultDb.ok) {
+      return rateLimitErrorResponse(rateLimitResultDb);
+    }
+
     if (eventType === ORDER_APPROVED) {
-      return await handleOrderApproved(db, eventData);
+      const response = await handleOrderApproved(db, eventData);
+      return addSecurityHeaders(response);
     }
 
     if (eventType === SUBSCRIPTION_CANCELED || eventType === SUBSCRIPTION_EXPIRED) {
-      return await handleSubscriptionEnded(db, eventData);
+      const response = await handleSubscriptionEnded(db, eventData);
+      return addSecurityHeaders(response);
     }
 
     // Unknown/irrelevant event — acknowledge so Wix stops retrying.
     console.log(`payments-webhook: ignoring event ${eventType}`);
-    return new Response("OK", { status: 200 });
+    return addSecurityHeaders(
+      new Response("OK", { status: 200 })
+    );
   } catch (err) {
     // Unexpected failure: 500 tells Wix to retry later (the handler is idempotent, so a
     // retry after a partial failure is safe).
     console.error("payments-webhook: unhandled error", err);
-    return new Response("Internal error", { status: 500 });
+    return addSecurityHeaders(
+      new Response("Internal error", { status: 500 })
+    );
   }
 });
 

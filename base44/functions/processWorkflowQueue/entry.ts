@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.49';
 import { STUCK_AFTER_MS, listStuckExecutions, resumeExecution, startWorkflow } from '../../shared/workflow.ts';
 import { requireAdmin } from '../../shared/security.ts';
+import { addSecurityHeaders } from '../../shared/securityHeaders.ts';
 
 /**
  * WORKFLOW QUEUE RUNNER — the background job behind every long-running
@@ -38,7 +39,7 @@ export default async function (req) {
         severity: 'warning',
         details: { reason: 'appel non administrateur' },
       }).catch(() => null);
-      return auth.response;
+      return addSecurityHeaders(auth.response);
     }
 
     const now = Date.now();
@@ -86,12 +87,12 @@ export default async function (req) {
       summary.dunning.push({ subscription_id: subscription.id, status: result.status || (result.duplicate ? 'DUPLICATE' : 'unknown') });
     }
 
-    return Response.json({
+    return addSecurityHeaders(Response.json({
       ok: true,
       ...summary,
       counts: { timed_out: summary.timed_out.length, retried: summary.retried.length, dunning: summary.dunning.length },
-    });
+    }));
   } catch (error) {
-    return Response.json({ error: String(error?.message || error) }, { status: 500 });
+    return addSecurityHeaders(Response.json({ error: String(error?.message || error) }, { status: 500 }));
   }
 }

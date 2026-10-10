@@ -15,8 +15,14 @@
 // (order.checkoutId === checkoutSession.id). Skipping this write makes fulfillment impossible.
 
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.31";
+import { addSecurityHeaders, getClientKey, checkRateLimit, rateLimitErrorResponse } from "../../shared/securityHeaders.ts";
 
 const CONSTRUCT_URL = "https://www.wixapis.com/payments/platform/v1/checkout-sessions/construct";
+
+// Rate limiting configuration for create-checkout
+const CREATE_CHECKOUT_RATE_LIMIT_PER_HOUR = 30;
+const CREATE_CHECKOUT_RATE_LIMIT_UNIDENTIFIED_PER_HOUR = 300;
+const RATE_WINDOW_MS = 3600 * 1000;
 
 // The app's public base URL for the buyer's return links. Use the platform-injected
 // `X-Base44-App-Url` header (server-set from app state — correct behind custom domains), then the
@@ -34,7 +40,9 @@ function resolveAppUrl(req: Request): string {
 Deno.serve(async (req: Request) => {
   try {
     if (req.method !== "POST") {
-      return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405 });
+      return addSecurityHeaders(
+  new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405 })
+);
     }
     // Read per request, never at module scope: disconnecting payments blanks these, and a warm
     // isolate that captured them at startup would keep charging with the old credentials.
@@ -42,7 +50,9 @@ Deno.serve(async (req: Request) => {
     const WIX_SITE_ID = Deno.env.get("WIX_CHECKOUT_SITE_ID");
     if (!WIX_API_KEY || !WIX_SITE_ID) {
       console.error("create-checkout: Wix payment config not set");
-      return new Response(JSON.stringify({ error: "Payments not configured" }), { status: 500 });
+      return addSecurityHeaders(
+  new Response(JSON.stringify({ error: "Payments not configured" }), { status: 500 })
+);
     }
 
     const appUrl = resolveAppUrl(req);
@@ -52,9 +62,34 @@ Deno.serve(async (req: Request) => {
       // relative return links like `/ThankYou` and strand the paid buyer. Never fall back to the
       // caller-controlled Origin (open redirect). Reconnecting payments repopulates the secret.
       console.error("create-checkout: no app URL (X-Base44-App-Url header and WIX_CHECKOUT_APP_URL both empty)");
-      return new Response(JSON.stringify({ error: "Payments not configured" }), { status: 500 });
+      return addSecurityHeaders(
+  new Response(JSON.stringify({ error: "Payments not configured" }), { status: 500 })
+);
     }
     const base44 = createClientFromRequest(req);
+    const db = base44.asServiceRole;
+
+    // Rate limiting for create-checkout
+    const clientKey = getClientKey(req);
+    if (!clientKey) {
+      console.warn(
+        "[create-checkout] no client address on the request — applying shared rate limit",
+      );
+    }
+
+    const rateLimitResult = await checkRateLimit(
+      db,
+      clientKey || "unidentified",
+      {
+        keyPrefix: "create_checkout",
+        limit: clientKey ? CREATE_CHECKOUT_RATE_LIMIT_PER_HOUR : CREATE_CHECKOUT_RATE_LIMIT_UNIDENTIFIED_PER_HOUR,
+        windowMs: RATE_WINDOW_MS,
+      }
+    );
+
+    if (!rateLimitResult.ok) {
+      return rateLimitErrorResponse(rateLimitResult);
+    }
 
     // Capture the buyer's app-user id IF signed in — but never REQUIRE it. This is the
     // fulfillment target the webhook grants to; when absent (anonymous buyer) the webhook grants
@@ -80,7 +115,7 @@ Deno.serve(async (req: Request) => {
     // hard-code `1` and ignore the body; for a genuine multi-unit product, also enforce YOUR own max.
     const quantity = Number(body.quantity ?? 1);
     if (!Number.isInteger(quantity) || quantity < 1) {
-      return new Response(JSON.stringify({ error: "Invalid quantity" }), { status: 400 });
+      return addSecurityHeaders(new Response(JSON.stringify({ error: "Invalid quantity" }), { status: 400 }));
     }
     // productId is the marketplace order number. The amount is the order total stored server-side;
     // only unpaid card orders can be charged, and each order is always charged once (quantity 1).

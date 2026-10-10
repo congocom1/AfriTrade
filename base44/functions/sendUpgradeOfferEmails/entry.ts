@@ -2,6 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.49';
 import { escapeHtml, pageUrl } from '../../shared/app.ts';
 import { UPGRADE_OFFER, daysSince, loadPlanContext, sellerEmail, sellerPlan, sendSellerOutreach } from '../../shared/sellers.ts';
 import { requireAdmin } from '../../shared/security.ts';
+import { addSecurityHeaders, getClientKey, checkRateLimit, rateLimitErrorResponse } from '../../shared/securityHeaders.ts';
 
 /**
  * Limited-time upgrade offer for inactive sellers on a free plan — the "free
@@ -14,17 +15,59 @@ function frenchDate(date) {
   return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
+// Rate limiting configuration for sendUpgradeOfferEmails
+const SEND_UPGRADE_OFFER_EMAILS_RATE_LIMIT_PER_HOUR = 10; // Limit to 10 per hour to prevent abuse
+const RATE_WINDOW_MS = 3600 * 1000;
+
 export default async function (req) {
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.json().catch(() => ({}));
     const ids = Array.isArray(body.seller_ids) ? body.seller_ids.filter(Boolean) : [];
-    if (!ids.length) return Response.json({ sent: 0, failed: 0, skipped: 0, results: [] });
+    if (!ids.length) return addSecurityHeaders(Response.json({ sent: 0, failed: 0, skipped: 0, results: [] }));
+
+    // Rate limiting for sendUpgradeOfferEmails
+    const clientKey = getClientKey(req);
+    if (!clientKey) {
+      console.warn(
+        "[sendUpgradeOfferEmails] no client address on the request — applying shared rate limit",
+      );
+    }
+
+    const rateLimitResult = await checkRateLimit(
+      null, // We'll check this later after we have db
+      clientKey || "unidentified",
+      {
+        keyPrefix: "send_upgrade_offer_emails",
+        limit: SEND_UPGRADE_OFFER_EMAILS_RATE_LIMIT_PER_HOUR,
+        windowMs: RATE_WINDOW_MS,
+      }
+    );
+
+    if (!rateLimitResult.ok) {
+      return rateLimitErrorResponse(rateLimitResult);
+    }
 
     // Scheduled outreach, never a user-facing action: only the platform's own
     // workflow (or an administrator) may send promotional mail to sellers.
     const auth = await requireAdmin(base44);
-    if (!auth.ok) return auth.response;
+    if (!auth.ok) return addSecurityHeaders(auth.response);
+    const db = base44.asServiceRole;
+
+    // Re-check rate limit now that we have db connection
+    const rateLimitResultDb = await checkRateLimit(
+      db,
+      clientKey || "unidentified",
+      {
+        keyPrefix: "send_upgrade_offer_emails",
+        limit: SEND_UPGRADE_OFFER_EMAILS_RATE_LIMIT_PER_HOUR,
+        windowMs: RATE_WINDOW_MS,
+      }
+    );
+
+    if (!rateLimitResultDb.ok) {
+      return rateLimitErrorResponse(rateLimitResultDb);
+    }
 
     const context = await loadPlanContext(base44);
     const pricing = pageUrl('/pricing');
@@ -95,13 +138,13 @@ export default async function (req) {
       });
     }
 
-    return Response.json({
+    return addSecurityHeaders(Response.json({
       sent: results.filter((r) => r.status === 'sent').length,
       failed: results.filter((r) => r.status === 'failed').length,
       skipped: results.filter((r) => r.status === 'skipped').length,
       results,
-    });
+    }));
   } catch (error) {
-    return Response.json({ error: String(error?.message || error) }, { status: 500 });
+    return addSecurityHeaders(Response.json({ error: String(error?.message || error) }, { status: 500 }));
   }
 }

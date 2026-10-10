@@ -1,6 +1,11 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.49';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
 import { typeLabel } from '../../shared/dataRequests.ts';
 import { requireAdmin } from '../../shared/security.ts';
+import { addSecurityHeaders, getClientKey, checkRateLimit, rateLimitErrorResponse } from '../../shared/securityHeaders.ts';
+
+// Rate limiting configuration for notifyComplianceTeam
+const NOTIFY_COMPLIANCE_TEAM_RATE_LIMIT_PER_HOUR = 60; // Allow 60 requests per hour
+const RATE_WINDOW_MS = 3600 * 1000;
 
 /**
  * Step 2: once the requester confirmed their address, the compliance team is
@@ -11,18 +16,56 @@ import { requireAdmin } from '../../shared/security.ts';
 export default async function (req) {
   try {
     const base44 = createClientFromRequest(req);
+
+    // Rate limiting for notifyComplianceTeam - check before auth
+    const clientKey = getClientKey(req);
+    if (!clientKey) {
+      console.warn(
+        "[notifyComplianceTeam] no client address on the request — applying shared rate limit",
+      );
+    }
+
+    const rateLimitResult = await checkRateLimit(
+      null, // We'll check this later after we have db
+      clientKey || "unidentified",
+      {
+        keyPrefix: "notify_compliance_team",
+        limit: NOTIFY_COMPLIANCE_TEAM_RATE_LIMIT_PER_HOUR,
+        windowMs: RATE_WINDOW_MS,
+      }
+    );
+
+    if (!rateLimitResult.ok) {
+      return rateLimitErrorResponse(rateLimitResult);
+    }
+
     const body = await req.json().catch(() => ({}));
     const requestId = String(body.request_id || '').trim();
-    if (!requestId) return Response.json({ error: 'request_id is required' }, { status: 400 });
+    if (!requestId) return addSecurityHeaders(Response.json({ error: 'request_id is required' }, { status: 400 }));
 
     // Only the request lifecycle (or an administrator) may alert the team: an
     // outsider could otherwise mark a request as "notified" and suppress the
     // compliance alert that is owed to the requester.
     const auth = await requireAdmin(base44);
-    if (!auth.ok) return auth.response;
+    if (!auth.ok) return addSecurityHeaders(auth.response);
+
+    // Re-check rate limit now that we have db connection
+    const rateLimitResultDb = await checkRateLimit(
+      base44.asServiceRole,
+      clientKey || "unidentified",
+      {
+        keyPrefix: "notify_compliance_team",
+        limit: NOTIFY_COMPLIANCE_TEAM_RATE_LIMIT_PER_HOUR,
+        windowMs: RATE_WINDOW_MS,
+      }
+    );
+
+    if (!rateLimitResultDb.ok) {
+      return rateLimitErrorResponse(rateLimitResultDb);
+    }
 
     const request = await base44.asServiceRole.entities.DataRequest.get(requestId).catch(() => null);
-    if (!request) return Response.json({ error: 'DataRequest not found' }, { status: 404 });
+    if (!request) return addSecurityHeaders(Response.json({ error: 'DataRequest not found' }, { status: 404 }));
 
     if (request.notified_compliance_at) {
       return Response.json({ skipped: true, reason: 'compliance team already notified' });
@@ -50,7 +93,7 @@ export default async function (req) {
       details: { type: request.type, email: request.email || '' },
     });
 
-    return Response.json({ notified: true, reference });
+    return addSecurityHeaders(Response.json({ notified: true, reference }));
   } catch (error) {
     return Response.json({ error: String(error?.message || error) }, { status: 500 });
   }

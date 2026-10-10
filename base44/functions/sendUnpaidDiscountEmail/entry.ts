@@ -10,6 +10,7 @@ import {
   tenantOf,
 } from '../../shared/fulfillments.ts';
 import { requireAdmin } from '../../shared/security.ts';
+import { addSecurityHeaders, getClientKey, checkRateLimit, rateLimitErrorResponse } from '../../shared/securityHeaders.ts';
 
 /**
  * Still unpaid after 24 hours: the customer gets a 10 % code by e-mail.

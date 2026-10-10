@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
+import { addSecurityHeaders } from '../../shared/securityHeaders.ts';
 
-const fail = (error, status = 400) => Response.json({ error }, { status });
+const fail = (error, status = 400) => addSecurityHeaders(Response.json({ error }, { status }));
 const ESC = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const lower = (v) => String(v ?? '').trim().toLowerCase();
 // Package figures go straight into the label markup, so they are coerced to
@@ -114,7 +115,7 @@ async function generateLabel(db, body, user) {
   });
 
   await db.entities.AuditLog.create({ action: 'shipping_label.generated', actor: user.email, entity: 'ShippingLabel', entity_id: label.id, reference: order_number, details: { carrier, tracking_number } });
-  return Response.json({ label, tracking_number });
+  return addSecurityHeaders(Response.json({ label, tracking_number }));
 }
 
 async function listLabels(db, body, user) {
@@ -128,7 +129,7 @@ async function listLabels(db, body, user) {
   if (order_number) filters.order_number = order_number;
   if (status) filters.status = status;
   const labels = await db.entities.ShippingLabel.filter(filters, '-generated_at', 100);
-  return Response.json({ labels });
+  return addSecurityHeaders(Response.json({ labels }));
 }
 
 async function getLabel(db, body, user) {

@@ -5,37 +5,69 @@
 
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.49";
 import { requireAdmin } from "../../shared/security.ts";
+import { addSecurityHeaders, getClientKey, checkRateLimit, rateLimitErrorResponse } from "../../shared/securityHeaders.ts";
 
-/**
- * confirm-payment — base44/functions/confirm-payment/entry.ts
- *
- * ADMIN-ONLY manual money confirmation. Mobile-money orders are recorded
- * PENDING + UNVERIFIED by place-order (no provider callback exists yet); when
- * finance confirms the cash actually arrived (MoMo SMS, aggregator dashboard),
- * this flips the order to PAID + verified and releases the fulfillments into
- * CONFIRMED — the same grant the signed card webhook performs. Idempotent.
- */
-
-function err(message: string, status = 400) {
-  return Response.json({ error: message }, { status });
-}
+// Rate limiting configuration for admin endpoints
+const ADMIN_RATE_LIMIT_PER_HOUR = 100; // Higher limit for admin operations
+const RATE_WINDOW_MS = 3600 * 1000;
 
 export default async function (req: Request) {
   try {
-    if (req.method !== "POST") return err("Method not allowed", 405);
     const base44 = createClientFromRequest(req);
-    const auth = await requireAdmin(base44);
-    if (!auth.ok) return auth.response;
     const db = base44.asServiceRole;
+
+    // Rate limiting for admin endpoints
+    const clientKey = getClientKey(req);
+    if (!clientKey) {
+      console.warn(
+        "[confirm-payment] no client address on the request — applying shared rate limit",
+      );
+    }
+
+    const rateLimitResult = await checkRateLimit(
+      db,
+      clientKey || "unidentified",
+      {
+        keyPrefix: "confirm_payment",
+        limit: ADMIN_RATE_LIMIT_PER_HOUR,
+        windowMs: RATE_WINDOW_MS,
+      }
+    );
+
+    if (!rateLimitResult.ok) {
+      return rateLimitErrorResponse(rateLimitResult);
+    }
+
+    if (req.method !== "POST") {
+      return addSecurityHeaders(
+        Response.json({ error: "Method not allowed" }, { status: 405 })
+      );
+    }
+
+    const auth = await requireAdmin(base44);
+    if (!auth.ok) {
+      return addSecurityHeaders(auth.response);
+    }
+
     const body = await req.json().catch(() => ({}));
     const orderNumber = String(body.order_number || "").trim();
-    if (!orderNumber) return err("order_number est requis.");
+    if (!orderNumber) {
+      return addSecurityHeaders(
+        Response.json({ error: "order_number est requis." }, { status: 400 })
+      );
+    }
 
     const orders = await db.entities.Order.filter({ order_number: orderNumber }).catch(() => []);
     const order = orders?.[0];
-    if (!order) return err("Commande introuvable.", 404);
+    if (!order) {
+      return addSecurityHeaders(
+        Response.json({ error: "Commande introuvable." }, { status: 404 })
+      );
+    }
     if (order.payment_verified && order.payment_status === "PAID") {
-      return Response.json({ order, already: true });
+      return addSecurityHeaders(
+        Response.json({ order, already: true })
+      );
     }
 
     const updated = await db.entities.Order.update(order.id, {
@@ -61,9 +93,13 @@ export default async function (req: Request) {
       severity: "info",
       details: { fulfillments_advanced: advanced, reference: updated.payment_reference },
     });
-    return Response.json({ order: updated, fulfillments_advanced: advanced });
+    return addSecurityHeaders(
+      Response.json({ order: updated, fulfillments_advanced: advanced })
+    );
   } catch (e) {
     console.error("confirm-payment: unhandled error", e);
-    return err("Confirmation impossible. Réessayez.", 500);
+    return addSecurityHeaders(
+      Response.json({ error: "Confirmation impossible. Réessayez." }, { status: 500 })
+    );
   }
 }

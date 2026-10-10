@@ -5,24 +5,11 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.49";
 import { requireAdmin } from "../../shared/security.ts";
 import { postWalletEntry, releasePending } from "../../shared/walletLedger.ts";
+import { addSecurityHeaders, getClientKey, checkRateLimit, rateLimitErrorResponse } from "../../shared/securityHeaders.ts";
 
-/**
- * refund-payment — base44/functions/refund-payment/entry.ts
- *
- * ADMIN-ONLY refund execution. Refunds used to be assembled in the browser
- * (wallet credit + ledger + order flag, uncapped amounts, seller shares left
- * payable), so anyone could mint customer balances. Now the server:
- * - caps the refund at the order's unrefunded remainder,
- * - credits the buyer's wallet (keyed by order session, not display name),
- * - reverses unreleased seller/creator shares so a refunded order can never
- *   still pay out on delivery,
- * - marks the order REFUNDED / PARTIALLY_REFUNDED.
- *
- * Provider money movement: card charges are NOT reversed here — the Wix charge
- * id is not stored on the order, so the record flags `provider_refund:
- * manual_required` for finance to complete in the Wix dashboard. Mobile-money
- * and cash never left the platform ledger, so the wallet credit IS the refund.
- */
+// Rate limiting configuration for admin endpoints
+const ADMIN_RATE_LIMIT_PER_HOUR = 100; // Higher limit for admin operations
+const RATE_WINDOW_MS = 3600 * 1000;
 
 function round2(n: unknown): number {
   return Math.round((Number(n) || 0) * 100) / 100;
@@ -34,24 +21,73 @@ function err(message: string, status = 400) {
 
 export default async function (req: Request) {
   try {
-    if (req.method !== "POST") return err("Method not allowed", 405);
     const base44 = createClientFromRequest(req);
-    const auth = await requireAdmin(base44);
-    if (!auth.ok) return auth.response;
     const db = base44.asServiceRole;
+
+    // Rate limiting for admin endpoints
+    const clientKey = getClientKey(req);
+    if (!clientKey) {
+      console.warn(
+        "[refund-payment] no client address on the request — applying shared rate limit",
+      );
+    }
+
+    const rateLimitResult = await checkRateLimit(
+      db,
+      clientKey || "unidentified",
+      {
+        keyPrefix: "refund_payment",
+        limit: ADMIN_RATE_LIMIT_PER_HOUR,
+        windowMs: RATE_WINDOW_MS,
+      }
+    );
+
+    if (!rateLimitResult.ok) {
+      return rateLimitErrorResponse(rateLimitResult);
+    }
+
+    if (req.method !== "POST") {
+      return addSecurityHeaders(
+        Response.json({ error: "Method not allowed" }, { status: 405 })
+      );
+    }
+
+    const auth = await requireAdmin(base44);
+    if (!auth.ok) {
+      return addSecurityHeaders(auth.response);
+    }
+
     const body = await req.json().catch(() => ({}));
 
     const orderNumber = String(body.order_number || "").trim();
     const amount = round2(body.amount);
-    if (!orderNumber) return err("order_number est requis.");
-    if (!(amount > 0)) return err("Montant invalide.");
+    if (!orderNumber) {
+      return addSecurityHeaders(
+        Response.json({ error: "order_number est requis." }, { status: 400 })
+      );
+    }
+    if (!(amount > 0)) {
+      return addSecurityHeaders(
+        Response.json({ error: "Montant invalide." }, { status: 400 })
+      );
+    }
 
     const orders = await db.entities.Order.filter({ order_number: orderNumber }).catch(() => []);
     const order = orders?.[0];
-    if (!order) return err("Commande introuvable.", 404);
-    if (order.payment_status === "REFUNDED") return err("Commande déjà remboursée.", 409);
+    if (!order) {
+      return addSecurityHeaders(
+        Response.json({ error: "Commande introuvable." }, { status: 404 })
+      );
+    }
+    if (order.payment_status === "REFUNDED") {
+      return addSecurityHeaders(
+        Response.json({ error: "Commande déjà remboursée." }, { status: 409 })
+      );
+    }
     if (!order.payment_verified || !["PAID", "PARTIALLY_REFUNDED"].includes(order.payment_status)) {
-      return err("Le paiement doit être confirmé avant tout remboursement.", 409);
+      return addSecurityHeaders(
+        Response.json({ error: "Le paiement doit être confirmé avant tout remboursement." }, { status: 409 })
+      );
     }
 
     // Cap at the unrefunded remainder (partial refunds allowed).
@@ -61,7 +97,9 @@ export default async function (req: Request) {
     const refundedSoFar = round2((prior || []).reduce((s: number, t: any) => s + (Number(t.amount_usd) || 0), 0));
     const remainder = round2((Number(order.total_usd) || 0) - refundedSoFar);
     if (round2(amount - remainder) > 0.005) {
-      return err(`Montant supérieur au reliquat remboursable (${remainder} USD).`, 409);
+      return addSecurityHeaders(
+        Response.json({ error: `Montant supérieur au reliquat remboursable (${remainder} USD).` }, { status: 409 })
+      );
     }
 
     // Buyer wallet: session id first (stable), display name only for legacy rows.
@@ -85,8 +123,8 @@ export default async function (req: Request) {
               owner_id: order.created_by_id || "",
               created_by_id: order.created_by_id || "",
               session_id: sessionId,
-        balance_usd: 0,
-      });
+            balance_usd: 0,
+          });
     }
 
     const reference = String(body.return_number || body.dispute_id || orderNumber);
@@ -103,7 +141,11 @@ export default async function (req: Request) {
       order_number: orderNumber,
       status: "posted",
     });
-    if (!posted.ok) return err("Remboursement impossible — réessayez.", 409);
+    if (!posted.ok) {
+      return addSecurityHeaders(
+        Response.json({ error: "Remboursement impossible — réessayez." }, { status: 409 })
+      );
+    }
     const tx = posted.transaction;
 
     // Two refunds racing on the same order both passed the remainder check
@@ -126,9 +168,13 @@ export default async function (req: Request) {
         order_id: order.id,
         order_number: orderNumber,
       });
-      if (!reversal.ok) console.error("refund-payment: reversal failed", orderNumber, reversal.reason);
+      if (!reversal.ok) {
+        console.error("refund-payment: reversal failed", orderNumber, reversal.reason);
+      }
       await db.entities.WalletTransaction.update(tx.id, { status: "reversed" });
-      return err("Un remboursement concurrent a déjà été enregistré sur cette commande.", 409);
+      return addSecurityHeaders(
+        Response.json({ error: "Un remboursement concurrent a déjà été enregistré sur cette commande." }, { status: 409 })
+      );
     }
 
     // Claw back unreleased shares: a refunded order must never still pay out.
@@ -173,9 +219,13 @@ export default async function (req: Request) {
       details: { amount_usd: amount, refunded_total_usd: round2(refundedSoFar + amount), shares_reversed: reversed, provider_refund: providerRefund, reason: String(body.reason || "") },
     });
 
-    return Response.json({ order: updatedOrder, transaction: tx, shares_reversed: reversed, provider_refund: providerRefund });
+    return addSecurityHeaders(
+      Response.json({ order: updatedOrder, transaction: tx, shares_reversed: reversed, provider_refund: providerRefund })
+    );
   } catch (e) {
     console.error("refund-payment: unhandled error", e);
-    return err("Remboursement impossible. Réessayez.", 500);
+    return addSecurityHeaders(
+      Response.json({ error: "Remboursement impossible. Réessayez." }, { status: 500 })
+    );
   }
 }
