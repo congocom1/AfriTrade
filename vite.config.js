@@ -1,11 +1,11 @@
-import base44 from "@base44/vite-plugin"
-import react from '@vitejs/plugin-react'
-import { defineConfig } from 'vite'
-import path from 'path'
+const base44 = require("@base44/vite-plugin");
+const react = require('@vitejs/plugin-react');
+const { defineConfig } = require('vite');
+const path = require('path');
 
-// Vite's native config loader does not provide `__dirname`; use the ESM
-// equivalent so the alias resolves under both loaders.
-const SRC = path.resolve(import.meta.dirname, 'src')
+// Use a CommonJS-style config so builders that parse vite.config.js with
+// CJS (like some CI/build environments) won't fail with ESM-only syntax.
+const SRC = path.resolve(process.cwd(), 'src');
 
 // Security headers plugin
 const securityHeadersPlugin = () => {
@@ -24,7 +24,7 @@ const securityHeadersPlugin = () => {
           res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
 
           // Basic CSP - adjust as needed for your application
-          res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' https: wss:;");
+          res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' https: ws:;");
         }
 
         next();
@@ -33,8 +33,7 @@ const securityHeadersPlugin = () => {
   };
 };
 
-// https://vite.dev/config/
-export default defineConfig({
+module.exports = defineConfig({
   plugins: [
     base44({
       legacySDKImports: process.env.BASE44_LEGACY_SDK_IMPORTS === 'true',
