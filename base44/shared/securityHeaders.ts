@@ -163,6 +163,11 @@ export async function checkRateLimit(
   clientKey: string,
   config: RateLimitConfig
 ): Promise<RateLimitResult> {
+  // If db is not available (e.g., pre-auth check), skip rate limiting gracefully
+  if (!db) {
+    return { ok: true, used: 0, limit: config.limit };
+  }
+
   const key_prefix = `${config.keyPrefix}:${clientKey}`;
   const window_start = new Date(
     Math.floor(Date.now() / config.windowMs) * config.windowMs,

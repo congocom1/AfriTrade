@@ -95,7 +95,11 @@ async function generateLabel(db, body, user) {
   if (!order_number || !carrier) return fail('order_number et carrier requis');
   if (!(await mayManageOrder(db, user, order_number))) return fail('Accès refusé', 403);
 
-  const label_id = `LBL-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+  // Generate random suffix for label ID
+  const randomBytes1 = new Uint8Array(3);
+  crypto.getRandomValues(randomBytes1);
+  const randomSuffix1 = Array.from(randomBytes1, b => b.toString(16).padStart(2, '0')).join('').slice(0, 4).toUpperCase();
+  const label_id = `LBL-${Date.now().toString(36).toUpperCase()}-${randomSuffix1}`;
   const tracking_number = generateTracking(carrier);
 
   const sender = body.sender || { name: 'Congo Commerce', address: 'Kinshasa, RDC', city: 'Kinshasa', country: 'CD', phone: '+243 000 000 000' };
@@ -170,7 +174,11 @@ async function updateStatus(db, body, user) {
 function generateTracking(carrier) {
   const prefixes = { dhl: 'DHL', fedex: 'FDX', ups: 'UPS', china_post: 'CP', ems: 'EMS', congo_courier: 'CC', custom: 'CUSTOM' };
   const prefix = prefixes[carrier] || 'CC';
-  return `${prefix}-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+  // Generate random suffix using crypto.getRandomValues
+  const randomBytes = new Uint8Array(3);
+  crypto.getRandomValues(randomBytes);
+  const randomSuffix = Array.from(randomBytes, b => b.toString(16).padStart(2, '0')).join('').slice(0, 4).toUpperCase();
+  return `${prefix}-${Date.now().toString(36).toUpperCase()}-${randomSuffix}`;
 }
 
 function buildLabelHTML(label_id, tracking_number, sender, recipient, pkg, carrier, order_number) {

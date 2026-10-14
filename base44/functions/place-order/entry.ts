@@ -147,19 +147,11 @@ function splitShipping(shippingCdf, courierCommissionPct) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const ORDER_PREFIX = "CMD";
-let _seq = Math.floor(Math.random() * 900) + 100;
 function nextOrderNumber() {
-  _seq = (_seq + 1) % 10000;
-  const ts = Date.now() % 100000;
-  const rnd = Math.floor(Math.random() * 90) + 10;
-  return (
-    ORDER_PREFIX +
-    "-" +
-    String(ts) +
-    String(_seq).padStart(4, "0") +
-    "-" +
-    rnd
-  );
+  const ts = Date.now().toString(36).toUpperCase();
+  const rnd = crypto.getRandomValues(new Uint8Array(4));
+  const rndStr = Array.from(rnd, b => b.toString(16).padStart(2, '0')).join('').toUpperCase().slice(0, 8);
+  return `${ORDER_PREFIX}-${ts}-${rndStr}`;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -195,8 +187,11 @@ function computeCouponDiscount(coupon, subtotalCdf) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function genSessionId() {
+  const randomBytes = new Uint8Array(6);
+  crypto.getRandomValues(randomBytes);
+  const randomStr = Array.from(randomBytes, b => b.toString(16).padStart(2, '0')).join('').slice(0, 8);
   return (
-    "srv-" + Math.random().toString(36).slice(2, 10) + "-" +
+    "srv-" + randomStr + "-" +
     Date.now().toString(36)
   );
 }
@@ -400,7 +395,7 @@ async function buildCheckoutQuote(client, params) {
     : { discountCdf: 0, code: null };
 
   const discountCents = round2(
-    (discountResult.discountCdf / USD_TO_CDF) * 100,
+    (discountResult.discountCdf / getUsdToCdfRateCents()) * 100,
   );
   const afterDiscountCents = round2(subtotalCents - discountCents);
 
@@ -408,7 +403,7 @@ async function buildCheckoutQuote(client, params) {
   const chargeShipping = afterDiscountCents < freeThresholdCents;
   const shippingUsd = chargeShipping ? cfg.shippingFlatUsd : 0;
   const shippingCents = round2(shippingUsd * 100);
-  const shippingCdf = round2(shippingUsd * USD_TO_CDF);
+  const shippingCdf = round2((shippingUsd * getUsdToCdfRateCents()) / 100);
 
   const platformFeeCents = round2(subtotalCents * cfg.platformFeePct);
 
@@ -435,7 +430,7 @@ async function buildCheckoutQuote(client, params) {
     platform_fee_usd: round2(platformFeeCents / 100),
     total_cents: totalCents,
     total_usd: totalUsd,
-    total_cdf: round2(totalUsd * USD_TO_CDF),
+    total_cdf: round2((totalUsd * getUsdToCdfRateCents()) / 100),
     pricingConfig: cfg,
   };
 }
@@ -452,14 +447,21 @@ async function findCoupon(client, code) {
 
 /** Generate a pick-up code (4 digit number). */
 function generatePickupCode() {
-  return String(Math.floor(1000 + Math.random() * 9000));
+  const randomBytes = new Uint8Array(2);
+  crypto.getRandomValues(randomBytes);
+  // Generate a number between 1000 and 9999
+  const randomValue = 1000 + (randomBytes[0] * 256 + randomBytes[1]) % 9000;
+  return String(randomValue);
 }
 
 /** Generate a tracking number for a shipment. */
 function generateTrackingNumber(fulfillmentOrderNumber) {
   const ts = Date.now().toString(36).toUpperCase();
-  const rnd = Math.random().toString(36).slice(2, 6).toUpperCase();
-  return "CGO-" + fulfillmentOrderNumber + "-" + ts + "-" + rnd;
+  // Generate cryptographically secure random suffix
+  const randomBytes = new Uint8Array(2);
+  crypto.getRandomValues(randomBytes);
+  const rndStr = Array.from(randomBytes, b => b.toString(16).padStart(2, '0')).join('').toUpperCase().slice(0, 4);
+  return "CGO-" + fulfillmentOrderNumber + "-" + ts + "-" + rndStr;
 }
 
 /** Format an invoice number. */
@@ -608,7 +610,7 @@ export async function placeOrder(db, params) {
   const subtotal_cents = round2(
     validatedLines.reduce((a, l) => a + l.line_total_cents, 0),
   );
-  const subtotal_cdf = round2(subtotal_cents * USD_TO_CDF);
+  const subtotal_cdf = round2((subtotalCents * getUsdToCdfRateCents()) / 100);
   const subtotal_usd = round2(subtotal_cents / 100);
 
   let couponRecord = null;
@@ -621,7 +623,7 @@ export async function placeOrder(db, params) {
       const result = computeCouponDiscount(couponRecord, subtotal_cdf);
       discount_cdf = result.discountCdf;
       discount_code = result.code;
-      discount_cents = round2((discount_cdf / USD_TO_CDF) * 100);
+      discount_cents = round2((discount_cdf / getUsdToCdfRateCents()) * 100);
     }
   }
 
@@ -633,11 +635,11 @@ export async function placeOrder(db, params) {
   const chargeShipping = afterDiscount_cents < freeThreshold_cents;
   const shipping_fee_usd = chargeShipping ? cfg.shippingFlatUsd : 0;
   const shipping_fee_cents = round2(shipping_fee_usd * 100);
-  const shipping_fee_cdf = round2(shipping_fee_usd * USD_TO_CDF);
+  const shipping_fee_cdf = round2((shipping_fee_usd * getUsdToCdfRateCents()) / 100);
 
   const total_cents = round2(afterDiscount_cents + shipping_fee_cents);
   const total_usd = round2(total_cents / 100);
-  const total_cdf = round2(total_usd * USD_TO_CDF);
+  const total_cdf = round2((total_usd * getUsdToCdfRateCents()) / 100);
 
   const platform_fee_cents = round2(subtotal_cents * cfg.platformFeePct);
   const platform_fee_usd = round2(platform_fee_cents / 100);
@@ -704,7 +706,7 @@ export async function placeOrder(db, params) {
     discount_cdf: discount_cdf,
     discount_code: discount_code ?? "",
     platform_fee_cents: platform_fee_cents,
-    platform_fee_cdf: round2(platform_fee_cents * USD_TO_CDF),
+    platform_fee_cdf: round2((platform_fee_cents * getUsdToCdfRateCents()) / 100),
     total_cents,
     total_cdf,
     total_usd,
@@ -787,7 +789,7 @@ export async function placeOrder(db, params) {
       subtotal_cents: sellerSubtotal_cents,
       shipping_fee_cents: sellerShippingCents,
       platform_fee_cents: sellerPlatformFeeCents,
-      platform_fee_cdf: round2(sellerPlatformFeeCents * USD_TO_CDF),
+      platform_fee_cdf: round2((sellerPlatformFeeCents * getUsdToCdfRateCents()) / 100),
       total_cents: round2(sellerSubtotal_cents + sellerShippingCents),
       items: sellerLines.map((l) => ({
         product_id: l.product_id,
@@ -890,7 +892,7 @@ export async function placeOrder(db, params) {
       type: "seller_credit",
       direction: "credit",
       amount: round2(sellerNet_cents / 100),
-      amount_cdf: round2((sellerNet_cents / 100) * USD_TO_CDF),
+      amount_cdf: round2((sellerNet_cents / 100) * getUsdToCdfRateCents()),
       status: "pending",
       description: "Vente/" + orderNumber,
       reference: foBySeller.get(seller_id)?.fulfillment_number || orderNumber,
@@ -915,7 +917,7 @@ export async function placeOrder(db, params) {
     type: "platform_fee",
     direction: "credit",
     amount: round2(platform_fee_cents / 100),
-    amount_cdf: round2((platform_fee_cents / 100) * USD_TO_CDF),
+    amount_cdf: round2((platform_fee_cents / 100) * getUsdToCdfRateCents()),
     status: "pending",
     description: "Frais plateforme/" + orderNumber,
     reference: orderNumber,
@@ -957,7 +959,7 @@ export async function placeOrder(db, params) {
       type: "creator_commission",
       direction: "credit",
       amount: round2(creatorTotal_cents / 100),
-      amount_cdf: round2((creatorTotal_cents / 100) * USD_TO_CDF),
+      amount_cdf: round2((creatorTotal_cents / 100) * getUsdToCdfRateCents()),
       status: "pending",
       description: "Commission créateur/" + orderNumber,
       reference: orderNumber,
@@ -988,7 +990,7 @@ export async function placeOrder(db, params) {
         type: "courier_earning",
         direction: "credit",
         amount: round2(courierEarningsCents / 100),
-        amount_cdf: round2((courierEarningsCents / 100) * USD_TO_CDF),
+        amount_cdf: round2((courierEarningsCents / 100) * getUsdToCdfRateCents()),
         status: "pending",
         description: "Livraison/" + orderNumber,
         reference: orderNumber,
@@ -1102,6 +1104,9 @@ export default async function (request) {
   try {
     const base44 = createClientFromRequest(request);
     const db = base44.asServiceRole;
+
+    // Load exchange rate before processing
+    await loadUsdToCdfRate(db);
 
     let user = null;
     try {

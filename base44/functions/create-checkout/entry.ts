@@ -120,14 +120,14 @@ Deno.serve(async (req: Request) => {
     // productId is the marketplace order number. The amount is the order total stored server-side;
     // only unpaid card orders can be charged, and each order is always charged once (quantity 1).
     if (quantity !== 1) {
-      return new Response(JSON.stringify({ error: "Invalid quantity" }), { status: 400 });
+      return addSecurityHeaders(new Response(JSON.stringify({ error: "Invalid quantity" }), { status: 400 }));
     }
     const order = (await base44.asServiceRole.entities.Order.filter({ order_number: productId }))[0];
     if (!order) {
-      return new Response(JSON.stringify({ error: "Unknown order" }), { status: 400 });
+      return addSecurityHeaders(new Response(JSON.stringify({ error: "Unknown order" }), { status: 400 }));
     }
     if (order.payment_provider !== "card" || order.payment_status !== "PENDING" || order.status === "CANCELLED") {
-      return new Response(JSON.stringify({ error: "Order is not awaiting card payment" }), { status: 409 });
+      return addSecurityHeaders(new Response(JSON.stringify({ error: "Order is not awaiting card payment" }), { status: 409 }));
     }
     const productName = `Commande ${order.order_number}`;
     const price = Number(order.total_usd || 0).toFixed(2);
@@ -141,7 +141,7 @@ Deno.serve(async (req: Request) => {
     const total = parseFloat(price) * quantity;
     if (!(total >= 0.5)) {
       // Wix rejects charges under 0.50 in the charged currency (major units, not cents).
-      return new Response(JSON.stringify({ error: "Amount must be at least 0.50" }), { status: 400 });
+      return addSecurityHeaders(new Response(JSON.stringify({ error: "Amount must be at least 0.50" }), { status: 400 }));
     }
 
     const constructBody = {
@@ -169,7 +169,7 @@ Deno.serve(async (req: Request) => {
     if (!wixRes.ok) {
       const errText = await wixRes.text();
       console.error("create-checkout: Wix construct failed", { status: wixRes.status, errText });
-      return new Response(JSON.stringify({ error: "Could not start checkout" }), { status: 502 });
+      return addSecurityHeaders(new Response(JSON.stringify({ error: "Could not start checkout" }), { status: 502 }));
     }
 
     const { checkoutSession } = await wixRes.json();
@@ -178,7 +178,7 @@ Deno.serve(async (req: Request) => {
 
     if (!checkoutSessionId || !redirectUrl) {
       console.error("create-checkout: missing checkoutSession id/redirectUrl", checkoutSession);
-      return new Response(JSON.stringify({ error: "Could not start checkout" }), { status: 502 });
+      return addSecurityHeaders(new Response(JSON.stringify({ error: "Could not start checkout" }), { status: 502 }));
     }
 
     // PERSIST THE JOIN KEY (the whole point). Pending until the webhook flips it to "paid".
@@ -190,7 +190,7 @@ Deno.serve(async (req: Request) => {
       status: "pending",
       appUserId: appUser?.id ?? null,
       buyerEmail: appUser?.email ?? null,
-      created_by_id: appUser?.id ?? "",
+      created_by_id: appUser?.id ?? null,
       // The server-resolved product key — the webhook grant reads this to decide what to unlock.
       productId,
       productName,
@@ -203,12 +203,16 @@ Deno.serve(async (req: Request) => {
       currency,
     });
 
-    return new Response(JSON.stringify({ redirectUrl }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    return addSecurityHeaders(
+      new Response(JSON.stringify({ redirectUrl }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      })
+    );
   } catch (err) {
     console.error("create-checkout: unhandled error", err);
-    return new Response(JSON.stringify({ error: "Internal error" }), { status: 500 });
+    return addSecurityHeaders(
+      new Response(JSON.stringify({ error: "Internal error" }), { status: 500 })
+    );
   }
 });

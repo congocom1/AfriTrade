@@ -74,26 +74,12 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // Rate limiting for webhooks
+    // Rate limiting for webhooks - check after we have db connection
     const clientKey = getClientKey(req);
     if (!clientKey) {
       console.warn(
         "[payments-webhook] no client address on the request — applying shared rate limit",
       );
-    }
-
-    const rateLimitResult = await checkRateLimit(
-      null, // We'll check this later after we have db
-      clientKey || "unidentified",
-      {
-        keyPrefix: "payments_webhook",
-        limit: WEBHOOK_RATE_LIMIT_PER_HOUR,
-        windowMs: RATE_WINDOW_MS,
-      }
-    );
-
-    if (!rateLimitResult.ok) {
-      return rateLimitErrorResponse(rateLimitResult);
     }
 
     // The raw body IS the JWT (Wix signs the whole payload, RS256).
@@ -116,8 +102,8 @@ Deno.serve(async (req: Request) => {
     const base44 = createClientFromRequest(req);
     const db = base44.asServiceRole; // No end user is authenticated on a webhook call.
 
-    // Re-check rate limit now that we have db connection
-    const rateLimitResultDb = await checkRateLimit(
+    // Check rate limit now that we have db connection
+    const rateLimitResult = await checkRateLimit(
       db,
       clientKey || "unidentified",
       {
@@ -127,8 +113,8 @@ Deno.serve(async (req: Request) => {
       }
     );
 
-    if (!rateLimitResultDb.ok) {
-      return rateLimitErrorResponse(rateLimitResultDb);
+    if (!rateLimitResult.ok) {
+      return rateLimitErrorResponse(rateLimitResult);
     }
 
     if (eventType === ORDER_APPROVED) {

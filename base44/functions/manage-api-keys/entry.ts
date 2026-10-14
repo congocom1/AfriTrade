@@ -41,7 +41,7 @@ export default async function (req: Request) {
   try {
     const base44 = createClientFromRequest(req);
 
-    // Rate limiting for manage-api-keys - check before auth
+    // Rate limiting for manage-api-keys - check after auth
     const clientKey = getClientKey(req);
     if (!clientKey) {
       console.warn(
@@ -49,8 +49,16 @@ export default async function (req: Request) {
       );
     }
 
+    const auth = await requireAdmin(base44);
+    if (!auth.ok) return addSecurityHeaders(auth.response);
+    const db = base44.asServiceRole;
+    const method = req.method;
+    const url = new URL(req.url);
+    const body = await req.json().catch(() => ({}));
+
+    // Check rate limit now that we have db connection
     const rateLimitResult = await checkRateLimit(
-      null, // We'll check this later after we have db
+      db,
       clientKey || "unidentified",
       {
         keyPrefix: "manage_api_keys",
@@ -61,28 +69,6 @@ export default async function (req: Request) {
 
     if (!rateLimitResult.ok) {
       return rateLimitErrorResponse(rateLimitResult);
-    }
-
-    const auth = await requireAdmin(base44);
-    if (!auth.ok) return addSecurityHeaders(auth.response);
-    const db = base44.asServiceRole;
-    const method = req.method;
-    const url = new URL(req.url);
-    const body = await req.json().catch(() => ({}));
-
-    // Re-check rate limit now that we have db connection
-    const rateLimitResultDb = await checkRateLimit(
-      db,
-      clientKey || "unidentified",
-      {
-        keyPrefix: "manage_api_keys",
-        limit: MANAGE_API_KEYS_RATE_LIMIT_PER_HOUR,
-        windowMs: RATE_WINDOW_MS,
-      }
-    );
-
-    if (!rateLimitResultDb.ok) {
-      return rateLimitErrorResponse(rateLimitResultDb);
     }
 
     if (method === 'POST' && url.pathname === '/api-keys') {

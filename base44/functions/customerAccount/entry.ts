@@ -27,8 +27,13 @@ function err(message: string, status = 400) {
 
 const lower = (value: any) => String(value || "").trim().toLowerCase();
 
-const ref = (prefix: string) =>
-  `${prefix}-${Date.now().toString(36).toUpperCase()}${Math.random().toString(36).slice(2, 5).toUpperCase()}`;
+const ref = (prefix: string) => {
+  // Generate random suffix using crypto.getRandomValues
+  const randomBytes = new Uint8Array(2);
+  crypto.getRandomValues(randomBytes);
+  const randomSuffix = Array.from(randomBytes, b => b.toString(16).padStart(2, '0')).join('').slice(0, 3).toUpperCase();
+  return `${prefix}-${Date.now().toString(36).toUpperCase()}${randomSuffix}`;
+};
 
 const dedupe = (rows: any[]) =>
   (rows || []).reduce((acc: any[], row: any) => (acc.some((x) => x.id === row.id) ? acc : [...acc, row]), []);

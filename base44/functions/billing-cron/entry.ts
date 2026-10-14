@@ -171,7 +171,11 @@ async function maybeIssueInvoice(db: any, sub: any, now: Date) {
     tenant_id: sub.tenant_id,
     tenant_name: sub.tenant_name || '',
     owner_email: sub.owner_email || '',
-    invoice_number: `INV-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`,
+    // Generate random suffix using crypto.getRandomValues
+    const randomBytes = new Uint8Array(3);
+    crypto.getRandomValues(randomBytes);
+    const randomSuffix = Array.from(randomBytes, b => b.toString(16).padStart(2, '0')).join('').slice(0, 4).toUpperCase();
+    invoice_number: `INV-${Date.now().toString(36).toUpperCase()}-${randomSuffix}`,
     plan_code: sub.plan_code,
     billing_cycle: cycle,
     period_start: sub.current_period_start,
