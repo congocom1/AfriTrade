@@ -3,9 +3,11 @@ import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 import path from 'path'
 
-// Vite's native config loader does not provide `__dirname`; use the ESM
-// equivalent so the alias resolves under both loaders.
-const SRC = path.resolve(import.meta.dirname, 'src')
+// Use an ESM-compatible method to resolve the src directory so aliasing works
+// across loaders and on Windows.
+const SRC = path.resolve(process.cwd(), 'src')
+// Alternatively you could use:
+// const SRC = path.resolve(new URL('./src', import.meta.url).pathname)
 
 // Security headers plugin
 const securityHeadersPlugin = () => {
@@ -24,7 +26,7 @@ const securityHeadersPlugin = () => {
           res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
 
           // Basic CSP - adjust as needed for your application
-          res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' https: wss:;");
+          res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' https: ws:;");
         }
 
         next();
