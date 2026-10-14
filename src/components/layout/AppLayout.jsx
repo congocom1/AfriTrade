@@ -1,9 +1,5 @@
-import React, { useEffect } from 'react';
-import { Outlet } from 'react-router-dom';
-import TopBar from './TopBar';
-import LegalFooter from '@/components/legal/LegalFooter';
+import { useEffect } from 'react';
 import { applyTenantBranding, clearTenantBranding, resolveTenantByHost } from '@/lib/tenancy';
-import BackButton from '@/components/BackButton';
 
 export default function AppLayout() {
   useEffect(() => {

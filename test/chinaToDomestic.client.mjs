@@ -46,6 +46,20 @@ export function createClientFromRequest() {
             ST.calls.create.audit = body;
           },
         },
+        ApiRateLimit: {
+          filter: async (q) => {
+            ST.calls.filter.rateLimit = q;
+            // Return empty array for no existing rate limit entry (allows request)
+            return [];
+          },
+          update: async (id, patch) => {
+            ST.calls.update.rateLimit = { id, patch };
+          },
+          create: async (body) => {
+            ST.calls.create.rateLimit = body;
+            return { ...body, id: 'rl-' + Math.random().toString(36).slice(2, 8) };
+          },
+        },
       },
     },
   };

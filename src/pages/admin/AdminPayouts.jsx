@@ -3,7 +3,7 @@ import { Banknote, Check, X } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import DashboardNav from '@/components/DashboardNav';
 import { ADMIN_LINKS } from '@/lib/navLinks';
-import { formatUSD, formatDateTime, round2Cents } from '@/lib/format';
+import { formatUSD, formatDateTime } from '@/lib/format';
 import { useTranslation } from 'react-i18next';
 
 const TAB_IDS = ['pending', 'posted', 'reversed'];

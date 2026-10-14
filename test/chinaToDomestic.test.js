@@ -41,6 +41,7 @@ function resetState() {
 function writeTestModule() {
   const clientPath = 'file://' + path.join(__dirname, 'chinaToDomestic.client.mjs').replace(/\\/g, '/');
   const securityPath = 'file://' + path.join(__dirname, '..', 'base44', 'shared', 'security.ts').replace(/\\/g, '/');
+  const securityHeadersPath = 'file://' + path.join(__dirname, '..', 'base44', 'shared', 'securityHeaders.ts').replace(/\\/g, '/');
   let rewritten = originalSrc.replace(
     /import\s+\{[^}]*createClientFromRequest[^}]*\}\s+from\s+['"]npm:@base44\/sdk@[^'"]+['"]/,
     `import { createClientFromRequest } from "${clientPath}"`
@@ -54,6 +55,15 @@ function writeTestModule() {
   rewritten = rewritten.replace(
     /from\s+["']\.\.\/\.\.\/shared\/security\.ts["']/,
     `from "${securityPath}"`
+  );
+  // Also rewrite the securityHeaders.ts import
+  rewritten = rewritten.replace(
+    /from\s+['"]\.\.\/\.\.\/shared\/securityHeaders\.ts['"]/,
+    `from "${securityHeadersPath}"`
+  );
+  rewritten = rewritten.replace(
+    /from\s+["']\.\.\/\.\.\/shared\/securityHeaders\.ts["']/,
+    `from "${securityHeadersPath}"`
   );
   const testModPath = path.join(__dirname, 'chinaToDomestic.testmod.mjs');
   fs.writeFileSync(testModPath, rewritten);
@@ -69,7 +79,7 @@ describe('chinaToDomestic', () => {
   it('converts an approved receipt: increments stock, creates fulfillment orders', async () => {
     const modUrl = writeTestModule();
     const mod = await import(modUrl);
-    const req = { method: 'POST', json: async () => ({ receiptId: 7 }) };
+    const req = { method: 'POST', json: async () => ({ receiptId: 7 }), headers: { get: () => '127.0.0.1' } };
     const res = await mod.default(req);
     const body = await res.json();
 
@@ -81,7 +91,7 @@ describe('chinaToDomestic', () => {
   it('increments Product.stock for every line item', async () => {
     const modUrl = writeTestModule();
     const mod = await import(modUrl);
-    const req = { method: 'POST', json: async () => ({ receiptId: 7 }) };
+    const req = { method: 'POST', json: async () => ({ receiptId: 7 }), headers: { get: () => '127.0.0.1' } };
     await mod.default(req);
 
     assert.equal(state.products[0].stock, 13); // 10 + 3
@@ -91,7 +101,7 @@ describe('chinaToDomestic', () => {
   it('creates one FulfillmentOrder per receipt line item', async () => {
     const modUrl = writeTestModule();
     const mod = await import(modUrl);
-    const req = { method: 'POST', json: async () => ({ receiptId: 7 }) };
+    const req = { method: 'POST', json: async () => ({ receiptId: 7 }), headers: { get: () => '127.0.0.1' } };
     await mod.default(req);
 
     const { create } = state.calls;
@@ -105,7 +115,7 @@ describe('chinaToDomestic', () => {
   it('marks the receipt status as converted', async () => {
     const modUrl = writeTestModule();
     const mod = await import(modUrl);
-    const req = { method: 'POST', json: async () => ({ receiptId: 7 }) };
+    const req = { method: 'POST', json: async () => ({ receiptId: 7 }), headers: { get: () => '127.0.0.1' } };
     await mod.default(req);
 
     assert.ok(state.calls.update.receipt);
@@ -115,7 +125,7 @@ describe('chinaToDomestic', () => {
   it('emits an AuditLog entry for the conversion', async () => {
     const modUrl = writeTestModule();
     const mod = await import(modUrl);
-    const req = { method: 'POST', json: async () => ({ receiptId: 7 }) };
+    const req = { method: 'POST', json: async () => ({ receiptId: 7 }), headers: { get: () => '127.0.0.1' } };
     await mod.default(req);
 
     const { audit } = state.calls.create;
@@ -130,7 +140,7 @@ describe('chinaToDomestic', () => {
     globalThis.__chinaToDomesticTestState = state;
     const modUrl = writeTestModule();
     const mod = await import(modUrl);
-    const req = { method: 'POST', json: async () => ({ receiptId: 999 }) };
+    const req = { method: 'POST', json: async () => ({ receiptId: 999 }), headers: { get: () => '127.0.0.1' } };
     const res = await mod.default(req);
     assert.equal(res.status, 404);
   });
@@ -140,7 +150,7 @@ describe('chinaToDomestic', () => {
     globalThis.__chinaToDomesticTestState = state;
     const modUrl = writeTestModule();
     const mod = await import(modUrl);
-    const req = { method: 'POST', json: async () => ({ receiptId: 7 }) };
+    const req = { method: 'POST', json: async () => ({ receiptId: 7 }), headers: { get: () => '127.0.0.1' } };
     const res = await mod.default(req);
     assert.equal(res.status, 409);
   });

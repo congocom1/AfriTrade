@@ -7,7 +7,7 @@ import OpsHeader from '@/components/ops/OpsHeader';
 import StatCard from '@/components/ops/StatCard';
 import ReconciliationTable from '@/components/finance/ReconciliationTable';
 import { providerLabel } from '@/lib/payments';
-import { formatUSD, formatDateTime, round2Cents } from '@/lib/format';
+import { formatUSD, formatDateTime } from '@/lib/format';
 import { useTranslation } from 'react-i18next';
 
 const PAID = ['PAID', 'AUTHORIZED'];
