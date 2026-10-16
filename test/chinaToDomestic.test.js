@@ -13,6 +13,8 @@ import ts from 'typescript';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const fnSrcPath = path.join(__dirname, '..', 'base44/functions/chinaToDomestic/entry.ts');
+const receiptSchemaPath = path.join(__dirname, '..', 'base44/entities/ChinaWarehouseReceipt.jsonc');
+const fulfillmentSchemaPath = path.join(__dirname, '..', 'base44/entities/FulfillmentOrder.jsonc');
 const originalSrc = fs.readFileSync(fnSrcPath, 'utf8');
 
 function transpile(source) {
@@ -93,6 +95,17 @@ function writeTestModule() {
 }
 
 describe('chinaToDomestic', () => {
+  it('declares the conversion states and required fulfillment fields in Base44 schemas', () => {
+    const receiptSchema = JSON.parse(fs.readFileSync(receiptSchemaPath, 'utf8'));
+    const fulfillmentSchema = JSON.parse(fs.readFileSync(fulfillmentSchemaPath, 'utf8'));
+
+    assert.ok(receiptSchema.properties.status.enum.includes('converted'));
+    assert.ok(fulfillmentSchema.properties.source_type.enum.includes('china_to_domestic'));
+    assert.ok(fulfillmentSchema.properties.status.enum.includes('PENDING'));
+    assert.ok(fulfillmentSchema.required.includes('fulfillment_number'));
+    assert.ok(fulfillmentSchema.properties.source_receipt_id);
+  });
+
   beforeEach(() => {
     resetState();
     globalThis.__chinaToDomesticTestState = state;
@@ -130,7 +143,8 @@ describe('chinaToDomestic', () => {
     assert.ok(create.fulfillment && create.fulfillment.length > 0, 'FulfillmentOrder.create was called');
     assert.equal(create.fulfillment[0].product_id, 'p-1');
     assert.equal(create.fulfillment[0].quantity, 3);
-    assert.equal(create.fulfillment[0].source_type, 'china-to-domestic');
+    assert.match(create.fulfillment[0].fulfillment_number, /^CD-RCP-77-1$/);
+    assert.equal(create.fulfillment[0].source_type, 'china_to_domestic');
     assert.equal(create.fulfillment[0].source_receipt_id, 7);
   });
 
@@ -175,5 +189,21 @@ describe('chinaToDomestic', () => {
     const req = { method: 'POST', json: async () => ({ receiptId: 7 }), headers: { get: () => '127.0.0.1' } };
     const res = await mod.default(req);
     assert.equal(res.status, 409);
+  });
+
+  it('does not increment stock again when a converted receipt is retried', async () => {
+    state.receipt = { ...state.receipt, status: 'converted' };
+    state.calls.create.fulfillment = [{ id: 'fo-existing' }];
+    globalThis.__chinaToDomesticTestState = state;
+    const modUrl = writeTestModule();
+    const mod = await import(modUrl);
+    const req = { method: 'POST', json: async () => ({ receiptId: 7 }), headers: { get: () => '127.0.0.1' } };
+    const res = await mod.default(req);
+    const body = await res.json();
+
+    assert.equal(body.alreadyConverted, true);
+    assert.equal(body.ordersCreated, 1);
+    assert.equal(state.products[0].stock, 10);
+    assert.equal(state.calls.filter.fulfillment.source_receipt_id, 7);
   });
 });

@@ -19,6 +19,32 @@ function err(message: string, status = 400) {
   return Response.json({ error: message }, { status });
 }
 
+export async function resolveRefundWalletIdentity(db: any, order: any) {
+  const createdById = String(order.created_by_id || "").trim();
+  let owner = null;
+  if (createdById) {
+    try {
+      owner = await db.entities.User.get(createdById);
+    } catch {
+      owner = null;
+    }
+  }
+
+  if (owner?.id) {
+    return {
+      ownerId: String(owner.id),
+      createdById: String(owner.id),
+      ownerEmail: String(owner.email || ""),
+    };
+  }
+
+  return {
+    ownerId: `refund-order:${order.id}`,
+    createdById: "",
+    ownerEmail: "",
+  };
+}
+
 export default async function (req: Request) {
   try {
     const base44 = createClientFromRequest(req);
@@ -102,29 +128,24 @@ export default async function (req: Request) {
       );
     }
 
-    // Buyer wallet: session id first (stable), display name only for legacy rows.
-    const sessionId = String(order.session_id || "");
-    let wallet: any = null;
-    if (sessionId) {
-      const rows = await db.entities.Wallet.filter({ owner_type: "customer", owner_id: sessionId }).catch(() => []);
-      wallet = rows?.[0] || null;
-    }
-    if (!wallet) {
-      const rows = await db.entities.Wallet.filter({ owner_type: "customer", owner_name: order.customer_name }).catch(() => []);
-      wallet = rows?.[0] || null;
-    }
+    // Bind refunds to a verified account id, never to client-authored name or session data.
+    const walletIdentity = await resolveRefundWalletIdentity(db, order);
+    const existingWallets = await db.entities.Wallet
+      .filter({ owner_type: "customer", owner_id: walletIdentity.ownerId })
+      .catch(() => []);
+    let wallet: any = existingWallets?.[0] || null;
     if (!wallet) {
       wallet = await db.entities.Wallet.create({
-              tenant_id: order.tenant_id || "",
-              tenant_owner_email: order.tenant_owner_email || "",
-              owner_type: "customer",
-              owner_name: order.customer_name || "Client",
-              owner_email: order.customer_email || "",
-              owner_id: order.created_by_id || "",
-              created_by_id: order.created_by_id || "",
-              session_id: sessionId,
-            balance_usd: 0,
-          });
+        tenant_id: order.tenant_id || "",
+        tenant_owner_email: order.tenant_owner_email || "",
+        owner_type: "customer",
+        owner_name: order.customer_name || "Client",
+        owner_email: walletIdentity.ownerEmail,
+        owner_id: walletIdentity.ownerId,
+        created_by_id: walletIdentity.createdById,
+        session_id: "",
+        balance_usd: 0,
+      });
     }
 
     const reference = String(body.return_number || body.dispute_id || orderNumber);

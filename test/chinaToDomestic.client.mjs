@@ -35,6 +35,10 @@ export function createClientFromRequest() {
           },
         },
         FulfillmentOrder: {
+          filter: async (q) => {
+            ST.calls.filter.fulfillment = q;
+            return ST.calls.create.fulfillment || [];
+          },
           create: async (body) => {
             if (!ST.calls.create.fulfillment) ST.calls.create.fulfillment = [];
             ST.calls.create.fulfillment.push(body);

@@ -74,6 +74,17 @@ export default async function (req) {
       .catch(() => [])
     const receipt = receipts[0] || null
     if (!receipt) return addSecurityHeaders(Response.json({ error: 'Receipt not found' }, { status: 404 }))
+    if (receipt.status === 'converted') {
+      const existingOrders = await base44.asServiceRole.entities.FulfillmentOrder
+        .filter({ source_receipt_id: receipt.id })
+        .catch(() => [])
+      return addSecurityHeaders(Response.json({
+        status: 'converted',
+        receiptId,
+        ordersCreated: existingOrders.length,
+        alreadyConverted: true,
+      }))
+    }
     if (receipt.status !== 'approved') return addSecurityHeaders(Response.json({ error: 'Receipt not approved', status: receipt.status }, { status: 409 }))
 
     const items = receipt.items || []
@@ -85,7 +96,7 @@ export default async function (req) {
     }
     const createdOrders = []
 
-    for (const item of items) {
+    for (const [index, item] of items.entries()) {
       const productId = String(item.product_id || '')
       const qty = Number(item.qty || 0)
       if (!productId || !(qty > 0)) continue
@@ -105,11 +116,12 @@ export default async function (req) {
         ...tenant,
         order_id: receipt.order_id || '',
         order_number: receipt.order_number || '',
+        fulfillment_number: `CD-${receipt.receipt_number || receipt.id}-${index + 1}`,
         product_id: product.id,
         product_name: product.name || '',
         quantity: qty,
         status: 'PENDING',
-        source_type: 'china-to-domestic',
+        source_type: 'china_to_domestic',
         source_receipt_id: receipt.id,
         shipping_usd: round2(Number(item.unit_price_usd) * qty),
         created_by_id: receipt.created_by_id || '',

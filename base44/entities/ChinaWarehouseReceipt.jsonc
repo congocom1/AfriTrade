@@ -10,7 +10,7 @@
     "supplier_id": { "type": "string" },
     "supplier_name": { "type": "string" },
     "purchase_order": { "type": "string" },
-    "status": { "type": "string", "enum": ["received", "inspecting", "approved", "rejected", "partial"], "default": "received" },
+    "status": { "type": "string", "enum": ["received", "inspecting", "approved", "rejected", "partial", "converted"], "default": "received" },
     "items": { "type": "array", "items": { "type": "object" } },
     "total_cost_usd": { "type": "number", "default": 0 },
     "received_by": { "type": "string" },

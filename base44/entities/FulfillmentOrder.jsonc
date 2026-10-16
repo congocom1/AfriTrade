@@ -26,9 +26,13 @@
       "enum": [
         "local_seller",
         "local_warehouse",
-        "international_supplier"
+        "international_supplier",
+        "china_to_domestic"
       ],
       "default": "local_seller"
+    },
+    "created_by_id": {
+      "type": "string"
     },
     "seller_id": {
       "type": "string"
@@ -43,6 +47,18 @@
       "type": "string"
     },
     "supplier_name": {
+      "type": "string"
+    },
+    "product_id": {
+      "type": "string"
+    },
+    "product_name": {
+      "type": "string"
+    },
+    "quantity": {
+      "type": "number"
+    },
+    "source_receipt_id": {
       "type": "string"
     },
     "items": {
