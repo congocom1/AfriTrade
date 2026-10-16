@@ -5,7 +5,8 @@ class AppConstants {
   static const String appVersion = '2.0.0';
   
   // API Configuration — points at the Base44 backend
-  static const String baseUrl = 'https://afritrade.base44.app/api';
+  // AfriTrade's active Base44 deployment.
+  static const String baseUrl = 'https://afritrade-1.base44.app/api';
   static const String websocketUrl = 'wss://ws.afritrade.com';
   
   // Timeout values
