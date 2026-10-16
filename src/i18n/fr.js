@@ -76,6 +76,11 @@ export default {
     password: 'Mot de passe',
     product: 'Produit',
     search: 'Rechercher',
+    seeAll: 'Tout voir',
+    trustTitle: 'Achetez en confiance',
+    trustSub: 'Paiements sécurisés, vendeurs vérifiés et litiges tranchés en 48 h.',
+    sellCtaTitle: 'Vendez à des milliers de clients à Kinshasa et au-delà',
+    sellCtaText: 'Ouvrez votre boutique en quelques minutes, importez votre catalogue et encaissez en mobile money.',
   },
   auth: {
     loginTitle: 'Bon retour',

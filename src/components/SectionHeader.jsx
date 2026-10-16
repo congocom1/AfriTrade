@@ -1,8 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ChevronRight } from 'lucide-react';
 
-export default function SectionHeader({ title, subtitle, to, linkLabel = 'Tout voir' }) {
+export default function SectionHeader({ title, subtitle, to, linkLabel }) {
+  const { t } = useTranslation();
+  const label = linkLabel || t('common.seeAll');
   return (
     <div className="mb-3 flex items-end justify-between gap-3">
       <div>
@@ -11,7 +14,7 @@ export default function SectionHeader({ title, subtitle, to, linkLabel = 'Tout v
       </div>
       {to && (
         <Link to={to} className="flex min-h-11 shrink-0 items-center gap-1 rounded-lg px-2 text-sm font-semibold text-primary hover:bg-accent">
-          {linkLabel}
+          {label}
           <ChevronRight className="h-3.5 w-3.5" />
         </Link>
       )}

@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import NavLinks from '@/components/NavLinks';
 import { useTranslation } from 'react-i18next';
 import { Zap, Truck, Play, ArrowRight, Store as StoreIcon } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
@@ -88,7 +87,7 @@ export default function Home() {
       {/* Hero */}
       <section className="relative overflow-hidden rounded-2xl">
         <Image
-          src="https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?w=1200&q=70"
+          src="/brand/cover.png"
           alt="Congo Commerce"
           className="absolute inset-0 h-full w-full object-cover"
         />
@@ -104,16 +103,32 @@ export default function Home() {
             {t('home.heroSubtitle')}
           </p>
           <div className="mt-1 flex flex-wrap items-center gap-3">
-                      <Link to="/discover" className="inline-flex min-h-11 items-center rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground">
-                        {t('home.discoverVideo')}
-                      </Link>
-                      <Link to="/categories" className="inline-flex min-h-11 items-center rounded-full border border-background/40 bg-background/10 px-5 py-3 text-sm font-semibold text-background backdrop-blur">
-                        {t('home.browseCategories')}
-                      </Link>
-                      <Link to="/creator" className="inline-flex min-h-11 items-center px-1 text-sm font-medium text-background underline underline-offset-4">
-                        {t('home.becomeCreator')}
-                      </Link>
-                    </div>
+            <Link to="/discover" className="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-transform hover:scale-[1.02] active:scale-[0.98]">
+              <Play className="h-4 w-4" aria-hidden="true" />
+              {t('home.discoverVideo')}
+            </Link>
+            <Link to="/categories" className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-background/40 bg-background/10 px-5 py-3 text-sm font-semibold text-background backdrop-blur transition-colors hover:bg-background/20">
+              {t('home.browseCategories')}
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            </Link>
+            <Link to="/creator-showcase" className="inline-flex min-h-11 items-center px-1 text-sm font-medium text-background underline underline-offset-4">
+              {t('home.becomeCreator')}
+            </Link>
+          </div>
+          <div className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-1 text-[11px] font-medium text-background/80">
+            <span className="inline-flex items-center gap-1.5">
+              <Truck className="h-3.5 w-3.5" aria-hidden="true" />
+              {t('home.featTrackedTitle')}
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <Zap className="h-3.5 w-3.5" aria-hidden="true" />
+              {t('home.featMobileTitle')}
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <StoreIcon className="h-3.5 w-3.5" aria-hidden="true" />
+              {t('home.featVerifiedTitle')}
+            </span>
+          </div>
         </div>
       </section>
 
@@ -248,8 +263,11 @@ export default function Home() {
         </section>
       )}
 
-      <section className="rounded-2xl border border-border bg-card p-4">
-        <div className="grid gap-4 md:grid-cols-4">
+      {/* Trust band */}
+      <section aria-label={t('common.trustTitle')} className="rounded-2xl border border-border bg-card p-4 md:p-6">
+        <h2 className="text-base font-bold md:text-lg">{t('common.trustTitle')}</h2>
+        <p className="mt-1 text-xs text-muted-foreground">{t('common.trustSub')}</p>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2 md:grid-cols-4">
           {[
             { icon: Truck, title: t('home.featTrackedTitle'), text: t('home.featTrackedText') },
             { icon: Zap, title: t('home.featMobileTitle'), text: t('home.featMobileText') },
@@ -257,7 +275,7 @@ export default function Home() {
             { icon: ArrowRight, title: t('home.featProtectionTitle'), text: t('home.featProtectionText') },
           ].map((f) => (
             <div key={f.title} className="flex gap-3">
-              <f.icon className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+              <f.icon className="mt-0.5 h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
               <div>
                 <p className="text-sm font-semibold">{f.title}</p>
                 <p className="text-xs text-muted-foreground">{f.text}</p>
@@ -267,8 +285,21 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Navigation grid - all application entry points */}
-      <NavLinks />
+      {/* Seller / creator call-to-action */}
+      <section className="relative overflow-hidden rounded-2xl bg-primary p-6 text-primary-foreground md:p-10">
+        <div className="relative flex flex-col items-start gap-3">
+          <h2 className="max-w-md text-xl font-bold leading-tight md:text-2xl">{t('common.sellCtaTitle')}</h2>
+          <p className="max-w-md text-sm opacity-90">{t('common.sellCtaText')}</p>
+          <div className="mt-1 flex flex-wrap gap-3">
+            <Link to="/seller-application" className="inline-flex min-h-11 items-center rounded-full bg-primary-foreground px-5 py-3 text-sm font-semibold text-primary">
+              {t('home.openShop')}
+            </Link>
+            <Link to="/creator-showcase" className="inline-flex min-h-11 items-center rounded-full border border-primary-foreground/40 px-5 py-3 text-sm font-semibold text-primary-foreground">
+              {t('home.becomeCreator')}
+            </Link>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
