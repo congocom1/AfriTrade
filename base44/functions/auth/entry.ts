@@ -152,7 +152,7 @@ export default async function (req: Request): Promise<Response> {
         base44.setToken(bearer);
         try {
           const user = await base44.auth.me();
-          return json({ user });
+          return json(user);
         } catch {
           return fail("Session invalid or expired", 401);
         }

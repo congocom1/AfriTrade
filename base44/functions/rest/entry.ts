@@ -38,9 +38,14 @@ const fail = (message: string, status = 400) =>
 const json = (data: unknown, status = 200) =>
   addSecurityHeaders(new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json" } }));
 
-// Match paths like /products, /products/abc123, /products/abc123/similar, /products/abc123/reviews, /categories
+// Match paths like /api/products, /api/products/abc123, /api/products/abc123/similar,
+// /api/products/abc123/reviews, /api/categories.
+// The Flutter app's baseUrl is https://congocommerce.base44.app/api, so every
+// request path starts with "/api/". We strip that leading segment before parsing.
 function parsePath(url: URL): { resource: string; id?: string; action?: string } | null {
   const segments = url.pathname.split("/").filter(Boolean);
+  // Drop a leading "api" segment (baseUrl prefix) if present.
+  if (segments.length > 0 && segments[0] === "api") segments.shift();
   if (segments.length === 0) return null;
   const resource = segments[0];
   if (!["products", "categories"].includes(resource)) return null;
