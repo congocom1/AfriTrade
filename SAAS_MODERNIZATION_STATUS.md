@@ -30,6 +30,7 @@ Updated: 2026-10-16
 ## Deployment And Environment
 
 - Local Base44 development is started with `base44 dev` (or `npx base44@latest dev` when the CLI is not globally installed). Do not use plain Vite as a replacement for the local backend.
+- During Vite development, the Base44 client uses the current frontend origin for its API server and sends `Base44-App-Id`, routing SDK function calls through the CLI's local `/api` proxy. Production builds retain the SDK's default server URL. A browser SDK call to the local fulfillment function returned the expected anonymous `401`.
 - The Base44 local runtime logged `Entities directory changed, clearing data...` after the schema change. This was the local emulator, not a production deployment. Any emulator-only data may need reseeding.
 - No production deployment, credential rotation, or provider configuration was performed.
 
