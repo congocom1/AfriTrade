@@ -285,11 +285,6 @@ describe('Search Utils', () => {
       }
     ];
 
-    const categoriesMap = [
-      { id: 'cat1', name: 'Category 1' },
-      { id: 'cat2', name: 'Category 2' }
-    ];
-
     it('should calculate facets correctly', () => {
       const facets = calculateFacets(products);
 

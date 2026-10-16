@@ -134,7 +134,7 @@ export async function assessCheckoutRisk(client, { order, amountUsdCents, sessio
       customer_name: order?.customer_name || profile?.name || '',
       customer_email: order?.customer_email || profile?.email || '',
       customer_phone: order?.customer_phone || profile?.phone || '',
-      amount_usd: amountUsd || 0,
+      amount_usd: (amountUsdCents ?? 0) / 100,
       risk_score: assessment.score,
       risk_level: assessment.level,
       recommended_action: assessment.action,

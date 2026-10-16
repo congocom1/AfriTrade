@@ -44,15 +44,6 @@ async function upload(file) {
 /** Add a message to the case thread, opening the thread on the first message. */
 export async function sendCaseMessage({ dispute, ticket, body, file, author, actorName, resolution }) {
   const { fileUri, name } = await upload(file);
-  const entry = {
-    author,
-    author_name: actorName || '',
-    body,
-    resolution: resolution || '',
-    at: new Date().toISOString(),
-    file_uri: fileUri || undefined,
-    attachment_name: name || undefined,
-  };
   return postCaseMessage({
     orderNumber: dispute.order_number,
     ticketId: ticket?.id || '',

@@ -6,29 +6,17 @@ import { base44 } from '@/api/base44Client';
 import ProductGrid from '@/components/ProductGrid';
 import EmptyState from '@/components/EmptyState';
 import { resolveStorefrontScope, scopeRecords } from '@/lib/tenancy';
+import {
+  scoreProductRelevance,
+  filterByCategory,
+  filterBySource,
+  filterByMaxPrice,
+  filterByMinRating,
+  filterByInStock,
+  sortProducts,
+} from '@/lib/searchUtils';
 
 const SORT_IDS = ['relevance', 'new', 'sold', 'price_asc', 'price_desc', 'rating'];
-
-function normalize(value) {
-  return String(value || '')
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '');
-}
-
-/** Lightweight typo tolerance: direct hit, prefix hit, or ≥60% character overlap. */
-function score(product, term) {
-  if (!term || !term.trim()) return 0;
-  const haystack = normalize(
-    [product.title, product.brand, product.category_name, product.seller_name, (product.tags || []).join(' ')].join(' '),
-  );
-  if (haystack.includes(term)) return 3;
-  const words = haystack.split(/\s+/);
-  if (words.some((w) => w.startsWith(term) || term.startsWith(w))) return 2;
-  const grams = new Set(term.split(''));
-  const hit = [...grams].filter((ch) => haystack.includes(ch)).length;
-  return grams.size && hit / grams.size >= 0.6 ? 1 : 0;
-}
 
 export default function Search() {
   const { t } = useTranslation();
@@ -76,22 +64,16 @@ export default function Search() {
   }, [category, categories]);
 
   const results = useMemo(() => {
-    // Score products using enhanced relevance algorithm
-    const scoredProducts = products.map(product => ({
-      product,
-      score: scoreProductRelevance(product, term)
-    }));
+    const trimmed = term.trim();
+    // Score once so relevance sort reflects the query, then filter.
+    const scored = new Map(
+      products.map((product) => [product, trimmed ? scoreProductRelevance(product, trimmed) : 0]),
+    );
 
-    // Filter out products with zero score if there's a search term
-    let filteredProducts = scoredProducts;
-    if (term.trim()) {
-      filteredProducts = scoredProducts.filter(item => item.score > 0);
-    }
+    let productsList = trimmed
+      ? products.filter((product) => (scored.get(product) ?? 0) > 0)
+      : [...products];
 
-    // Extract just the product objects
-    let productsList = filteredProducts.map(item => item.product);
-
-    // Apply category filter
     productsList = filterByCategory(productsList, categoryId);
 
     // Apply source filter
@@ -106,10 +88,11 @@ export default function Search() {
     // Apply stock filter
     productsList = filterByInStock(productsList, inStock);
 
-    // Sort products
-    const sortedProducts = sortProducts(productsList, sort);
-
-    return sortedProducts;
+    // Sort: relevance uses the query score, other modes use sortProducts.
+    if ((!sort || sort === 'relevance') && trimmed) {
+      return [...productsList].sort((a, b) => (scored.get(b) ?? 0) - (scored.get(a) ?? 0));
+    }
+    return sortProducts(productsList, sort);
   }, [products, term, categoryId, source, sort, maxPrice, minRating, inStock]);
 
   const applyTerm = (value) => {

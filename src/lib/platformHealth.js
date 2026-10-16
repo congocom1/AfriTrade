@@ -6,7 +6,6 @@ import { base44 } from '@/api/base44Client';
  * on their assignments, and platform-event / workflow failures.
  */
 
-const HOUR = 3600000;
 const DAY = 86400000;
 const CLOSED_SHIPMENT = ['DELIVERED', 'FAILED', 'RETURNED', 'CANCELLED'];
 

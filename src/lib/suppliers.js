@@ -162,8 +162,8 @@ function createMockProvider(adapterCode) {
  * with actual HTTP calls to the supplier's API, using env vars for credentials.
  * For now, we keep the mock behavior but log a warning.
  */
-function createRealProvider(adapterCode, config) {
-  // config would contain baseUrl, apiKey, etc. from env vars.
+function createRealProvider(adapterCode, _config) {
+  // _config would contain baseUrl, apiKey, etc. from env vars.
   return {
     adapterCode,
     isMock: false, // indicates real provider

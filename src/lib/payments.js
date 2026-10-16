@@ -1,4 +1,4 @@
-import { round2Cents, round2 } from './format';
+export { formatMoney } from './format';
 
 /**
  * PAYMENT ABSTRACTION
@@ -32,7 +32,7 @@ import { round2Cents, round2 } from './format';
  * NOTE: Only public keys should be exposed via VITE_ variables.
  * Secret keys must be handled exclusively in backend functions.
  */
-function getEnvVar(key, defaultValue) {
+export function getEnvVar(key, defaultValue) {
   // @ts-ignore
   const env = (typeof import.meta !== 'undefined' && import.meta.env) || {};
   if (env[key]) {
@@ -67,29 +67,24 @@ export const PaymentService = {
    * @returns {Promise<Object>} Payment result
    */
   async initiatePayment({ providerId, amountCents, phone, orderNumber, metadata }) {
-    try {
-      const response = await fetch(PAYMENT_FUNCTIONS[providerId], {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          amountCents,
-          phone,
-          orderNumber,
-          metadata
-        })
-      });
+    const response = await fetch(PAYMENT_FUNCTIONS[providerId], {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        amountCents,
+        phone,
+        orderNumber,
+        metadata
+      })
+    });
 
-      if (!response.ok) {
-        throw new Error(`Payment initiation failed: ${response.statusText}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      // Payment initiation error - handled by throwing
-      throw error;
+    if (!response.ok) {
+      throw new Error(`Payment initiation failed: ${response.statusText}`);
     }
+
+    return await response.json();
   },
 
   /**
@@ -98,26 +93,21 @@ export const PaymentService = {
    * @returns {Promise<Object>} Payment status
    */
   async checkPaymentStatus({ providerId, providerTxnId }) {
-    try {
-      const response = await fetch(`${PAYMENT_FUNCTIONS[providerId]}/status`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          providerTxnId
-        })
-      });
+    const response = await fetch(`${PAYMENT_FUNCTIONS[providerId]}/status`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        providerTxnId
+      })
+    });
 
-      if (!response.ok) {
-        throw new Error(`Payment status check failed: ${response.statusText}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      // Payment status check error - handled by throwing
-      throw error;
+    if (!response.ok) {
+      throw new Error(`Payment status check failed: ${response.statusText}`);
     }
+
+    return await response.json();
   },
 
   /**
@@ -126,27 +116,22 @@ export const PaymentService = {
    * @returns {Promise<Object>} Refund result
    */
   async initiateRefund({ providerId, providerTxnId, amountCents }) {
-    try {
-      const response = await fetch(`${PAYMENT_FUNCTIONS[providerId]}/refund`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          providerTxnId,
-          amountCents
-        })
-      });
+    const response = await fetch(`${PAYMENT_FUNCTIONS[providerId]}/refund`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        providerTxnId,
+        amountCents
+      })
+    });
 
-      if (!response.ok) {
-        throw new Error(`Refund initiation failed: ${response.statusText}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      // Payment refund error - handled by throwing
-      throw error;
+    if (!response.ok) {
+      throw new Error(`Refund initiation failed: ${response.statusText}`);
     }
+
+    return await response.json();
   }
 };
 
@@ -163,7 +148,7 @@ export const PAYMENT_PROVIDERS = {
     instructions: 'Vous recevrez une demande de paiement sur votre téléphone. Entrez votre code secret M-Pesa.',
     instructionsKey: 'pay.mpesaInstructions',
     isMock: true, // Frontend always uses mock - backend handles real processing
-    async charge({ amountCents, phone, orderNumber }) {
+    async charge({ amountCents, orderNumber }) {
       // Frontend only prepares data - actual charge processed by backend
       return { status: 'PAID', provider_txn_id: mockTxn('MPESA'), amount: amountCents, message: `Paiement M-Pesa confirmé pour la commande ${orderNumber}.` };
     },
@@ -183,7 +168,7 @@ export const PAYMENT_PROVIDERS = {
     instructions: 'Validez la demande de paiement Airtel Money reçue sur votre téléphone.',
     instructionsKey: 'pay.airtelInstructions',
     isMock: true,
-    async charge({ amountCents, phone, orderNumber }) {
+    async charge({ amountCents, orderNumber }) {
       // Frontend only prepares data - actual charge processed by backend
       return { status: 'PAID', provider_txn_id: mockTxn('AIRTEL'), amount: amountCents, message: `Paiement Airtel Money confirmé pour la commande ${orderNumber}.` };
     },
@@ -203,7 +188,7 @@ export const PAYMENT_PROVIDERS = {
     instructions: 'Validez la demande de paiement Orange Money reçue sur votre téléphone.',
     instructionsKey: 'pay.orangeInstructions',
     isMock: true,
-    async charge({ amountCents, phone, orderNumber }) {
+    async charge({ amountCents, orderNumber }) {
       // Frontend only prepares data - actual charge processed by backend
       return { status: 'PAID', provider_txn_id: mockTxn('ORANGE'), amount: amountCents, message: `Paiement Orange Money confirmé pour la commande ${orderNumber}.` };
     },

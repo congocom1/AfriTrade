@@ -22,17 +22,14 @@ export default function TopBar() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [utilsOpen, setUtilsOpen] = useState(false);
-  const [searchFocused, setSearchFocused] = useState(false);
   const userMenuRef = useRef(null);
   const utilsRef = useRef(null);
-  const searchRef = useRef(null);
 
   const submit = (e) => {
     e.preventDefault();
     if (term.trim()) {
       navigate(`/search?q=${encodeURIComponent(term.trim())}`);
       setTerm('');
-      setSearchFocused(false);
     }
   };
 
@@ -186,22 +183,17 @@ export default function TopBar() {
           <form onSubmit={submit} role="search" className="w-full">
             <label htmlFor="site-search" className="sr-only">{t('nav.searchPlaceholder')}</label>
             <div className="relative">
-              <svg className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground/60 transition-colors focus-within:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
+              <Search className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground/60" aria-hidden="true" />
               <input
-                ref={searchRef}
                 id="site-search"
                 type="search"
                 value={term}
                 onChange={(e) => setTerm(e.target.value)}
-                onFocus={() => setSearchFocused(true)}
-                onBlur={() => setTimeout(() => setSearchFocused(false), 150)}
                 placeholder={t('nav.searchPlaceholder')}
                 inputMode="search"
                 enterKeyHint="search"
                 autoComplete="off"
-                className="h-11 w-full rounded-2xl border border-border bg-background pl-11 pr-4 pr-10 text-sm outline-none transition-all duration-200
+                className="h-11 w-full rounded-2xl border border-border bg-background pl-11 pr-10 text-sm outline-none transition-all duration-200
                   placeholder:text-muted-foreground/50
                   focus:border-primary focus:ring-2 focus:ring-primary/20
                   md:placeholder:text-muted-foreground/40"
@@ -218,7 +210,6 @@ export default function TopBar() {
                   <X className="h-4 w-4" />
                 </button>
               )}
-              <Search className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground/60" aria-hidden="true" />
             </div>
           </form>
         </div>

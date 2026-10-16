@@ -1,7 +1,7 @@
 import { base44 } from '@/api/base44Client';
 import { getPricingConfig } from './config';
 import { intlFee, intlLines, intlWeightKg } from './intlDelivery';
-import { round2Cents, usdCentsToCdfCents, formatUSD, formatCDF } from './format';
+import { round2Cents, usdCentsToCdfCents, formatCDF } from './format';
 import { getSessionId, rememberOrder, getReferralCode } from './session';
 import { notifyFulfillmentStatus } from './orderNotifications';
 import { assessCheckoutRisk } from './fraud';
@@ -70,7 +70,7 @@ export async function findCoupon(client, code) {
 export async function buildCheckoutQuote(client, { items, deliveryFee = 0, coupon = null, pricingConfig, intlOption = null }) {
   const db = client || base44;
   const cfg = pricingConfig || getPricingConfig();
-  const lines = await loadCartLines(items);
+  const lines = await loadCartLines(db, items);
   // All amounts in integer cents
   const subtotalCents = round2Cents(lines.reduce((s, l) => s + l.line_total_usd_cents, 0));
   const discountCents = round2Cents(computeCouponDiscount(coupon, subtotalCents / 100) * 100);
@@ -228,7 +228,7 @@ export async function respondToShipment(client, { shipment, accepted }) {
   return data.shipment;
 }
 
-export async function courierUpdateShipment(client, { shipment, fulfillment, status, label, extra = {} }) {
+export async function courierUpdateShipment(client, { shipment, status, label, extra = {} }) {
   const db = client || base44;
   const { data } = await db.functions.invoke('fulfillmentAction', {
     action: 'courierAdvance', shipment_id: shipment.id, status, label,

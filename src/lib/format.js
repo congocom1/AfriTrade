@@ -81,7 +81,7 @@ export function formatMoney(amountCents, currency = 'USD') {
  * Parse a display string back to integer cents.
  * Handles both USD ($12.34) and CDF (34 500 CDF) formats.
  */
-export function parseMoney(str, currency = 'USD') {
+export function parseMoney(str, _currency = 'USD') {
   if (!str) return 0;
   const clean = String(str).replace(/[^\d.,-]/g, '').replace(',', '.');
   const num = parseFloat(clean);

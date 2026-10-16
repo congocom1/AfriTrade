@@ -172,7 +172,7 @@ export async function notifyOrderStatus(client, { order, fulfillment = null, sta
       status: 'queued',
       error: 'Aucun e-mail client — à envoyer depuis le téléphone',
     });
-  } catch (error) {
+  } catch {
     return null;
   }
 }
