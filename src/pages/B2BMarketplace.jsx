@@ -41,18 +41,19 @@ export default function B2BMarketplace() {
   const { data: productsResponse, isLoading, isError: productsError, error: productsLoadError } = useQuery({
     queryKey: ["b2b-products"],
     queryFn: async () => {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE || ""}/api/b2b/products`);
-      if (!res.ok) throw new Error("Failed to load B2B products");
-      return res.json();
+      const all = await base44.entities.Product.list('-created_date', 500);
+      const products = all.filter((product) => product.status === 'published' && (
+        product.is_b2b || product.b2b_only || product.wholesale_price_usd != null
+      ));
+      return { products, total: products.length };
     },
   });
 
   const { data: suppliersResponse } = useQuery({
     queryKey: ["b2b-suppliers"],
     queryFn: async () => {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE || ""}/api/suppliers`);
-      if (!res.ok) throw new Error("Failed to load suppliers");
-      return res.json();
+      const suppliers = await base44.entities.Supplier.filter({ enabled: true }, 'name', 200);
+      return { suppliers, total: suppliers.length };
     },
   });
 
