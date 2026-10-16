@@ -21,25 +21,6 @@
     "test:e2e:debug": "NODE_OPTIONS=--inspect-brk npx playwright test",
     "see-debug": "node scripts/see-debug-rules.js",
     "see-fraud": "node scripts/see-fraud-rules.js",
-    "dev:local": "node --env-file=.env.local --vite",
-    "dev:base44": "base44 dev",
-    "dev:base44:remote": "base44 dev --remote",
-    "build": "vite build",
-    "lint": "eslint . --quiet",
-    "lint:fix": "eslint . --fix",
-    "typecheck": "tsc -p ./jsconfig.json",
-
-    "preview": "vite preview",
-    "test": "node --test --import ./test/setup.mjs test/**/*.test.js",
-    "test:e2e": "npx playwright test",
-    "test:e2e:report": "npx playwright show-report",
-    "test:watch": "node --test --watch --import ./test/setup.mjs test/**/*.test.js",
-    "test:e2e:ci": "npx playwright test --reporter=list",
-    "test:e2e:debug": "NODE_OPTIONS=--inspect-brk npx playwright test",
-
-    "see-debug": "node scripts/see-debug-rules.js",
-    "see-fraud": "node scripts/see-fraud-rules.js",
-
     "deploy:wrangler": "wrangler deploy",
     "deploy:wrangler:prod": "wrangler deploy --env production"
   },
@@ -47,7 +28,6 @@
     "@base44/sdk": "^0.8.52",
     "@base44/vite-plugin": "^1.0.44",
     "@hello-pangea/dnd": "^17.0.0",
-    "@hookform/resolvers": "^1.7.0",
     "@hookform/resolvers": "^1.7.0",
     "@radix-ui/react-accordion": "^1.2.3",
     "@radix-ui/react-alert-dialog": "^1.1.6",
