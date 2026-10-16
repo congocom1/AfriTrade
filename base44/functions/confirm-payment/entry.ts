@@ -64,13 +64,8 @@ export default async function (req: Request) {
         Response.json({ error: "Commande introuvable." }, { status: 404 })
       );
     }
-    if (order.payment_verified && order.payment_status === "PAID") {
-      return addSecurityHeaders(
-        Response.json({ order, already: true })
-      );
-    }
-
-    const updated = await db.entities.Order.update(order.id, {
+    const already = order.payment_verified && order.payment_status === "PAID";
+    const updated = already ? order : await db.entities.Order.update(order.id, {
       payment_status: "PAID",
       payment_verified: true,
       payment_reference: String(body.payment_reference || order.payment_reference || `MANUAL-${orderNumber}`),
@@ -82,19 +77,33 @@ export default async function (req: Request) {
       if (f?.status === "PENDING") {
         await db.entities.FulfillmentOrder.update(f.id, { status: "CONFIRMED" });
         advanced += 1;
+        await db.functions.invoke("orderNotifications", {
+          action: "fulfillment_status",
+          fulfillment_id: f.id,
+          status: "CONFIRMED",
+          order_id: order.id,
+        }).catch((err) => console.error("confirm-payment: fulfillment notification failed", err));
+      }
+      const shipments = await db.entities.Shipment.filter({ fulfillment_order_id: f.id }).catch(() => []);
+      for (const shipment of shipments) {
+        if (shipment.status === "PENDING") {
+          await db.entities.Shipment.update(shipment.id, { status: "PREPARING" });
+        }
       }
     }
-    await db.entities.AuditLog.create({
-      action: "payment.confirmed_manual",
-      actor: "admin",
-      entity: "Order",
-      entity_id: order.id,
-      reference: orderNumber,
-      severity: "info",
-      details: { fulfillments_advanced: advanced, reference: updated.payment_reference },
-    });
+    if (!already) {
+      await db.entities.AuditLog.create({
+        action: "payment.confirmed_manual",
+        actor: "admin",
+        entity: "Order",
+        entity_id: order.id,
+        reference: orderNumber,
+        severity: "info",
+        details: { fulfillments_advanced: advanced, reference: updated.payment_reference },
+      });
+    }
     return addSecurityHeaders(
-      Response.json({ order: updated, fulfillments_advanced: advanced })
+      Response.json({ order: updated, fulfillments_advanced: advanced, already })
     );
   } catch (e) {
     console.error("confirm-payment: unhandled error", e);

@@ -41,9 +41,6 @@ export default function AdminReturns() {
       return;
     }
 
-    const updated = await base44.entities.Return.update(ret.id, { status, resolution_notes: notes[ret.id] || ret.resolution_notes || '' });
-    setReturns((prev) => prev.map((x) => (x.id === ret.id ? updated : x)));
-
     if (status === 'refunded') {
       let res;
       try {
@@ -69,6 +66,8 @@ export default function AdminReturns() {
     } else {
       setMessage(t('adminReturns.updated', { num: ret.return_number, status }));
     }
+    const updated = await base44.entities.Return.update(ret.id, { status, resolution_notes: notes[ret.id] || ret.resolution_notes || '' });
+    setReturns((prev) => prev.map((x) => (x.id === ret.id ? updated : x)));
     await base44.entities.AuditLog.create({
       action: `return.${status}`,
       actor: 'admin',

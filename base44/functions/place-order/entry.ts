@@ -283,21 +283,6 @@ async function emitEvent(client, name, options = {}) {
     });
 }
 
-/** Notify fulfillment status change. */
-async function notifyFulfillmentStatus(client, fulfillment, status) {
-  const db = client;
-  try {
-    await db.functions.invoke("orderNotifications", {
-      action: "fulfillment_status",
-      fulfillment_id: fulfillment.id,
-      status,
-      order_id: fulfillment.order_id,
-    });
-  } catch (err) {
-    console.error("[place-order] notifyFulfillmentStatus: " + (err?.message ?? err));
-  }
-}
-
 // ─────────────────────────────────────────────────────────────────────────────
 // Cart + quote helpers — mirror src/lib/orderService.js loadCartLines /
 // buildCheckoutQuote
@@ -550,6 +535,7 @@ export async function placeOrder(db, params) {
     paymentMethodId = null,
     paymentPhone = null,
     consent = {},
+    authenticatedUserId = "",
   } = params ?? {};
 
   const cfg = getPricingConfig();
@@ -610,7 +596,7 @@ export async function placeOrder(db, params) {
   const subtotal_cents = round2(
     validatedLines.reduce((a, l) => a + l.line_total_cents, 0),
   );
-  const subtotal_cdf = round2((subtotalCents * getUsdToCdfRateCents()) / 100);
+  const subtotal_cdf = round2((subtotal_cents * getUsdToCdfRateCents()) / 100);
   const subtotal_usd = round2(subtotal_cents / 100);
 
   let couponRecord = null;
@@ -691,7 +677,7 @@ export async function placeOrder(db, params) {
 
   const orderPayload = {
     order_number: orderNumber,
-    status: "PENDING_PAYMENT",
+    status: "PENDING",
     payment_method: paymentMethodId ?? "",
     // create-checkout and payments-webhook both gate card fulfilment on this
     // field, so it has to be written here or a paid card order can never be
@@ -738,7 +724,7 @@ export async function placeOrder(db, params) {
     },
     source: "web",
     customer_email: userEmail ?? "",
-    created_by_id: userEmail ?? "",
+    created_by_id: authenticatedUserId,
     // The tenant owner is the seller's tenant, resolved from the Seller record.
     // The buyer's own address must never be stamped here: RLS lets whoever
     // holds that email read the order.
@@ -755,6 +741,24 @@ export async function placeOrder(db, params) {
     throw new Error("Failed to create Order");
   }
 
+  let redirectUrl = null;
+  if (paymentMethodId === "card") {
+    try {
+      const checkout = await db.functions.invoke("create-checkout", {
+        productId: orderNumber,
+        quantity: 1,
+      });
+      redirectUrl = checkout?.data?.redirectUrl ?? null;
+      if (!redirectUrl) throw new Error("Hosted checkout did not return a redirect URL");
+    } catch (err) {
+      await db.entities.Order.update(order.id, {
+        status: "CANCELLED",
+        payment_status: "FAILED",
+      }).catch(() => {});
+      throw new Error("Card checkout could not be started");
+    }
+  }
+
   const fulfillmentOrders = [];
   const shipments = [];
   const courier = selectCourierFor(
@@ -765,6 +769,7 @@ export async function placeOrder(db, params) {
     const sellerLines = validatedLines.filter(
       (l) => l.seller_id === seller_id,
     );
+    const seller = sellerRecords.get(seller_id) || null;
     const sellerSubtotal_cents = round2(
       sellerLines.reduce((a, l) => a + l.line_total_cents, 0),
     );
@@ -782,10 +787,12 @@ export async function placeOrder(db, params) {
       order_number: orderNumber,
       fulfillment_number: foNumber,
       fulfillment_order_number: foNumber,
-      status: "RELEASED",
+      status: "PENDING",
       order_id: order.id,
       seller_id,
       tenant_id: sellerLines[0]?.tenant_id ?? tenant_id,
+      seller_email: seller?.email || seller?.tenant_owner_email || "",
+      tenant_owner_email: seller?.tenant_owner_email || seller?.email || tenantOwnerEmail,
       subtotal_cents: sellerSubtotal_cents,
       shipping_fee_cents: sellerShippingCents,
       platform_fee_cents: sellerPlatformFeeCents,
@@ -799,25 +806,27 @@ export async function placeOrder(db, params) {
         platform_cents: l.platform_cents,
         seller_cents: l.seller_cents,
       })),
-      created_by_id: userEmail ?? "",
+      created_by_id: authenticatedUserId,
     };
     const fo = await db.entities.FulfillmentOrder.create(foPayload);
     if (fo) fulfillmentOrders.push(fo);
     const pickupCode = generatePickupCode();
     const trackingNumber = generateTrackingNumber(foNumber);
     const shipmentPayload = {
+      order_number: orderNumber,
       fulfillment_order_id: fo.id,
-      status: "PREPARING",
+      status: "PENDING",
       tracking_number: trackingNumber,
       carrier: courier.name,
       courier_id: courier.id,
+      tenant_owner_email: seller?.tenant_owner_email || seller?.email || tenantOwnerEmail,
       pickup_code: pickupCode,
       recipient_name: profile?.name ?? "",
       recipient_phone: userPhone,
       address_text: (delivery?.address ?? "").toString(),
       estimated_delivery_days: 3,
       weight_kg: totalWeight,
-      created_by_id: userEmail ?? "",
+      created_by_id: authenticatedUserId,
     };
     const shipment = await db.entities.Shipment.create(shipmentPayload);
     if (shipment) shipments.push(shipment);
@@ -1039,15 +1048,9 @@ export async function placeOrder(db, params) {
     items_count: validatedLines.length,
   });
 
-  await notifyFulfillmentStatus(
-    db,
-    fulfillmentOrders[0] ?? {},
-    "RELEASED",
-  );
-
   try {
     const flaggedOrders = await db.entities.Order.filter({
-      status: "PENDING_PAYMENT",
+      status: "PENDING",
       created_at: {
         gte: new Date(Date.now() - 24 * 3600 * 1000).toISOString(),
       },
@@ -1068,6 +1071,7 @@ export async function placeOrder(db, params) {
 
   return {
     order,
+    redirectUrl,
     fulfillments: fulfillmentOrders,
     shipments,
     total_cents,
@@ -1160,7 +1164,10 @@ export default async function (request) {
       return rateLimitErrorResponse(rateLimitResult);
     }
 
-    const result = await placeOrder(db, intent);
+    const result = await placeOrder(db, {
+      ...intent,
+      authenticatedUserId: user?.id ?? "",
+    });
 
     return addSecurityHeaders(
       new Response(JSON.stringify(result), {

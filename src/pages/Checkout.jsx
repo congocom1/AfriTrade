@@ -36,7 +36,7 @@ export default function Checkout() {
   const [pickupPointId, setPickupPointId] = useState('');
   const [intlOptionId, setIntlOptionId] = useState('');
   const [notes, setNotes] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('mpesa');
+  const [paymentMethod, setPaymentMethod] = useState('cod');
   const [payPhone, setPayPhone] = useState(() => getProfile().phone || '');
   const [couponInput, setCouponInput] = useState('');
   const [coupon, setCoupon] = useState(null);
@@ -51,7 +51,10 @@ export default function Checkout() {
   const [error, setError] = useState('');
   const [step, setStep] = useState(0);
 
-  const providers = useMemo(() => listPaymentProviders(), []);
+  const providers = useMemo(
+    () => listPaymentProviders().filter((provider) => ['card', 'cod'].includes(provider.id)),
+    [],
+  );
   const activeProvider = providers.find((p) => p.id === paymentMethod) || providers[0];
   const isMobileMoney = activeProvider?.kind === 'mobile_money';
 

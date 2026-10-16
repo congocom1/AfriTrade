@@ -156,6 +156,7 @@ export async function placeOrder(client, { items, profile, delivery, couponCode,
     throw new Error(data?.error || 'La commande a échoué. Réessayez.');
   }
   const finalOrder = data.order;
+  const redirectUrl = data.redirectUrl || null;
 
   await assessCheckoutRisk({
     order: finalOrder,
@@ -198,6 +199,7 @@ export async function placeOrder(client, { items, profile, delivery, couponCode,
 
   return {
     order: finalOrder,
+    redirectUrl,
     fulfillments: data.fulfillments || [],
     payment: data.payment || { status: finalOrder.payment_status, verified: finalOrder.payment_verified },
     quote: data.quote || null,

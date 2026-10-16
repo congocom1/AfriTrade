@@ -9,10 +9,26 @@ import path from 'node:path';
 import { describe, it, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
+import ts from 'typescript';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const fnSrcPath = path.join(__dirname, '..', 'base44/functions/chinaToDomestic/entry.ts');
 const originalSrc = fs.readFileSync(fnSrcPath, 'utf8');
+
+function transpile(source) {
+  return ts.transpileModule(source, {
+    compilerOptions: {
+      module: ts.ModuleKind.ESNext,
+      target: ts.ScriptTarget.ES2022,
+    },
+  }).outputText;
+}
+
+function transpileFile(sourcePath, outputPath) {
+  const source = fs.readFileSync(sourcePath, 'utf8');
+  fs.writeFileSync(outputPath, transpile(source));
+  return 'file://' + outputPath.replace(/\\/g, '/');
+}
 
 // Shared mutable state — both the stub and the test reference the same object.
 const state = {
@@ -40,8 +56,14 @@ function resetState() {
 
 function writeTestModule() {
   const clientPath = 'file://' + path.join(__dirname, 'chinaToDomestic.client.mjs').replace(/\\/g, '/');
-  const securityPath = 'file://' + path.join(__dirname, '..', 'base44', 'shared', 'security.ts').replace(/\\/g, '/');
-  const securityHeadersPath = 'file://' + path.join(__dirname, '..', 'base44', 'shared', 'securityHeaders.ts').replace(/\\/g, '/');
+  const securityPath = transpileFile(
+    path.join(__dirname, '..', 'base44', 'shared', 'security.ts'),
+    path.join(__dirname, 'chinaToDomestic.security.testmod.mjs'),
+  );
+  const securityHeadersPath = transpileFile(
+    path.join(__dirname, '..', 'base44', 'shared', 'securityHeaders.ts'),
+    path.join(__dirname, 'chinaToDomestic.securityHeaders.testmod.mjs'),
+  );
   let rewritten = originalSrc.replace(
     /import\s+\{[^}]*createClientFromRequest[^}]*\}\s+from\s+['"]npm:@base44\/sdk@[^'"]+['"]/,
     `import { createClientFromRequest } from "${clientPath}"`
@@ -66,7 +88,7 @@ function writeTestModule() {
     `from "${securityHeadersPath}"`
   );
   const testModPath = path.join(__dirname, 'chinaToDomestic.testmod.mjs');
-  fs.writeFileSync(testModPath, rewritten);
+  fs.writeFileSync(testModPath, transpile(rewritten));
   return 'file://' + testModPath.replace(/\\/g, '/');
 }
 
