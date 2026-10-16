@@ -9,7 +9,7 @@ import { useActiveSeller } from '@/lib/seller';
 import DashboardNav from '@/components/DashboardNav';
 import StatusBadge from '@/components/StatusBadge';
 import { Image } from '@/components/ui/image';
-import { formatUSD } from '@/lib/format';
+import { formatUsdAmount } from '@/lib/format';
 import { readActiveTenantId } from '@/lib/tenancy';
 import { emitEvent } from '@/lib/events';
 
@@ -21,9 +21,18 @@ const productSchema = z.object({
   stock: z.coerce.number().int('sellerProducts.errStockInt').nonnegative('sellerProducts.errStockNeg').default(0),
   category_id: z.string().default(''),
   images: z.string().default(''),
+  is_b2b: z.boolean().default(false),
+  b2b_only: z.boolean().default(false),
+  wholesale_price_usd: z.coerce.number().nonnegative().default(0),
+  moq: z.coerce.number().int().positive().default(1),
+  origin_country: z.string().length(2).default('NG'),
+}).superRefine((data, context) => {
+  if (data.is_b2b && !(data.wholesale_price_usd > 0)) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ['wholesale_price_usd'], message: 'Enter a wholesale unit price greater than zero.' });
+  }
 });
 
-const EMPTY = { title: '', description: '', price_usd: '', compare_at_usd: '', stock: '', category_id: '', images: '' };
+const EMPTY = { title: '', description: '', price_usd: '', compare_at_usd: '', stock: '', category_id: '', images: '', is_b2b: false, b2b_only: false, wholesale_price_usd: '', moq: '1', origin_country: 'NG' };
 
 export default function SellerProducts() {
   const { t } = useTranslation();
@@ -65,6 +74,11 @@ export default function SellerProducts() {
       stock: p.stock ?? 0,
       category_id: p.category_id || '',
       images: (p.images || []).join(', '),
+      is_b2b: Boolean(p.is_b2b),
+      b2b_only: Boolean(p.b2b_only),
+      wholesale_price_usd: p.wholesale_price_usd ?? '',
+      moq: p.moq ?? 1,
+      origin_country: p.origin_country || 'NG',
     });
     setEditingId(p.id);
     setShowForm(true);
@@ -90,7 +104,11 @@ export default function SellerProducts() {
       source_type: 'local_seller',
       supplier_price: Number(formData.price_usd) || 0,
       currency: 'USD',
-      origin_country: 'CD',
+      origin_country: String(formData.origin_country || 'NG').toUpperCase(),
+      is_b2b: Boolean(formData.is_b2b),
+      b2b_only: Boolean(formData.is_b2b && formData.b2b_only),
+      wholesale_price_usd: formData.is_b2b ? Number(formData.wholesale_price_usd) : null,
+      moq: formData.is_b2b ? Number(formData.moq) || 1 : 1,
       estimated_delivery: '2-4 jours',
       status: 'published',
     };
@@ -225,6 +243,29 @@ export default function SellerProducts() {
             placeholder={t('sellerProducts.phImages')}
             className="h-11 w-full rounded-lg border border-border bg-background px-3 text-sm"
           />
+          <div className="rounded-xl border border-border bg-secondary/30 p-3">
+            <label className="flex cursor-pointer items-center gap-2 text-sm font-semibold">
+              <input type="checkbox" {...register('is_b2b')} className="h-4 w-4" />
+              Sell this product wholesale (B2B)
+            </label>
+            <p className="mt-1 text-[11px] text-muted-foreground">Published B2B products appear in the AfriTrade wholesale marketplace and can receive quote requests.</p>
+            <div className="mt-3 grid gap-3 sm:grid-cols-3">
+              <label className="text-[11px] text-muted-foreground">Wholesale unit price (USD)
+                <input type="number" min="0.01" step="0.01" {...register('wholesale_price_usd')} className="mt-1 h-10 w-full rounded-lg border border-border bg-background px-3 text-sm" />
+                {errors.wholesale_price_usd && <p className="mt-1 text-[11px] text-destructive">{errors.wholesale_price_usd.message}</p>}
+              </label>
+              <label className="text-[11px] text-muted-foreground">Minimum order quantity
+                <input type="number" min="1" step="1" {...register('moq')} className="mt-1 h-10 w-full rounded-lg border border-border bg-background px-3 text-sm" />
+              </label>
+              <label className="text-[11px] text-muted-foreground">Origin country (ISO code)
+                <input maxLength="2" {...register('origin_country')} className="mt-1 h-10 w-full rounded-lg border border-border bg-background px-3 uppercase text-sm" />
+              </label>
+            </div>
+            <label className="mt-3 flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
+              <input type="checkbox" {...register('b2b_only')} className="h-4 w-4" />
+              Wholesale only — hide from retail shoppers
+            </label>
+          </div>
           <div className="flex gap-2">
             <button type="submit" disabled={saving} className="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-50">
               {saving ? t('sellerProducts.saving') : t('sellerProducts.save')}
@@ -252,8 +293,9 @@ export default function SellerProducts() {
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">{p.title}</p>
                 <p className="text-[11px] text-muted-foreground">
-                  {t('sellerProducts.rowMeta', { price: formatUSD(p.price_usd), stock: p.stock ?? 0, sold: p.sold_count || 0 })}
+                  {t('sellerProducts.rowMeta', { price: formatUsdAmount(p.price_usd), stock: p.stock ?? 0, sold: p.sold_count || 0 })}
                 </p>
+                {p.is_b2b && <p className="mt-0.5 text-[11px] font-medium text-primary">B2B · {formatUsdAmount(p.wholesale_price_usd || p.price_usd)} · MOQ {p.moq || 1}</p>}
                 <StatusBadge status={p.status} />
               </div>
               <div className="flex shrink-0 items-center gap-1">

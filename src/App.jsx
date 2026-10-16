@@ -117,11 +117,13 @@ const SellerWallet = lazy(() => import('@/pages/seller/SellerWallet'));
 const SellerSettings = lazy(() => import('@/pages/seller/SellerSettings'));
 const InventoryManagement = lazy(() => import('@/pages/seller/InventoryManagement'));
 const SellerPortal = lazy(() => import('@/pages/seller/SellerPortal'));
+const SellerQuotes = lazy(() => import('@/pages/seller/SellerQuotes'));
 
 // Admin
 const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard'));
 const AdminProducts = lazy(() => import('@/pages/admin/AdminProducts'));
 const AdminSuppliers = lazy(() => import('@/pages/admin/AdminSuppliers'));
+const AdminB2BOperations = lazy(() => import('@/pages/admin/AdminB2BOperations'));
 const AdminOrders = lazy(() => import('@/pages/admin/AdminOrders'));
 const AdminReturns = lazy(() => import('@/pages/admin/AdminReturns'));
 const AdminPayouts = lazy(() => import('@/pages/admin/AdminPayouts'));
@@ -150,6 +152,7 @@ const MerchantDisputes = lazy(() => import('@/pages/MerchantDisputes'));
 const PayoutLedger = lazy(() => import('@/pages/PayoutLedger'));
 const BulkOrders = lazy(() => import('@/pages/BulkOrders'));
 const B2BMarketplace = lazy(() => import('@/pages/B2BMarketplace'));
+const B2BQuotes = lazy(() => import('@/pages/B2BQuotes'));
 const MarketTrends = lazy(() => import('@/pages/MarketTrends'));
 const TaxReports = lazy(() => import('@/pages/TaxReports'));
 const InventoryAlerts = lazy(() => import('@/pages/InventoryAlerts'));
@@ -311,6 +314,7 @@ const AuthenticatedApp = () => {
           <Route path="/seller/settings" element={<PageWrapper><SellerSettings /></PageWrapper>} />
           <Route path="/seller-portal" element={<PageWrapper><SellerPortal /></PageWrapper>} />
           <Route path="/seller/messages" element={<PageWrapper><SellerMessages /></PageWrapper>} />
+          <Route path="/seller/quotes" element={<PageWrapper><SellerQuotes /></PageWrapper>} />
           <Route path="/payout-history" element={<PageWrapper><PayoutHistory /></PageWrapper>} />
           <Route path="/payout-settings" element={<PageWrapper><PayoutSettings /></PageWrapper>} />
           <Route path="/data-export" element={<PageWrapper><DataExport /></PageWrapper>} />
@@ -322,6 +326,7 @@ const AuthenticatedApp = () => {
           <Route path="/coverage-map" element={<PageWrapper><CoverageMap /></PageWrapper>} />
           <Route path="/bulk-orders" element={<PageWrapper><BulkOrders /></PageWrapper>} />
           <Route path="/b2b" element={<PageWrapper><B2BMarketplace /></PageWrapper>} />
+          <Route path="/b2b/quotes" element={<PageWrapper><B2BQuotes /></PageWrapper>} />
           <Route path="/market-trends" element={<PageWrapper><MarketTrends /></PageWrapper>} />
           <Route path="/tax-reports" element={<PageWrapper><TaxReports /></PageWrapper>} />
           <Route path="/inventory-alerts" element={<PageWrapper><InventoryAlerts /></PageWrapper>} />
@@ -357,6 +362,7 @@ const AuthenticatedApp = () => {
             <Route path="/admin" element={<PageWrapper><AdminDashboard /></PageWrapper>} />
             <Route path="/admin/products" element={<PageWrapper><AdminProducts /></PageWrapper>} />
             <Route path="/admin/suppliers" element={<PageWrapper><AdminSuppliers /></PageWrapper>} />
+            <Route path="/admin/b2b" element={<PageWrapper><AdminB2BOperations /></PageWrapper>} />
             <Route path="/admin/orders" element={<PageWrapper><AdminOrders /></PageWrapper>} />
             <Route path="/admin/returns" element={<PageWrapper><AdminReturns /></PageWrapper>} />
             <Route path="/admin/payouts" element={<PageWrapper><AdminPayouts /></PageWrapper>} />

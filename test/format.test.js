@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { round2, round2Cents, usdCentsToCdfCents, formatUSD, formatCDF } from '../src/lib/format.js';
+import { round2, round2Cents, usdCentsToCdfCents, formatUSD, formatUsdAmount, formatCDF } from '../src/lib/format.js';
 
 describe('round2', () => {
   it('rounds half-up to cents', () => {
@@ -39,6 +39,9 @@ describe('usdCentsToCdfCents', () => {
 describe('display formatters', () => {
   it('formats USD with cents', () => {
     assert.equal(formatUSD(1250), '$12.50');
+  });
+  it('formats decimal USD amounts stored outside the cents convention', () => {
+    assert.equal(formatUsdAmount(12.5), '$12.50');
   });
   it('formats CDF without decimals', () => {
     assert.ok(formatCDF(2800000).includes('28'));

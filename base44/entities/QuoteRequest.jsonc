@@ -1,0 +1,47 @@
+{
+  "name": "QuoteRequest",
+  "type": "object",
+  "properties": {
+    "quote_number": { "type": "string" },
+    "tenant_id": { "type": "string" },
+    "product_id": { "type": "string" },
+    "product_title": { "type": "string" },
+    "product_image": { "type": "string" },
+    "supplier_id": { "type": "string" },
+    "supplier_name": { "type": "string" },
+    "seller_id": { "type": "string" },
+    "seller_name": { "type": "string" },
+    "seller_email": { "type": "string" },
+    "buyer_name": { "type": "string" },
+    "buyer_email": { "type": "string" },
+    "buyer_phone": { "type": "string" },
+    "buyer_country": { "type": "string" },
+    "quantity": { "type": "number" },
+    "target_price_usd": { "type": "number" },
+    "currency": { "type": "string", "default": "USD" },
+    "message": { "type": "string", "maxLength": 2000 },
+    "quoted_unit_price_usd": { "type": "number" },
+    "seller_response": { "type": "string", "maxLength": 2000 },
+    "expires_at": { "type": "string" },
+    "status": {
+      "type": "string",
+      "enum": ["submitted", "responded", "accepted", "declined", "expired", "cancelled"],
+      "default": "submitted"
+    },
+    "responded_at": { "type": "string" },
+    "accepted_at": { "type": "string" }
+  },
+  "required": ["quote_number", "product_id", "product_title", "buyer_email", "quantity"],
+  "rls": {
+    "create": { "user_condition": { "role": "admin" } },
+    "read": {
+      "$or": [
+        { "data.buyer_email": "{{user.email}}" },
+        { "data.seller_email": "{{user.email}}" },
+        { "user_condition": { "role": "admin" } }
+      ]
+    },
+    "update": { "user_condition": { "role": "admin" } },
+    "delete": { "user_condition": { "role": "admin" } }
+  }
+}

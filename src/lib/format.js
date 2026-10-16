@@ -55,6 +55,13 @@ export function formatUSD(usdCents) {
 }
 
 /**
+ * Format a decimal USD amount that is stored in dollars rather than cents.
+ */
+export function formatUsdAmount(usdAmount) {
+  return formatUSD(Math.round((Number(usdAmount) || 0) * 100));
+}
+
+/**
  * Format integer CDF cents as a display string (e.g., "34 500 CDF").
  */
 export function formatCDF(cdfCents) {

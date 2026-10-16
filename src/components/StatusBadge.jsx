@@ -35,6 +35,11 @@ const STYLES = {
   PUBLISHED: 'bg-emerald-100 text-emerald-900',
   SUSPENDED: 'bg-red-100 text-red-900',
   ARCHIVED: 'bg-slate-200 text-slate-700',
+  SUBMITTED: 'bg-amber-100 text-amber-900',
+  RESPONDED: 'bg-sky-100 text-sky-900',
+  ACCEPTED: 'bg-emerald-100 text-emerald-900',
+  DECLINED: 'bg-red-100 text-red-900',
+  EXPIRED: 'bg-slate-200 text-slate-700',
 };
 
 const LABELS = {
@@ -71,6 +76,11 @@ const LABELS = {
   PUBLISHED: 'Publié',
   SUSPENDED: 'Suspendu',
   ARCHIVED: 'Archivé',
+  SUBMITTED: 'Request submitted',
+  RESPONDED: 'Supplier responded',
+  ACCEPTED: 'Accepted',
+  DECLINED: 'Declined',
+  EXPIRED: 'Expired',
 };
 
 export default function StatusBadge({ status, className = '', variant = 'default' }) {
