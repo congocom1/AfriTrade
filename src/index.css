@@ -2,39 +2,63 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'Sora';
+  src: url('/fonts/sora.woff2') format('woff2');
+  font-display: swap;
+  font-style: normal;
+  font-weight: 100 900;
+}
+
+@font-face {
+  font-family: 'Manrope';
+  src: url('/fonts/manrope.woff2') format('woff2');
+  font-display: swap;
+  font-style: normal;
+  font-weight: 100 900;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('/fonts/jetbrains-mono.woff2') format('woff2');
+  font-display: swap;
+  font-style: normal;
+  font-weight: 100 800;
+}
+
 /* Theme tokens. Every `bg-background`, `text-foreground`, `bg-primary`,
    `border-border` in the app resolves through these variables — without this
    block they all compute to nothing and the UI renders unstyled/black. */
 :root {
-  --background: 0 0% 98%;
-  --foreground: 0 0% 7%;
-  --card: 0 0% 100%;
-  --card-foreground: 0 0% 7%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 0 0% 7%;
-  --primary: 162 80% 32%;
+  --background: 43 33% 97%;
+  --foreground: 160 42% 10%;
+  --card: 44 36% 99%;
+  --card-foreground: 160 42% 10%;
+  --popover: 44 36% 99%;
+  --popover-foreground: 160 42% 10%;
+  --primary: 158 78% 29%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 0 0% 96%;
-  --secondary-foreground: 0 0% 9%;
-  --muted: 0 0% 96%;
-  --muted-foreground: 0 0% 42%;
-  --accent: 160 60% 93%;
-  --accent-foreground: 162 80% 24%;
+  --secondary: 43 24% 92%;
+  --secondary-foreground: 160 30% 15%;
+  --muted: 42 22% 93%;
+  --muted-foreground: 159 14% 34%;
+  --accent: 157 44% 91%;
+  --accent-foreground: 158 74% 22%;
   --destructive: 0 84.2% 60.2%;
   --destructive-foreground: 0 0% 98%;
-  --border: 0 0% 90%;
-  --input: 0 0% 90%;
-  --ring: 162 80% 32%;
+  --border: 154 16% 84%;
+  --input: 154 16% 84%;
+  --ring: 158 78% 29%;
   --chart-1: 162 81% 37%;
   --chart-2: 160 60% 55%;
   --chart-3: 197 37% 24%;
   --chart-4: 43 74% 66%;
   --chart-5: 27 87% 67%;
-  --radius: 0.75rem;
-  --font-heading: ui-sans-serif, system-ui, sans-serif;
-  --font-body: ui-sans-serif, system-ui, sans-serif;
-  --font-display: ui-sans-serif, system-ui, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --radius: 0.4rem;
+  --font-heading: 'Sora', sans-serif;
+  --font-body: 'Manrope', sans-serif;
+  --font-display: 'Sora', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
   --sidebar-background: 0 0% 98%;
   --sidebar-foreground: 240 5.3% 26.1%;
   --sidebar-primary: 240 5.9% 10%;
@@ -103,6 +127,8 @@
   body {
     overscroll-behavior-y: none;
     @apply bg-background text-foreground font-body antialiased;
+    background-image: radial-gradient(hsl(158 28% 20% / 0.05) 0.6px, transparent 0.6px);
+    background-size: 7px 7px;
   }
 
   /* P0 A-01: Fix contrast — ensure secondary text meets 4.5:1 ratio */
@@ -127,6 +153,7 @@
   /* Typography: optical sizing, size-adaptive tracking & leading (Apple §15) */
   h1, h2, h3, h4 {
     font-optical-sizing: auto;
+    font-family: var(--font-heading);
   }
 
   .text-display {
@@ -168,6 +195,238 @@
     background: rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
+  }
+}
+
+/* AfriTrade brand system — a pragmatic trade house, not a generic storefront. */
+.brand-app-shell {
+  background:
+    linear-gradient(90deg, hsl(var(--primary) / 0.025) 1px, transparent 1px),
+    linear-gradient(hsl(var(--primary) / 0.025) 1px, transparent 1px),
+    hsl(var(--background));
+  background-size: 28px 28px;
+}
+
+.brand-lockup {
+  display: inline-flex;
+  width: auto;
+  align-items: center;
+  gap: 0.55rem;
+  color: hsl(var(--foreground));
+  line-height: 1;
+}
+
+.brand-lockup__mark {
+  width: 1.88rem;
+  height: 1.88rem;
+  flex: none;
+}
+
+.brand-lockup__name {
+  font-family: var(--font-display);
+  font-size: clamp(1rem, 1.2vw, 1.17rem);
+  font-weight: 750;
+  letter-spacing: -0.075em;
+  white-space: nowrap;
+}
+
+.brand-lockup__name span {
+  color: hsl(var(--primary));
+}
+
+.brand-home-link:hover .brand-lockup__mark {
+  transform: rotate(12deg);
+}
+
+.brand-lockup__mark {
+  transition: transform 180ms ease;
+}
+
+header[role='banner'] {
+  border-bottom-color: hsl(var(--border) / 0.8) !important;
+  background: hsl(var(--background) / 0.86) !important;
+  backdrop-filter: blur(18px) saturate(115%);
+  -webkit-backdrop-filter: blur(18px) saturate(115%);
+}
+
+.brand-hero,
+.brand-trust-band,
+.brand-seller-cta {
+  border: 1px solid hsl(var(--border));
+  box-shadow: 0 18px 45px -30px hsl(160 42% 10% / 0.42);
+}
+
+.brand-hero {
+  border-color: hsl(157 29% 17%);
+  border-radius: 0.6rem;
+  background: #071b16;
+}
+
+.brand-hero__image {
+  opacity: 0.44;
+  object-position: 64% center;
+  filter: saturate(0.75) contrast(1.12) brightness(0.68);
+}
+
+.brand-hero__wash {
+  background:
+    linear-gradient(90deg, rgb(7 27 22 / 0.98) 0%, rgb(7 27 22 / 0.91) 36%, rgb(7 27 22 / 0.44) 72%, rgb(7 27 22 / 0.62) 100%),
+    linear-gradient(145deg, rgb(15 153 107 / 0.18), transparent 46%);
+}
+
+.brand-hero__grid {
+  opacity: 0.33;
+  background-image:
+    linear-gradient(rgb(237 242 238 / 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(237 242 238 / 0.1) 1px, transparent 1px);
+  background-size: 36px 36px;
+  mask-image: linear-gradient(90deg, black, transparent 78%);
+}
+
+.brand-kicker,
+.brand-section-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.brand-kicker {
+  border-left: 3px solid #d18a56;
+  background: rgb(237 242 238 / 0.09);
+  padding: 0.5rem 0.65rem;
+  color: #edf2ee;
+}
+
+.brand-section-label {
+  margin-bottom: 0.55rem;
+  color: hsl(var(--primary));
+}
+
+.brand-section-label--light {
+  color: #d8f5e8;
+}
+
+.brand-action {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.25rem;
+  transition: transform 150ms ease, background-color 150ms ease, border-color 150ms ease;
+}
+
+.brand-action:hover {
+  transform: translateY(-2px);
+}
+
+.brand-action--primary {
+  background: #19c48d;
+  color: #071b16;
+  box-shadow: 4px 4px 0 rgb(237 242 238 / 0.16);
+}
+
+.brand-action--primary:hover {
+  background: #54d9ad;
+}
+
+.brand-action--quiet {
+  border: 1px solid rgb(237 242 238 / 0.45);
+  background: rgb(7 27 22 / 0.2);
+  color: #edf2ee;
+}
+
+.brand-action--quiet:hover {
+  border-color: #19c48d;
+  background: rgb(25 196 141 / 0.14);
+}
+
+.brand-action--paper {
+  background: #f7f4ec;
+  color: #0b5e45;
+}
+
+.brand-action--paper:hover {
+  background: #ffffff;
+}
+
+.brand-action--line {
+  border: 1px solid rgb(237 242 238 / 0.46);
+  color: #edf2ee;
+}
+
+.brand-action--line:hover {
+  border-color: #ffffff;
+  background: rgb(237 242 238 / 0.1);
+}
+
+.brand-hero__proof span {
+  position: relative;
+}
+
+.brand-hero__proof span + span::before {
+  position: absolute;
+  left: -0.7rem;
+  top: 50%;
+  width: 2px;
+  height: 2px;
+  border-radius: 999px;
+  background: #19c48d;
+  content: '';
+}
+
+.brand-trust-band {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  background: hsl(var(--card) / 0.9);
+}
+
+.brand-trust-band::after {
+  position: absolute;
+  right: -3.5rem;
+  top: -5rem;
+  width: 12rem;
+  height: 12rem;
+  border: 1px solid hsl(var(--primary) / 0.18);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1.5rem hsl(var(--primary) / 0.045), 0 0 0 3rem hsl(var(--primary) / 0.025);
+  content: '';
+  pointer-events: none;
+}
+
+.brand-trust-band > * {
+  position: relative;
+  z-index: 1;
+}
+
+.brand-seller-cta {
+  border-color: #0b7555;
+  border-radius: 0.55rem;
+  background:
+    linear-gradient(135deg, rgb(7 27 22 / 0.05) 25%, transparent 25%) -16px 0 / 32px 32px,
+    linear-gradient(225deg, rgb(7 27 22 / 0.05) 25%, transparent 25%) -16px 0 / 32px 32px,
+    #0d7858;
+}
+
+.brand-seller-cta::after {
+  position: absolute;
+  right: -1rem;
+  bottom: -4rem;
+  width: 15rem;
+  height: 15rem;
+  border: 1px solid rgb(237 242 238 / 0.22);
+  border-radius: 38% 62% 58% 42% / 43% 39% 61% 57%;
+  content: '';
+}
+
+@media (max-width: 639px) {
+  .brand-hero__image {
+    object-position: 71% center;
+  }
+
+  .brand-hero__proof span + span::before {
+    display: none;
   }
 }
 
