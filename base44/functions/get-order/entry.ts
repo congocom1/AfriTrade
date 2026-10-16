@@ -88,9 +88,9 @@ export default async function (req: Request) {
         }
       }),
     );
-    return Response.json({ order, fulfillments: withPhoto, shipments: shipments.flat() });
+    return addSecurityHeaders(Response.json({ order, fulfillments: withPhoto, shipments: shipments.flat() }));
   } catch (e) {
     console.error("get-order: unhandled error", e);
-    return err("Recherche indisponible. Réessayez.", 500);
+    return addSecurityHeaders(err("Recherche indisponible. Réessayez.", 500));
   }
 }
