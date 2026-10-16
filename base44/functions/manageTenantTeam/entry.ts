@@ -81,6 +81,7 @@ export default async function(req: Request): Promise<Response> {
       if (!admin && (!owner || tenant.created_by_id !== user.id)) return Response.json({ error: 'Accès refusé' }, { status: 403 });
       if (ownMember) return Response.json({ member: ownMember });
       const created = await base44.asServiceRole.entities.TenantMember.create({ tenant_id: tenantId, tenant_name: tenant.name, owner_email: tenant.owner_email, email, full_name: user.full_name || '', role: 'TENANT_ADMIN', permissions: KEYS, status: 'active', invited_by: email });
+      await base44.asServiceRole.entities.AuditLog.create({ action: 'tenant.member.bootstrap', actor: email, entity: 'TenantMember', entity_id: created.id, reference: tenantId, details: { role: 'TENANT_ADMIN', email } }).catch(() => {});
       return Response.json({ member: created });
     }
     if (input.action === 'invite') {
@@ -91,6 +92,7 @@ export default async function(req: Request): Promise<Response> {
       const existing = await base44.asServiceRole.entities.TenantMember.filter({ tenant_id: tenantId, email: target });
       if (existing.length) return Response.json({ error: 'Membre déjà attribué' }, { status: 409 });
       const created = await base44.asServiceRole.entities.TenantMember.create({ tenant_id: tenantId, tenant_name: tenant.name, owner_email: tenant.owner_email, email: target, full_name: String(input.name || '').slice(0, 120), role: input.role, permissions: DEFAULTS[input.role], status: 'active', invited_by: email });
+      await base44.asServiceRole.entities.AuditLog.create({ action: 'tenant.member.invited', actor: email, entity: 'TenantMember', entity_id: created.id, reference: tenantId, details: { role: input.role, target_email: target, invited_by: email } }).catch(() => {});
       return Response.json({ member: created });
     }
     const targetId = String(input.memberId || '');
@@ -101,17 +103,22 @@ export default async function(req: Request): Promise<Response> {
     if (input.action === 'role') {
       if (!ROLES.includes(input.role)) return Response.json({ error: 'Rôle invalide' }, { status: 400 });
       if (!admin && !owner && DEFAULTS[input.role].some(p => !permissions.includes(p))) return Response.json({ error: 'Droits insuffisants' }, { status: 403 });
+      const oldRole = target.role;
       const updated = await base44.asServiceRole.entities.TenantMember.update(target.id, { role: input.role, permissions: DEFAULTS[input.role] });
+      await base44.asServiceRole.entities.AuditLog.create({ action: 'tenant.member.role_changed', actor: email, entity: 'TenantMember', entity_id: target.id, reference: tenantId, details: { old_role: oldRole, new_role: input.role, target_email: target.email } }).catch(() => {});
       return Response.json({ member: updated });
     }
     if (input.action === 'permissions') {
       if (!Array.isArray(input.permissions) || input.permissions.some(p => !KEYS.includes(p))) return Response.json({ error: 'Permissions invalides' }, { status: 400 });
       if (!admin && !owner && input.permissions.some(p => !permissions.includes(p))) return Response.json({ error: 'Droits insuffisants' }, { status: 403 });
+      const oldPerms = target.permissions || [];
       const updated = await base44.asServiceRole.entities.TenantMember.update(target.id, { permissions: [...new Set(input.permissions)] });
+      await base44.asServiceRole.entities.AuditLog.create({ action: 'tenant.member.permissions_changed', actor: email, entity: 'TenantMember', entity_id: target.id, reference: tenantId, details: { old_permissions: oldPerms, new_permissions: input.permissions, target_email: target.email } }).catch(() => {});
       return Response.json({ member: updated });
     }
     if (input.action === 'remove') {
       await base44.asServiceRole.entities.TenantMember.delete(target.id);
+      await base44.asServiceRole.entities.AuditLog.create({ action: 'tenant.member.removed', actor: email, entity: 'TenantMember', entity_id: target.id, reference: tenantId, details: { target_email: target.email, role: target.role } }).catch(() => {});
       return Response.json({ ok: true });
     }
     return Response.json({ error: 'Action inconnue' }, { status: 400 });

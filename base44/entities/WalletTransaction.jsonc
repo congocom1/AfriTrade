@@ -2,6 +2,8 @@
   "name": "WalletTransaction",
   "type": "object",
   "properties": {
+    "payout_decision": { "type": "string", "enum": ["approve", "reject"] },
+    "payout_actor": { "type": "string" },
     "tenant_id": {
       "type": "string"
     },
@@ -74,6 +76,7 @@
     "status": {
       "type": "string",
       "enum": [
+        "preparing",
         "posted",
         "pending",
         "reversed"

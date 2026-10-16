@@ -43,7 +43,7 @@ export default function TaxReports() {
     ]).then(async ([allOrders, wallets]) => {
       setOrders(allOrders);
       if (wallets[0]) {
-        const rows = await base44.entities.WalletTransaction.filter({ wallet_id: wallets[0].id }, '-created_date', 300).catch(() => []);
+        const rows = await base44.entities.WalletTransaction.filter({ wallet_id: wallets[0].id, status: { $ne: 'preparing' } }, '-created_date', 300).catch(() => []);
         setTxs(rows);
       }
     }).finally(() => setLoading(false));

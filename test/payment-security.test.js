@@ -71,6 +71,32 @@ async function loadDependencies() {
 }
 
 describe('payment security boundaries', () => {
+  it('fails closed for legacy refunds without reading orders or moving money', async () => {
+    const dependencies = await loadDependencies();
+    const entities = new Proxy({
+      ApiRateLimit: { filter: async () => [], create: async () => ({}) },
+    }, {
+      get(target, key) {
+        if (!(key in target)) assert.fail(`Disabled refund accessed ${String(key)}`);
+        return target[key];
+      },
+    });
+    globalThis.__paymentSecurityDeps = {
+      ...dependencies,
+      createClientFromRequest: () => ({ auth: { me: async () => ({ role: 'admin' }) }, asServiceRole: { entities } }),
+      walletLedger: {
+        postWalletEntry: async () => assert.fail('Disabled refund moved money'),
+        releasePending: async () => assert.fail('Disabled refund released funds'),
+      },
+    };
+    const handler = await loadFunction(refundPath, 'refund-payment.disabled', { includeWalletLedger: true });
+    const response = await handler.default(new Request('https://local.test', {
+      method: 'POST', body: JSON.stringify({ order_number: 'CMD-1', amount: 10 }),
+    }));
+    assert.equal(response.status, 503);
+    assert.equal((await response.json()).code, 'refunds_disabled');
+  });
+
   it('rejects anonymous payment confirmation before reading or updating an order', async () => {
     const dependencies = await loadDependencies();
     let orderReads = 0;

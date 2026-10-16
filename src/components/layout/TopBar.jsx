@@ -165,10 +165,10 @@ export default function TopBar() {
         {/* Brand — always visible */}
         <Link
           to="/"
-          className="flex shrink-0 items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg"
+          className="brand-home-link flex shrink-0 items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg"
           aria-label="AfriTrade — Home"
         >
-          <BrandLogo className="h-7 w-auto" />
+          <BrandLogo className="h-8 w-auto" />
         </Link>
 
         {/* Primary navigation — desktop only */}

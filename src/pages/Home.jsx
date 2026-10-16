@@ -68,7 +68,7 @@ export default function Home() {
   }, [products]);
 
   return (
-    <div className="space-y-9 pb-6 md:space-y-12">
+    <div className="brand-home space-y-10 pb-6 md:space-y-14">
       {loadFailed && (
         <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-border bg-card p-4">
           <p className="text-xs text-muted-foreground">
@@ -85,37 +85,38 @@ export default function Home() {
       )}
 
       {/* Hero */}
-      <section className="relative overflow-hidden rounded-2xl">
+      <section className="brand-hero relative overflow-hidden">
         <Image
           src="/brand/cover.png"
           alt="AfriTrade"
-          className="absolute inset-0 h-full w-full object-cover"
+          className="brand-hero__image absolute inset-0 h-full w-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-foreground/85 via-foreground/55 to-transparent" />
-        <div className="relative flex min-h-80 flex-col justify-center gap-4 p-6 text-background md:min-h-96 md:p-10">
-          <span className="w-fit rounded-full bg-primary px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary-foreground">
+        <div className="brand-hero__wash absolute inset-0" />
+        <div className="brand-hero__grid absolute inset-0" aria-hidden="true" />
+        <div className="relative flex min-h-[26rem] flex-col justify-center gap-5 p-6 text-background md:min-h-[32rem] md:p-12">
+          <span className="brand-kicker w-fit">
             {t('home.heroBadge')}
           </span>
-          <h1 className="max-w-sm text-3xl font-bold leading-tight tracking-tight md:max-w-xl md:text-4xl">
+          <h1 className="max-w-sm font-display text-4xl font-bold leading-[0.98] tracking-[-0.055em] md:max-w-2xl md:text-6xl">
             {t('home.heroTitle')}
           </h1>
-          <p className="max-w-md text-sm leading-relaxed text-background/90 md:text-base">
+          <p className="max-w-lg text-sm leading-relaxed text-background/80 md:text-base">
             {t('home.heroSubtitle')}
           </p>
           <div className="mt-1 flex flex-wrap items-center gap-3">
-            <Link to="/discover" className="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-transform hover:scale-[1.02] active:scale-[0.98]">
+            <Link to="/discover" className="brand-action brand-action--primary inline-flex min-h-11 items-center gap-1.5 px-5 py-3 text-sm font-semibold">
               <Play className="h-4 w-4" aria-hidden="true" />
               {t('home.discoverVideo')}
             </Link>
-            <Link to="/categories" className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-background/40 bg-background/10 px-5 py-3 text-sm font-semibold text-background backdrop-blur transition-colors hover:bg-background/20">
+            <Link to="/categories" className="brand-action brand-action--quiet inline-flex min-h-11 items-center gap-1.5 px-5 py-3 text-sm font-semibold">
               {t('home.browseCategories')}
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Link>
-            <Link to="/creator-showcase" className="inline-flex min-h-11 items-center px-1 text-sm font-medium text-background underline underline-offset-4">
+            <Link to="/creator-showcase" className="inline-flex min-h-11 items-center px-1 text-sm font-medium text-background underline decoration-primary decoration-2 underline-offset-8">
               {t('home.becomeCreator')}
             </Link>
           </div>
-          <div className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-1 text-[11px] font-medium text-background/80">
+          <div className="brand-hero__proof mt-2 flex flex-wrap items-center gap-x-5 gap-y-2 text-[11px] font-medium text-background/80">
             <span className="inline-flex items-center gap-1.5">
               <Truck className="h-3.5 w-3.5" aria-hidden="true" />
               {t('home.featTrackedTitle')}
@@ -264,8 +265,9 @@ export default function Home() {
       )}
 
       {/* Trust band */}
-      <section aria-label={t('common.trustTitle')} className="rounded-2xl border border-border bg-card p-4 md:p-6">
-        <h2 className="text-base font-bold md:text-lg">{t('common.trustTitle')}</h2>
+      <section aria-label={t('common.trustTitle')} className="brand-trust-band p-5 md:p-7">
+        <p className="brand-section-label">THE AFRITRADE STANDARD</p>
+        <h2 className="font-display text-xl font-bold tracking-tight md:text-2xl">{t('common.trustTitle')}</h2>
         <p className="mt-1 text-xs text-muted-foreground">{t('common.trustSub')}</p>
         <div className="mt-4 grid gap-4 sm:grid-cols-2 md:grid-cols-4">
           {[
@@ -286,15 +288,16 @@ export default function Home() {
       </section>
 
       {/* Seller / creator call-to-action */}
-      <section className="relative overflow-hidden rounded-2xl bg-primary p-6 text-primary-foreground md:p-10">
+      <section className="brand-seller-cta relative overflow-hidden p-6 text-primary-foreground md:p-10">
         <div className="relative flex flex-col items-start gap-3">
-          <h2 className="max-w-md text-xl font-bold leading-tight md:text-2xl">{t('common.sellCtaTitle')}</h2>
+          <p className="brand-section-label brand-section-label--light">BUILD WITH AFRITRADE</p>
+          <h2 className="max-w-md font-display text-2xl font-bold leading-tight tracking-tight md:text-3xl">{t('common.sellCtaTitle')}</h2>
           <p className="max-w-md text-sm opacity-90">{t('common.sellCtaText')}</p>
           <div className="mt-1 flex flex-wrap gap-3">
-            <Link to="/seller-application" className="inline-flex min-h-11 items-center rounded-full bg-primary-foreground px-5 py-3 text-sm font-semibold text-primary">
+            <Link to="/seller-application" className="brand-action brand-action--paper inline-flex min-h-11 items-center px-5 py-3 text-sm font-semibold">
               {t('home.openShop')}
             </Link>
-            <Link to="/creator-showcase" className="inline-flex min-h-11 items-center rounded-full border border-primary-foreground/40 px-5 py-3 text-sm font-semibold text-primary-foreground">
+            <Link to="/creator-showcase" className="brand-action brand-action--line inline-flex min-h-11 items-center px-5 py-3 text-sm font-semibold">
               {t('home.becomeCreator')}
             </Link>
           </div>

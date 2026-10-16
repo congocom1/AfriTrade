@@ -59,7 +59,7 @@ export default function PayoutLedger() {
       const found = byName[0] || byEmail[0] || null;
       setWallet(found);
       if (found) {
-        const txs = await base44.entities.WalletTransaction.filter({ wallet_id: found.id }, '-created_date', 300).catch(() => []);
+        const txs = await base44.entities.WalletTransaction.filter({ wallet_id: found.id, status: { $ne: 'preparing' } }, '-created_date', 300).catch(() => []);
         setRows(txs);
       }
     })().finally(() => setLoading(false));

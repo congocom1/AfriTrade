@@ -18,7 +18,7 @@ export default function AdminPayouts() {
 
   const load = async () => {
     const rows = await base44.entities.WalletTransaction.filter(
-      { type: 'PAYOUT', direction: 'debit' },
+      { type: 'PAYOUT', direction: 'debit', status: { $ne: 'preparing' } },
       '-created_date',
       100,
     ).catch(() => []);
@@ -32,46 +32,12 @@ export default function AdminPayouts() {
 
   const settle = async (tx, approve) => {
     setMessage('');
-    const wallets = await base44.entities.Wallet.filter({ id: tx.wallet_id }).catch(() => []);
-    const wallet = wallets[0];
-
-    await base44.entities.WalletTransaction.update(tx.id, { status: approve ? 'posted' : 'reversed' });
-
-    if (!approve && wallet) {
-      const amountCents = Math.round(Number(tx.amount_usd) || 0) * 100;
-      const amountFloat = amountCents / 100;
-      const walletBalanceCents = Math.round((wallet?.balance_usd || 0) * 100);
-      const walletLifetimeDebitCents = Math.round((wallet?.lifetime_debit_usd || 0) * 100);
-      const newBalanceCents = walletBalanceCents + amountCents;
-      const newLifetimeDebitCents = Math.max(0, walletLifetimeDebitCents - amountCents);
-      const refunded = await base44.entities.Wallet.update(wallet.id, {
-        balance_usd: newBalanceCents / 100,
-        lifetime_debit_usd: newLifetimeDebitCents / 100,
-      });
-      await base44.entities.WalletTransaction.create({
-        wallet_id: wallet.id,
-        owner_type: wallet.owner_type,
-        owner_name: wallet.owner_name,
-        owner_email: wallet.owner_email || '',
-        type: 'REFUND',
-        direction: 'credit',
-        amount_usd: amountFloat,
-        balance_after_usd: refunded.balance_usd,
-        currency: 'USD',
-        description: 'Retrait refusé — montant recrédité',
-        reference: tx.reference,
-      });
+    try {
+      await base44.functions.invoke('settle-wallet-payout', { transactionId: tx.id, approve });
+    } catch (error) {
+      setMessage(error?.response?.data?.error || 'Décision indisponible. Réessayez la même action.');
+      return;
     }
-
-    await base44.entities.AuditLog.create({
-      action: approve ? 'payout.paid' : 'payout.rejected',
-      actor: 'admin',
-      entity: 'WalletTransaction',
-      entity_id: tx.id,
-      reference: tx.reference,
-      severity: approve ? 'info' : 'warning',
-      details: { amount_usd: tx.amount_usd, owner: tx.owner_name, owner_type: tx.owner_type },
-    });
 
     setMessage(
       approve

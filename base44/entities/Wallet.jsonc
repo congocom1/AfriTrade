@@ -2,6 +2,13 @@
   "name": "Wallet",
   "type": "object",
   "properties": {
+    "ledger_revision": { "type": "number", "default": 0 },
+    "ledger_operations": {
+      "type": "array",
+      "default": [],
+      "description": "Durable wallet-scoped receipts. Never prune without a durable replacement.",
+      "items": { "type": "object" }
+    },
     "tenant_id": {
       "type": "string"
     },

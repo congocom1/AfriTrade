@@ -1,6 +1,7 @@
 // DEPRECATED — replaced by the automated dispute/refund flow in
 // dispute-center and the webhook-based payment completion path.
-// Kept for rollback only; do not add new callers.
+// Existing admin returns/dispute callers still use this endpoint.
+// Fail closed until order-level refund orchestration and clawback are repaired.
 
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.49";
 import { requireAdmin } from "../../shared/security.ts";
@@ -10,6 +11,7 @@ import { addSecurityHeaders, getClientKey, checkRateLimit, rateLimitErrorRespons
 // Rate limiting configuration for admin endpoints
 const ADMIN_RATE_LIMIT_PER_HOUR = 100; // Higher limit for admin operations
 const RATE_WINDOW_MS = 3600 * 1000;
+const REFUNDS_ENABLED = false;
 
 function round2(n: unknown): number {
   return Math.round((Number(n) || 0) * 100) / 100;
@@ -83,6 +85,13 @@ export default async function (req: Request) {
       return addSecurityHeaders(auth.response);
     }
 
+    if (!REFUNDS_ENABLED) {
+      return addSecurityHeaders(Response.json({
+        error: "Remboursements temporairement indisponibles — aucune opération financière effectuée.",
+        code: "refunds_disabled",
+      }, { status: 503 }));
+    }
+
     const body = await req.json().catch(() => ({}));
 
     const orderNumber = String(body.order_number || "").trim();
@@ -118,8 +127,7 @@ export default async function (req: Request) {
 
     // Cap at the unrefunded remainder (partial refunds allowed).
     const prior = await db.entities.WalletTransaction
-      .filter({ order_number: orderNumber, type: "REFUND", direction: "credit" })
-      .catch(() => []);
+      .filter({ order_number: orderNumber, type: "REFUND", direction: "credit", status: { $in: ["posted", "pending"] } });
     const refundedSoFar = round2((prior || []).reduce((s: number, t: any) => s + (Number(t.amount_usd) || 0), 0));
     const remainder = round2((Number(order.total_usd) || 0) - refundedSoFar);
     if (round2(amount - remainder) > 0.005) {
@@ -149,6 +157,7 @@ export default async function (req: Request) {
     }
 
     const reference = String(body.return_number || body.dispute_id || orderNumber);
+    const idempotencyKey = `refund:${order.id}:${reference}:${amount}`;
     const posted = await postWalletEntry(db, wallet, {
       type: "REFUND",
       direction: "credit",
@@ -161,6 +170,7 @@ export default async function (req: Request) {
       order_id: order.id,
       order_number: orderNumber,
       status: "posted",
+      idempotencyKey,
     });
     if (!posted.ok) {
       return addSecurityHeaders(
@@ -173,10 +183,10 @@ export default async function (req: Request) {
     // above. The ledger is the truth: if our credit tipped the order past its
     // total, undo it rather than leave the buyer over-refunded.
     const ledger = await db.entities.WalletTransaction
-      .filter({ order_number: orderNumber, type: "REFUND", direction: "credit" })
-      .catch(() => []);
+      .filter({ order_number: orderNumber, type: "REFUND", direction: "credit", status: { $in: ["posted", "pending"] } });
     const refundedTotal = round2((ledger || []).reduce((s: number, t: any) => s + (Number(t.amount_usd) || 0), 0));
     if (refundedTotal > round2(Number(order.total_usd) || 0) + 0.005) {
+      const reversalIdem = `refund-reversal:${order.id}:${orderNumber}:${amount}`;
       const reversal = await postWalletEntry(db, posted.wallet, {
         type: "ADJUSTMENT",
         direction: "debit",
@@ -188,6 +198,7 @@ export default async function (req: Request) {
         reference: `reversal:${orderNumber}`,
         order_id: order.id,
         order_number: orderNumber,
+        idempotencyKey: reversalIdem,
       });
       if (!reversal.ok) {
         console.error("refund-payment: reversal failed", orderNumber, reversal.reason);
@@ -207,9 +218,10 @@ export default async function (req: Request) {
         .filter({ reference: f.fulfillment_number, status: "pending" })
         .catch(() => []);
       for (const p of pending || []) {
+        const w = await db.entities.Wallet.get(p.wallet_id);
+        if (!w) throw new Error('wallet_missing');
+        await releasePending(db, w, Number(p.amount_usd || 0), `release:${p.id}`);
         await db.entities.WalletTransaction.update(p.id, { status: "reversed" });
-        const w = await db.entities.Wallet.get(p.wallet_id).catch(() => null);
-        if (w) await releasePending(db, w, Number(p.amount_usd || 0));
         reversed += 1;
       }
       await db.entities.FulfillmentOrder.update(f.id, { payout_released: true });

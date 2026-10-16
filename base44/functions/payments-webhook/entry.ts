@@ -90,6 +90,7 @@ Deno.serve(async (req: Request) => {
       const key = await importSPKI(WEBHOOK_PUBLIC_KEY, "RS256");
       const verified = await jwtVerify(token, key);
       payload = verified.payload as Record<string, unknown>;
+      console.log('payments-webhook: signature verified', { eventType: (payload as any)?.eventType ?? 'unknown' });
     } catch (err) {
       // Signature invalid / malformed. Reject — do NOT grant anything.
       console.error("payments-webhook: JWT verification failed", err);
@@ -279,11 +280,17 @@ async function handleOrderApproved(db: any, eventData: any): Promise<Response> {
   // ===== END APP-SPECIFIC =====
 
   // Record idempotency key so a retry is short-circuited at the top.
-  await db.entities.IdempotencyKey.upsert({
-    key: idemKey,
-    used_at: new Date().toISOString(),
-    context: `checkout:${checkoutId}|order:${orderId}`,
-  }).catch(() => {})
+  // Use create to avoid SDK upsert misuse; duplicate keys are ignored for replay safety.
+  try {
+    await db.entities.IdempotencyKey.create({
+      key: idemKey,
+      used_at: new Date().toISOString(),
+      context: `checkout:${checkoutId}|order:${orderId}`,
+    });
+  } catch (err) {
+    // Duplicate key = replay attempt; log metric for monitoring.
+    console.warn('payments-webhook: idempotency replay detected', { checkoutId, orderId, key: idemKey, error: String(err) });
+  }
 
   // Mark paid LAST, so "paid" always implies the grant above completed. The idempotency
   // check at the top short-circuits on this status, so it must only be set after fulfillment.

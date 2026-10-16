@@ -35,7 +35,7 @@ export default function SellerWallet() {
     const mine = wallets[0] || null;
     setWallet(mine);
     if (mine) {
-      const txs = await base44.entities.WalletTransaction.filter({ wallet_id: mine.id }, '-created_date', 50).catch(() => []);
+      const txs = await base44.entities.WalletTransaction.filter({ wallet_id: mine.id, status: { $ne: 'preparing' } }, '-created_date', 50).catch(() => []);
       setTransactions(txs);
     }
     setLoading(false);

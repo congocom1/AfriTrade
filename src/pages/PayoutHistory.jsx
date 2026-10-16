@@ -43,7 +43,7 @@ export default function PayoutHistory() {
       const mine = wallets[0] || null;
       setWallet(mine);
       if (mine) {
-        const rows = await base44.entities.WalletTransaction.filter({ wallet_id: mine.id }, '-created_date', 200).catch(() => []);
+        const rows = await base44.entities.WalletTransaction.filter({ wallet_id: mine.id, status: { $ne: 'preparing' } }, '-created_date', 200).catch(() => []);
         setTransactions(rows);
       }
       setLoading(false);

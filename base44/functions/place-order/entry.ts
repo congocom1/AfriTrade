@@ -27,7 +27,13 @@
 // src/lib/session.js and src/lib/tenancy.js.
 //
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.49";
-import { postWalletEntry } from "../../shared/walletLedger.ts";
+import { postWalletEntry as postLedgerEntry } from "../../shared/walletLedger.ts";
+
+async function postWalletEntry(db: any, wallet: any, entry: Parameters<typeof postLedgerEntry>[2]) {
+  const result = await postLedgerEntry(db, wallet, entry);
+  if (!result.ok && result.reason !== 'duplicate') throw new Error(`wallet_${result.reason}`);
+  return result;
+}
 import { addSecurityHeaders, getClientKey, checkRateLimit, rateLimitErrorResponse } from "../../shared/securityHeaders.ts";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -898,7 +904,7 @@ export async function placeOrder(db, params) {
     // Held as a pending entry, not a spendable balance: an order that has not
     // been paid for must not hand anyone withdrawable money.
     await postWalletEntry(db, sellerWallet, {
-      type: "seller_credit",
+      type: "CREDIT",
       direction: "credit",
       amount: round2(sellerNet_cents / 100),
       amount_cdf: round2((sellerNet_cents / 100) * getUsdToCdfRateCents()),
@@ -923,7 +929,7 @@ export async function placeOrder(db, params) {
     tenant_id,
   });
   await postWalletEntry(db, platformWallet, {
-    type: "platform_fee",
+    type: "COMMISSION",
     direction: "credit",
     amount: round2(platform_fee_cents / 100),
     amount_cdf: round2((platform_fee_cents / 100) * getUsdToCdfRateCents()),
@@ -965,7 +971,7 @@ export async function placeOrder(db, params) {
       tenant_id,
     });
     await postWalletEntry(db, creatorWallet, {
-      type: "creator_commission",
+      type: "COMMISSION",
       direction: "credit",
       amount: round2(creatorTotal_cents / 100),
       amount_cdf: round2((creatorTotal_cents / 100) * getUsdToCdfRateCents()),
@@ -996,7 +1002,7 @@ export async function placeOrder(db, params) {
         tenant_id,
       });
       await postWalletEntry(db, courierWallet, {
-        type: "courier_earning",
+        type: "CREDIT",
         direction: "credit",
         amount: round2(courierEarningsCents / 100),
         amount_cdf: round2((courierEarningsCents / 100) * getUsdToCdfRateCents()),

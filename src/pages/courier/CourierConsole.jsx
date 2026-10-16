@@ -76,7 +76,7 @@ export default function CourierConsole() {
       );
 
       const txGroups = await Promise.all(
-        wallets.map((w) => base44.entities.WalletTransaction.filter({ wallet_id: w.id }, '-created_date', 20).catch(() => [])),
+        wallets.map((w) => base44.entities.WalletTransaction.filter({ wallet_id: w.id, status: { $ne: 'preparing' } }, '-created_date', 20).catch(() => [])),
       );
       setTransactions(
         txGroups

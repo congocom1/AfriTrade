@@ -34,18 +34,17 @@ async function releasePayout(db: any, fulfillment: any, order: any) {
   }
 
   const pending = await db.entities.WalletTransaction
-    .filter({ order_id: order.id, status: 'pending' })
-    .catch(() => []);
+    .filter({ order_id: order.id, status: 'pending' });
 
   for (const transaction of pending) {
     if (transaction.direction !== 'credit' || !transaction.wallet_id) continue;
-    const claim = await db.entities.WalletTransaction.updateMany(
+    const wallet = await db.entities.Wallet.get(transaction.wallet_id);
+    if (!wallet) throw new Error('wallet_missing');
+    await releasePending(db, wallet, transaction.amount_usd, `release:${transaction.id}`);
+    await db.entities.WalletTransaction.updateMany(
       { id: transaction.id, status: 'pending' },
       { $set: { status: 'posted' } },
     );
-    if (claim.updated !== 1) continue;
-    const wallet = await db.entities.Wallet.get(transaction.wallet_id).catch(() => null);
-    if (wallet) await releasePending(db, wallet, transaction.amount_usd);
   }
 
   await db.entities.FulfillmentOrder.updateMany(

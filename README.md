@@ -39,3 +39,19 @@ Review `base44/config.jsonc` and the Base44 environment settings before deployme
 - `android/`, `ios/`, `lib/` — Flutter mobile application
 
 Follow `AGENTS.md` for Base44-specific development instructions.
+
+## Release readiness
+
+**Wallet release remains blocked.** The legacy `refund-payment` endpoint now
+returns HTTP 503 before financial operations because refund recovery/clawback
+is unsafe. Admin returns and dispute refunds still call it and are unavailable
+with this guard. Do not enable refunds or release wallet changes until the gates
+in `docs/audit/WALLET_PROTOCOL.md` are satisfied, including hosted CAS validation.
+
+Web CI runs lint, frontend typecheck, unit tests and build without deploying.
+An optional manual staging smoke job requires the `STAGING_BASE_URL` repository
+variable. See `docs/audit/PRODUCTION_HARDENING.md` and
+`docs/audit/SECRETS_INVENTORY.md` for outstanding release gates.
+
+Older root-level completion and deployment reports are historical evidence,
+not current release approval. Use `docs/audit/REMEDIATION_LOG.md` for open risks.

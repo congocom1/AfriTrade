@@ -50,7 +50,7 @@ export default function PayoutRequests() {
       ? (
           await Promise.all(
             found.map((w) =>
-              base44.entities.WalletTransaction.filter({ wallet_id: w.id, type: 'PAYOUT' }, '-created_date', 50).catch(() => []),
+              base44.entities.WalletTransaction.filter({ wallet_id: w.id, type: 'PAYOUT', status: { $ne: 'preparing' } }, '-created_date', 50).catch(() => []),
             ),
           )
         ).flat()

@@ -1,0 +1,59 @@
+name: Web CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: web-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - name: Typecheck wallet ledger
+        run: npx tsc --noEmit --skipLibCheck --target es2022 --module esnext --moduleResolution bundler base44/shared/walletLedger.ts
+      - run: npm test
+      - run: npm run build
+
+  staging-smoke:
+    # Explicit opt-in: never substitute a production URL or expose credentials to PRs.
+    if: github.event_name == 'workflow_dispatch' && vars.STAGING_BASE_URL != ''
+    needs: checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      BASE_URL: ${{ vars.STAGING_BASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test test/e2e/smoke.spec.js --reporter=list
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: staging-smoke-failure
+          path: test-results/
+          retention-days: 7
