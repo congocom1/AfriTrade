@@ -149,6 +149,7 @@ const CoverageMap = lazy(() => import('@/pages/CoverageMap'));
 const MerchantDisputes = lazy(() => import('@/pages/MerchantDisputes'));
 const PayoutLedger = lazy(() => import('@/pages/PayoutLedger'));
 const BulkOrders = lazy(() => import('@/pages/BulkOrders'));
+const B2BMarketplace = lazy(() => import('@/pages/B2BMarketplace'));
 const MarketTrends = lazy(() => import('@/pages/MarketTrends'));
 const TaxReports = lazy(() => import('@/pages/TaxReports'));
 const InventoryAlerts = lazy(() => import('@/pages/InventoryAlerts'));
@@ -320,6 +321,7 @@ const AuthenticatedApp = () => {
           <Route path="/payout-ledger" element={<PageWrapper><PayoutLedger /></PageWrapper>} />
           <Route path="/coverage-map" element={<PageWrapper><CoverageMap /></PageWrapper>} />
           <Route path="/bulk-orders" element={<PageWrapper><BulkOrders /></PageWrapper>} />
+          <Route path="/b2b" element={<PageWrapper><B2BMarketplace /></PageWrapper>} />
           <Route path="/market-trends" element={<PageWrapper><MarketTrends /></PageWrapper>} />
           <Route path="/tax-reports" element={<PageWrapper><TaxReports /></PageWrapper>} />
           <Route path="/inventory-alerts" element={<PageWrapper><InventoryAlerts /></PageWrapper>} />

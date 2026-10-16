@@ -191,7 +191,7 @@ const tenantProvisioning = {
           tenantOwnerEmail: tenant.owner_email || '',
           audience: 'seller',
           type: 'system',
-          title: `Bienvenue sur Congo Commerce, ${tenant.name}`,
+          title: `Bienvenue sur AfriTrade, ${tenant.name}`,
           message:
             'Votre espace est prêt : boutique créée, essai activé. Ajoutez vos produits pour recevoir vos premières commandes.',
           reference: tenant.slug,
@@ -199,7 +199,7 @@ const tenantProvisioning = {
             ? {
                 to: tenant.owner_email,
                 subject: `Votre espace ${tenant.name} est prêt`,
-                text: `Bonjour ${tenant.owner_name || ''},\n\nVotre espace ${tenant.name} est actif avec un abonnement d'essai. Connectez-vous pour ajouter vos premiers produits.\n\nL'équipe Congo Commerce`,
+                text: `Bonjour ${tenant.owner_name || ''},\n\nVotre espace ${tenant.name} est actif avec un abonnement d'essai. Connectez-vous pour ajouter vos premiers produits.\n\nL'équipe AfriTrade`,
               }
             : null,
         });
@@ -350,7 +350,7 @@ const sellerOnboarding = {
             ? {
                 to: seller.email,
                 subject: `Votre boutique ${seller.name} est activée`,
-                text: `Bonjour ${seller.owner_name || ''},\n\nVotre boutique ${seller.name} est validée et en ligne sur Congo Commerce.\n\nL'équipe Congo Commerce`,
+                text: `Bonjour ${seller.owner_name || ''},\n\nVotre boutique ${seller.name} est validée et en ligne sur AfriTrade.\n\nL'équipe AfriTrade`,
               }
             : null,
         });

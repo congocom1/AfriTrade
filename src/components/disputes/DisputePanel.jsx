@@ -139,7 +139,7 @@ export default function DisputePanel() {
                     </div>
                   </div>
                   <p className="text-[11px] text-muted-foreground">
-                    {TYPES.find((x) => x.id === d.type)?.label} · {d.seller_name || 'Congo Commerce'} · {formatDate(d.created_date)}
+                    {TYPES.find((x) => x.id === d.type)?.label} · {d.seller_name || 'AfriTrade'} · {formatDate(d.created_date)}
                   </p>
                   <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
                     {STAGES.map((s, i) => (

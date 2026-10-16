@@ -13,12 +13,12 @@ export default function CGV() {
   return (
     <LegalPage
       title={t('cgv.title')}
-      subtitle={t('cgv.subtitle', { shop: c.trade_name || 'Congo Commerce' })}
+      subtitle={t('cgv.subtitle', { shop: c.trade_name || 'AfriTrade' })}
     >
       <LegalSection title={t('cgv.s1')}>
         <p>
           Les présentes conditions régissent les ventes conclues sur la plateforme entre, d'une part,{' '}
-          {c.legal_name || 'Congo Commerce'}, exploitant de la place de marché, et, d'autre part, tout acheteur
+          {c.legal_name || 'AfriTrade'}, exploitant de la place de marché, et, d'autre part, tout acheteur
           consommateur. Toute commande implique leur acceptation sans réserve.
         </p>
         <p>

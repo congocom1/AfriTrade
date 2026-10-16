@@ -166,7 +166,7 @@ export default function TopBar() {
         <Link
           to="/"
           className="flex shrink-0 items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg"
-          aria-label="Congo Commerce — Home"
+          aria-label="AfriTrade — Home"
         >
           <BrandLogo className="h-7 w-auto" />
         </Link>

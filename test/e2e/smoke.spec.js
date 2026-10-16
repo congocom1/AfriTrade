@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:5173';
 
-test.describe('Congo Commerce — pages publiques', () => {
+test.describe('AfriTrade — pages publiques', () => {
   test('charge la page d\'accueil', async ({ page }) => {
     await page.goto(BASE_URL + '/');
     await page.waitForLoadState('domcontentloaded');

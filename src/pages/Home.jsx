@@ -88,7 +88,7 @@ export default function Home() {
       <section className="relative overflow-hidden rounded-2xl">
         <Image
           src="/brand/cover.png"
-          alt="Congo Commerce"
+          alt="AfriTrade"
           className="absolute inset-0 h-full w-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-foreground/85 via-foreground/55 to-transparent" />

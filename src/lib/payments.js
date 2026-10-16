@@ -205,7 +205,7 @@ export const PAYMENT_PROVIDERS = {
     currencies: ['USD'],
     feePercent: 3.2,
     requiresPhone: false,
-    instructions: 'Vous serez redirigé vers la page sécurisée de notre prestataire. Aucune donnée de carte ne transite par Congo Commerce.',
+    instructions: 'Vous serez redirigé vers la page sécurisée de notre prestataire. Aucune donnée de carte ne transite par AfriTrade.',
     instructionsKey: 'pay.cardInstructions',
     isMock: true,
     async charge({ amountCents, orderNumber }) {
@@ -237,7 +237,7 @@ export const PAYMENT_PROVIDERS = {
   },
   wallet: {
     id: 'wallet',
-    name: 'Portefeuille Congo Commerce',
+    name: 'Portefeuille AfriTrade',
     nameKey: 'pay.walletName',
     kind: 'wallet',
     currencies: ['USD'],

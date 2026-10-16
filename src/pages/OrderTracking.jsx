@@ -193,7 +193,7 @@ export default function OrderTracking({ initialOrderNumber: initialOrderNumberPr
               <section key={f.id} className="rounded-2xl border border-border bg-card p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
-                    <p className="text-sm font-bold">{f.seller_name || f.supplier_name || 'Congo Commerce'}</p>
+                    <p className="text-sm font-bold">{f.seller_name || f.supplier_name || 'AfriTrade'}</p>
                     <p className="text-[11px] text-muted-foreground">
                       {f.fulfillment_number} · {isIntl ? t('trackOrder.importIntl', 'Import international') : t('trackOrder.localDrc', 'Local RDC')}
                     </p>

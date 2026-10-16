@@ -86,7 +86,7 @@ export default async function (req) {
       'Sans cette confirmation, nous ne pouvons pas traiter votre demande.',
       'Nous répondons dans un délai maximum de trente (30) jours après vérification.',
       '',
-      "L'équipe conformité — Congo Commerce",
+      "L'équipe conformité — AfriTrade",
     ].join('\n');
 
     const html = `
@@ -100,7 +100,7 @@ export default async function (req) {
           </a>
         </p>
         <p style="font-size:13px;color:#555">Sans cette confirmation, nous ne pouvons pas traiter votre demande. Nous répondons dans un délai maximum de trente (30) jours après vérification.</p>
-        <p style="font-size:13px;color:#555">L'équipe conformité — Congo Commerce</p>
+        <p style="font-size:13px;color:#555">L'équipe conformité — AfriTrade</p>
       </div>
     `;
 
@@ -110,7 +110,7 @@ export default async function (req) {
         subject: `Vérifiez votre demande relative aux données — ${reference}`,
         html,
         text,
-        from_name: 'Congo Commerce',
+        from_name: 'AfriTrade',
       });
       await base44.asServiceRole.entities.DataRequest.update(requestId, { email_status: 'sent', email_error: '' });
     } catch (error) {

@@ -17,7 +17,7 @@ import { round2Cents } from './format';
  */
 export const INTL_CARRIER = {
   id: 'ccx',
-  name: 'Congo Commerce Express',
+  name: 'AfriTrade Express',
   code: 'CCX',
 };
 

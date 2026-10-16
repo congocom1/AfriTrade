@@ -321,7 +321,7 @@ const returnRefund = {
           title: rejected ? `Retour refusé — ${row.order_number}` : `Remboursement effectué — ${row.order_number}`,
           message: rejected
             ? 'Votre demande de retour n’a pas été acceptée. Contactez le support pour en savoir plus.'
-            : `${round2(ctx.data.refundAmount)} USD ont été remboursés sur votre portefeuille Congo Commerce.`,
+            : `${round2(ctx.data.refundAmount)} USD ont été remboursés sur votre portefeuille AfriTrade.`,
           reference: row.order_number,
         });
         return { ...result };

@@ -52,6 +52,7 @@ export const SELLER_LINKS = [
   { to: '/seller/orders', label: 'Commandes' },
   { to: '/seller/messages', label: 'Messages' },
   { to: '/bulk-orders', label: 'Traitement groupé' },
+  { to: '/b2b', label: 'Marché de gros B2B' },
   { to: '/merchant-disputes', label: 'Litiges' },
   { to: '/dispute-resolution', label: 'Résolution des litiges' },
   { to: '/seller/import', label: 'Import fournisseur' },

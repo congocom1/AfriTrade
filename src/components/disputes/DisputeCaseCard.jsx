@@ -73,7 +73,7 @@ export default memo(function DisputeCaseCard({ dispute, ticket, isAdmin, actor, 
             {dispute.customer_phone ? ` · ${dispute.customer_phone}` : ''} · {formatDateTime(dispute.created_date)}
           </p>
           <p className="text-[11px] text-muted-foreground">
-            {t('disputeCase.sellerLine', { name: dispute.seller_name || 'Congo Commerce', count: messages.length })}
+            {t('disputeCase.sellerLine', { name: dispute.seller_name || 'AfriTrade', count: messages.length })}
           </p>
         </div>
         <div className="flex items-center gap-2">

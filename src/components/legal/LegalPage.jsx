@@ -18,7 +18,7 @@ export default function LegalPage({ title, subtitle, children }) {
         <h1 className="text-lg font-bold md:text-xl">{title}</h1>
         {subtitle && <p className="mt-1 text-xs text-muted-foreground">{subtitle}</p>}
         <p className="mt-2 text-[11px] text-muted-foreground">
-          {company.trade_name || 'Congo Commerce'} · {t('legalPage.lastUpdated', { date: LEGAL_UPDATED })}
+          {company.trade_name || 'AfriTrade'} · {t('legalPage.lastUpdated', { date: LEGAL_UPDATED })}
         </p>
       </header>
       <div className="space-y-4">{children}</div>

@@ -1,9 +1,9 @@
 // base44/functions/auth/entry.ts
 //
-// REST auth compatibility layer for the Congo Commerce Flutter (iOS/Android) app.
+// REST auth compatibility layer for the AfriTrade Flutter (iOS/Android) app.
 //
 // The Flutter AuthService/ApiClient calls REST endpoints under
-//   https://congocommerce.base44.app/api/auth/login, /auth/refresh, /auth/me, ...
+//   https://afritrade.base44.app/api/auth/login, /auth/refresh, /auth/me, ...
 // expecting payloads shaped like { access_token, refresh_token, expires_in, user }.
 //
 // Base44's native auth is SDK-based (@base44/sauth.loginViaEmailPassword etc.)
@@ -101,7 +101,7 @@ export default async function (req: Request): Promise<Response> {
         if (!email || !password) return fail("Email and password are required", 400);
 
         const appId = base44.getConfig().appId;
-        const serverUrl = base44.getConfig().serverUrl ?? "https://congocommerce.base44.app";
+        const serverUrl = base44.getConfig().serverUrl ?? "https://afritrade.base44.app";
         const loginRes = await fetch(`${serverUrl}/apps/${appId}/auth/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -169,7 +169,7 @@ export default async function (req: Request): Promise<Response> {
         if (!email || !password) return fail("Email and password are required", 400);
 
         const appId = base44.getConfig().appId;
-        const serverUrl = base44.getConfig().serverUrl ?? "https://congocommerce.base44.app";
+        const serverUrl = base44.getConfig().serverUrl ?? "https://afritrade.base44.app";
         const regRes = await fetch(`${serverUrl}/apps/${appId}/auth/register`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -204,7 +204,7 @@ export default async function (req: Request): Promise<Response> {
         if (!email) return fail("Email is required", 400);
 
         const appId = base44.getConfig().appId;
-        const serverUrl = base44.getConfig().serverUrl ?? "https://congocommerce.base44.app";
+        const serverUrl = base44.getConfig().serverUrl ?? "https://afritrade.base44.app";
         await fetch(`${serverUrl}/apps/${appId}/auth/reset-password-request`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -227,7 +227,7 @@ export default async function (req: Request): Promise<Response> {
         if (newPassword !== confirm) return fail("Passwords do not match", 400);
 
         const appId = base44.getConfig().appId;
-        const serverUrl = base44.getConfig().serverUrl ?? "https://congocommerce.base44.app";
+        const serverUrl = base44.getConfig().serverUrl ?? "https://afritrade.base44.app";
         const res = await fetch(`${serverUrl}/apps/${appId}/auth/reset-password`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -256,7 +256,7 @@ export default async function (req: Request): Promise<Response> {
         if (!email) return fail("Email and token are required", 400);
 
         const appId = base44.getConfig().appId;
-        const serverUrl = base44.getConfig().serverUrl ?? "https://congocommerce.base44.app";
+        const serverUrl = base44.getConfig().serverUrl ?? "https://afritrade.base44.app";
         const res = await fetch(`${serverUrl}/apps/${appId}/auth/verify-otp`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -280,7 +280,7 @@ export default async function (req: Request): Promise<Response> {
         if (!email) return fail("Email is required", 400);
 
         const appId = base44.getConfig().appId;
-        const serverUrl = base44.getConfig().serverUrl ?? "https://congocommerce.base44.app";
+        const serverUrl = base44.getConfig().serverUrl ?? "https://afritrade.base44.app";
         await fetch(`${serverUrl}/apps/${appId}/auth/resend-otp`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },

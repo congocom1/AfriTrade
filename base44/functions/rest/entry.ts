@@ -1,9 +1,9 @@
 // base44/functions/rest/entry.ts
 //
-// REST resource gateway for the Congo Commerce Flutter (iOS/Android) app.
+// REST resource gateway for the AfriTrade Flutter (iOS/Android) app.
 //
 // The Flutter ProductRepository and other services call REST endpoints under
-//   https://congocommerce.base44.app/api/products, /api/categories, /api/products/:id, ...
+//   https://afritrade.base44.app/api/products, /api/categories, /api/products/:id, ...
 //
 // Base44's entity API is SDK-based (base44.entities.Product.list() etc.) and is not
 // exposed as raw REST endpoints at predictable paths. This function bridges the gap:
@@ -22,6 +22,8 @@
 //   GET    /products/:id/similar  get similar products
 //   GET    /products/:id/reviews  get product reviews
 //   GET    /categories            list categories
+//   GET    /b2b/products          list B2B wholesale products (is_b2b, wholesale_price, moq, bulk_discounts)
+//   GET    /suppliers             list B2B suppliers (Alibaba-style supplier directory)
 //
 // All entity reads are performed as the service role so public data is readable
 // without authentication; writes remain locked behind auth where required.
@@ -40,7 +42,7 @@ const json = (data: unknown, status = 200) =>
 
 // Match paths like /api/products, /api/products/abc123, /api/products/abc123/similar,
 // /api/products/abc123/reviews, /api/categories.
-// The Flutter app's baseUrl is https://congocommerce.base44.app/api, so every
+// The Flutter app's baseUrl is https://afritrade.base44.app/api, so every
 // request path starts with "/api/". We strip that leading segment before parsing.
 function parsePath(url: URL): { resource: string; id?: string; action?: string } | null {
   const segments = url.pathname.split("/").filter(Boolean);
@@ -48,7 +50,7 @@ function parsePath(url: URL): { resource: string; id?: string; action?: string }
   if (segments.length > 0 && segments[0] === "api") segments.shift();
   if (segments.length === 0) return null;
   const resource = segments[0];
-  if (!["products", "categories"].includes(resource)) return null;
+  if (!["products", "categories", "b2b", "suppliers"].includes(resource)) return null;
   if (segments.length === 1) return { resource };
   if (segments.length === 2) return { resource, id: segments[1] };
   if (segments.length === 3) return { resource, id: segments[1], action: segments[2] };
@@ -80,11 +82,17 @@ function productToFlutter(p: any) {
     supplier_price: p.supplier_price ?? null,
     currency: p.currency ?? "USD",
     price_usd: round2(p.price_usd ?? 0),
+    // B2B wholesale fields
+    is_b2b: p.is_b2b ?? false,
+    wholesale_price_usd: p.wholesale_price_usd ?? null,
+    moq: p.moq ?? 1,
+    bulk_discounts: Array.isArray(p.bulk_discounts) ? p.bulk_discounts : [],
+    b2b_only: p.b2b_only ?? false,
     compare_at_usd: p.compare_at_usd ?? null,
     markup_percent: p.markup_percent ?? null,
     stock: p.stock ?? 0,
     weight_kg: p.weight_kg ?? null,
-    origin_country: p.origin_country ?? "CD",
+    origin_country: p.origin_country ?? "NG",
     status: p.status ?? "published",
     is_featured: p.is_featured ?? false,
     is_flash_sale: p.is_flash_sale ?? false,
@@ -267,6 +275,45 @@ export default async function (req: Request): Promise<Response> {
           comment: r.comment ?? "",
           created_date: r.created_date ?? null,
         })),
+      });
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // B2B WHOLESALE PRODUCTS — /b2b/products
+    // Returns products flagged for B2B (wholesale pricing, MOQ, bulk discounts)
+    // ─────────────────────────────────────────────────────────────────
+    if (resource === "b2b" && id === "products" && !action) {
+      const all = await db.entities.Product.list("-created_date", 500).catch(() => []);
+      const b2bProducts = (all || [])
+        .filter((p: any) => p.is_b2b || p.b2b_only || p.wholesale_price_usd != null)
+        .map(productToFlutter);
+      return json({ products: b2bProducts, total: b2bProducts.length });
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // SUPPLIER DIRECTORY — /suppliers
+    // Lists B2B suppliers (Alibaba-style supplier directory)
+    // ─────────────────────────────────────────────────────────────────
+    if (resource === "suppliers" && !id && !action) {
+      const all = await db.entities.Supplier.list("-created_date", 200).catch(() => []);
+      return json({
+        suppliers: (all || []).map((s: any) => ({
+          id: s.id ?? "",
+          name: s.name ?? "",
+          code: s.code ?? "",
+          adapter: s.adapter ?? "manual",
+          type: s.type ?? "international",
+          country: s.country ?? "CN",
+          logo_url: s.logo_url ?? null,
+          description: s.description ?? null,
+          enabled: s.enabled ?? true,
+          avg_shipping_days: s.avg_shipping_days ?? 18,
+          shipping_base_usd: s.shipping_base_usd ?? 9,
+          default_markup_percent: s.default_markup_percent ?? 45,
+          products_count: s.products_count ?? 0,
+          last_sync_at: s.last_sync_at ?? null,
+        })),
+        total: (all || []).length,
       });
     }
 

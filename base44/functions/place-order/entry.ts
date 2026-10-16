@@ -917,7 +917,7 @@ export async function placeOrder(db, params) {
 
   const platformWallet = await getOrCreateWallet(db, {
     owner_type: "platform",
-    owner_name: "Congo Commerce Platform",
+    owner_name: "AfriTrade Platform",
     owner_email: "platform@congo-commerce.com",
     owner_id: "platform",
     tenant_id,
@@ -934,7 +934,7 @@ export async function placeOrder(db, params) {
     order_number: orderNumber,
     idempotencyKey: "platform_fee:" + order.id,
     owner_type: "platform",
-    owner_name: "Congo Commerce Platform",
+    owner_name: "AfriTrade Platform",
     owner_email: "platform@congo-commerce.com",
     tenant_id,
   });

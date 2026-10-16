@@ -89,7 +89,7 @@ export default function Invoice() {
         <div className="grid gap-4 md:grid-cols-2">
           <section>
             <h2 className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">{t('invoice.issuer')}</h2>
-            <p className="mt-1.5 text-sm font-bold">{company.legal_name || 'Congo Commerce'}</p>
+            <p className="mt-1.5 text-sm font-bold">{company.legal_name || 'AfriTrade'}</p>
             <div className="mt-1 space-y-0.5 text-[11px] text-muted-foreground">
               {company.address && <p>{company.address}</p>}
               <p>{[company.city, company.country].filter(Boolean).join(', ')}</p>

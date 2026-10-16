@@ -21,7 +21,7 @@ export default function SupportInbox() {
   return (
     <div className="mx-auto max-w-6xl space-y-4 px-3 py-5 md:px-6">
       <DashboardNav title={t('supportInbox.title')} links={ADMIN_LINKS} />
-      <ChatInbox threads={threads} activeId={activeId} onSelect={setActiveId} role="support" senderName="Support Congo Commerce" emptyText={t('supportInbox.empty')} />
+      <ChatInbox threads={threads} activeId={activeId} onSelect={setActiveId} role="support" senderName="Support AfriTrade" emptyText={t('supportInbox.empty')} />
     </div>
   );
 }

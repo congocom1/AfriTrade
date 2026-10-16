@@ -136,7 +136,7 @@ export default async function (req) {
       'Votre note aide les autres clients à choisir en confiance.',
       "Si quelque chose ne s'est pas bien passé, répondez à cet e-mail : notre équipe vous aidera.",
       '',
-      "L'équipe Congo Commerce",
+      "L'équipe AfriTrade",
     ].join('\n');
 
     const ledger = await base44.asServiceRole.entities.OrderNotification.create({
@@ -174,7 +174,7 @@ export default async function (req) {
         </ul>
         <p>Votre note aide les autres clients à choisir en confiance.</p>
         <p style="font-size:13px;color:#555">Si quelque chose ne s'est pas bien passé, répondez à cet e-mail : notre équipe vous aidera.</p>
-        <p style="font-size:13px;color:#555">L'équipe Congo Commerce</p>
+        <p style="font-size:13px;color:#555">L'équipe AfriTrade</p>
       </div>
     `;
 
@@ -184,7 +184,7 @@ export default async function (req) {
         subject,
         html,
         text: message,
-        from_name: 'Congo Commerce',
+        from_name: 'AfriTrade',
       });
       await base44.asServiceRole.entities.OrderNotification.update(ledger.id, {
         status: 'sent',

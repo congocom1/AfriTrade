@@ -41,7 +41,7 @@ export default function MentionsLegales() {
 
       <LegalSection title={t('mentionsLegales.sectionActivity')}>
         <p>
-          {c.trade_name || 'Congo Commerce'} exploite une place de marché en ligne permettant à des vendeurs
+          {c.trade_name || 'AfriTrade'} exploite une place de marché en ligne permettant à des vendeurs
           établis en République Démocratique du Congo et à des fournisseurs internationaux de proposer des
           produits à des acheteurs, avec livraison à domicile ou en point de retrait.
         </p>

@@ -102,7 +102,7 @@ async function generateLabel(db, body, user) {
   const label_id = `LBL-${Date.now().toString(36).toUpperCase()}-${randomSuffix1}`;
   const tracking_number = generateTracking(carrier);
 
-  const sender = body.sender || { name: 'Congo Commerce', address: 'Kinshasa, RDC', city: 'Kinshasa', country: 'CD', phone: '+243 000 000 000' };
+  const sender = body.sender || { name: 'AfriTrade', address: 'Kinshasa, RDC', city: 'Kinshasa', country: 'CD', phone: '+243 000 000 000' };
   const pkg = normalizePackage(package_info);
   const label_data = buildLabelHTML(label_id, tracking_number, sender, recipient, pkg, carrier, order_number);
   const now = new Date().toISOString();
@@ -185,7 +185,7 @@ function buildLabelHTML(label_id, tracking_number, sender, recipient, pkg, carri
   const w = 4, h = 3;
   return `<div style="width:${w}in;height:${h}in;border:2px solid #000;padding:10px;font-family:sans-serif;font-size:11px;box-sizing:border-box">
     <div style="display:flex;justify-content:space-between;border-bottom:2px solid #000;padding-bottom:6px;margin-bottom:8px">
-      <b>Congo Commerce</b><span style="font-size:10px">${ESC(order_number)}</span>
+      <b>AfriTrade</b><span style="font-size:10px">${ESC(order_number)}</span>
     </div>
     <div style="display:flex;gap:12px;margin-bottom:8px">
       <div style="flex:1"><b>DE:</b><br/>${ESC(sender.name)}<br/>${ESC(sender.address)}<br/>${ESC(sender.city)}, ${ESC(sender.country)}<br/>${ESC(sender.phone)}</div>

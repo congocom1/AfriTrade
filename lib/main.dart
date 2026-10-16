@@ -11,13 +11,13 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(
     const ProviderScope(
-      child: CongoCommerceApp(),
+      child: AfriTradeApp(),
     ),
   );
 }
 
-class CongoCommerceApp extends ConsumerWidget {
-  const CongoCommerceApp({super.key});
+class AfriTradeApp extends ConsumerWidget {
+  const AfriTradeApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

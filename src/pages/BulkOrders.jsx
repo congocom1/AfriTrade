@@ -21,7 +21,7 @@ function printLabels(rows, orders, L) {
     const order = orders[f.order_number] || {};
     const pickup = order.delivery_method === 'pickup_point';
     return `<section class="label">
-      <header><strong>Congo Commerce</strong><span>${esc(f.fulfillment_number)}</span></header>
+      <header><strong>AfriTrade</strong><span>${esc(f.fulfillment_number)}</span></header>
       <p class="ref">${esc(f.order_number)}</p>
       <p class="to">${esc(order.customer_name || L.client)}<br/>${esc(order.customer_phone)}</p>
       <p class="addr">${pickup ? `${L.pickupPrefix}${esc(order.pickup_point_name || L.pickupFallback)}` : `${esc(order.address)}<br/>${esc(order.city)}`}</p>

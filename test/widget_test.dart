@@ -1,4 +1,4 @@
-// Smoke tests for the Congo Commerce Flutter shell: cart state + model parsing.
+// Smoke tests for the AfriTrade Flutter shell: cart state + model parsing.
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -107,7 +107,7 @@ void main() {
       expect(product.currency, 'USD');
       expect(product.sourceType, 'local_seller');
       expect(product.status, 'published');
-      expect(product.originCountry, 'CD');
+      expect(product.originCountry, 'NG');
       expect(product.priceUsd, 0);
       expect(product.stock, 0);
       expect(product.images, isEmpty);
@@ -137,8 +137,8 @@ void main() {
   });
 
   test('AppConstants exposes the marketplace identity', () {
-    expect(AppConstants.appName, 'Congo Commerce');
+    expect(AppConstants.appName, 'AfriTrade');
     expect(AppConstants.supportedLocales, contains('fr'));
-    expect(AppConstants.defaultLocale, 'fr');
+    expect(AppConstants.defaultLocale, 'en');
   });
 }

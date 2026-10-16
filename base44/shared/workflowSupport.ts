@@ -83,10 +83,10 @@ export async function notify(base44, options = {}) {
     try {
       await base44.asServiceRole.integrations.Core.SendEmail({
         to: options.email.to,
-        subject: options.email.subject || options.title || 'Congo Commerce',
+        subject: options.email.subject || options.title || 'AfriTrade',
         text: options.email.text || options.message || '',
         html: options.email.html || undefined,
-        from_name: options.email.fromName || 'Congo Commerce',
+        from_name: options.email.fromName || 'AfriTrade',
       });
       email = 'sent';
     } catch (error) {

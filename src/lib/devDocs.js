@@ -3,8 +3,8 @@ export const DEV_SECTIONS = [
     id: 'start',
     title: 'Démarrage',
     blocks: [
-      { h: 'Présentation', p: "L'API Congo Commerce donne accès aux produits, commandes, expéditions et boutiques de la plateforme. Toutes les réponses sont en JSON et les montants sont exprimés en USD." },
-      { h: 'Obtenir une clé API', p: "Les clés API sont délivrées par l'équipe Congo Commerce aux partenaires validés (fournisseurs, transporteurs, intégrateurs). Contactez-nous via la page Contact en précisant votre cas d'usage." },
+      { h: 'Présentation', p: "L'API AfriTrade donne accès aux produits, commandes, expéditions et boutiques de la plateforme. Toutes les réponses sont en JSON et les montants sont exprimés en USD." },
+      { h: 'Obtenir une clé API', p: "Les clés API sont délivrées par l'équipe AfriTrade aux partenaires validés (fournisseurs, transporteurs, intégrateurs). Contactez-nous via la page Contact en précisant votre cas d'usage." },
       { h: 'Authentification', p: 'Envoyez votre clé dans l\'en-tête de chaque requête :', code: 'api_key: VOTRE_CLE_API' },
     ],
   },

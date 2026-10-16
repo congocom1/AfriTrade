@@ -173,7 +173,7 @@ export default function Disputes() {
                   </div>
                 </div>
                 <p className="text-[11px] text-muted-foreground">
-                  {TYPES.find((x) => x.id === d.type)?.label} · {d.seller_name || 'Congo Commerce'} · {formatDate(d.created_date)}
+                  {TYPES.find((x) => x.id === d.type)?.label} · {d.seller_name || 'AfriTrade'} · {formatDate(d.created_date)}
                 </p>
                 {d.description && <p className="mt-1 text-xs text-muted-foreground">{d.description}</p>}
                 {d.admin_notes && <p className="mt-1 text-xs font-medium text-primary">{t('disputes.decisionIs', { notes: d.admin_notes })}</p>}

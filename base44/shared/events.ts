@@ -174,7 +174,7 @@ export const EVENT_RULES = {
     notify: [
       {
         audience: 'customer',
-        title: () => 'Bienvenue sur Congo Commerce',
+        title: () => 'Bienvenue sur AfriTrade',
         message: () => 'Votre compte est prêt : suivez vos commandes, vos retours et votre portefeuille depuis votre profil.',
       },
     ],

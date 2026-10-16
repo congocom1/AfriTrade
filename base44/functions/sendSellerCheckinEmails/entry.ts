@@ -98,7 +98,7 @@ export default async function (req) {
         `Besoin d'un coup de main ? Écrivez-nous : ${help}`,
         '',
         "Nous sommes là pour vous aider à vendre.",
-        "L'équipe Congo Commerce",
+        "L'équipe AfriTrade",
       ];
       const message = lines.join('\n');
       const html = `
@@ -112,7 +112,7 @@ export default async function (req) {
             <li>lancer une promotion pour relancer les commandes.</li>
           </ul>
           <p><a href="${dashboard}">Reprendre sur votre boutique</a> — <a href="${help}">besoin d'un coup de main ?</a></p>
-          <p style="font-size:13px;color:#555">Nous sommes là pour vous aider à vendre.<br/>L'équipe Congo Commerce</p>
+          <p style="font-size:13px;color:#555">Nous sommes là pour vous aider à vendre.<br/>L'équipe AfriTrade</p>
         </div>
       `;
 

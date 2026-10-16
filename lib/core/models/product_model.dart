@@ -35,6 +35,12 @@ class ProductModel {
   final DateTime? createdDate;
   final DateTime? updatedDate;
   final String? tenantId;
+  // B2B wholesale fields
+  final bool isB2b;
+  final double? wholesalePriceUsd;
+  final int moq;
+  final List<Map<String, dynamic>> bulkDiscounts;
+  final bool b2bOnly;
 
   const ProductModel({
     required this.id,
@@ -60,7 +66,7 @@ class ProductModel {
     this.markupPercent,
     this.stock = 0,
     this.weightKg,
-    this.originCountry = 'CD',
+    this.originCountry = 'NG',
     this.status = 'published',
     this.isFeatured = false,
     this.isFlashSale = false,
@@ -70,6 +76,11 @@ class ProductModel {
     this.createdDate,
     this.updatedDate,
     this.tenantId,
+    this.isB2b = false,
+    this.wholesalePriceUsd,
+    this.moq = 1,
+    this.bulkDiscounts = const [],
+    this.b2bOnly = false,
   });
 
   static double _d(Map<String, dynamic> j, String k, [double fallback = 0]) =>
@@ -105,9 +116,14 @@ class ProductModel {
         markupPercent: json['markup_percent'] == null ? null : _d(json, 'markup_percent'),
         stock: _d(json, 'stock'),
         weightKg: json['weight_kg'] == null ? null : _d(json, 'weight_kg'),
-        originCountry: json['origin_country'] as String? ?? 'CD',
+        originCountry: json['origin_country'] as String? ?? 'NG',
         status: json['status'] as String? ?? 'published',
         isFeatured: json['is_featured'] as bool? ?? false,
+        isB2b: json['is_b2b'] as bool? ?? false,
+        wholesalePriceUsd: json['wholesale_price_usd'] == null ? null : _d(json, 'wholesale_price_usd'),
+        moq: json['moq'] == null ? 1 : _i(json, 'moq'),
+        bulkDiscounts: (json['bulk_discounts'] as List?)?.map((e) => Map<String, dynamic>.from(e)).toList() ?? const [],
+        b2bOnly: json['b2b_only'] as bool? ?? false,
         isFlashSale: json['is_flash_sale'] as bool? ?? false,
         rating: _d(json, 'rating'),
         reviewsCount: _i(json, 'reviews_count'),
@@ -149,6 +165,12 @@ class ProductModel {
         'reviews_count': reviewsCount,
         'sold_count': soldCount,
         'tenant_id': tenantId,
+        // B2B wholesale fields
+        'is_b2b': isB2b,
+        'wholesale_price_usd': wholesalePriceUsd,
+        'moq': moq,
+        'bulk_discounts': bulkDiscounts,
+        'b2b_only': b2bOnly,
       };
 
   bool get isInStock => stock > 0;
@@ -164,6 +186,11 @@ class ProductModel {
 
   String get primaryImage => images.isNotEmpty ? images.first : '';
 
+  /// Effective B2B price: wholesale price if set, otherwise retail price
+  double get b2bPrice => wholesalePriceUsd ?? priceUsd;
+
+  bool get isWholesale => isB2b || b2bOnly || wholesalePriceUsd != null;
+
   ProductModel copyWith({
     String? title,
     String? description,
@@ -173,6 +200,11 @@ class ProductModel {
     String? status,
     bool? isFeatured,
     bool? isFlashSale,
+    bool? isB2b,
+    double? wholesalePriceUsd,
+    int? moq,
+    List<Map<String, dynamic>>? bulkDiscounts,
+    bool? b2bOnly,
   }) =>
       ProductModel(
         id: id,
@@ -202,6 +234,11 @@ class ProductModel {
         status: status ?? this.status,
         isFeatured: isFeatured ?? this.isFeatured,
         isFlashSale: isFlashSale ?? this.isFlashSale,
+        isB2b: isB2b ?? this.isB2b,
+        wholesalePriceUsd: wholesalePriceUsd ?? this.wholesalePriceUsd,
+        moq: moq ?? this.moq,
+        bulkDiscounts: bulkDiscounts ?? this.bulkDiscounts,
+        b2bOnly: b2bOnly ?? this.b2bOnly,
         rating: rating,
         reviewsCount: reviewsCount,
         soldCount: soldCount,

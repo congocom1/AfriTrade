@@ -7,7 +7,7 @@ export default function BrandLogo({ className = 'h-3 w-auto' }) {
   return (
     <img
       src={LOGO_URL}
-      alt="Congo Commerce"
+      alt="AfriTrade"
       className={`shrink-0 object-contain rounded-sm ${className}`} />);
 
 

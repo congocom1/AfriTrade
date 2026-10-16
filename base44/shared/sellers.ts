@@ -75,7 +75,7 @@ export async function sendSellerOutreach(base44, { seller, email, subject, messa
       subject,
       html,
       text: message,
-      from_name: 'Congo Commerce',
+      from_name: 'AfriTrade',
     });
     await base44.asServiceRole.entities.AuditLog.create({
       action,

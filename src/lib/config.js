@@ -17,16 +17,30 @@ export const DEFAULT_PRICING_CONFIG = {
 };
 
 export const DEFAULT_COUNTRY_CONFIG = {
-  code: 'CD',
-  name: 'République Démocratique du Congo',
-  default_currency: 'USD',
-  currencies: ['USD', 'CDF'],
-  usd_to_cdf_rate: 2800,
-  timezone: 'Africa/Kinshasa',
-  phone_prefix: '+243',
-  languages: ['fr', 'en'],
-  cities: ['Kinshasa', 'Lubumbashi', 'Goma', 'Bukavu', 'Matadi', 'Kananga', 'Kisangani', 'Mbuji-Mayi', 'Kolwezi', 'Bunia'],
+  code: 'NG',
+  name: 'Nigeria',
+  default_currency: 'NGN',
+  currencies: ['NGN', 'USD'],
+  usd_to_ngn_rate: 1500,
+  timezone: 'Africa/Lagos',
+  phone_prefix: '+234',
+  languages: ['en', 'yo', 'ig'],
+  cities: ['Lagos', 'Abuja', 'Kano', 'Ibadan', 'Port Harcourt', 'Benin City', 'Maiduguri', 'Zaria', 'Abeokuta', 'Jos'],
 };
+
+// All supported African countries for pan-African marketplace
+export const AFRICAN_COUNTRIES = [
+  { code: 'NG', name: 'Nigeria', currency: 'NGN', phone: '+234', languages: ['en', 'yo', 'ig'], timezone: 'Africa/Lagos' },
+  { code: 'KE', name: 'Kenya', currency: 'KES', phone: '+254', languages: ['en', 'sw'], timezone: 'Africa/Nairobi' },
+  { code: 'GH', name: 'Ghana', currency: 'GHS', phone: '+233', languages: ['en'], timezone: 'Africa/Accra' },
+  { code: 'CM', name: 'Cameroon', currency: 'XAF', phone: '+237', languages: ['en', 'fr'], timezone: 'Africa/Douala' },
+  { code: 'CD', name: 'DR Congo', currency: 'CDF', phone: '+243', languages: ['fr', 'ln', 'sw'], timezone: 'Africa/Kinshasa' },
+  { code: 'CI', name: "Côte d'Ivoire", currency: 'XOF', phone: '+225', languages: ['fr'], timezone: 'Africa/Abidjan' },
+  { code: 'SN', name: 'Senegal', currency: 'XOF', phone: '+221', languages: ['fr', 'wo'], timezone: 'Africa/Dakar' },
+  { code: 'EG', name: 'Egypt', currency: 'EGP', phone: '+20', languages: ['ar', 'en'], timezone: 'Africa/Cairo' },
+  { code: 'ZA', name: 'South Africa', currency: 'ZAR', phone: '+27', languages: ['en', 'zu', 'xh'], timezone: 'Africa/Johannesburg' },
+  { code: 'MA', name: 'Morocco', currency: 'MAD', phone: '+212', languages: ['ar', 'fr'], timezone: 'Africa/Casablanca' },
+];
 
 /** TVA and invoicing rules. */
 export const DEFAULT_TAX_CONFIG = {
@@ -38,15 +52,15 @@ export const DEFAULT_TAX_CONFIG = {
 /** Legal identity feeding the legal pages, the footer and every invoice header. */
 export const DEFAULT_COMPANY_CONFIG = {
   legal_name: '',
-  trade_name: 'Congo Commerce',
+  trade_name: 'AfriTrade',
   legal_form: '',
   rccm: '',
   nif: '',
   vat_number: '',
   capital: '',
   address: '',
-  city: 'Kinshasa',
-  country: 'République Démocratique du Congo',
+  city: 'Lagos',
+  country: 'Pan-African',
   email: '',
   phone: '',
   publisher: '',

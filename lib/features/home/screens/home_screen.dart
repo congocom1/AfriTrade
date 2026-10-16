@@ -77,7 +77,7 @@ class HomeScreen extends ConsumerWidget {
             // Featured
             SliverToBoxAdapter(
               child: SectionHeader(
-                title: 'Congo Commerce picks',
+                title: 'AfriTrade picks',
                 subtitle: 'Curated for you',
                 actionLabel: 'See all',
                 onAction: () => context.go('/products'),

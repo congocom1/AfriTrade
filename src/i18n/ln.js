@@ -1,4 +1,4 @@
-// Lingala (Kinshasa) — core chrome only. Anything absent falls back to
+// Lingala (Lagos) — core chrome only. Anything absent falls back to
 // French automatically. NEEDS NATIVE REVIEW before marketing it as full
 // Lingala support.
 export default {

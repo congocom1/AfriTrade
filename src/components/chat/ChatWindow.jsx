@@ -34,7 +34,7 @@ export default memo(function ChatWindow({ thread, role, senderName }) {
   return (
     <div className="flex h-[65vh] flex-col rounded-2xl border border-border bg-card">
       <div className="border-b border-border p-3">
-        <p className="text-sm font-bold">{thread.type === 'support' ? 'Support Congo Commerce' : role === 'customer' ? thread.seller_name : thread.customer_name}</p>
+        <p className="text-sm font-bold">{thread.type === 'support' ? 'Support AfriTrade' : role === 'customer' ? thread.seller_name : thread.customer_name}</p>
         {thread.subject && <p className="text-xs text-muted-foreground">{thread.subject}</p>}
       </div>
       <div className="flex-1 space-y-2 overflow-y-auto p-3">

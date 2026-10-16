@@ -74,7 +74,7 @@ export default function OrderConfirmation() {
             <div className="flex items-center justify-between gap-2">
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold">
-                  {f.seller_name || f.supplier_name || 'Congo Commerce'}
+                  {f.seller_name || f.supplier_name || 'AfriTrade'}
                 </p>
                 <p className="text-[11px] text-muted-foreground">
                   {f.fulfillment_number} · {f.source_type === 'international_supplier' ? t('orderConfirmation.importIntl') : t('orderConfirmation.localDrc')}

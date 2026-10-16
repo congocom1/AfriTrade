@@ -1,6 +1,6 @@
-# Congo Commerce
+# AfriTrade
 
-Congo Commerce is a Base44-backed commerce application with a React/Vite frontend and a separate Flutter mobile project.
+AfriTrade is Shopify × Alibaba for Africa — a pan-African B2B & B2C marketplace with a React/Vite frontend and a separate Flutter mobile project.
 
 ## Development prerequisites
 

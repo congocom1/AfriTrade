@@ -111,7 +111,7 @@ export default async function (req) {
           <span style="display:inline-block;border:2px dashed #111;border-radius:12px;padding:12px 22px;font-size:20px;font-weight:800;letter-spacing:.08em">${code}</span>
         </p>
         <p>Ce code est valable jusqu'au <strong>${frenchDate(expiresAt)}</strong> et s'applique une seule fois. Saisissez-le au moment du paiement.</p>
-        <p style="font-size:13px;color:#555">Aucun montant n'a été prélevé. L'équipe Congo Commerce</p>
+        <p style="font-size:13px;color:#555">Aucun montant n'a été prélevé. L'équipe AfriTrade</p>
       </div>
     `;
 
@@ -121,7 +121,7 @@ export default async function (req) {
         subject,
         html,
         text: message,
-        from_name: 'Congo Commerce',
+        from_name: 'AfriTrade',
       });
       await base44.asServiceRole.entities.OrderNotification.update(ledger.id, {
         status: 'sent',

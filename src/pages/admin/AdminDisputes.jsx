@@ -138,7 +138,7 @@ export default function AdminDisputes() {
                   <Gavel className="h-4 w-4 text-primary" /> {d.order_number}
                 </p>
                 <p className="text-[11px] text-muted-foreground">
-                  {d.customer_name || t('adminDisputes.customer')} vs {d.seller_name || 'Congo Commerce'} · {TYPE_LABELS[d.type] || d.type} ·{' '}
+                  {d.customer_name || t('adminDisputes.customer')} vs {d.seller_name || 'AfriTrade'} · {TYPE_LABELS[d.type] || d.type} ·{' '}
                   {formatDateTime(d.created_date)}
                 </p>
               </div>

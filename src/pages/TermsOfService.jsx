@@ -8,7 +8,7 @@ import { getCompanyConfig } from '@/lib/config';
 export default function TermsOfService() {
   const { t } = useTranslation();
   const c = getCompanyConfig();
-  const operator = c.legal_name || 'Congo Commerce';
+  const operator = c.legal_name || 'AfriTrade';
 
   return (
     <InfoPage

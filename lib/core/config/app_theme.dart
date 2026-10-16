@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Application themes following Congo Commerce brand system
+/// Application themes following AfriTrade brand system
 class AppTheme {
   // Brand colors from BRAND.md
   static const Color primary = Color(0xFF07110D);      // Congo green (near black)

@@ -33,7 +33,7 @@ export default async function (req: Request) {
     if (!productId) return addSecurityHeaders(err("Produit invalide."));
     if (!Number.isInteger(rating) || rating < 1 || rating > 5) return addSecurityHeaders(err("Note invalide."));
     const comment = String(body.comment || "").slice(0, 1000);
-    const name = String(body.name || "").slice(0, 80) || "Client Congo Commerce";
+    const name = String(body.name || "").slice(0, 80) || "Client AfriTrade";
     const sessionId = String(body.session_id || "").slice(0, 128);
     const phone = String(body.phone || "").replace(/\D/g, "");
 

@@ -55,7 +55,7 @@ export default function LegalFooter() {
         ))}
       </div>
       <p className="mt-2 leading-relaxed">
-        {c.legal_name || 'Congo Commerce'} · RCCM {c.rccm || '—'} · NIF {c.nif || '—'} ·{' '}
+        {c.legal_name || 'AfriTrade'} · RCCM {c.rccm || '—'} · NIF {c.nif || '—'} ·{' '}
         {[c.address, c.city, c.country].filter(Boolean).join(', ')}
       </p>
     </footer>

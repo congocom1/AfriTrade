@@ -171,7 +171,7 @@ export default function AdminReturns() {
                     <Gavel className="h-4 w-4 text-primary" /> {d.order_number}
                   </p>
                   <p className="text-[11px] text-muted-foreground">
-                    {d.customer_name} vs {d.seller_name || 'Congo Commerce'} · {REASON_LABELS[d.type] || d.type} · {formatDateTime(d.created_date)}
+                    {d.customer_name} vs {d.seller_name || 'AfriTrade'} · {REASON_LABELS[d.type] || d.type} · {formatDateTime(d.created_date)}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">

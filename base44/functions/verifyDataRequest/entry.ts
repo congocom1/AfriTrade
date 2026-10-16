@@ -22,11 +22,11 @@ function page(status, title, message) {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>${safeTitle} — Congo Commerce</title>
+    <title>${safeTitle} — AfriTrade</title>
   </head>
   <body style="margin:0;background:#fafafa;font-family:system-ui,-apple-system,sans-serif;color:#111">
     <main style="max-width:520px;margin:0 auto;padding:48px 20px">
-      <p style="font-weight:800;letter-spacing:.04em;text-transform:uppercase;font-size:13px;color:#111">Congo Commerce</p>
+      <p style="font-weight:800;letter-spacing:.04em;text-transform:uppercase;font-size:13px;color:#111">AfriTrade</p>
       <div style="background:#fff;border:1px solid #e5e5e5;border-radius:18px;padding:24px;margin-top:16px">
         <h1 style="margin:0 0 8px;font-size:19px">${safeTitle}</h1>
         <p style="margin:0;color:#555;font-size:14px;line-height:1.6">${safeMessage}</p>

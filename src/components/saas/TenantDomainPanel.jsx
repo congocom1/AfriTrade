@@ -23,7 +23,7 @@ export default memo(function TenantDomainPanel({ tenant, domains, onChange }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
-  const subdomainHost = tenant?.slug ? `${tenant.slug}.congocommerce.app` : '';
+  const subdomainHost = tenant?.slug ? `${tenant.slug}.afritrade.app` : '';
 
   const add = async (value, type) => {
     const host = String(value || '').trim().toLowerCase().replace(/^https?:\/\//, '').replace(/\/.*$/, '');
@@ -86,7 +86,7 @@ export default memo(function TenantDomainPanel({ tenant, domains, onChange }) {
                 </p>
                 {d.type === 'custom' && d.status !== 'verified' && (
                   <p className="mt-1 rounded-lg bg-secondary p-2 font-mono text-[11px]">
-                    TXT _congocommerce.{d.hostname} = {d.verification_token}
+                    TXT _afritrade.{d.hostname} = {d.verification_token}
                   </p>
                 )}
               </div>

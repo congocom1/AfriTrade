@@ -35,7 +35,7 @@ function buildOrderUpdate({ order, fulfillment = null, status = '', event = '' }
       label: 'Delivered',
       event: 'delivered',
       subject: `Livraison confirmée — ${num}`,
-      message: `Bonjour ${customer}, votre commande ${num} a été livrée. Merci d'avoir choisi Congo Commerce !`,
+      message: `Bonjour ${customer}, votre commande ${num} a été livrée. Merci d'avoir choisi AfriTrade !`,
     },
     cancelled: {
       label: 'Cancelled',

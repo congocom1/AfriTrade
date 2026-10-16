@@ -117,7 +117,7 @@ export default async function (req) {
         <h2 style="font-size:15px">Vos demandes relatives aux données (${requests.length})</h2>
         ${list(requests, (r) => `${escapeHtml(r.request_number || '')} — ${escapeHtml(typeLabel(r.type))} — ${escapeHtml(r.status || '')}`)}
         <p style="font-size:13px;color:#555">Le fichier CSV joint reprend ces lignes sous forme exploitable.</p>
-        <p style="font-size:13px;color:#555">L'équipe conformité — Congo Commerce</p>
+        <p style="font-size:13px;color:#555">L'équipe conformité — AfriTrade</p>
       </div>
     `;
 
@@ -133,7 +133,7 @@ export default async function (req) {
       '',
       'Le fichier CSV joint reprend ces lignes sous forme exploitable.',
       '',
-      "L'équipe conformité — Congo Commerce",
+      "L'équipe conformité — AfriTrade",
     ].join('\n');
 
     const filename = `rapport-donnees-${String(reference).replace(/[^A-Za-z0-9-]/g, '')}.csv`;
@@ -144,7 +144,7 @@ export default async function (req) {
         subject: `Votre rapport de données — ${reference}`,
         html,
         text,
-        from_name: 'Congo Commerce',
+        from_name: 'AfriTrade',
         attachments: [{ filename, content: toBase64(csv) }],
       });
       await service.entities.DataRequest.update(requestId, {

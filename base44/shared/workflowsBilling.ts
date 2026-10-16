@@ -280,7 +280,7 @@ const subscriptionDunning = {
           message: messages[ctx.data.action] || messages.reminder,
           reference: subscription.id,
           email: subscription.owner_email
-            ? { to: subscription.owner_email, subject: 'Relance de paiement — Congo Commerce', text: messages[ctx.data.action] || messages.reminder }
+            ? { to: subscription.owner_email, subject: 'Relance de paiement — AfriTrade', text: messages[ctx.data.action] || messages.reminder }
             : null,
         });
         return { ...result };

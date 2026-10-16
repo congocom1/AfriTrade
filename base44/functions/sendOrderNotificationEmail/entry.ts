@@ -93,9 +93,9 @@ export default async function (req) {
     try {
       await service.integrations.Core.SendEmail({
         to,
-        subject: record.subject || 'Votre commande Congo Commerce',
+        subject: record.subject || 'Votre commande AfriTrade',
         body: record.message || '',
-        from_name: 'Congo Commerce',
+        from_name: 'AfriTrade',
       });
       const updated = await service.entities.OrderNotification.update(id, {
         status: 'sent',

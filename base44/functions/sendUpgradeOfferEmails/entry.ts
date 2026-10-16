@@ -102,7 +102,7 @@ export default async function (req) {
         `Choisir votre plan : ${pricing}`,
         `Indiquez le code ${UPGRADE_OFFER.code} lors de votre passage à un plan payant.`,
         '',
-        "L'équipe Congo Commerce",
+        "L'équipe AfriTrade",
       ];
       const message = lines.join('\n');
       const html = `
@@ -113,7 +113,7 @@ export default async function (req) {
           Offre valable ${UPGRADE_OFFER.valid_days} jours, jusqu'au ${deadline}.</p>
           <p>Un plan payant débloque plus d'articles, plusieurs boutiques, l'import fournisseur et le programme créateurs.</p>
           <p><a href="${pricing}">Choisir votre plan</a> — indiquez le code ${UPGRADE_OFFER.code} lors de votre passage à un plan payant.</p>
-          <p style="font-size:13px;color:#555">L'équipe Congo Commerce</p>
+          <p style="font-size:13px;color:#555">L'équipe AfriTrade</p>
         </div>
       `;
 

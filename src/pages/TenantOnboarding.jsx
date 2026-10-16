@@ -46,7 +46,7 @@ export default function TenantOnboarding() {
         tenant_id: tenant.id,
         tenant_name: tenant.name,
         owner_email: tenant.owner_email,
-        hostname: `${tenant.slug}.congocommerce.app`,
+        hostname: `${tenant.slug}.afritrade.app`,
         type: 'subdomain',
         status: 'verified',
         ssl_status: 'active',

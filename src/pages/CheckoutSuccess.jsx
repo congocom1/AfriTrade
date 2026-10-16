@@ -146,7 +146,7 @@ export default function CheckoutSuccess() {
             {fulfillments.map((f) => (
               <div key={f.id} className="rounded-xl border border-border p-3">
                 <div className="flex items-center justify-between gap-2">
-                  <p className="truncate text-sm font-semibold">{f.seller_name || f.supplier_name || 'Congo Commerce'}</p>
+                  <p className="truncate text-sm font-semibold">{f.seller_name || f.supplier_name || 'AfriTrade'}</p>
                   <StatusBadge status={f.status} />
                 </div>
                 <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">

@@ -24,10 +24,17 @@
     "price_usd": { "type": "number" },
     "compare_at_usd": { "type": "number" },
     "markup_percent": { "type": "number" },
+    // ─── B2B / WHOLESALE (Alibaba layer) ──────────────────────────
+    "is_b2b": { "type": "boolean", "default": false },
+    "wholesale_price_usd": { "type": "number" },
+    "moq": { "type": "number", "default": 1 },
+    "bulk_discounts": { "type": "array", "items": { "type": "object" } },
+    "b2b_only": { "type": "boolean", "default": false },
+    // ─────────────────────────────────────────────────────────────
     "stock": { "type": "number", "default": 0 },
     "weight_kg": { "type": "number" },
     "dimensions": { "type": "string" },
-    "origin_country": { "type": "string", "default": "CD" },
+    "origin_country": { "type": "string", "default": "NG" },
     "shipping_options": { "type": "array", "items": { "type": "object" } },
     "estimated_delivery": { "type": "string" },
     "tags": { "type": "array", "items": { "type": "string" } },
