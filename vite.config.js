@@ -1,7 +1,7 @@
-const base44 = require("@base44/vite-plugin");
-const react = require('@vitejs/plugin-react');
-const { defineConfig } = require('vite');
-const path = require('path');
+import base44 from "@base44/vite-plugin";
+import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vite';
+import path from 'node:path';
 
 // Use a CommonJS-style config so builders that parse vite.config.js with
 // CJS (like some CI/build environments) won't fail with ESM-only syntax.
@@ -33,7 +33,7 @@ const securityHeadersPlugin = () => {
   };
 };
 
-module.exports = defineConfig({
+export default defineConfig({
   plugins: [
     base44({
       legacySDKImports: process.env.BASE44_LEGACY_SDK_IMPORTS === 'true',
