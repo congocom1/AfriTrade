@@ -54,7 +54,9 @@ export default async function (req: Request) {
     const db = base44.asServiceRole;
     const method = req.method;
     const url = new URL(req.url);
-    const body = await req.json().catch(() => ({}));
+    const body = method === 'POST' || method === 'PUT' || method === 'PATCH' || method === 'DELETE'
+      ? await req.json().catch(() => ({}))
+      : {};
 
     // Check rate limit now that we have db connection
     const rateLimitResult = await checkRateLimit(
@@ -75,7 +77,7 @@ export default async function (req: Request) {
       return createKey(db, body);
     }
     if (method === 'GET' && url.pathname === '/api-keys') {
-      return listKeys(db, body.tenant_id);
+      return listKeys(db, url.searchParams.get('tenant_id') || undefined);
     }
     if (method === 'GET' && url.pathname.startsWith('/api-keys/')) {
       const id = url.pathname.split('/').pop();
@@ -91,7 +93,8 @@ export default async function (req: Request) {
 
     return addSecurityHeaders(Response.json({ error: `méthode non gérée : ${method} ${url.pathname}` }, { status: 405 }));
   } catch (err) {
-    return addSecurityHeaders(Response.json({ error: String(err?.message || err).slice(0, 500), fatal: true }, { status: 500 }));
+    console.error('manage-api-keys: unhandled error', err);
+    return addSecurityHeaders(Response.json({ error: 'Internal server error' }, { status: 500 }));
   }
 }
 
