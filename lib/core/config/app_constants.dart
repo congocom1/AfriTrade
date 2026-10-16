@@ -4,8 +4,10 @@ class AppConstants {
   static const String appTagline = 'The DRC Marketplace for Local & Global Trade';
   static const String appVersion = '1.0.0';
   
-  // API Configuration
-  static const String baseUrl = 'https://api.congocommerce.com/v1';
+  // API Configuration — points at the Base44 backend the web frontend uses
+  // (https://congocommerce.base44.app). /api/health and /api/functions both
+  // return 200 from the live origin.
+  static const String baseUrl = 'https://congocommerce.base44.app/api';
   static const String websocketUrl = 'wss://ws.congocommerce.com';
   
   // Timeout values
