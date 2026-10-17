@@ -87,12 +87,14 @@ export default function Home() {
       {/* Hero */}
       <section className="brand-hero relative overflow-hidden">
         <Image
-          src="/brand/cover.png"
-          alt="AfriTrade"
+          src="/images/shopping-hero.svg"
+          alt=""
+          width={1600}
+          height={900}
+          fetchPriority="high"
           className="brand-hero__image absolute inset-0 h-full w-full object-cover"
         />
         <div className="brand-hero__wash absolute inset-0" />
-        <div className="brand-hero__grid absolute inset-0" aria-hidden="true" />
         <div className="relative flex min-h-[26rem] flex-col justify-center gap-5 p-6 text-background md:min-h-[32rem] md:p-12">
           <span className="brand-kicker w-fit">
             {t('home.heroBadge')}
@@ -131,6 +133,37 @@ export default function Home() {
             </span>
           </div>
         </div>
+      </section>
+
+      <section aria-label={t('homeCollections.title')} className="grid gap-4 sm:grid-cols-2">
+        {[
+          { image: 'electronics', title: t('homeCollections.electronics'), text: t('homeCollections.electronicsText') },
+          { image: 'home-decor', title: t('homeCollections.home'), text: t('homeCollections.homeText') },
+        ].map((collection) => (
+          <Link
+            key={collection.image}
+            to="/categories"
+            className="group overflow-hidden rounded-xl border border-border bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+          >
+            <Image
+              src={`/images/${collection.image}.svg`}
+              alt=""
+              width={1000}
+              height={1000}
+              loading="lazy"
+              decoding="async"
+              className="aspect-square w-full object-cover"
+            />
+            <div className="flex items-center justify-between gap-4 p-5 md:p-6">
+              <div>
+                <h2 className="font-display text-xl font-bold tracking-tight group-hover:text-primary">{collection.title}</h2>
+                <p className="mt-1 text-sm text-muted-foreground">{collection.text}</p>
+                <span className="mt-3 inline-block text-xs font-semibold text-primary">{t('home.browseCategories')}</span>
+              </div>
+              <ArrowRight className="h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
+            </div>
+          </Link>
+        ))}
       </section>
 
       {/* Category chips */}

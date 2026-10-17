@@ -263,24 +263,11 @@ header[role='banner'] {
 }
 
 .brand-hero__image {
-  opacity: 0.44;
-  object-position: 64% center;
-  filter: saturate(0.75) contrast(1.12) brightness(0.68);
+  object-position: center;
 }
 
 .brand-hero__wash {
-  background:
-    linear-gradient(90deg, rgb(7 27 22 / 0.98) 0%, rgb(7 27 22 / 0.91) 36%, rgb(7 27 22 / 0.44) 72%, rgb(7 27 22 / 0.62) 100%),
-    linear-gradient(145deg, rgb(15 153 107 / 0.18), transparent 46%);
-}
-
-.brand-hero__grid {
-  opacity: 0.33;
-  background-image:
-    linear-gradient(rgb(237 242 238 / 0.1) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(237 242 238 / 0.1) 1px, transparent 1px);
-  background-size: 36px 36px;
-  mask-image: linear-gradient(90deg, black, transparent 78%);
+  background: linear-gradient(90deg, rgb(5 39 31 / 0.96), rgb(5 39 31 / 0.8) 40%, transparent 78%);
 }
 
 .brand-kicker,
@@ -423,6 +410,10 @@ header[role='banner'] {
 @media (max-width: 639px) {
   .brand-hero__image {
     object-position: 71% center;
+  }
+
+  .brand-hero__wash {
+    background: rgb(5 39 31 / 0.82);
   }
 
   .brand-hero__proof span + span::before {
