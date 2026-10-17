@@ -7,14 +7,17 @@
 ### R-001 Wallet Double Credit on Webhook Replay
 **Likelihood:** Medium | **Impact:** Critical
 Webhook idempotency relies on `IdempotencyKey.create` but signature verification missing. Duplicate events could credit wallet twice.
+**Status:** IN PROGRESS - Initial fix complete, signature verification needed
 
 ### R-002 Concurrent Withdrawal Overspend
 **Likelihood:** Medium | **Impact:** Critical
 `walletLedger.ts` uses read-modify-write without locking. Two concurrent withdrawals may both pass balance check.
+**Status:** IN PROGRESS - Initial fix complete, held-funds check needed
 
 ### R-003 Privilege Escalation via Service Role Bypass
 **Likelihood:** Low | **Impact:** Critical
 Many functions use `asServiceRole` without explicit caller verification. Role changes need audit.
+**Status:** IN PROGRESS - Initial audit complete, enforcement needed
 
 ## High Risks
 

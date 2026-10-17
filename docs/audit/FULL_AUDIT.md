@@ -10,20 +10,26 @@ Read-only inventory completed. Partial code inspection performed. Findings class
 ## P0 — Critical
 
 ### P0-01 Payment webhook idempotency regression risk
+**Status:** IN PROGRESS - Initial fix complete, signature verification needed
 **Evidence:** base44/functions/payments-webhook/entry.ts historically used `IdempotencyKey.upsert`. Changed to `create` to avoid SDK misuse.
 **Impact:** Duplicate ORDER_APPROVED events could grant wallet twice on race.
 **Verification:** Manual review shows `create` with `.catch(()=>{})` after top-of-handler duplicate check. No signature validation visible.
 **Proposed correction:** Verify webhook signature per provider, retain create-only pattern, add metrics for duplicate replays.
+**Progress:** Partial fix implemented - needs signature verification completion
 
 ### P0-02 Wallet concurrency / double spend
+**Status:** IN PROGRESS - Initial fix complete, held-funds check needed
 **Evidence:** `base44/shared/walletLedger.ts` uses read-modify-write with post-update negative balance rollback. No row-level locking.
 **Impact:** Concurrent debits may overspend before rollback detects.
 **Proposed correction:** Add idempotency key enforcement on all wallet-mutating entries and consider server-side held-funds check before debit.
+**Progress:** Partial fix implemented - needs idempotency enforcement
 
 ### P0-03 Privilege escalation via role self-selection
+**Status:** IN PROGRESS - Initial audit complete, enforcement needed
 **Evidence:** Role management not audited; Super-admin provisioning path unclear.
 **Impact:** Unauthorized admin access.
 **Proposed correction:** Audit `base44/functions/manageTenantTeam`, `auth` flow, enforce server-side role checks only.
+**Progress:** Audit logs added in manageTenantTeam, needs full enforcement
 
 ## P1 — High
 

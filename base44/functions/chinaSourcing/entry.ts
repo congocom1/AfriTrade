@@ -141,9 +141,11 @@ async function inspectPO(db, body, user) {
   const { receipt_id, status, notes, photo_urls } = body;
   if (!receipt_id || !status) return fail('receipt_id et status requis');
   if (!['approved', 'rejected', 'partial'].includes(status)) return fail('Status invalide', 400);
+  const existing = await db.entities.ChinaWarehouseReceipt.get(receipt_id).catch(() => null);
+  if (!existing) return fail('Reçu introuvable', 404);
   const receipt = await db.entities.ChinaWarehouseReceipt.update(receipt_id, {
     status, inspection_notes: notes || '', inspected_by: user.email, inspected_at: new Date().toISOString(),
-    photo_urls: photo_urls || receipt.photo_urls,
+    photo_urls: photo_urls || existing.photo_urls,
   });
   await db.entities.AuditLog.create({ action: 'china_sourcing.inspected', actor: user.email, entity: 'ChinaWarehouseReceipt', entity_id: receipt_id, details: { status, notes } });
   return Response.json({ receipt });

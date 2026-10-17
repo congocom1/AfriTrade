@@ -1,5 +1,12 @@
 name: iOS
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     branches: [main, cto-hardening]
@@ -9,6 +16,11 @@ on:
       - 'index.html'
       - 'capacitor.config.ts'
       - 'ios/**'
+      - 'android/**'
+      - 'lib/**'
+      - 'base44/**'
+      - 'test/**'
+      - 'scripts/**'
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/ios.yml'
@@ -19,6 +31,11 @@ on:
       - 'index.html'
       - 'capacitor.config.ts'
       - 'ios/**'
+      - 'android/**'
+      - 'lib/**'
+      - 'base44/**'
+      - 'test/**'
+      - 'scripts/**'
       - 'package.json'
       - 'package-lock.json'
 

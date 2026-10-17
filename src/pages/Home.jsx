@@ -10,6 +10,7 @@ import ProductRow from '@/components/ProductRow';
 import ProductGrid from '@/components/ProductGrid';
 import SellerCard from '@/components/SellerCard';
 import ShoppingAssistant from '@/components/ShoppingAssistant';
+import CategoryCard from '@/components/categories/CategoryCard';
 import EmptyState from '@/components/EmptyState';
 import { resolveStorefrontScope, scopeRecords } from '@/lib/tenancy';
 
@@ -110,10 +111,6 @@ export default function Home() {
               <Play className="h-4 w-4" aria-hidden="true" />
               {t('home.discoverVideo')}
             </Link>
-            <Link to="/categories" className="brand-action brand-action--quiet inline-flex min-h-11 items-center gap-1.5 px-5 py-3 text-sm font-semibold">
-              {t('home.browseCategories')}
-              <ArrowRight className="h-4 w-4" aria-hidden="true" />
-            </Link>
             <Link to="/creator-showcase" className="inline-flex min-h-11 items-center px-1 text-sm font-medium text-background underline decoration-primary decoration-2 underline-offset-8">
               {t('home.becomeCreator')}
             </Link>
@@ -134,38 +131,9 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      <section aria-label={t('homeCollections.title')} className="grid gap-4 sm:grid-cols-2">
-        {[
-          { image: 'electronics', title: t('homeCollections.electronics'), text: t('homeCollections.electronicsText') },
-          { image: 'home-decor', title: t('homeCollections.home'), text: t('homeCollections.homeText') },
-        ].map((collection) => (
-          <Link
-            key={collection.image}
-            to="/categories"
-            className="group overflow-hidden rounded-xl border border-border bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-          >
-            <Image
-              src={`/images/${collection.image}.svg`}
-              alt=""
-              width={1000}
-              height={1000}
-              loading="lazy"
-              decoding="async"
-              className="aspect-square w-full object-cover"
-            />
-            <div className="flex items-center justify-between gap-4 p-5 md:p-6">
-              <div>
-                <h2 className="font-display text-xl font-bold tracking-tight group-hover:text-primary">{collection.title}</h2>
-                <p className="mt-1 text-sm text-muted-foreground">{collection.text}</p>
-                <span className="mt-3 inline-block text-xs font-semibold text-primary">{t('home.browseCategories')}</span>
-              </div>
-              <ArrowRight className="h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
-            </div>
-          </Link>
-        ))}
+      <section aria-label={t("homeCollections.title")} className="grid gap-4 sm:grid-cols-2">
+        {[          { image: "electronics", title: t("homeCollections.electronics"), text: t("homeCollections.electronicsText") },          { image: "home-decor", title: t("homeCollections.home"), text: t("homeCollections.homeText") },        ].map((collection) => (          <CategoryCard            key={collection.image}            image={collection.image}            title={collection.title}            text={collection.text}          />        ))}
       </section>
-
       {/* Category chips */}
       {!!categories.length && (
         <section>

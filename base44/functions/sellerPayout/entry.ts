@@ -34,6 +34,7 @@ export default async function (req: Request): Promise<Response> {
       return rateLimitErrorResponse(rateLimitResult);
     }
 
+    const body = await req.json().catch(() => ({}));
     const user = await base44.auth.me().catch(() => null);
     if (!user?.email) return addSecurityHeaders(fail('Connexion requise.', 401));
     const seller = await base44.asServiceRole.entities.Seller.get(String(body.seller_id || '')).catch(() => null);
@@ -59,7 +60,6 @@ export default async function (req: Request): Promise<Response> {
       return rateLimitErrorResponse(rateLimitResultDb);
     }
 
-    const body = await req.json().catch(() => ({}));
     const existing = (await db.entities.SellerPayout.filter({ seller_id: seller.id }))[0];
     if (body.action === 'get') {
       return addSecurityHeaders(Response.json({ details: existing || null }));

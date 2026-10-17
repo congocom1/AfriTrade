@@ -65,7 +65,7 @@ export default async function (req) {
       return rateLimitErrorResponse(rateLimitResultDb);
     }
     const body = await req.json().catch(() => ({}))
-    const receiptId = Number(body.receiptId || 0)
+    const receiptId = String(body.receiptId || '').trim()
     if (!receiptId) return addSecurityHeaders(Response.json({ error: 'receiptId is required' }, { status: 400 }))
 
     // Validate the receipt exists and is approved

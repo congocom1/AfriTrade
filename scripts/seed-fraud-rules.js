@@ -7,16 +7,20 @@
  * deployment.
  * 
  * Usage:
- *   node scripts/seed-fraud-rules.js
- * 
+ *   node scripts/seed-fraud-rules.js          # seed via the linked Base44 backend
+ *   node scripts/seed-fraud-rules.js --mock   # dry run, no backend writes
+ *
  * Environment:
- *   Requires BASE44_API_KEY or uses local mock for development
+ *   Must be able to import src/api/base44Client.js against a linked/dev
+ *   Base44 environment. Without it the script exits non-zero unless --mock
+ *   is passed explicitly — it never silently pretends to seed.
  */
 
 import fs from 'node:fs';
 import path from 'node:path';
 
 const SEED_DATA_PATH = path.join(import.meta.dirname, '../src/lib/fraud-rules.json');
+const ALLOW_MOCK = process.argv.includes('--mock');
 
 async function getDb() {
   const { base44 } = await import('../src/api/base44Client.js');
@@ -31,8 +35,14 @@ async function seedFraudRules() {
 
   console.log(`Found ${RULES_SEED.length} rules to seed.`);
 
-  const db = await getDb().catch(() => {
-    console.log('⚠️  Using mock mode (no Base44 backend available)');
+  const db = await getDb().catch((err) => {
+    if (!ALLOW_MOCK) {
+      console.error('❌ Base44 backend unavailable and --mock was not passed.');
+      console.error('   Run inside a linked `base44 dev` environment, or pass --mock for a dry run.');
+      console.error(`   Import error: ${err.message}`);
+      process.exit(1);
+    }
+    console.log('⚠️  Using mock mode (--mock): no records will be written to the backend');
     return {
       entities: {
         FraudRule: {

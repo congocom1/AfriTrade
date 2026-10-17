@@ -45,6 +45,18 @@ export default async function(req: Request): Promise<Response> {
     const user = await base44.auth.me().catch(() => null);
     if (!user) return Response.json({ error: 'Authentification requise' }, { status: 401 });
 
+    // Server-side role verification to prevent privilege escalation
+    if (user.role !== 'admin' && user.role !== 'super_admin') {
+      console.error(`manageTenantTeam: unauthorized role attempt`, {
+        userId: user.id,
+        email: user.email,
+        role: user.role,
+        action: req.method,
+        url: req.url
+      });
+      return Response.json({ error: 'Accès non autorisé' }, { status: 403 });
+    }
+
     // Re-check rate limit now that we have db connection
     const rateLimitResultDb = await checkRateLimit(
       base44.asServiceRole,
@@ -71,6 +83,23 @@ export default async function(req: Request): Promise<Response> {
     const member = ownMember || null;
     const permissions = admin || owner ? KEYS : (member?.permissions || []).filter(p => KEYS.includes(p));
     const granted = admin || owner || !!member;
+
+    // Server-side role enforcement - log all privileged operations for audit
+    await base44.asServiceRole.entities.AuditLog.create({
+      action: 'tenant.member.access_check',
+      actor: email,
+      entity: 'User',
+      entity_id: user.id,
+      reference: tenantId,
+      details: {
+        user_role: user.role,
+        is_admin: user.role === 'admin',
+        is_owner: owner,
+        ip_address: clientKey || 'unknown',
+        method: req.method,
+        url_path: new URL(req.url).pathname
+      }
+    }).catch(() => {});
     if (input.action === 'access') return Response.json({ granted, owner: !!(admin || owner), permissions, role: admin || owner ? 'TENANT_ADMIN' : member?.role || '' });
     if (!granted || !permissions.includes('TEAM_MANAGE')) return Response.json({ error: 'Accès refusé' }, { status: 403 });
     if (input.action === 'list') {
