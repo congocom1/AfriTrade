@@ -24,7 +24,7 @@ export default function FinancePortal() {
     Promise.all([
       base44.entities.Order.list('-created_date', 500),
       base44.entities.Base44Purchase.list('-created_date', 200).catch(() => []),
-      base44.entities.WalletTransaction.filter({ type: 'PAYOUT' }, '-created_date', 200),
+      base44.entities.WalletTransaction.filter({ type: 'PAYOUT', status: { $ne: 'preparing' } }, '-created_date', 200),
     ]).then(([o, p, w]) => {
       setOrders(o.filter((x) => !x.is_demo));
       setPurchases(p);

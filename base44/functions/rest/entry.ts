@@ -79,7 +79,6 @@ function productToFlutter(p: any) {
     supplier_name: p.supplier_name ?? null,
     external_product_id: p.external_product_id ?? null,
     source_type: p.source_type ?? "local_seller",
-    supplier_price: p.supplier_price ?? null,
     currency: p.currency ?? "USD",
     price_usd: round2(p.price_usd ?? 0),
     // B2B wholesale fields
@@ -89,7 +88,6 @@ function productToFlutter(p: any) {
     bulk_discounts: Array.isArray(p.bulk_discounts) ? p.bulk_discounts : [],
     b2b_only: p.b2b_only ?? false,
     compare_at_usd: p.compare_at_usd ?? null,
-    markup_percent: p.markup_percent ?? null,
     stock: p.stock ?? 0,
     weight_kg: p.weight_kg ?? null,
     origin_country: p.origin_country ?? "NG",
@@ -172,7 +170,7 @@ export default async function (req: Request): Promise<Response> {
       const featured = urlParams.get("featured") === "true";
       const flashSale = urlParams.get("flash_sale") === "true";
 
-      const filter: Record<string, unknown> = {};
+      const filter: Record<string, unknown> = { status: "published" };
       if (category) filter.category_id = category;
       if (featured) filter.is_featured = true;
       if (flashSale) filter.is_flash_sale = true;

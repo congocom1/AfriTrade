@@ -187,7 +187,7 @@ export default async function (req: Request) {
         null;
       if (!wallet) return Response.json({ wallet: null, transactions: [] });
       const transactions = await db.entities.WalletTransaction
-        .filter({ wallet_id: wallet.id }, "-created_date", 50)
+        .filter({ wallet_id: wallet.id, status: { $ne: 'preparing' } }, "-created_date", 50)
         .catch(() => []);
       return Response.json({ wallet, transactions: transactions || [] });
     }

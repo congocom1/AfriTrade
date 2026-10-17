@@ -10,6 +10,7 @@ import ProductRow from '@/components/ProductRow';
 import ProductGrid from '@/components/ProductGrid';
 import SellerCard from '@/components/SellerCard';
 import ShoppingAssistant from '@/components/ShoppingAssistant';
+import CategoryCard from '@/components/categories/CategoryCard';
 import EmptyState from '@/components/EmptyState';
 import { resolveStorefrontScope, scopeRecords } from '@/lib/tenancy';
 
@@ -132,7 +133,9 @@ export default function Home() {
           </div>
         </div>
       </section>
-
+      <section aria-label={t("homeCollections.title")} className="grid gap-4 sm:grid-cols-2">
+        {[          { image: "electronics", title: t("homeCollections.electronics"), text: t("homeCollections.electronicsText") },          { image: "home-decor", title: t("homeCollections.home"), text: t("homeCollections.homeText") },        ].map((collection) => (          <CategoryCard            key={collection.image}            image={collection.image}            title={collection.title}            text={collection.text}          />        ))}
+      </section>
       {/* Category chips */}
       {!!categories.length && (
         <section>

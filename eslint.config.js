@@ -18,10 +18,19 @@ export default [
       "**/*.testmod.mjs",
       "1",
       "claude-desktop_*.deb",
+      "src/**/*.min.js",
+      "src/**/*.bundle.js",
     ],
   },
   pluginJs.configs.recommended,
-  pluginReact.configs.flat.recommended,
+  {
+    ...pluginReact.configs.flat.recommended,
+    settings: {
+      react: {
+        version: "detect",
+      },
+    },
+  },
   {
     files: [
       "base44/**/*.js",
@@ -37,6 +46,19 @@ export default [
       "playwright.config.js",
     ],
     ignores: ["dist/**"],
+    languageOptions: {
+      globals: { ...globals.node },
+      parserOptions: { ecmaVersion: 2022, sourceType: "module" },
+    },
+    rules: {
+      "no-unused-vars": ["error", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
+    },
+  },
+  {
+    files: [
+      "vite.config.js",
+      "scripts/performance-monitor.js",
+    ],
     languageOptions: {
       globals: { ...globals.node },
       parserOptions: { ecmaVersion: 2022, sourceType: "module" },
@@ -87,7 +109,7 @@ export default [
       "src/**/*.{js,mjs,cjs,jsx}",
       "lib/searchUtils.js",
     ],
-    ignores: ["src/lib/**/*", "src/components/ui/**/*", "src/lib/searchUtils.js", "src/i18n/**/*"],
+    ignores: ["src/lib/**/*", "src/components/ui/**/*", "src/lib/searchUtils.js", "src/i18n/**/*", "dist/**"],
     languageOptions: {
       globals: { ...globals.browser, ...globals.node },
       parserOptions: {
@@ -100,7 +122,7 @@ export default [
     },
     settings: {
       react: {
-        version: "detect",
+        version: "18.2.0",
       },
     },
     plugins: {

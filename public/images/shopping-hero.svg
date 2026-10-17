@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">The emerald collection</title>
+  <desc id="desc">An editorial illustration of shopping bags, a handbag, fragrance and headphones on cream plinths, with open space on the left for a headline.</desc>
+  <defs>
+    <linearGradient id="bg" x2="1" y2="1"><stop stop-color="#05271f"/><stop offset=".65" stop-color="#103e2f"/><stop offset="1" stop-color="#24583d"/></linearGradient>
+    <linearGradient id="stone" x2="1" y2="1"><stop stop-color="#f8eed7"/><stop offset="1" stop-color="#c0ad8d"/></linearGradient>
+    <linearGradient id="bag" x2="1" y2="1"><stop stop-color="#3a8967"/><stop offset="1" stop-color="#0a4431"/></linearGradient>
+    <linearGradient id="gold"><stop stop-color="#b18c46"/><stop offset=".5" stop-color="#f2dca0"/><stop offset="1" stop-color="#b18c46"/></linearGradient>
+  </defs>
+  <path d="M0 0h1600v900H0z" fill="url(#bg)"/>
+  <g fill="none" stroke="#a9be8c" stroke-opacity=".1"><circle cx="1200" cy="380" r="340"/><circle cx="1200" cy="380" r="380"/><path d="M0 790Q660 600 1600 790"/></g>
+  <g fill="#527749" opacity=".55"><path d="M1545 690Q1310 360 1370 102q167 181 175 588"/><path d="M1545 690Q1470 300 1580 105q63 290-35 585"/><path d="M1545 690Q1480 400 1600 340v220z"/></g>
+  <ellipse cx="1180" cy="845" rx="420" ry="47" fill="#021e16" opacity=".6"/>
+  <path d="M975 548h430v305H975z" fill="url(#stone)"/><path d="M975 548l90-50h430l-90 50z" fill="#f8efd9"/><path d="M1405 548l90-50v305l-90 50z" fill="#ae9c7d"/>
+  <path d="M755 690h405v210H755z" fill="url(#stone)"/><path d="M755 690l94-52h405l-94 52z" fill="#fff3db"/><path d="M1160 690l94-52v262h-94z" fill="#bba88a"/>
+  <path d="M1260 768h270v132h-270z" fill="url(#stone)"/><path d="M1260 768l65-39h270l-65 39z" fill="#fff3db"/><path d="M1530 768l65-39v171h-65z" fill="#bba88a"/>
+  <path d="M1090 267h220l33 272h-287z" fill="url(#bag)"/><path d="M1310 267l53-25 38 266-58 31z" fill="#073c2b"/><path d="M1090 267l53-25h220l-53 25z" fill="#499274"/>
+  <path d="M1141 287v-65c0-85 122-85 122 0v65" fill="none" stroke="#062c20" stroke-width="12"/><path d="M1141 287v-65c0-85 122-85 122 0v65" fill="none" stroke="#c1cba3" stroke-opacity=".6" stroke-width="3"/>
+  <path d="M1174 415l27-29 27 29-27 29z" fill="none" stroke="#c9b67b" stroke-width="3"/>
+  <path d="M827 482h200l25 158H802z" fill="#153f2d" stroke="#628269" stroke-width="3"/><path d="M867 491v-42c0-68 117-68 117 0v42" fill="none" stroke="url(#gold)" stroke-width="9"/><path d="M827 482h200l-12 79q-88 32-176 0z" fill="#28563c" stroke="#75916d" stroke-width="2"/><rect x="911" y="548" width="31" height="28" rx="4" fill="url(#gold)"/>
+  <g transform="translate(1375 414) rotate(12)"><path d="M-60 50V0c0-100 140-100 140 0v50" fill="none" stroke="#dacaac" stroke-width="23"/><path d="M-60 28V0c0-100 140-100 140 0v28" fill="none" stroke="#f6e9cc" stroke-width="5"/><rect x="-82" y="25" width="48" height="93" rx="22" fill="#d7c39c" stroke="#f5e6c9" stroke-width="5"/><rect x="54" y="25" width="48" height="93" rx="22" fill="#d7c39c" stroke="#f5e6c9" stroke-width="5"/></g>
+  <rect x="957" y="695" width="89" height="121" rx="14" fill="#659072" fill-opacity=".65" stroke="#b6c49b" stroke-width="3"/><rect x="978" y="669" width="48" height="30" rx="3" fill="url(#gold)"/><rect x="972" y="733" width="60" height="44" rx="2" fill="#f3e6c5"/><path d="M988 755h28" stroke="#8c7749" stroke-width="2"/>
+  <rect x="1070" y="752" width="59" height="64" rx="10" fill="#e9d6b3"/><rect x="1075" y="732" width="49" height="24" rx="4" fill="url(#gold)"/>
+  <g fill="#10271d" stroke="#b28e4d" stroke-width="5"><path d="M794 749q39-10 72 0l-8 31q-28 20-54-1z"/><path d="M881 749q39-10 72 0l-10 30q-26 21-54 1z"/><path d="M866 754q8-9 15 0" fill="none"/></g>
+  <path d="M1315 713q70-70 151-7l54 194h-166z" fill="#194f39"/><g fill="none" stroke="#d1c39a" stroke-width="9"><path d="M1356 900q105-110 8-181m55 181q100-115 10-189"/><path d="M1370 783q-46-2-42-35 41 0 42 35zm45 39q45-12 41-43-37 3-41 43zm-40 29q-44-3-36-33 37 3 36 33z"/></g>
+</svg>

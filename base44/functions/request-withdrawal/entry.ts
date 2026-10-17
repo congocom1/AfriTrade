@@ -99,17 +99,20 @@ export default async function (req: Request) {
       return err(`Solde disponible insuffisant — disponible : ${available} USD.`, 409);
     }
 
+    const idempotencyKey = `withdraw:${wallet.id}:${amount}:${method}:${String(body.account || "").slice(0,20)}`;
     const posted = await postWalletEntry(db, wallet, {
       type: "PAYOUT",
       direction: "debit",
       amount,
       description: `Retrait vers ${method} — ${String(body.account || "")}`.slice(0, 200),
-      reference: `WD-${Date.now().toString(36).toUpperCase()}`,
+      reference: idempotencyKey,
+      idempotencyKey,
       status: "pending",
     });
     // The balance was read a moment ago; a concurrent debit may have taken it
     // since, in which case the ledger refuses the movement.
     if (!posted.ok) {
+      if (posted.reason !== 'insufficient_funds') return err(`Retrait non appliqué : ${posted.reason}`, 409);
       return err(`Solde disponible insuffisant — disponible : ${posted.available ?? available} USD.`, 409);
     }
     const updated = posted.wallet;

@@ -45,11 +45,11 @@ export default async function (req: Request) {
       return rateLimitErrorResponse(rateLimitResult);
     }
 
-    await req.json().catch(() => ({}));
+    const body = await req.json().catch(() => ({}));
     const auth = await requireAdmin(base44);
     if (!auth.ok) return addSecurityHeaders(auth.response);
     const db = base44.asServiceRole;
-    const action = (await req.json().catch(() => ({}))).action || 'generate-invoices';
+    const action = body.action || 'generate-invoices';
 
     // Re-check rate limit now that we have db connection
     const rateLimitResultDb = await checkRateLimit(

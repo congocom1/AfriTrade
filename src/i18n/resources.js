@@ -4,6 +4,7 @@ import en from './en.js';
 import ln from './ln.js';
 import sw from './sw.js';
 import intlShipment from './intlShipment.js';
+import homeCollections from './homeCollections.js';
 
 export const mergeNamespaces = (base, extra) =>
   Object.entries(extra).reduce((out, [ns, values]) => ({ ...out, [ns]: { ...(out[ns] || {}), ...values } }), { ...base });
@@ -22,8 +23,8 @@ const frWithExtensions = mergeNamespaces(fr, frExtended);
  * namespaces.
  */
 export const translations = {
-  fr: mergeNamespaces(frWithExtensions, intlShipment.fr),
-  en: mergeNamespaces(en, intlShipment.en),
-  ln: mergeNamespaces(mergeNamespaces(ln, frExtended), intlShipment.fr),
-  sw: mergeNamespaces(mergeNamespaces(sw, frExtended), intlShipment.fr),
+  fr: mergeNamespaces(mergeNamespaces(frWithExtensions, intlShipment.fr), homeCollections.fr),
+  en: mergeNamespaces(mergeNamespaces(en, intlShipment.en), homeCollections.en),
+  ln: mergeNamespaces(mergeNamespaces(mergeNamespaces(ln, frExtended), intlShipment.fr), homeCollections.fr),
+  sw: mergeNamespaces(mergeNamespaces(mergeNamespaces(sw, frExtended), intlShipment.fr), homeCollections.fr),
 };
