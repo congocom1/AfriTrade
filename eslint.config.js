@@ -57,6 +57,7 @@ export default [
   {
     files: [
       "vite.config.js",
+      "scripts/performance-monitor.js",
     ],
     languageOptions: {
       globals: { ...globals.node },

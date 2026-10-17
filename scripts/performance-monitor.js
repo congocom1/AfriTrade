@@ -57,7 +57,6 @@ const analyzeBundle = () => {
 
     // Calculate optimization potential
     const totalSize = stats.assetsTotal;
-    const optimizationTarget = totalSize * 0.7; // 30% reduction target
     const currentOptimized = chunks
       .filter(chunk => chunk.size < 200 * 1024) // <200KB chunks
       .reduce((sum, chunk) => sum + chunk.size, 0);
@@ -217,7 +216,7 @@ const generateHtmlReport = () => {
 
         <h2>📦 Top 10 Largest Chunks</h2>
         <div class="chunk-list">
-            ${chunks.slice(0, 10).map((chunk, index) => `
+            ${chunks.slice(0, 10).map((chunk) => `
                 <div class="chunk-item">
                     <div class="chunk-name">${chunk.name}</div>
                     <div class="chunk-size">${(chunk.size / 1024).toFixed(2)} KB</div>
@@ -252,21 +251,16 @@ const main = () => {
         return;
     }
 
-    try {
-        // Try to analyze existing stats.json
-        analyzeBundle();
+    // Try to analyze existing stats.json
+    analyzeBundle();
 
-        // Generate HTML report if available
-        if (fs.existsSync(path.join(process.cwd(), 'dist', 'stats.json'))) {
-            generateHtmlReport();
-        }
-
-    } catch (error) {
-        console.error('❌ Analysis failed:', error.message);
+    // Generate HTML report if available
+    if (fs.existsSync(path.join(process.cwd(), 'dist', 'stats.json'))) {
+        generateHtmlReport();
     }
 };
 
-// Additional analysis functions
+// Use the main function for execution
 const stats = {
     assetsTotal: 0,
     assets: []
