@@ -141,7 +141,7 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom'],
+    include: ['react', 'react-dom', 'react-router-dom', 'debug'],
     exclude: ['@base44/sdk'],
   },
   build: {

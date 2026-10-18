@@ -1422,7 +1422,7 @@ export default {
     filterLow: 'Stock faible',
     filterOut: 'Rupture',
     noShop: 'Aucune boutique associée à votre compte',
-    noShopDesc: 'L'administration doit rattacher une boutique à l'adresse e-mail avec laquelle vous vous connectez.',
+    noShopDesc: 'L\'administration doit rattacher une boutique à l’adresse e-mail avec laquelle vous vous connectez.',
     applySeller: 'Déposer une candidature vendeur',
     references: 'Références',
     lowStock: 'Stock ≤ {{threshold}}',

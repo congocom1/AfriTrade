@@ -105,13 +105,12 @@ export default function SellerDashboard() {
   ];
 
   return (
-    <div className="paper-console">
+    <DashboardShell nav={LINKS} title={t('seller.title')} variant="paper" className="paper-console">
       <div className="paper-hero">
         <Image src={HERO_IMAGE} alt="" />
       </div>
 
-      <DashboardShell nav={LINKS} title={t('seller.title')} variant="paper">
-        <div className="paper-shop">
+      <div className="paper-shop">
         <span className="paper-shopmark" />
         <strong>{t('seller.managedShop')}</strong>
         {isAdmin ? (
@@ -211,7 +210,6 @@ export default function SellerDashboard() {
                     </Link>}
         </section>
       </main>
-      </DashboardShell>
-    </div>
+    </DashboardShell>
   );
 }

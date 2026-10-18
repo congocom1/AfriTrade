@@ -159,8 +159,8 @@ export default function SellerProducts() {
   };
 
   return (
-    <div className="space-y-5 pb-8">
-      <DashboardNav title={t('sellerProducts.title')} links={[
+    <div className="space-y-5 pb-8 paper-console">
+      <DashboardNav title={t('sellerProducts.title')} variant="paper" links={[
         { to: '/seller', label: t('sellerProducts.navDashboard'), end: true },
         { to: '/seller/products', label: t('sellerProducts.navProducts') },
         { to: '/seller/orders', label: t('sellerProducts.navOrders') },

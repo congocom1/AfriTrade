@@ -9,9 +9,13 @@ import DashboardNav from '@/components/DashboardNav';
  */
 export default function DashboardShell({ nav, title, children, className, variant }) {
   const { t } = useTranslation();
+  const paper = variant === 'paper';
+
+  const baseClasses = paper ? 'paper-console' : 'space-y-5 pb-8';
+  const conditionalClasses = className ? ` ${className}` : '';
 
   return (
-    <div className={"space-y-5 pb-8" + (className ? " " + className : "")}>
+    <div className={baseClasses + conditionalClasses}>
       <DashboardNav title={title || t('dashboard.title')} links={nav} variant={variant} />
       {children}
     </div>
