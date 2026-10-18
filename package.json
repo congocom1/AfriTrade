@@ -87,6 +87,7 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@eslint/js": "^9.19.0",
     "@playwright/test": "^1.63.0",
     "@types/node": "^22.13.5",
@@ -95,6 +96,7 @@
     "@types/three": "^0.171.0",
     "@vitejs/plugin-react": "^6.0.5",
     "autoprefixer": "^10.4.20",
+    "axe-core": "^4.14.0",
     "baseline-browser-mapping": "^2.8.32",
     "eslint": "^9.19.0",
     "eslint-plugin-react": "^7.37.4",
