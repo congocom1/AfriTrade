@@ -58,6 +58,9 @@
     "test-results/smoke-AfriTrade-—-pages-publiques-charge-la-page-d-accueil-chromium/test-failed-1.png": [],
     "vite.config.js": [],
     "scripts/test-runner.sh": [],
-    "playwright.config.js": []
+    "playwright.config.js": [],
+    ".gstack/browse-audit.jsonl": [],
+    ".gstack/claude-available.json": [],
+    ".gstack/version-path": []
   }
 }
