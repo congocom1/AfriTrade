@@ -3,13 +3,11 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
-import { Plus, Pencil, Trash2, Eye, EyeOff } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useActiveSeller } from '@/lib/seller';
 import DashboardNav from '@/components/DashboardNav';
-import StatusBadge from '@/components/StatusBadge';
-import { Image } from '@/components/ui/image';
-import { formatUsdAmount } from '@/lib/format';
+import SellerProductCard from '@/components/SellerProductCard';
 import { readActiveTenantId } from '@/lib/tenancy';
 import { emitEvent } from '@/lib/events';
 
@@ -46,7 +44,7 @@ export default function SellerProducts() {
   const { register, handleSubmit, reset, formState: { errors } } = useForm({ resolver: zodResolver(productSchema), defaultValues: EMPTY });
 
   const load = async (sellerId) => {
-    const rows = await base44.entities.Product.filter({ seller_id: sellerId }, '-created_date', 200);
+    const rows = await base44.entities.Product.filter({ seller_id: sellerId }, 'title', 200);
     setProducts(rows);
   };
 
@@ -161,8 +159,8 @@ export default function SellerProducts() {
   };
 
   return (
-    <div className="space-y-5 pb-8">
-      <DashboardNav title={t('sellerProducts.title')} links={[
+    <div className="space-y-5 pb-8 paper-console">
+      <DashboardNav title={t('sellerProducts.title')} variant="paper" links={[
         { to: '/seller', label: t('sellerProducts.navDashboard'), end: true },
         { to: '/seller/products', label: t('sellerProducts.navProducts') },
         { to: '/seller/orders', label: t('sellerProducts.navOrders') },
@@ -286,30 +284,16 @@ export default function SellerProducts() {
       ) : (
         <div className="space-y-2">
           {products.map((p) => (
-            <div key={p.id} className="flex items-center gap-3 rounded-xl border border-border bg-card p-2.5">
-              <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-secondary">
-                <Image src={p.images?.[0]} alt={p.title} className="h-full w-full object-cover" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">{p.title}</p>
-                <p className="text-[11px] text-muted-foreground">
-                  {t('sellerProducts.rowMeta', { price: formatUsdAmount(p.price_usd), stock: p.stock ?? 0, sold: p.sold_count || 0 })}
-                </p>
-                {p.is_b2b && <p className="mt-0.5 text-[11px] font-medium text-primary">B2B · {formatUsdAmount(p.wholesale_price_usd || p.price_usd)} · MOQ {p.moq || 1}</p>}
-                <StatusBadge status={p.status} />
-              </div>
-              <div className="flex shrink-0 items-center gap-1">
-                <button type="button" onClick={() => startEdit(p)} className="rounded-lg p-2 hover:bg-secondary" aria-label={t('sellerProducts.ariaEdit')}>
-                  <Pencil className="h-4 w-4" />
-                </button>
-                <button type="button" onClick={() => toggleStatus(p)} className="rounded-lg p-2 hover:bg-secondary" aria-label={t('sellerProducts.ariaToggle')}>
-                  {p.status === 'published' ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-                <button type="button" onClick={() => remove(p)} className="rounded-lg p-2 text-destructive hover:bg-secondary" aria-label={t('sellerProducts.ariaDelete')}>
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
+            <SellerProductCard
+              key={p.id}
+              product={p}
+              onEdit={startEdit}
+              onToggle={toggleStatus}
+              onRemove={remove}
+              ariaEdit={t('sellerProducts.ariaEdit')}
+              ariaToggle={t('sellerProducts.ariaToggle')}
+              ariaDelete={t('sellerProducts.ariaDelete')}
+            />
           ))}
           {!products.length && (
             <p className="rounded-xl border border-dashed border-border bg-card p-6 text-center text-xs text-muted-foreground">

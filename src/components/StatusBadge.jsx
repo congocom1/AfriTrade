@@ -88,9 +88,27 @@ export default function StatusBadge({ status, className = '', variant = 'default
   if (!status) return null;
   const key = String(status).toUpperCase();
   const label = t(`status.${key}`, { defaultValue: LABELS[key] || status });
+
+  const paperStyles = {
+    PENDING: 'bg-amber-100 text-amber-900',
+    PAID: 'bg-emerald-100 text-emerald-900',
+    DELIVERED: 'bg-emerald-100 text-emerald-900',
+    PUBLISHED: 'bg-emerald-100 text-emerald-900',
+    ACTIVE: 'bg-emerald-100 text-emerald-900',
+    APPROVED: 'bg-emerald-100 text-emerald-900',
+    ACCEPTED: 'bg-emerald-100 text-emerald-900',
+    CLOSED: 'bg-slate-200 text-slate-700',
+    DRAFT: 'bg-slate-200 text-slate-700',
+    ARCHIVED: 'bg-slate-200 text-slate-700',
+    EXPIRED: 'bg-slate-200 text-slate-700',
+    DEFAULT: 'bg-secondary text-foreground',
+  };
+
   if (variant === 'paper') {
-    return <span className={`paper-badge ${className}`}>{label}</span>;
+    const style = paperStyles[key] || paperStyles.DEFAULT;
+    return <span className={`paper-badge ${style} ${className}`}>{label}</span>;
   }
+
   return (
     <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold ${STYLES[key] || 'bg-secondary text-foreground'} ${className}`}>
       {label}

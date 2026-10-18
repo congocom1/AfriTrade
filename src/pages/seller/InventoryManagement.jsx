@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { AlertTriangle, PackageX, Minus, Plus, Save, Boxes } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useActiveSeller } from '@/lib/seller';
+import { useTranslation } from 'react-i18next';
 import DashboardNav from '@/components/DashboardNav';
 import { Image } from '@/components/ui/image';
 import { formatUSD } from '@/lib/format';
@@ -10,20 +11,21 @@ import { formatUSD } from '@/lib/format';
 const LOW_STOCK = 5;
 
 const LINKS = [
-  { to: '/seller-portal', label: 'Portail' },
-  { to: '/seller/products', label: 'Produits' },
-  { to: '/inventory-management', label: 'Stock', end: true },
-  { to: '/seller/orders', label: 'Commandes' },
-  { to: '/seller/wallet', label: 'Portefeuille' },
+  { to: '/seller-portal', key: 'inventoryManagement.navPortal' },
+  { to: '/seller/products', key: 'inventoryManagement.navProducts' },
+  { to: '/inventory-management', key: 'inventoryManagement.navStock', end: true },
+  { to: '/seller/orders', key: 'inventoryManagement.navOrders' },
+  { to: '/seller/wallet', key: 'inventoryManagement.navWallet' },
 ];
 
 const FILTERS = [
-  { id: 'all', label: 'Tous' },
-  { id: 'low', label: 'Stock faible' },
-  { id: 'out', label: 'Rupture' },
+  { id: 'all', key: 'inventoryManagement.filterAll' },
+  { id: 'low', key: 'inventoryManagement.filterLow' },
+  { id: 'out', key: 'inventoryManagement.filterOut' },
 ];
 
 export default function InventoryManagement() {
+  const { t } = useTranslation();
   const { seller, loading: loadingSeller } = useActiveSeller();
   const [products, setProducts] = useState([]);
   const [drafts, setDrafts] = useState({});
@@ -78,12 +80,12 @@ export default function InventoryManagement() {
     return (
       <div className="rounded-2xl border border-dashed border-border bg-card p-10 text-center">
         <Boxes className="mx-auto h-8 w-8 text-muted-foreground" />
-        <p className="mt-2 font-semibold">Aucune boutique associée à votre compte</p>
+        <p className="mt-2 font-semibold">{t('inventoryManagement.noShop')}</p>
         <p className="mt-1 text-sm text-muted-foreground">
-          L'administration doit rattacher une boutique à l'adresse e-mail avec laquelle vous vous connectez.
+          {t('inventoryManagement.noShopDesc')}
         </p>
         <Link to="/seller-application" className="mt-4 inline-block rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground">
-          Déposer une candidature vendeur
+          {t('inventoryManagement.applySeller')}
         </Link>
       </div>
     );
@@ -91,13 +93,13 @@ export default function InventoryManagement() {
 
   return (
     <div className="space-y-5 pb-8">
-      <DashboardNav title="Gestion du stock" links={LINKS} />
+      <DashboardNav title={t('inventoryManagement.title')} links={LINKS} />
 
       <div className="grid grid-cols-3 gap-3">
         {[
-          { icon: Boxes, label: 'Références', value: products.length, tone: 'text-primary' },
-          { icon: AlertTriangle, label: `Stock ≤ ${LOW_STOCK}`, value: low.length, tone: 'text-amber-600' },
-          { icon: PackageX, label: 'En rupture', value: out.length, tone: 'text-destructive' },
+          { icon: Boxes, label: t('inventoryManagement.references'), value: products.length, tone: 'text-primary' },
+          { icon: AlertTriangle, label: t('inventoryManagement.lowStock', { threshold: LOW_STOCK }), value: low.length, tone: 'text-amber-600' },
+          { icon: PackageX, label: t('inventoryManagement.outOfStock'), value: out.length, tone: 'text-destructive' },
         ].map((k) => (
           <div key={k.label} className="rounded-xl border border-border bg-card p-3.5">
             <k.icon className={`h-4 w-4 ${k.tone}`} />
@@ -110,18 +112,19 @@ export default function InventoryManagement() {
       {(low.length > 0 || out.length > 0) && (
         <section className="space-y-2 rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4">
           <h2 className="flex items-center gap-2 text-sm font-bold">
-            <AlertTriangle className="h-4 w-4 text-amber-600" /> Alertes de réapprovisionnement
+            <AlertTriangle className="h-4 w-4 text-amber-600" /> {t('inventoryManagement.restockAlert')}
           </h2>
           <ul className="space-y-1 text-xs text-muted-foreground">
             {out.slice(0, 5).map((p) => (
               <li key={p.id}>
-                • <span className="font-semibold text-foreground">{p.title}</span> est en rupture : la fiche reste visible mais
-                les clients ne peuvent plus commander.
+                • <span className="font-semibold text-foreground">{p.title}</span>{' '}
+                {t('inventoryManagement.outOfStockNotice')}
               </li>
             ))}
             {low.slice(0, 5).map((p) => (
               <li key={p.id}>
-                • <span className="font-semibold text-foreground">{p.title}</span> : plus que {stockOf(p)} en stock.
+                • <span className="font-semibold text-foreground">{p.title}</span>{' '}
+                {t('inventoryManagement.lowStockNotice', { count: stockOf(p) })}
               </li>
             ))}
           </ul>
@@ -138,7 +141,7 @@ export default function InventoryManagement() {
               filter === f.id ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-card'
             }`}
           >
-            {f.label}
+            {f.key ? t(f.key) : f.label}
           </button>
         ))}
       </div>
@@ -155,14 +158,14 @@ export default function InventoryManagement() {
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">{p.title}</p>
                 <p className="text-[11px] text-muted-foreground">
-                  {formatUSD(p.price_usd)} · {p.sold_count || 0} vendus · {p.status === 'published' ? 'en ligne' : 'hors ligne'}
+                  {formatUSD(p.price_usd)} · {p.sold_count || 0} {t('inventoryManagement.sold')} · {p.status === 'published' ? t('inventoryManagement.online') : t('inventoryManagement.offline')}
                 </p>
                 <p
                   className={`text-[11px] font-semibold ${
                     stock <= 0 ? 'text-destructive' : stock <= LOW_STOCK ? 'text-amber-600' : 'text-emerald-600'
                   }`}
                 >
-                  {stock <= 0 ? 'Rupture de stock' : `${stock} en stock`}
+                  {stock <= 0 ? t('inventoryManagement.outOfStock') : t('inventoryManagement.inStock', { count: stock })}
                 </p>
               </div>
               <div className="flex shrink-0 items-center gap-1.5">
@@ -171,7 +174,7 @@ export default function InventoryManagement() {
                   onClick={() => saveStock(p, stock - 1)}
                   disabled={stock <= 0}
                   className="flex h-9 w-9 items-center justify-center rounded-lg border border-border disabled:opacity-40"
-                  aria-label="Retirer une unité"
+                  aria-label={t('inventoryManagement.ariaRemoveOne')}
                 >
                   <Minus className="h-3.5 w-3.5" />
                 </button>
@@ -186,7 +189,7 @@ export default function InventoryManagement() {
                   type="button"
                   onClick={() => saveStock(p, stock + 1)}
                   className="flex h-9 w-9 items-center justify-center rounded-lg border border-border"
-                  aria-label="Ajouter une unité"
+                  aria-label={t('inventoryManagement.ariaAddOne')}
                 >
                   <Plus className="h-3.5 w-3.5" />
                 </button>
@@ -196,7 +199,7 @@ export default function InventoryManagement() {
                   disabled={savingId === p.id || String(stock) === String(value)}
                   className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground disabled:opacity-40"
                 >
-                  <Save className="h-3.5 w-3.5" /> {savingId === p.id ? '…' : 'Enregistrer'}
+                  <Save className="h-3.5 w-3.5" /> {savingId === p.id ? '…' : t('common.save')}
                 </button>
               </div>
             </div>
@@ -204,14 +207,17 @@ export default function InventoryManagement() {
         })}
         {!visible.length && (
           <p className="rounded-xl border border-dashed border-border bg-card p-6 text-center text-xs text-muted-foreground">
-            {products.length ? 'Aucun produit dans ce filtre.' : 'Aucun produit dans votre boutique pour le moment.'}
+            {products.length ? t('inventoryManagement.noneInFilter') : t('inventoryManagement.noneInShop')}
           </p>
         )}
       </div>
 
       <p className="text-[11px] text-muted-foreground">
-        Les quantités sont mises à jour au fur et à mesure des ventes. Passez à {LOW_STOCK} unités ou moins pour déclencher une
-        alerte ici et sur le <Link to="/seller-portal" className="font-semibold text-primary">portail vendeur</Link>.
+        {t('inventoryManagement.footerBefore', { threshold: LOW_STOCK })}
+        <Link to="/seller-portal" className="font-semibold text-primary">
+          {t('inventoryManagement.sellerPortal')}
+        </Link>
+        {t('inventoryManagement.footerAfter')}
       </p>
     </div>
   );

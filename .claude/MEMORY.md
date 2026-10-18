@@ -1,0 +1,2 @@
+- [Phase A Visual Audit Complete](/.claude/memory/visual_audit_complete.md) — design system mature, layout consistent, brand integrity maintained
+- [Visual Audit Details](docs/audit/VISUAL_AUDIT.md) — full page-by-page audit with 5 inconsistencies identified for Phase B

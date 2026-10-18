@@ -119,6 +119,9 @@ const securityHeadersPlugin = () => {
 };
 
 export default defineConfig({
+  server: {
+    port: 5174,
+  },
   plugins: [
     base44({
       legacySDKImports: process.env.BASE44_LEGACY_SDK_IMPORTS === 'true',
@@ -141,7 +144,7 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom'],
+    include: ['react', 'react-dom', 'react-router-dom', 'debug'],
     exclude: ['@base44/sdk'],
   },
   build: {

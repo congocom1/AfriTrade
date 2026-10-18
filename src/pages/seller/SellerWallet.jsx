@@ -5,6 +5,8 @@ import { useActiveSeller } from '@/lib/seller';
 import { requestWithdrawal, WITHDRAWAL_METHOD_IDS } from '@/lib/wallet';
 import { useTranslation } from 'react-i18next';
 import DashboardNav from '@/components/DashboardNav';
+import { Input } from '@/components/ui/input';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { formatUSD, formatDateTime } from '@/lib/format';
 
 const LINKS = [
@@ -89,7 +91,7 @@ export default function SellerWallet() {
           <Banknote className="h-4 w-4 text-primary" /> {t('sellerWallet.requestTitle')}
         </h2>
         <div className="grid gap-3 md:grid-cols-2">
-          <input
+          <Input
             type="number"
             step="0.01"
             value={amount}
@@ -97,11 +99,16 @@ export default function SellerWallet() {
             placeholder={t('sellerWallet.amountUsd')}
             className="h-11 rounded-lg border border-border bg-background px-3 text-sm"
           />
-          <select value={method} onChange={(e) => setMethod(e.target.value)} className="h-11 rounded-lg border border-border bg-background px-3 text-sm">
-            {METHODS.map((m) => (
-              <option key={m} value={m}>{m}</option>
-            ))}
-          </select>
+          <Select value={method} onValueChange={(v) => setMethod(String(v))} className="h-11 rounded-lg border border-border bg-background px-3 text-sm">
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder={t('sellerWallet.method')} />
+            </SelectTrigger>
+            <SelectContent>
+              {METHODS.map((m) => (
+                <SelectItem key={m} value={m}>{m}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         {message && <p className="text-xs text-primary">{message}</p>}
         <button type="submit" disabled={saving} className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground disabled:opacity-50">{saving ? t('common.saving') : t('sellerWallet.sendRequest')}</button>
