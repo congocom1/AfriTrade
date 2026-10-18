@@ -1,10 +1,12 @@
 import { test } from '@playwright/test';
 
+const BASE_URL = process.env.VITE_BASE44_APP_BASE_URL || 'http://127.0.0.1:5174';
+
 test('diag homepage', async ({ page }) => {
   const errors = [];
   page.on('console', msg => { if (msg.type() === 'error') errors.push(msg.text()); });
   page.on('pageerror', err => errors.push('PAGE ERROR: ' + err.message));
-  await page.goto(process.env.VITE_BASE44_APP_BASE_URL || 'http://localhost:5174/');
+  await page.goto(BASE_URL);
   await page.waitForLoadState('networkidle');
   await new Promise(r => setTimeout(r, 3000));
   console.log('DIAG TITLE:', await page.title());
