@@ -407,6 +407,7 @@ export default {
     localSalesNote: 'Local sales are credited as pending, then released on confirmed delivery. Every movement creates an entry.',
     entries: 'Entries',
     noEntries: 'No entries yet.',
+    method: 'Withdrawal method',
   },
   myWallet: {
     title: 'My wallet',
