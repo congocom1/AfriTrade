@@ -119,6 +119,9 @@ const securityHeadersPlugin = () => {
 };
 
 export default defineConfig({
+  server: {
+    port: 5174,
+  },
   plugins: [
     base44({
       legacySDKImports: process.env.BASE44_LEGACY_SDK_IMPORTS === 'true',

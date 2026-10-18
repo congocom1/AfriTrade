@@ -9,12 +9,12 @@ export default defineConfig({
   reporter: 'list',
   webServer: {
     command: 'npm run dev',
-    url: 'http://localhost:5173',
-    reuseExistingServer: !process.env.CI,
+    url: 'http://localhost:5174',
+    reuseExistingServer: true,
     timeout: 120_000,
   },
   use: {
-    baseURL: process.env.BASE_URL || 'http://localhost:5173',
+    baseURL: process.env.BASE_URL || 'http://localhost:5174',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
   },

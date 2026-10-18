@@ -201,7 +201,6 @@ const MaterialSwitcher = ({ materials, currentMaterial, onMaterialChange }) => {
     <div className="material-switcher">
       {materials.map(material => (
         <button
-          key={material.id}
           onClick={() => onMaterialChange(material.id)}
           className={`material-button ${currentMaterial === material.id ? 'active' : ''}`}
           style={{
