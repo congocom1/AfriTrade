@@ -268,7 +268,7 @@ Accessibility Report documents WCAG 2.1 AA compliance audit for the AfriTrade ma
 // Error suggestions
 <div role="alert">
   <p>Please enter a valid email address</p>
-  <p>Suggestion: example@domain.com</p>
+  <p>Suggestion: name@domain</p>
 </div>
 
 // Required field indication

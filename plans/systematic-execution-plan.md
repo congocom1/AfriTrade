@@ -1,4 +1,4 @@
-<!-- /autoplan restore point: "/home/hermes/congo-commerce/.gstack/tmp/autoplan/visual-redesign-autoplan-restore-20261018-031058.md" -->
+<!-- /autoplan restore point: "/home/hermes/congo-commerce/.gstack/tmp/autoplan/visual-redesign-autoplan-restore.md" -->
 ## Implementation plan
 # Systematic Execution Plan — Post-P0 Core Fixes
 
