@@ -5,7 +5,7 @@ import { Package, ShoppingBag, Wallet as WalletIcon, TrendingUp, Sparkles, Store
 import { base44 } from '@/api/base44Client';
 import { useActiveSeller } from '@/lib/seller';
 import { sellerInsights } from '@/lib/ai';
-import DashboardNav from '@/components/DashboardNav';
+import DashboardShell from '@/components/DashboardShell';
 import StatusBadge from '@/components/StatusBadge';
 import { Image } from '@/components/ui/image';
 import { formatUSD } from '@/lib/format';
@@ -110,9 +110,8 @@ export default function SellerDashboard() {
         <Image src={HERO_IMAGE} alt="" />
       </div>
 
-      <DashboardNav title={t('seller.title')} links={LINKS} variant="paper" />
-
-      <div className="paper-shop">
+      <DashboardShell nav={LINKS} title={t('seller.title')} variant="paper">
+        <div className="paper-shop">
         <span className="paper-shopmark" />
         <strong>{t('seller.managedShop')}</strong>
         {isAdmin ? (
@@ -212,6 +211,7 @@ export default function SellerDashboard() {
                     </Link>}
         </section>
       </main>
+      </DashboardShell>
     </div>
   );
 }

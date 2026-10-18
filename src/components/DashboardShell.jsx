@@ -7,12 +7,12 @@ import DashboardNav from '@/components/DashboardNav';
  * Provides consistent vertical rhythm and the role-nav bar.
  * Does NOT force a KPI grid or hero layout — each page keeps its own body.
  */
-export default function DashboardShell({ nav, title, children, className }) {
+export default function DashboardShell({ nav, title, children, className, variant }) {
   const { t } = useTranslation();
 
   return (
     <div className={"space-y-5 pb-8" + (className ? " " + className : "")}>
-      <DashboardNav title={title || t('dashboard.title')} links={nav} />
+      <DashboardNav title={title || t('dashboard.title')} links={nav} variant={variant} />
       {children}
     </div>
   );
