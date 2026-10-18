@@ -129,4 +129,7 @@ export default {
   myWallet: {
     partnerTitle: "Titre du partenaire",
   },
+  sellerWallet: {
+    method: "Mode de retrait",
+  },
 };
