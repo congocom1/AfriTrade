@@ -66,3 +66,4 @@ ios/Flutter/Generated.xcconfig
 ios/Flutter/flutter_export_environment.sh
 *.iml
 congo_commerce_flutter.iml
+test-results/baseline-seller-dashboard.png
