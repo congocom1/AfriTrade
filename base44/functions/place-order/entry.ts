@@ -28,10 +28,19 @@
 //
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.49";
 import { postWalletEntry as postLedgerEntry } from "../../shared/walletLedger.ts";
+import { ClientInputError, errorStatus } from "../../shared/httpErrors.ts";
 
 async function postWalletEntry(db: any, wallet: any, entry: Parameters<typeof postLedgerEntry>[2]) {
   const result = await postLedgerEntry(db, wallet, entry);
-  if (!result.ok && result.reason !== 'duplicate') throw new Error(`wallet_${result.reason}`);
+  if (!result.ok && result.reason !== 'duplicate') {
+    if (result.reason === 'insufficient_funds') {
+      throw new ClientInputError("Solde insuffisant pour régler cette commande.");
+    }
+    if (result.reason === 'wallet_missing') {
+      throw new ClientInputError("Aucun portefeuille associé à ce compte.");
+    }
+    throw new Error(`wallet_${result.reason}`);
+  }
   return result;
 }
 import { addSecurityHeaders, getClientKey, checkRateLimit, rateLimitErrorResponse } from "../../shared/securityHeaders.ts";
@@ -347,7 +356,7 @@ async function buildCheckoutQuote(client, params) {
   const lines = rawLines.map((l) => {
     const product = l.product;
     if (!product) {
-      throw new Error("Product not found: " + l.product_id);
+      throw new ClientInputError("Product not found: " + l.product_id);
     }
     const qty = quantityWithinStock(product, l.quantity);
     const unit = round2(Number(product.price_usd ?? 0) * 100);
@@ -548,16 +557,16 @@ export async function placeOrder(db, params) {
 
   const lines = await loadCartLines(db, items);
   if (lines.length === 0) {
-    throw new Error("Cart is empty");
+    throw new ClientInputError("Cart is empty");
   }
 
   const validatedLines = lines.map((line) => {
     const product = line.product;
     if (!product) {
-      throw new Error("Product not found: " + line.product_id);
+      throw new ClientInputError("Product not found: " + line.product_id);
     }
     if (!hasStockFor(product, line.quantity)) {
-      throw new Error(
+      throw new ClientInputError(
         "Plus de stock pour " +
           (product.title ?? line.product_id) +
           " (disponible: " +
@@ -1185,7 +1194,10 @@ export default async function (request) {
       })
     );
   } catch (error) {
-    console.error("[place-order] Unhandled error:", error);
+    const status = errorStatus(error);
+    if (status >= 500) {
+      console.error("[place-order] Unhandled error:", error);
+    }
     return addSecurityHeaders(
       new Response(
         JSON.stringify({
@@ -1193,7 +1205,7 @@ export default async function (request) {
           status: "failed",
         }),
         {
-          status: 500,
+          status,
           headers: { "Content-Type": "application/json" },
         },
       )
