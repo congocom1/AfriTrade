@@ -23,7 +23,7 @@ class ProductRepository {
     String? sortBy, // 'relevance', 'new', 'sold', 'price_asc', 'price_desc', 'rating'
   }) async {
     try {
-      final response = await _apiClient.get<List<dynamic>>(
+      final response = await _apiClient.get<Map<String, dynamic>>(
         '/products',
         queryParameters: {
           if (category != null) 'category': category,
@@ -39,7 +39,7 @@ class ProductRepository {
         },
       );
       
-      final data = response.data ?? [];
+      final data = response.data?['products'] as List<dynamic>? ?? [];
       return data
           .map((json) => ProductModel.fromJson(json as Map<String, dynamic>))
           .toList();
@@ -54,7 +54,7 @@ class ProductRepository {
       final response = await _apiClient.get<Map<String, dynamic>>(
         '/products/$idOrSlug',
       );
-      return ProductModel.fromJson(response.data!);
+      return ProductModel.fromJson(response.data!['product'] as Map<String, dynamic>);
     } on DioException catch (e) {
       throw _handleError(e);
     }
@@ -63,11 +63,11 @@ class ProductRepository {
   /// Fetch featured products
   Future<List<ProductModel>> fetchFeatured() async {
     try {
-      final response = await _apiClient.get<List<dynamic>>(
+      final response = await _apiClient.get<Map<String, dynamic>>(
         '/products',
         queryParameters: {'featured': true, 'page_size': 12},
       );
-      return (response.data ?? [])
+      return (response.data?['products'] as List<dynamic>? ?? [])
           .map((json) => ProductModel.fromJson(json as Map<String, dynamic>))
           .toList();
     } on DioException catch (e) {
@@ -78,11 +78,11 @@ class ProductRepository {
   /// Fetch flash sale products
   Future<List<ProductModel>> fetchFlashSales() async {
     try {
-      final response = await _apiClient.get<List<dynamic>>(
+      final response = await _apiClient.get<Map<String, dynamic>>(
         '/products',
         queryParameters: {'flash_sale': true, 'page_size': 12},
       );
-      return (response.data ?? [])
+      return (response.data?['products'] as List<dynamic>? ?? [])
           .map((json) => ProductModel.fromJson(json as Map<String, dynamic>))
           .toList();
     } on DioException catch (e) {
@@ -93,11 +93,11 @@ class ProductRepository {
   /// Fetch trending products (most sold)
   Future<List<ProductModel>> fetchTrending({int limit = 12}) async {
     try {
-      final response = await _apiClient.get<List<dynamic>>(
+      final response = await _apiClient.get<Map<String, dynamic>>(
         '/products',
         queryParameters: {'sort': 'sold', 'page_size': limit},
       );
-      return (response.data ?? [])
+      return (response.data?['products'] as List<dynamic>? ?? [])
           .map((json) => ProductModel.fromJson(json as Map<String, dynamic>))
           .toList();
     } on DioException catch (e) {
@@ -108,11 +108,11 @@ class ProductRepository {
   /// Fetch new arrivals
   Future<List<ProductModel>> fetchNewArrivals({int limit = 12}) async {
     try {
-      final response = await _apiClient.get<List<dynamic>>(
+      final response = await _apiClient.get<Map<String, dynamic>>(
         '/products',
         queryParameters: {'sort': 'new', 'page_size': limit},
       );
-      return (response.data ?? [])
+      return (response.data?['products'] as List<dynamic>? ?? [])
           .map((json) => ProductModel.fromJson(json as Map<String, dynamic>))
           .toList();
     } on DioException catch (e) {
@@ -123,11 +123,11 @@ class ProductRepository {
   /// Fetch similar products
   Future<List<ProductModel>> fetchSimilar(String productId, {int limit = 8}) async {
     try {
-      final response = await _apiClient.get<List<dynamic>>(
+      final response = await _apiClient.get<Map<String, dynamic>>(
         '/products/$productId/similar',
         queryParameters: {'page_size': limit},
       );
-      return (response.data ?? [])
+      return (response.data?['products'] as List<dynamic>? ?? [])
           .map((json) => ProductModel.fromJson(json as Map<String, dynamic>))
           .toList();
     } on DioException catch (e) {
@@ -138,8 +138,8 @@ class ProductRepository {
   /// Fetch categories
   Future<List<Map<String, dynamic>>> fetchCategories() async {
     try {
-      final response = await _apiClient.get<List<dynamic>>('/categories');
-      return (response.data ?? []).cast<Map<String, dynamic>>();
+      final response = await _apiClient.get<Map<String, dynamic>>('/categories');
+      return (response.data?['categories'] as List<dynamic>? ?? []).cast<Map<String, dynamic>>();
     } on DioException catch (e) {
       throw _handleError(e);
     }
@@ -148,10 +148,10 @@ class ProductRepository {
   /// Fetch product reviews
   Future<List<Map<String, dynamic>>> fetchReviews(String productId) async {
     try {
-      final response = await _apiClient.get<List<dynamic>>(
+      final response = await _apiClient.get<Map<String, dynamic>>(
         '/products/$productId/reviews',
       );
-      return (response.data ?? []).cast<Map<String, dynamic>>();
+      return (response.data?['reviews'] as List<dynamic>? ?? []).cast<Map<String, dynamic>>();
     } on DioException catch (e) {
       throw _handleError(e);
     }

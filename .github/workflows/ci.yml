@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [18, 20, 22]
+        node-version: ['22.12.0', '24']
 
     steps:
       - name: Checkout code
@@ -41,47 +41,20 @@ jobs:
       - name: Run frontend build
         run: npm run build
 
-  # Optional staging smoke test
+  # Read-only browser smoke tests against an explicitly configured staging app.
   staging-smoke:
     runs-on: ubuntu-latest
     needs: [frontend-checks]
-    if: github.event_name == 'pull_request' && github.base_ref == 'main'
-
+    if: github.event_name == 'pull_request' && vars.STAGING_BASE_URL != ''
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Start web server
-        run: npm run dev &
-        timeout-minutes: 5
-
-      - name: Wait for server to be ready
-        run: |
-          for i in {1..30}; do
-            if curl -s http://localhost:5173 > /dev/null; then
-              echo "Server is ready"
-              exit 0
-            fi
-            sleep 10
-          done
-          echo "Server failed to start"
-          exit 1
-        timeout-minutes: 10
-
-      - name: Run Playwright smoke tests
-        run: npm run test:e2e:ci
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Run public staging smoke tests
+        run: npx playwright test test/e2e/smoke.spec.js
         env:
-          BASE_URL: http://localhost:5173
-
-      - name: Kill web server
-        if: always()
-        run: pkill -f "vite"
+          BASE_URL: ${{ vars.STAGING_BASE_URL }}

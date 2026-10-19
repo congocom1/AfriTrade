@@ -45,7 +45,8 @@ const json = (data: unknown, status = 200) =>
 // The Flutter app's baseUrl is https://afritrade.base44.app/api, so every
 // request path starts with "/api/". We strip that leading segment before parsing.
 function parsePath(url: URL): { resource: string; id?: string; action?: string } | null {
-  const segments = url.pathname.split("/").filter(Boolean);
+  const route = url.searchParams.get("path") || url.pathname;
+  const segments = route.split("/").filter(Boolean);
   // Drop a leading "api" segment (baseUrl prefix) if present.
   if (segments.length > 0 && segments[0] === "api") segments.shift();
   if (segments.length === 0) return null;
@@ -177,12 +178,7 @@ export default async function (req: Request): Promise<Response> {
       if (origin === "local") filter.source_type = "local_seller";
       if (origin === "international") filter.source_type = "international_supplier";
 
-      let products: any[] = [];
-      try {
-        products = await db.entities.Product.list("-created_date", 500, filter);
-      } catch {
-        products = await db.entities.Product.list("-created_date", 500).catch(() => []);
-      }
+      const products = await db.entities.Product.filter(filter, "-created_date", 500);
 
       let filtered = (products || []).map(productToFlutter);
 
@@ -236,7 +232,7 @@ export default async function (req: Request): Promise<Response> {
     // ─────────────────────────────────────────────────────────────────
     if (resource === "products" && id && !action) {
       const product = await db.entities.Product.get(id).catch(() => null);
-      if (!product) return fail("Product not found", 404);
+      if (!product || product.status !== "published") return fail("Product not found", 404);
       return json({ product: productToFlutter(product) });
     }
 
@@ -245,9 +241,9 @@ export default async function (req: Request): Promise<Response> {
     // ─────────────────────────────────────────────────────────────────
     if (resource === "products" && id && action === "similar") {
       const product = await db.entities.Product.get(id).catch(() => null);
-      if (!product) return fail("Product not found", 404);
+      if (!product || product.status !== "published") return fail("Product not found", 404);
       const limit = Math.min(20, Math.max(1, Number(new URLSearchParams(url.search).get("page_size")) || 8));
-      const all = await db.entities.Product.list("-created_date", 200).catch(() => []);
+      const all = await db.entities.Product.filter({ status: "published" }, "-created_date", 200);
       const similar = (all || [])
         .filter((p: any) => p.id !== id && (p.source_type ?? "local_seller") === (product.source_type ?? "local_seller"))
         .slice(0, limit)
@@ -260,9 +256,9 @@ export default async function (req: Request): Promise<Response> {
     // ─────────────────────────────────────────────────────────────────
     if (resource === "products" && id && action === "reviews") {
       const product = await db.entities.Product.get(id).catch(() => null);
-      if (!product) return fail("Product not found", 404);
+      if (!product || product.status !== "published") return fail("Product not found", 404);
       const reviews = await db.entities.Review
-        .filter({ product_id: id }, "-created_date", 100)
+        .filter({ product_id: id, status: "published" }, "-created_date", 100)
         .catch(() => []);
       return json({
         reviews: (reviews || []).map((r: any) => ({
@@ -281,7 +277,7 @@ export default async function (req: Request): Promise<Response> {
     // Returns products flagged for B2B (wholesale pricing, MOQ, bulk discounts)
     // ─────────────────────────────────────────────────────────────────
     if (resource === "b2b" && id === "products" && !action) {
-      const all = await db.entities.Product.list("-created_date", 500).catch(() => []);
+      const all = await db.entities.Product.filter({ status: "published" }, "-created_date", 500);
       const b2bProducts = (all || [])
         .filter((p: any) => p.is_b2b || p.b2b_only || p.wholesale_price_usd != null)
         .map(productToFlutter);

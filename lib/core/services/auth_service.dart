@@ -19,11 +19,8 @@ class AuthFailure implements Exception {
 
 /// Auth service for Base44 authentication.
 ///
-/// The data layer is the Base44 entity API rather than REST auth routes: the
-/// app authenticates through the platform's session cookie / bearer token that
-/// @base44/sdk manages in the React build. Endpoint paths below are the assumed
-/// REST shape and MUST be confirmed against the deployed app before this
-/// client is trusted with real credentials.
+/// Requests use the hosted Base44 auth function with an explicit action.
+/// Stored access tokens accompany authenticated profile requests.
 class AuthService {
   final Dio _dio;
   final TokenStorage _tokens;
@@ -40,7 +37,15 @@ class AuthService {
         'Accept': 'application/json',
       },
     ),
-  );
+  ) {
+    _dio.interceptors.add(InterceptorsWrapper(onRequest: (options, handler) async {
+      final token = await _tokens.getAccessToken();
+      if (token != null && token.isNotEmpty) {
+        options.headers['Authorization'] = 'Bearer $token';
+      }
+      handler.next(options);
+    }));
+  }
 
   /// Persist the token pair from a login/register/refresh payload.
   /// Returns the authenticated user, or null when the payload carried no user.
@@ -84,7 +89,7 @@ class AuthService {
   }) async {
     try {
       final response = await _dio.post(
-        '/auth/login',
+        AppConstants.gatewayPath('/auth/login'),
         data: {
           'email': email,
           'password': password,
@@ -140,7 +145,7 @@ class AuthService {
   }) async {
     try {
       final response = await _dio.post(
-        '/auth/register',
+        AppConstants.gatewayPath('/auth/register'),
         data: {
           'email': email,
           'password': password,
@@ -198,7 +203,7 @@ class AuthService {
 
     try {
       final response = await refreshDio.post(
-        '/auth/refresh',
+        AppConstants.gatewayPath('/auth/refresh'),
         data: {'refresh_token': current},
       );
 
@@ -228,7 +233,7 @@ class AuthService {
   /// Logout current user
   Future<void> logout() async {
     try {
-      await _dio.post('/auth/logout');
+      await _dio.post(AppConstants.gatewayPath('/auth/logout'));
     } on DioException {
       // Ignore logout errors - we clear local state anyway
     }
@@ -237,7 +242,7 @@ class AuthService {
   /// Get current user profile
   Future<UserModel> getCurrentUser() async {
     try {
-      final response = await _dio.get('/auth/me');
+      final response = await _dio.get(AppConstants.gatewayPath('/auth/me'));
       
       if (response.statusCode == 200 && response.data != null) {
         return UserModel.fromJson(response.data as Map<String, dynamic>);
@@ -252,7 +257,7 @@ class AuthService {
   /// Send password reset email
   Future<void> forgotPassword(String email) async {
     try {
-      await _dio.post('/auth/forgot-password', data: {'email': email});
+      await _dio.post(AppConstants.gatewayPath('/auth/forgot-password'), data: {'email': email});
     } on DioException catch (e) {
       throw _handleDioError(e);
     }
@@ -266,7 +271,7 @@ class AuthService {
   }) async {
     try {
       await _dio.post(
-        '/auth/reset-password',
+        AppConstants.gatewayPath('/auth/reset-password'),
         data: {
           'token': token,
           'password': password,
@@ -281,7 +286,7 @@ class AuthService {
   /// Verify email with token
   Future<void> verifyEmail(String token) async {
     try {
-      await _dio.post('/auth/verify-email', data: {'token': token});
+      await _dio.post(AppConstants.gatewayPath('/auth/verify-email'), data: {'token': token});
     } on DioException catch (e) {
       throw _handleDioError(e);
     }
@@ -290,7 +295,7 @@ class AuthService {
   /// Resend verification email
   Future<void> resendVerificationEmail() async {
     try {
-      await _dio.post('/auth/resend-verification');
+      await _dio.post(AppConstants.gatewayPath('/auth/resend-verification'));
     } on DioException catch (e) {
       throw _handleDioError(e);
     }

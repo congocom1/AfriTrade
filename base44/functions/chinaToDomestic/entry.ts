@@ -87,7 +87,7 @@ export default async function (req) {
     }
     if (receipt.status !== 'approved') return addSecurityHeaders(Response.json({ error: 'Receipt not approved', status: receipt.status }, { status: 409 }))
 
-    const items = receipt.items || []
+    const items = Array.isArray(receipt.items) ? receipt.items : []
     if (!items.length) return addSecurityHeaders(Response.json({ error: 'Receipt has no items' }, { status: 400 }))
 
     const tenant = {
@@ -96,18 +96,30 @@ export default async function (req) {
     }
     const createdOrders = []
 
+    // Validate the complete receipt before the first stock/fulfillment write.
+    const lines = []
+    const seen = new Set()
     for (const [index, item] of items.entries()) {
-      const productId = String(item.product_id || '')
-      const qty = Number(item.qty || 0)
-      if (!productId || !(qty > 0)) continue
+      const productId = String(item?.product_id || '').trim()
+      const qty = Number(item?.qty)
+      const unitPrice = Number(item?.unit_price_usd)
+      if (!productId || !Number.isSafeInteger(qty) || qty <= 0 ||
+          !Number.isFinite(unitPrice) || unitPrice < 0 || seen.has(productId)) {
+        return addSecurityHeaders(Response.json({ error: 'Invalid or duplicate receipt line', line: index + 1 }, { status: 400 }))
+      }
+      seen.add(productId)
+      const products = await base44.asServiceRole.entities.Product.filter({ id: productId })
+      const product = products[0]
+      if (!product) {
+        return addSecurityHeaders(Response.json({ error: 'Receipt product not found', line: index + 1 }, { status: 404 }))
+      }
+      if (String(product.tenant_id || '') !== tenant.tenant_id) {
+        return addSecurityHeaders(Response.json({ error: 'Receipt product belongs to another tenant' }, { status: 409 }))
+      }
+      lines.push({ index, item, product, qty })
+    }
 
-      // Increment domestic stock for this product
-      const products = await base44.asServiceRole.entities.Product
-        .filter({ id: productId })
-        .catch(() => [])
-      const product = products[0] || null
-      if (!product) continue
-
+    for (const { index, item, product, qty } of lines) {
       const newStock = (Number(product.stock) || 0) + qty
       await base44.asServiceRole.entities.Product.update(product.id, { stock: newStock })
 
@@ -118,7 +130,7 @@ export default async function (req) {
         order_number: receipt.order_number || '',
         fulfillment_number: `CD-${receipt.receipt_number || receipt.id}-${index + 1}`,
         product_id: product.id,
-        product_name: product.name || '',
+        product_name: product.title || product.name || '',
         quantity: qty,
         status: 'PENDING',
         source_type: 'china_to_domestic',

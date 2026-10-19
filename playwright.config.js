@@ -7,8 +7,8 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
   reporter: 'list',
-  webServer: {
-    command: 'npm run dev',
+  webServer: process.env.BASE_URL ? undefined : {
+    command: 'npx base44 dev',
     url: 'http://localhost:5174',
     reuseExistingServer: true,
     timeout: 120_000,
