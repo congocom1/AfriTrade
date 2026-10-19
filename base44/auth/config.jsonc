@@ -4,9 +4,9 @@
   "enableMicrosoftLogin": true,
   "enableFacebookLogin": true,
   "enableAppleLogin": true,
-  "ssoProviderName": "google",
-  "enableSSOLogin": true,
+  "ssoProviderName": null,
+  "enableSSOLogin": false,
   "googleOAuthMode": "default",
-  "googleOAuthClientId": "REPLACE_WITH_YOUR_GOOGLE_OAUTH_CLIENT_ID",
+  "googleOAuthClientId": null,
   "useWorkspaceSSO": false
 }
