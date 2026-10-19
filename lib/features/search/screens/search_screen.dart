@@ -4,11 +4,38 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/providers.dart';
 import '../../../ui/widgets/product_card.dart';
 
-class SearchScreen extends ConsumerWidget {
+class SearchScreen extends ConsumerStatefulWidget {
   const SearchScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SearchScreen> createState() => _SearchScreenState();
+}
+
+class _SearchScreenState extends ConsumerState<SearchScreen> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: ref.read(searchQueryProvider));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    ref.listen(searchQueryProvider, (_, value) {
+      if (_controller.text != value) {
+        _controller.value = TextEditingValue(
+          text: value,
+          selection: TextSelection.collapsed(offset: value.length),
+        );
+      }
+    });
     final theme = Theme.of(context);
     final query = ref.watch(searchQueryProvider);
     final filters = ref.watch(searchFiltersProvider);
@@ -17,6 +44,7 @@ class SearchScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: TextField(
+          controller: _controller,
           autofocus: true,
           decoration: InputDecoration(
             hintText: 'Search products...',
@@ -25,6 +53,7 @@ class SearchScreen extends ConsumerWidget {
             suffixIcon: query.isNotEmpty
                 ? IconButton(
                     icon: const Icon(Icons.clear),
+                    tooltip: 'Clear search',
                     onPressed: () => ref.read(searchQueryProvider.notifier).state = '',
                   )
                 : null,
@@ -98,12 +127,7 @@ class SearchScreen extends ConsumerWidget {
                 
                 return GridView.builder(
                   padding: const EdgeInsets.all(16),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 12,
-                    crossAxisSpacing: 12,
-                    childAspectRatio: 0.68,
-                  ),
+                  gridDelegate: productGridDelegate(context),
                   itemCount: products.length,
                   itemBuilder: (context, index) => ProductCard(
                     product: products[index],

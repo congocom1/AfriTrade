@@ -1,5 +1,5 @@
 name: congo_commerce_flutter
-description: "Congo Commerce - The DRC Marketplace for Local & Global Trade"
+description: "AfriTrade - Pan-African B2B and B2C marketplace"
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -90,6 +90,8 @@ dependency_overrides:
     path: third_party/flutter_secure_storage_windows
 
 flutter:
+  config:
+    enable-swift-package-manager: true
   uses-material-design: true
   
   # Fonts are loaded at runtime by google_fonts (Poppins / Inter), so no

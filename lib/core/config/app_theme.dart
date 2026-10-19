@@ -241,7 +241,7 @@ class AppTheme {
         systemOverlayStyle: SystemUiOverlayStyle.light,
       ),
       
-      textTheme: GoogleFonts.poppinsTextTheme().copyWith(
+      textTheme: GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme).copyWith(
         bodyLarge: GoogleFonts.poppins(fontSize: 16, color: Colors.white),
         bodyMedium: GoogleFonts.poppins(fontSize: 14, color: Colors.white),
         bodySmall: GoogleFonts.poppins(fontSize: 12, color: Colors.white70),

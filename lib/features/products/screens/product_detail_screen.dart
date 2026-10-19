@@ -330,7 +330,7 @@ class _ProductDetail extends ConsumerWidget {
                 ),
                 const SizedBox(height: 12),
                 SizedBox(
-                  height: 220,
+                  height: 150 + productCardDetailsHeight(context),
                   child: Consumer(
                     builder: (context, ref, _) {
                       final similarAsync = ref.watch(similarProductsProvider(product.id));

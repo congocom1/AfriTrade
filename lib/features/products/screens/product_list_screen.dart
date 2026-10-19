@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/providers/providers.dart';
@@ -17,7 +18,8 @@ class ProductListScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.search),
-            onPressed: () {},
+            tooltip: 'Search products',
+            onPressed: () => context.push('/search'),
           ),
         ],
       ),
@@ -83,12 +85,7 @@ class ProductListScreen extends ConsumerWidget {
                     
                     return GridView.builder(
                       padding: const EdgeInsets.all(16),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        mainAxisSpacing: 12,
-                        crossAxisSpacing: 12,
-                        childAspectRatio: 0.68,
-                      ),
+                      gridDelegate: productGridDelegate(context),
                       itemCount: products.length,
                       itemBuilder: (context, index) => ProductCard(
                         product: products[index],
