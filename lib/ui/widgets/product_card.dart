@@ -39,6 +39,7 @@ class ProductCard extends ConsumerWidget {
               AspectRatio(
                 aspectRatio: 1,
                 child: Stack(
+                  fit: StackFit.expand,
                   children: [
                     Container(
                       decoration: BoxDecoration(
@@ -145,7 +146,10 @@ class ProductCard extends ConsumerWidget {
               const SizedBox(height: 4),
               
               // Price
-              Row(
+              Wrap(
+                spacing: 6,
+                runSpacing: 2,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   Text(
                     formatUSD(product.priceUsd),
@@ -155,7 +159,6 @@ class ProductCard extends ConsumerWidget {
                     ),
                   ),
                   if (product.hasDiscount) ...[
-                    const SizedBox(width: 6),
                     Text(
                       formatUSD(product.compareAtUsd!),
                       style: theme.textTheme.bodySmall?.copyWith(
@@ -181,7 +184,8 @@ class ProductCard extends ConsumerWidget {
               // Rating
               if (product.rating > 0) ...[
                 const SizedBox(height: 2),
-                Row(
+                Wrap(
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     Icon(Icons.star, size: 14, color: Colors.amber.shade700),
                     const SizedBox(width: 2),
@@ -203,4 +207,22 @@ class ProductCard extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// Reserve space for title, wrapped prices, seller and rating at the user's
+/// text size, instead of squeezing them into a fixed image-based aspect ratio.
+double productCardDetailsHeight(BuildContext context) =>
+    40 + MediaQuery.textScalerOf(context).scale(140);
+
+SliverGridDelegate productGridDelegate(BuildContext context) {
+  final width = MediaQuery.sizeOf(context).width - 32;
+  final minWidth = MediaQuery.textScalerOf(context).scale(150);
+  final columns = (width / minWidth).floor().clamp(1, 5);
+  final cardWidth = (width - (columns - 1) * 12) / columns;
+  return SliverGridDelegateWithFixedCrossAxisCount(
+    crossAxisCount: columns,
+    mainAxisSpacing: 12,
+    crossAxisSpacing: 12,
+    mainAxisExtent: cardWidth + productCardDetailsHeight(context),
+  );
 }

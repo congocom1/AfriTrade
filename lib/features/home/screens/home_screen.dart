@@ -22,20 +22,17 @@ class HomeScreen extends ConsumerWidget {
             Text(AppConstants.appName),
           ],
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {},
-          ),
-        ],
+
       ),
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(featuredProductsProvider);
           ref.invalidate(trendingProductsProvider);
           ref.invalidate(newArrivalsProvider);
+          ref.invalidate(flashSaleProductsProvider);
         },
         child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
             // Search bar
             SliverToBoxAdapter(
@@ -175,7 +172,7 @@ class _HeroBanner extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'The best of Congo\nand the world',
+                  'Discover Africa.\nShop the world.',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -183,14 +180,14 @@ class _HeroBanner extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Kinshasa delivery in 2-4 days',
+                  'Explore products from across the continent.',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Colors.white.withValues(alpha: 0.85),
                       ),
                 ),
                 const SizedBox(height: 12),
                 SizedBox(
-                  height: 36,
+                  height: 48,
                   child: ElevatedButton(
                     onPressed: () => context.go('/products'),
                     style: ElevatedButton.styleFrom(
@@ -225,7 +222,7 @@ class _CategoryStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 100,
+      height: 80 + MediaQuery.textScalerOf(context).scale(16),
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -277,7 +274,7 @@ class _FlashSaleStrip extends ConsumerWidget {
         if (products.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
         return SliverToBoxAdapter(
           child: SizedBox(
-            height: 220,
+            height: 160 + productCardDetailsHeight(context),
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -321,12 +318,7 @@ class _ProductGrid extends ConsumerWidget {
               ),
               childCount: products.length,
             ),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              mainAxisSpacing: 12,
-              crossAxisSpacing: 12,
-              childAspectRatio: 0.68,
-            ),
+            gridDelegate: productGridDelegate(context),
           ),
         );
       },
