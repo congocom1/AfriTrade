@@ -7,6 +7,16 @@ class AppConstants {
   // API Configuration — points at the Base44 backend
   // AfriTrade's active Base44 deployment.
   static const String baseUrl = 'https://afritrade-1.base44.app/api';
+  static const String base44AppId = '6ab43a1371d65d1a911b0fe7';
+
+  /// Hosted Base44 functions are mounted by name, not arbitrary REST paths.
+  static String gatewayPath(String path) {
+    final auth = path.startsWith('/auth/');
+    final function = auth ? 'auth' : 'rest';
+    final key = auth ? 'action' : 'path';
+    final value = auth ? path.substring('/auth/'.length) : path;
+    return '/apps/$base44AppId/functions/$function?$key=${Uri.encodeComponent(value)}';
+  }
   static const String websocketUrl = 'wss://ws.afritrade.com';
   
   // Timeout values

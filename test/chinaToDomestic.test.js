@@ -41,7 +41,7 @@ const state = {
 
 function resetState() {
   state.receipt = {
-    id: 7, status: 'approved', tenant_id: 't-1', tenant_owner_email: 'owner@demo.test',
+    id: '7', status: 'approved', tenant_id: 't-1', tenant_owner_email: 'owner@demo.test',
     order_id: 'o-1', order_number: 'ORD-1001', receipt_number: 'RCP-77',
     items: [
       { product_id: 'p-1', qty: 3, unit_price_usd: 12.5 },
@@ -50,8 +50,8 @@ function resetState() {
     created_by_id: 'u-1',
   };
   state.products = [
-    { id: 'p-1', name: 'Widget A', stock: 10 },
-    { id: 'p-2', name: 'Widget B', stock: 4 },
+    { id: 'p-1', name: 'Widget A', tenant_id: 't-1', stock: 10 },
+    { id: 'p-2', name: 'Widget B', tenant_id: 't-1', stock: 4 },
   ];
   state.calls = { filter: {}, update: {}, create: {} };
 }
@@ -114,19 +114,19 @@ describe('chinaToDomestic', () => {
   it('converts an approved receipt: increments stock, creates fulfillment orders', async () => {
     const modUrl = writeTestModule();
     const mod = await import(modUrl);
-    const req = { method: 'POST', json: async () => ({ receiptId: 7 }), headers: { get: () => '127.0.0.1' } };
+    const req = { method: 'POST', json: async () => ({ receiptId: '7' }), headers: { get: () => '127.0.0.1' } };
     const res = await mod.default(req);
     const body = await res.json();
 
     assert.equal(body.status, 'converted');
-    assert.equal(body.receiptId, 7);
+    assert.equal(body.receiptId, '7');
     assert.equal(body.ordersCreated, 2);
   });
 
   it('increments Product.stock for every line item', async () => {
     const modUrl = writeTestModule();
     const mod = await import(modUrl);
-    const req = { method: 'POST', json: async () => ({ receiptId: 7 }), headers: { get: () => '127.0.0.1' } };
+    const req = { method: 'POST', json: async () => ({ receiptId: '7' }), headers: { get: () => '127.0.0.1' } };
     await mod.default(req);
 
     assert.equal(state.products[0].stock, 13); // 10 + 3
@@ -136,7 +136,7 @@ describe('chinaToDomestic', () => {
   it('creates one FulfillmentOrder per receipt line item', async () => {
     const modUrl = writeTestModule();
     const mod = await import(modUrl);
-    const req = { method: 'POST', json: async () => ({ receiptId: 7 }), headers: { get: () => '127.0.0.1' } };
+    const req = { method: 'POST', json: async () => ({ receiptId: '7' }), headers: { get: () => '127.0.0.1' } };
     await mod.default(req);
 
     const { create } = state.calls;
@@ -145,13 +145,13 @@ describe('chinaToDomestic', () => {
     assert.equal(create.fulfillment[0].quantity, 3);
     assert.match(create.fulfillment[0].fulfillment_number, /^CD-RCP-77-1$/);
     assert.equal(create.fulfillment[0].source_type, 'china_to_domestic');
-    assert.equal(create.fulfillment[0].source_receipt_id, 7);
+    assert.equal(create.fulfillment[0].source_receipt_id, '7');
   });
 
   it('marks the receipt status as converted', async () => {
     const modUrl = writeTestModule();
     const mod = await import(modUrl);
-    const req = { method: 'POST', json: async () => ({ receiptId: 7 }), headers: { get: () => '127.0.0.1' } };
+    const req = { method: 'POST', json: async () => ({ receiptId: '7' }), headers: { get: () => '127.0.0.1' } };
     await mod.default(req);
 
     assert.ok(state.calls.update.receipt);
@@ -161,13 +161,13 @@ describe('chinaToDomestic', () => {
   it('emits an AuditLog entry for the conversion', async () => {
     const modUrl = writeTestModule();
     const mod = await import(modUrl);
-    const req = { method: 'POST', json: async () => ({ receiptId: 7 }), headers: { get: () => '127.0.0.1' } };
+    const req = { method: 'POST', json: async () => ({ receiptId: '7' }), headers: { get: () => '127.0.0.1' } };
     await mod.default(req);
 
     const { audit } = state.calls.create;
     assert.equal(audit.action, 'chinaToDomestic.converted');
     assert.equal(audit.entity, 'ChinaWarehouseReceipt');
-    assert.equal(audit.entity_id, 7);
+    assert.equal(audit.entity_id, '7');
     assert.equal(audit.severity, 'info');
   });
 
@@ -186,7 +186,7 @@ describe('chinaToDomestic', () => {
     globalThis.__chinaToDomesticTestState = state;
     const modUrl = writeTestModule();
     const mod = await import(modUrl);
-    const req = { method: 'POST', json: async () => ({ receiptId: 7 }), headers: { get: () => '127.0.0.1' } };
+    const req = { method: 'POST', json: async () => ({ receiptId: '7' }), headers: { get: () => '127.0.0.1' } };
     const res = await mod.default(req);
     assert.equal(res.status, 409);
   });
@@ -197,13 +197,31 @@ describe('chinaToDomestic', () => {
     globalThis.__chinaToDomesticTestState = state;
     const modUrl = writeTestModule();
     const mod = await import(modUrl);
-    const req = { method: 'POST', json: async () => ({ receiptId: 7 }), headers: { get: () => '127.0.0.1' } };
+    const req = { method: 'POST', json: async () => ({ receiptId: '7' }), headers: { get: () => '127.0.0.1' } };
     const res = await mod.default(req);
     const body = await res.json();
 
     assert.equal(body.alreadyConverted, true);
     assert.equal(body.ordersCreated, 1);
     assert.equal(state.products[0].stock, 10);
-    assert.equal(state.calls.filter.fulfillment.source_receipt_id, 7);
+    assert.equal(state.calls.filter.fulfillment.source_receipt_id, '7');
   });
+
+  for (const scenario of ['invalid quantity', 'missing product', 'cross tenant', 'duplicate']) {
+    it(`rejects ${scenario} before mutating inventory`, async () => {
+      if (scenario === 'invalid quantity') state.receipt.items[1].qty = -1;
+      if (scenario === 'missing product') state.products.pop();
+      if (scenario === 'cross tenant') state.products[1].tenant_id = 'other';
+      if (scenario === 'duplicate') state.receipt.items[1].product_id = 'p-1';
+      const mod = await import(writeTestModule());
+      const response = await mod.default(new Request('https://example.test', {
+        method: 'POST', headers: { 'cf-connecting-ip': '127.0.0.1' },
+        body: JSON.stringify({ receiptId: '7' }),
+      }));
+      assert.ok(response.status >= 400);
+      assert.equal(state.calls.update.product, undefined);
+      assert.equal(state.calls.update.receipt, undefined);
+      assert.equal(state.calls.create.fulfillment, undefined);
+    });
+  }
 });

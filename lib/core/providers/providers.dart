@@ -339,6 +339,8 @@ final categoriesProvider = FutureProvider<List<Map<String, dynamic>>>((ref) {
 final searchQueryProvider = StateProvider<String>((ref) => '');
 
 /// Search filters state
+const _unchangedFilter = Object();
+
 class SearchFilters {
   final String? category;
   final double? minPrice;
@@ -359,22 +361,22 @@ class SearchFilters {
   });
   
   SearchFilters copyWith({
-    String? category,
-    double? minPrice,
-    double? maxPrice,
-    double? minRating,
+    Object? category = _unchangedFilter,
+    Object? minPrice = _unchangedFilter,
+    Object? maxPrice = _unchangedFilter,
+    Object? minRating = _unchangedFilter,
     bool? inStockOnly,
-    String? origin,
-    String? sortBy,
+    Object? origin = _unchangedFilter,
+    Object? sortBy = _unchangedFilter,
   }) {
     return SearchFilters(
-      category: category ?? this.category,
-      minPrice: minPrice ?? this.minPrice,
-      maxPrice: maxPrice ?? this.maxPrice,
-      minRating: minRating ?? this.minRating,
+      category: identical(category, _unchangedFilter) ? this.category : category as String?,
+      minPrice: identical(minPrice, _unchangedFilter) ? this.minPrice : minPrice as double?,
+      maxPrice: identical(maxPrice, _unchangedFilter) ? this.maxPrice : maxPrice as double?,
+      minRating: identical(minRating, _unchangedFilter) ? this.minRating : minRating as double?,
       inStockOnly: inStockOnly ?? this.inStockOnly,
-      origin: origin ?? this.origin,
-      sortBy: sortBy ?? this.sortBy,
+      origin: identical(origin, _unchangedFilter) ? this.origin : origin as String?,
+      sortBy: identical(sortBy, _unchangedFilter) ? this.sortBy : sortBy as String?,
     );
   }
   

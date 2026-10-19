@@ -6,6 +6,7 @@ import { BrowserRouter as Router, Navigate, Route, Routes } from 'react-router-d
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
+import PageMetadata from './components/PageMetadata';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import ForgotPassword from '@/pages/ForgotPassword';
@@ -408,6 +409,7 @@ function App() {
         <QueryClientProvider client={queryClientInstance}>
           <Router>
             <ScrollToTop />
+            <PageMetadata />
             <CartProvider>
               <CurrencyProvider>
                 <AuthenticatedApp />

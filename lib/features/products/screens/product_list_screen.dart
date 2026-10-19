@@ -42,7 +42,7 @@ class ProductListScreen extends ConsumerWidget {
                     onSelected: (selected) {
                       ref.read(searchFiltersProvider.notifier).state = selected
                           ? ref.read(searchFiltersProvider).copyWith(category: cat['id'])
-                          : ref.read(searchFiltersProvider).clear();
+                          : ref.read(searchFiltersProvider).copyWith(category: null);
                       ref.invalidate(searchResultsProvider);
                     },
                   );

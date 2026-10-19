@@ -39,14 +39,15 @@ class ApiClient {
           final isAuthCall =
               path == '/auth/refresh' ||
               path == '/auth/login' ||
-              path == '/auth/register';
+              path == '/auth/register' || path.contains('/functions/auth');
 
-          if (status == 401 && !isAuthCall) {
+          if (status == 401 && !isAuthCall && error.requestOptions.extra['authRetried'] != true) {
             final refreshed = await _refreshToken();
             if (refreshed) {
               final token = await _tokens.getAccessToken();
               if (token != null) {
                 error.requestOptions.headers['Authorization'] = 'Bearer $token';
+                error.requestOptions.extra['authRetried'] = true;
                 try {
                   final retry = await _dio.fetch(error.requestOptions);
                   return handler.resolve(retry);
@@ -80,7 +81,7 @@ class ApiClient {
 
     try {
       final response = await refreshDio.post(
-        '/auth/refresh',
+        AppConstants.gatewayPath('/auth/refresh'),
         data: {'refresh_token': current},
       );
       if (response.statusCode != 200 || response.data is! Map) return false;
@@ -112,7 +113,7 @@ class ApiClient {
     Map<String, dynamic>? queryParameters,
     Options? options,
   }) =>
-      _dio.get<T>(path, queryParameters: queryParameters, options: options);
+      _dio.get<T>(AppConstants.gatewayPath(path), queryParameters: queryParameters, options: options);
 
   Future<Response<T>> post<T>(
     String path, {

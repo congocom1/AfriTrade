@@ -48,6 +48,8 @@ const json = (data: unknown, status = 200) =>
 
 // Extract the action from a path like /auth/login or /auth/refresh
 function actionFromPath(url: URL): string | null {
+  const action = url.searchParams.get("action");
+  if (action && ["login", "refresh", "me", "register", "forgot-password", "reset-password", "verify-email", "resend-verification", "logout"].includes(action)) return action;
   const match = url.pathname.match(/\/auth\/(login|refresh|me|register|forgot-password|reset-password|verify-email|resend-verification|logout)(\/)?$/);
   return match ? match[1] : null;
 }
@@ -101,7 +103,7 @@ export default async function (req: Request): Promise<Response> {
         if (!email || !password) return fail("Email and password are required", 400);
 
         const appId = base44.getConfig().appId;
-        const serverUrl = base44.getConfig().serverUrl ?? "https://afritrade.base44.app";
+        const serverUrl = (base44.getConfig().serverUrl ?? "https://base44.app").replace(/\/$/, "").replace(/\/api$/, "") + "/api";
         const loginRes = await fetch(`${serverUrl}/apps/${appId}/auth/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -169,7 +171,7 @@ export default async function (req: Request): Promise<Response> {
         if (!email || !password) return fail("Email and password are required", 400);
 
         const appId = base44.getConfig().appId;
-        const serverUrl = base44.getConfig().serverUrl ?? "https://afritrade.base44.app";
+        const serverUrl = (base44.getConfig().serverUrl ?? "https://base44.app").replace(/\/$/, "").replace(/\/api$/, "") + "/api";
         const regRes = await fetch(`${serverUrl}/apps/${appId}/auth/register`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -204,7 +206,7 @@ export default async function (req: Request): Promise<Response> {
         if (!email) return fail("Email is required", 400);
 
         const appId = base44.getConfig().appId;
-        const serverUrl = base44.getConfig().serverUrl ?? "https://afritrade.base44.app";
+        const serverUrl = (base44.getConfig().serverUrl ?? "https://base44.app").replace(/\/$/, "").replace(/\/api$/, "") + "/api";
         await fetch(`${serverUrl}/apps/${appId}/auth/reset-password-request`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -222,12 +224,12 @@ export default async function (req: Request): Promise<Response> {
         const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
         const resetToken = String(body.token ?? "").trim();
         const newPassword = String(body.password ?? "");
-        const confirm = String(body.passwordConfirm ?? "");
+        const confirm = String(body.password_confirm ?? body.passwordConfirm ?? "");
         if (!resetToken || !newPassword) return fail("Token and password are required", 400);
         if (newPassword !== confirm) return fail("Passwords do not match", 400);
 
         const appId = base44.getConfig().appId;
-        const serverUrl = base44.getConfig().serverUrl ?? "https://afritrade.base44.app";
+        const serverUrl = (base44.getConfig().serverUrl ?? "https://base44.app").replace(/\/$/, "").replace(/\/api$/, "") + "/api";
         const res = await fetch(`${serverUrl}/apps/${appId}/auth/reset-password`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -256,7 +258,7 @@ export default async function (req: Request): Promise<Response> {
         if (!email) return fail("Email and token are required", 400);
 
         const appId = base44.getConfig().appId;
-        const serverUrl = base44.getConfig().serverUrl ?? "https://afritrade.base44.app";
+        const serverUrl = (base44.getConfig().serverUrl ?? "https://base44.app").replace(/\/$/, "").replace(/\/api$/, "") + "/api";
         const res = await fetch(`${serverUrl}/apps/${appId}/auth/verify-otp`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -280,7 +282,7 @@ export default async function (req: Request): Promise<Response> {
         if (!email) return fail("Email is required", 400);
 
         const appId = base44.getConfig().appId;
-        const serverUrl = base44.getConfig().serverUrl ?? "https://afritrade.base44.app";
+        const serverUrl = (base44.getConfig().serverUrl ?? "https://base44.app").replace(/\/$/, "").replace(/\/api$/, "") + "/api";
         await fetch(`${serverUrl}/apps/${appId}/auth/resend-otp`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },

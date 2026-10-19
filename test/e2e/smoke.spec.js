@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const BASE_URL = process.env.BASE_URL || 'http://localhost:5173';
+const BASE_URL = process.env.BASE_URL || 'http://localhost:5174';
 
 test.describe('AfriTrade — pages publiques', () => {
   test('charge la page d\'accueil', async ({ page }) => {
