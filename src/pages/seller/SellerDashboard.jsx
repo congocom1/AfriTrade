@@ -1,3 +1,7 @@
+import PortalRefresh from '@/components/portal/PortalRefresh';
+import { usePortalData } from '@/hooks/usePortalData';
+import { loadRecordGroups } from '@/lib/portalData';
+import PortalStatus from '@/components/PortalStatus';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -36,39 +40,24 @@ const TILES = [
 
 export default function SellerDashboard() {
   const { t } = useTranslation();
-  const { sellers, seller, isAdmin, loading: loadingSeller, selectSeller } = useActiveSeller();
-  const [products, setProducts] = useState([]);
-  const [fulfillments, setFulfillments] = useState([]);
-  const [wallet, setWallet] = useState(null);
+  const { sellers, seller, isAdmin, loading: loadingSeller, error: scopeError, reload: reloadScope, selectSeller } = useActiveSeller();
+  const { data, loading, error, reload, updatedAt } = usePortalData(['seller-overview', seller?.id], () => loadRecordGroups({
+    products: () => base44.entities.Product.filter({ seller_id: seller.id }, '-created_date', 200),
+    fulfillments: () => base44.entities.FulfillmentOrder.filter({ seller_id: seller.id }, '-created_date', 50),
+    wallets: () => base44.entities.Wallet.filter({ owner_type: 'seller', owner_id: seller.id }),
+  }), { enabled: Boolean(seller) });
+  const products = data?.products || [];
+  const fulfillments = data?.fulfillments || [];
+  const wallet = data?.wallets?.[0] || null;
   const [insights, setInsights] = useState([]);
-  const [loading, setLoading] = useState(true);
-
   useEffect(() => {
-    if (!seller) {
-      setLoading(false);
-      return;
-    }
     let alive = true;
-    (async () => {
-      setLoading(true);
-      const [p, f, wallets] = await Promise.all([
-        base44.entities.Product.filter({ seller_id: seller.id }, '-created_date', 100).catch(() => []),
-        base44.entities.FulfillmentOrder.filter({ seller_id: seller.id }, '-created_date', 50).catch(() => []),
-        base44.entities.Wallet.filter({ owner_type: 'seller', owner_id: seller.id }).catch(() => []),
-      ]);
-      if (!alive) return;
-      setProducts(p);
-      setFulfillments(f);
-      setWallet(wallets[0] || null);
-      setLoading(false);
-
-      const tips = await sellerInsights({ sellerId: seller.id });
-      if (alive && tips.length) setInsights(tips);
-    })();
-    return () => {
-      alive = false;
-    };
-  }, [seller]);
+    setInsights([]);
+    if (seller) sellerInsights({ sellerId: seller.id }).then((tips) => {
+      if (alive) setInsights(tips || []);
+    }).catch(() => {});
+    return () => { alive = false; };
+  }, [seller?.id]);
 
   if (loadingSeller) {
     return (
@@ -77,6 +66,8 @@ export default function SellerDashboard() {
       </div>
     );
   }
+
+  if (scopeError) return <PortalStatus retry={reloadScope} />;
 
   if (!seller) {
     return (
@@ -93,7 +84,9 @@ export default function SellerDashboard() {
     );
   }
 
-  const revenue = fulfillments.reduce((s, f) => s + (f.subtotal_usd || 0), 0);
+  if (error) return <PortalStatus retry={reload} />;
+
+  const revenue = fulfillments.reduce((s, f) => s + (Number(f.subtotal_usd) || 0), 0);
   const pending = fulfillments.filter((f) => !['DELIVERED', 'CANCELLED', 'RETURNED'].includes(f.status));
   const published = products.filter((p) => p.status === 'published').length;
 
@@ -106,6 +99,7 @@ export default function SellerDashboard() {
 
   return (
     <DashboardShell nav={LINKS} title={t('seller.title')} variant="paper" className="paper-console">
+      <PortalRefresh onRefresh={reload} updatedAt={updatedAt} />
       <div className="paper-hero">
         <Image src={HERO_IMAGE} alt="" />
       </div>
@@ -134,7 +128,7 @@ export default function SellerDashboard() {
           <section className="paper-section">
             <h2 className="paper-label">{t('seller.overview', { defaultValue: 'Aperçu' })}</h2>
             {loading ? (
-              <div className="paper-stats">
+              <div role="status" aria-label={t('portalStatus.loading')} aria-busy="true" className="paper-stats">
                 {Array.from({ length: 4 }).map((_, i) => (
                   <div key={i} className="paper-stat paper-skeleton-block animate-pulse" />
                 ))}
@@ -169,7 +163,7 @@ export default function SellerDashboard() {
         <div className="paper-col paper-col-right">
           <section className="paper-section paper-orders">
             <h2 className="paper-label">{t('seller.latestOrders')}</h2>
-            {fulfillments.length ? (
+            {loading ? <p role="status" className="paper-caption">{t('portalStatus.loading')}</p> : fulfillments.length ? (
               <>
                 <div className="paper-orderlist">
                   {fulfillments.slice(0, 6).map((f) => (

@@ -92,7 +92,7 @@ export default function TopBar() {
       <Link
         to={to}
         className={cn(
-          'flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-xl transition-all duration-150 ease-out active:scale-90',
+          'flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-xl transition-colors duration-150',
           isActive
             ? 'bg-primary/10 text-primary dark:bg-primary/20'
             : 'text-muted-foreground hover:bg-accent hover:text-foreground'
@@ -106,10 +106,10 @@ export default function TopBar() {
   };
 
   const IconButton = ({ onClick, children, ariaLabel, variant = 'ghost', className }) => {
-    const base = 'flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-150 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
+    const base = 'flex h-10 w-10 items-center justify-center rounded-xl transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
     const variants = {
-      ghost: 'text-muted-foreground hover:bg-accent hover:text-foreground active:scale-[0.96]',
-      primary: 'bg-primary text-primary-foreground hover:bg-primary/90 active:scale-[0.96] shadow-sm',
+      ghost: 'text-muted-foreground hover:bg-accent hover:text-foreground',
+      primary: 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm',
     };
     return (
       <button
@@ -152,7 +152,7 @@ export default function TopBar() {
         <button
           type="button"
           onClick={() => setDrawerOpen(true)}
-          className="md:hidden flex h-10 w-10 items-center justify-center rounded-xl hover:bg-accent active:scale-[0.96] transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className="md:hidden flex h-10 w-10 items-center justify-center rounded-xl hover:bg-accent transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           aria-label={t('nav.menu')}
           aria-expanded={drawerOpen}
           aria-controls="mobile-drawer"
@@ -271,7 +271,7 @@ export default function TopBar() {
               <button
                 type="button"
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
-                className="relative flex h-10 w-10 items-center justify-center rounded-xl hover:bg-accent active:scale-[0.96] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className="relative flex h-10 w-10 items-center justify-center rounded-xl hover:bg-accent transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 aria-expanded={userMenuOpen}
                 aria-haspopup="true"
                 aria-label={t('nav.profile')}
@@ -333,7 +333,7 @@ export default function TopBar() {
           {/* Cart — always visible */}
           <Link
             to="/cart"
-            className="relative flex h-10 w-10 items-center justify-center rounded-xl hover:bg-accent active:scale-[0.96] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            className="relative flex h-10 w-10 items-center justify-center rounded-xl hover:bg-accent transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             aria-label={t('nav.cart')}
           >
             <svg className="h-5.5 w-5.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">

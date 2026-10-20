@@ -1,3 +1,12 @@
+import { useCollectionView } from '@/hooks/useCollectionView';
+import CollectionToolbar from '@/components/portal/CollectionToolbar';
+import CollectionPagination from '@/components/portal/CollectionPagination';
+import PortalRefresh from '@/components/portal/PortalRefresh';
+import ConfirmActionDialog from '@/components/portal/ConfirmActionDialog';
+import EmptyState from '@/components/EmptyState';
+import { usePortalData } from '@/hooks/usePortalData';
+import { functionData } from '@/lib/portalData';
+import PortalStatus from '@/components/PortalStatus';
 import React, { useState } from 'react';
 import { Code2, Plus, Trash2, Copy } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -31,7 +40,7 @@ export default function DeveloperPortal() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl space-y-5 px-3 py-6 md:px-6">
+    <div className="portal-page space-y-6 pb-8">
       <div className="flex items-center gap-3">
         <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary text-primary-foreground"><Code2 className="h-5 w-5" /></div>
         <div>
@@ -39,9 +48,9 @@ export default function DeveloperPortal() {
           <p className="text-sm text-muted-foreground">{t('developerPortal.subtitle')}</p>
         </div>
       </div>
-      <nav className="-mx-3 flex gap-2 overflow-x-auto px-3">
+      <nav aria-label={t('developerPortal.title')} className="-mx-3 flex gap-2 overflow-x-auto px-3">
         {ALL_TABS.map((s) => (
-          <button key={s.id} type="button" onClick={() => setTab(s.id)} className={`shrink-0 rounded-full border px-3.5 py-1.5 text-xs font-semibold ${tab === s.id ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-card'}`}>{s.title}</button>
+          <button key={s.id} type="button" aria-pressed={tab === s.id} onClick={() => setTab(s.id)} className={`shrink-0 rounded-full border px-3.5 py-1.5 text-xs font-semibold ${tab === s.id ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-card'}`}>{s.title}</button>
         ))}
       </nav>
       <div className="space-y-3">
@@ -59,8 +68,16 @@ export default function DeveloperPortal() {
 
 function ApiKeysTab({ tab, setTab }) {
   const { t } = useTranslation();
-  const [apiKeys, setApiKeys] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data, loading, error, reload, updatedAt } = usePortalData(['api-keys'], async () => {
+    const payload = functionData(await base44.functions.invoke('manage-api-keys', { action: 'list' }));
+    if (!Array.isArray(payload.keys)) throw new Error('Invalid key list');
+    return payload.keys;
+  });
+  const apiKeys = data || [];
+  const view = useCollectionView(apiKeys, ['name', 'key_prefix', 'tenant_id', 'tenant_name'], (key, filter) => filter === 'all' || (filter === 'active' && key.active) || (filter === 'inactive' && !key.active));
+  const [revokingKey, setRevokingKey] = useState(null);
+  const [actionError, setActionError] = useState(false);
+  const [busy, setBusy] = useState('');
   const [creating, setCreating] = useState(false);
   const [generatedKey, setGeneratedKey] = useState(null);
   const [newKey, setNewKey] = useState({
@@ -71,42 +88,34 @@ function ApiKeysTab({ tab, setTab }) {
     expires_at: '',
   });
 
-  const loadKeys = async () => {
-    setLoading(true);
+  const handleCreate = async (event) => {
+    event.preventDefault();
+    if (busy) return;
+    setBusy('create'); setActionError(false); setGeneratedKey(null);
     try {
-      const keys = await base44.functions.invoke('manage-api-keys', { method: 'GET' });
-      setApiKeys(keys);
-    } catch {
-      setApiKeys([]);
-    }
-    setLoading(false);
-  };
-
-  useState(() => {
-    loadKeys();
-  }, []);
-
-  const handleCreate = async (e) => {
-    e.preventDefault();
-    const result = await base44.functions.invoke('manage-api-keys', {
-      method: 'POST',
-      body: newKey,
-    });
-    setGeneratedKey(result.api_key);
-    setCreating(false);
-    loadKeys();
+      const result = functionData(await base44.functions.invoke('manage-api-keys', { action: 'create', ...newKey }));
+      if (typeof result.api_key !== 'string') throw new Error('Missing key');
+      setGeneratedKey(result.api_key);
+      setCreating(false);
+      setNewKey({ name: '', tenant_id: '', scopes: [], rate_limit_rph: 300, expires_at: '' });
+      await reload();
+    } catch { setActionError(true); } finally { setBusy(''); }
   };
 
   const handleRevoke = async (id) => {
-    await base44.functions.invoke('manage-api-keys', {
-      method: 'DELETE',
-      body: { id },
-    });
-    loadKeys();
+    if (busy) return false;
+    setBusy(id); setActionError(false);
+    try {
+      functionData(await base44.functions.invoke('manage-api-keys', { action: 'revoke', id }));
+      setGeneratedKey(null);
+      await reload();
+      return true;
+    } catch { setActionError(true); return false; } finally { setBusy(''); }
   };
 
-  const copyToClipboard = (text) => {
-    navigator.clipboard.writeText(text);
+  const copyToClipboard = async (text) => {
+    try { await navigator.clipboard.writeText(text); }
+    catch { setActionError(true); }
   };
 
   const toggleScope = (scope) => {
@@ -119,7 +128,7 @@ function ApiKeysTab({ tab, setTab }) {
   };
 
   return (
-    <div className="mx-auto max-w-4xl space-y-5 px-3 py-6 md:px-6">
+    <div className="portal-page space-y-6 pb-8">
       <div className="flex items-center gap-3">
         <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary text-primary-foreground"><Code2 className="h-5 w-5" /></div>
         <div>
@@ -127,9 +136,9 @@ function ApiKeysTab({ tab, setTab }) {
           <p className="text-sm text-muted-foreground">{t('developerPortal.subtitle')}</p>
         </div>
       </div>
-      <nav className="-mx-3 flex gap-2 overflow-x-auto px-3">
+      <nav aria-label={t('developerPortal.title')} className="-mx-3 flex gap-2 overflow-x-auto px-3">
         {ALL_TABS.map((s) => (
-          <button key={s.id} type="button" onClick={() => setTab(s.id)} className={`shrink-0 rounded-full border px-3.5 py-1.5 text-xs font-semibold ${tab === s.id ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-card'}`}>{s.title}</button>
+          <button key={s.id} type="button" aria-pressed={tab === s.id} onClick={() => setTab(s.id)} className={`shrink-0 rounded-full border px-3.5 py-1.5 text-xs font-semibold ${tab === s.id ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-card'}`}>{s.title}</button>
         ))}
       </nav>
 
@@ -142,6 +151,7 @@ function ApiKeysTab({ tab, setTab }) {
             </Button>
           </div>
 
+          {actionError && <p role="alert" className="mb-4 text-sm text-destructive">{t('portalStatus.actionFailed')}</p>}
           {generatedKey && (
             <div className="mb-4 rounded-xl border border-border bg-secondary p-4">
               <div className="flex items-center justify-between">
@@ -149,8 +159,8 @@ function ApiKeysTab({ tab, setTab }) {
                 <button onClick={() => setGeneratedKey(null)} className="text-xs text-muted-foreground hover:text-foreground">Fermer</button>
               </div>
               <div className="mt-2 flex items-center gap-2">
-                <code className="flex-1 rounded-lg bg-background px-3 py-2 font-mono text-xs">{generatedKey}</code>
-                <Button variant="outline" size="sm" onClick={() => copyToClipboard(generatedKey)}>
+                <code className="min-w-0 flex-1 break-all rounded-lg bg-background px-3 py-2 font-mono text-xs">{generatedKey}</code>
+                <Button variant="outline" size="sm" aria-label={t('portalStatus.copy')} onClick={() => copyToClipboard(generatedKey)}>
                   <Copy className="h-4 w-4" />
                 </Button>
               </div>
@@ -160,9 +170,10 @@ function ApiKeysTab({ tab, setTab }) {
           {creating && (
             <form onSubmit={handleCreate} className="mb-4 space-y-3 rounded-xl border border-border p-4">
               <div>
-                <label className="mb-1 block text-xs font-medium">Nom</label>
+                <label htmlFor="api-key-name" className="mb-1 block text-xs font-medium">Nom</label>
                 <input
                   type="text"
+                  id="api-key-name"
                   value={newKey.name}
                   onChange={(e) => setNewKey({ ...newKey, name: e.target.value })}
                   className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
@@ -171,13 +182,15 @@ function ApiKeysTab({ tab, setTab }) {
                 />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium">Tenant ID</label>
+                <label htmlFor="api-key-tenant_id" className="mb-1 block text-xs font-medium">Tenant ID</label>
                 <input
                   type="text"
+                  id="api-key-tenant_id"
                   value={newKey.tenant_id}
                   onChange={(e) => setNewKey({ ...newKey, tenant_id: e.target.value })}
                   className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
                   placeholder="tenant_xxx"
+                  required
                 />
               </div>
               <div>
@@ -197,9 +210,10 @@ function ApiKeysTab({ tab, setTab }) {
                 </div>
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium">Limite de débit (requêtes / heure)</label>
+                <label htmlFor="api-key-rate_limit_rph" className="mb-1 block text-xs font-medium">Limite de débit (requêtes / heure)</label>
                 <input
                   type="number"
+                  id="api-key-rate_limit_rph"
                   value={newKey.rate_limit_rph}
                   onChange={(e) => setNewKey({ ...newKey, rate_limit_rph: parseInt(e.target.value) || 300 })}
                   className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
@@ -207,28 +221,31 @@ function ApiKeysTab({ tab, setTab }) {
                 />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium">Date d'expiration (optionnel)</label>
+                <label htmlFor="api-key-expires_at" className="mb-1 block text-xs font-medium">Date d'expiration (optionnel)</label>
                 <input
                   type="date"
+                  id="api-key-expires_at"
                   value={newKey.expires_at}
                   onChange={(e) => setNewKey({ ...newKey, expires_at: e.target.value })}
                   className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
                 />
               </div>
               <div className="flex gap-2">
-                <Button type="submit" size="sm">Créer la clé</Button>
-                <Button type="button" variant="outline" size="sm" onClick={() => setCreating(false)}>Annuler</Button>
+                <Button type="submit" size="sm" disabled={Boolean(busy)}>Créer la clé</Button>
+                <Button type="button" variant="outline" size="sm" disabled={Boolean(busy)} onClick={() => setCreating(false)}>Annuler</Button>
               </div>
             </form>
           )}
 
-          {loading ? (
-            <div className="h-32 animate-pulse rounded-xl bg-secondary" />
-          ) : apiKeys.length === 0 ? (
-            <p className="py-8 text-center text-sm text-muted-foreground">Aucune clé API pour le moment</p>
+          {!loading && !error && <CollectionToolbar query={view.query} onQueryChange={view.setQuery} filter={view.filter} onFilterChange={view.setFilter} options={['all', 'active', 'inactive'].map((value) => ({ value, label: t(`portalComponents.${value}`) }))}><PortalRefresh onRefresh={reload} updatedAt={updatedAt} /></CollectionToolbar>}
+          <ConfirmActionDialog open={Boolean(revokingKey)} onOpenChange={(open) => { if (!open) setRevokingKey(null); }} title={t('portalComponents.revokeKey')} description={t('portalComponents.revokeKeyDescription', { name: revokingKey?.name || '' })} confirmLabel={t('portalComponents.revoke')} onConfirm={() => handleRevoke(revokingKey.id)} />
+          {loading || error ? (
+            <PortalStatus loading={loading} retry={reload} />
+          ) : view.count === 0 ? (
+            <EmptyState title={t('portalComponents.noResults')} description={t('portalComponents.noResultsDescription')} onAction={view.reset} actionLabel={t('portalComponents.clearFilters')} />
           ) : (
             <div className="space-y-2">
-              {apiKeys.map((key) => (
+              {view.records.map((key) => (
                 <div key={key.id} className="flex items-center justify-between rounded-xl border border-border p-3">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
@@ -247,7 +264,7 @@ function ApiKeysTab({ tab, setTab }) {
                     </div>
                   </div>
                   {key.active && (
-                    <Button variant="ghost" size="sm" onClick={() => handleRevoke(key.id)} className="text-destructive hover:text-destructive">
+                    <Button variant="ghost" size="sm" disabled={Boolean(busy)} aria-label={t('portalStatus.revoke', { name: key.name })} onClick={() => setRevokingKey(key)} className="text-destructive hover:text-destructive">
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   )}
@@ -255,6 +272,7 @@ function ApiKeysTab({ tab, setTab }) {
               ))}
             </div>
           )}
+          {!loading && !error && <CollectionPagination view={view} onPageChange={view.setPage} />}
         </CardContent>
       </Card>
     </div>

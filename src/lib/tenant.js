@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
+import { usePortalData } from '@/hooks/usePortalData';
+import { useCallback, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 
 const KEY_PREFIX = 'congo_commerce:active_tenant:';
@@ -25,31 +26,20 @@ function writeStored(key, id) {
  * Admins keep the global view and the account switcher.
  */
 export function useTenantScope(entityName) {
-  const [rows, setRows] = useState([]);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState(() => readStored(entityName));
-
-  useEffect(() => {
-    let alive = true;
-    (async () => {
-      const me = await base44.auth.me().catch(() => null);
-      const admin = me?.role === 'admin';
-      const tenantId = String(me?.tenant_id || '').trim();
-      const all = await base44.entities[entityName].list('name', 100).catch(() => []);
-      if (!alive) return;
-      setRows(
-        admin
-          ? all
-          : all.filter((r) => tenantId && String(r.tenant_id || '').trim() === tenantId),
-      );
-      setIsAdmin(admin);
-      setLoading(false);
-    })();
-    return () => {
-      alive = false;
+  const { data, loading, error, reload } = usePortalData(['account-scope', entityName], async () => {
+    const me = await base44.auth.me();
+    const admin = me?.role === 'admin';
+    const tenantId = String(me?.tenant_id || '').trim();
+    const all = await base44.entities[entityName].list('name', 100);
+    if (!Array.isArray(all)) throw new Error('Invalid account scope');
+    return {
+      rows: admin ? all : all.filter((row) => tenantId && String(row.tenant_id || '').trim() === tenantId),
+      isAdmin: admin,
     };
-  }, [entityName]);
+  });
+  const rows = data?.rows || [];
+  const isAdmin = data?.isAdmin || false;
 
   const selectTenant = useCallback(
     (id) => {
@@ -64,6 +54,8 @@ export function useTenantScope(entityName) {
     tenant: rows.find((r) => r.id === selectedId) || rows[0] || null,
     isAdmin,
     loading,
+    error,
+    reload,
     selectTenant,
   };
 }

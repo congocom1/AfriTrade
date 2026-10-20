@@ -166,9 +166,11 @@ const CreatorDashboard = lazy(() => import('@/pages/CreatorDashboard'));
 const CourierConsole = lazy(() => import('@/pages/courier/CourierConsole'));
 
 const PageWrapper = ({ children }) => (
-  <Suspense fallback={<LoadingFallback />}>
-    {children}
-  </Suspense>
+  <ErrorBoundary>
+    <Suspense fallback={<LoadingFallback />}>
+      {children}
+    </Suspense>
+  </ErrorBoundary>
 );
 
 // Page transition variants

@@ -85,6 +85,8 @@ async function listInventory(db, body) {
 async function addStock(db, body, user) {
   const { warehouse_id, product_id, product_title, sku, supplier_id, supplier_name, quantity, cost_usd, location, lead_time_days } = body;
   if (!warehouse_id || !product_id || !sku || !quantity) return fail('Champs requis manquants');
+  if (!Number.isInteger(Number(quantity)) || Number(quantity) <= 0) return fail('Quantité entière positive requise');
+  if (cost_usd != null && (!Number.isFinite(Number(cost_usd)) || Number(cost_usd) < 0)) return fail('Coût invalide');
 
   const existing = await db.entities.ChinaWarehouseInventory.filter({ warehouse_id, product_id });
   if (existing.length > 0) {

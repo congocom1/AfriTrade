@@ -1,3 +1,7 @@
+import PortalRefresh from '@/components/portal/PortalRefresh';
+import { usePortalData } from '@/hooks/usePortalData';
+import { loadRecordGroups } from '@/lib/portalData';
+import PortalStatus from '@/components/PortalStatus';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Loader2, MapPin, Plus, Truck } from 'lucide-react';
@@ -24,28 +28,22 @@ export default function LogisticsHub() {
   const [couriers, setCouriers] = useState([]);
   const [orders, setOrders] = useState([]);
   const [fulfillments, setFulfillments] = useState([]);
-  const [loading, setLoading] = useState(true);
+
   const [busy, setBusy] = useState('');
   const [form, setForm] = useState(EMPTY_FORM);
   const [error, setError] = useState('');
 
+  const { data, loading, error: loadError, reload, updatedAt } = usePortalData(['logistics'], () => loadRecordGroups({
+    points: () => base44.entities.PickupPoint.list('name', 200),
+    zones: () => base44.entities.DeliveryZone.list('name', 200),
+    couriers: () => base44.entities.Courier.list('name', 100),
+    orders: () => base44.entities.Order.list('-created_date', 300),
+    fulfillments: () => base44.entities.FulfillmentOrder.list('-created_date', 300),
+  }));
   useEffect(() => {
-    Promise.all([
-      base44.entities.PickupPoint.list('name', 200).catch(() => []),
-      base44.entities.DeliveryZone.list('name', 200).catch(() => []),
-      base44.entities.Courier.list('name', 100).catch(() => []),
-      base44.entities.Order.list('-created_date', 300).catch(() => []),
-      base44.entities.FulfillmentOrder.list('-created_date', 300).catch(() => []),
-    ])
-      .then(([p, z, c, o, f]) => {
-        setPoints(p);
-        setZones(z);
-        setCouriers(c);
-        setOrders(o);
-        setFulfillments(f);
-      })
-      .finally(() => setLoading(false));
-  }, []);
+    setPoints(data?.points || []); setZones(data?.zones || []); setCouriers(data?.couriers || []);
+    setOrders(data?.orders || []); setFulfillments(data?.fulfillments || []);
+  }, [data]);
 
   /** Parcels parked at each pickup node, still to be collected. */
   const loadByPoint = useMemo(() => {
@@ -72,12 +70,15 @@ export default function LogisticsHub() {
 
   const toggle = async (entity, record, key, value) => {
     setBusy(record.id);
+    setError('');
     try {
       const updated = await base44.entities[entity].update(record.id, { [key]: value });
       const apply = (setter) => setter((prev) => prev.map((r) => (r.id === record.id ? updated : r)));
       if (entity === 'PickupPoint') apply(setPoints);
       if (entity === 'DeliveryZone') apply(setZones);
       if (entity === 'Courier') apply(setCouriers);
+    } catch {
+      setError(t('portalStatus.actionFailed'));
     } finally {
       setBusy('');
     }
@@ -106,7 +107,7 @@ export default function LogisticsHub() {
     }
   };
 
-  if (loading) return <div className="h-64 animate-pulse rounded-2xl bg-secondary" />;
+  if (loading || loadError) return <div className="space-y-5"><DashboardNav title={t('logisticsHub.title')} links={ADMIN_LINKS} /><PortalStatus loading={loading} retry={reload} /></div>;
 
   return (
     <div className="space-y-5 pb-8">
@@ -117,6 +118,7 @@ export default function LogisticsHub() {
         subtitle={t('logisticsHub.subtitle')}
       />
 
+      <PortalRefresh onRefresh={reload} updatedAt={updatedAt} />
       <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
         <StatCard label={t('logisticsHub.statPoints')} value={`${activePoints.length} / ${points.length}`} hint={t('logisticsHub.statActiveTotal')} tone={activePoints.length ? 'good' : 'bad'} />
         <StatCard label={t('logisticsHub.statFleets')} value={`${activeCouriers.length} / ${couriers.length}`} hint={t('logisticsHub.statFleetsHint')} tone={activeCouriers.length ? 'good' : 'bad'} />
@@ -129,6 +131,7 @@ export default function LogisticsHub() {
         />
       </div>
 
+      {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
       {/* Nœuds d'expédition */}
       <section className="rounded-2xl border border-border bg-card">
         <header className="flex items-center justify-between gap-2 border-b border-border px-4 py-3">

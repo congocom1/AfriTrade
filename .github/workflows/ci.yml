@@ -1,18 +1,28 @@
 name: CI Pipeline
 
 on:
+  workflow_dispatch:
   push:
-    branches: [ main ]
+    branches: [main, design/simple-clean]
   pull_request:
     branches: [ main ]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   # Lint, typecheck, and build
   frontend-checks:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     strategy:
+      fail-fast: false
       matrix:
-        node-version: ['22.12.0', '24']
+        node-version: ['22', '24']
 
     steps:
       - name: Checkout code
@@ -40,6 +50,19 @@ jobs:
 
       - name: Run frontend build
         run: npm run build
+
+  flutter-checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-flutter
+      - name: Resolve locked Flutter dependencies
+        run: flutter pub get --enforce-lockfile
+      - name: Analyze Flutter sources
+        run: flutter analyze --no-pub
+      - name: Run Flutter tests
+        run: flutter test --no-pub --reporter expanded
 
   # Read-only browser smoke tests against an explicitly configured staging app.
   staging-smoke:

@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
-export function DashboardNav({ title, links, variant }) {
+export function DashboardNav({ title, links = [], variant }) {
   const { t } = useTranslation();
   const { pathname } = useLocation();
   const navigate = useNavigate();
@@ -12,6 +12,7 @@ export function DashboardNav({ title, links, variant }) {
   return (
     <div className={paper ? 'paper-head trade-dashboard-nav' : 'trade-dashboard-nav space-y-4'}>
       <h1 className={paper ? 'paper-title' : 'text-2xl font-bold tracking-tight md:text-3xl'}>{title}</h1>
+      {links.length > 0 && <>
       <select aria-label={title} value={active?.to || ''} onChange={e => navigate(e.target.value)} className={paper ? 'paper-select' : 'h-12 w-full rounded-xl border border-border bg-card px-3 text-sm font-semibold md:hidden'}>
         {!active && <option value="" disabled>{title}</option>}
         {links.map(l => <option key={l.to} value={l.to}>{l.key ? t(l.key) : l.label}</option>)}
@@ -34,6 +35,7 @@ export function DashboardNav({ title, links, variant }) {
           </NavLink>
         ))}
       </nav>
+      </>}
     </div>
   );
 }

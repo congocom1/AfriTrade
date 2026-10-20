@@ -11,7 +11,7 @@ export default function DashboardShell({ nav, title, children, className, varian
   const { t } = useTranslation();
   const paper = variant === 'paper';
 
-  const baseClasses = paper ? 'paper-console' : 'trade-dashboard space-y-6 pb-8';
+  const baseClasses = paper ? 'paper-console portal-page' : 'portal-page trade-dashboard space-y-6 pb-8';
   const conditionalClasses = className ? ` ${className}` : '';
 
   return (

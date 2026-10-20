@@ -3,24 +3,26 @@ name: iOS
 on:
   workflow_dispatch:
   push:
-    branches: [main, cto-hardening]
+    branches: [main, cto-hardening, design/simple-clean]
     paths:
       - 'ios/**'
       - 'lib/**'
       - 'assets/**'
-      - 'test/**'
+      - 'test/**.dart'
       - 'third_party/**'
       - 'pubspec.*'
       - '.github/workflows/ios.yml'
+      - '.github/actions/setup-flutter/**'
   pull_request:
     paths:
       - 'ios/**'
       - 'lib/**'
       - 'assets/**'
-      - 'test/**'
+      - 'test/**.dart'
       - 'third_party/**'
       - 'pubspec.*'
       - '.github/workflows/ios.yml'
+      - '.github/actions/setup-flutter/**'
 
 permissions:
   contents: read
@@ -35,25 +37,34 @@ jobs:
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.47.7'
-          channel: stable
-          cache: true
+      - uses: ./.github/actions/setup-flutter
       - name: Toolchain versions
         run: |
           xcodebuild -version
-          flutter --version
+          swift --version
+          xcrun --sdk iphoneos --show-sdk-version
+      - name: Validate native property lists
+        run: plutil -lint ios/Runner/Info.plist ios/Runner/Runner.entitlements ios/Flutter/AppFrameworkInfo.plist
       - name: Resolve locked dependencies
         run: flutter pub get --enforce-lockfile
       - name: Analyze
-        run: flutter analyze
+        run: flutter analyze --no-pub
       - name: Flutter tests
-        run: flutter test
+        run: flutter test --no-pub --reporter expanded
       - name: Build simulator app
-        run: flutter build ios --simulator --debug
+        run: flutter build ios --simulator --debug --no-codesign 2>&1 | tee ios-simulator-build.log
+        shell: bash
       - name: Build device app (unsigned)
-        run: flutter build ios --release --no-codesign
+        run: flutter build ios --release --no-codesign 2>&1 | tee ios-device-build.log
+        shell: bash
+      - name: Upload native build diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-build-logs-${{ github.sha }}
+          path: ios-*-build.log
+          if-no-files-found: ignore
+          retention-days: 7
       - uses: actions/upload-artifact@v4
         with:
           name: ios-unsigned-${{ github.sha }}

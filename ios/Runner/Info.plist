@@ -24,6 +24,10 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Attach photos to your products, orders, and support requests.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Choose photos to attach to your products, orders, and support requests.</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIApplicationSceneManifest</key>

@@ -6,6 +6,7 @@ import OriginReceivingPanel from '@/components/warehouse/OriginReceivingPanel';
 import IntlPackingPanel from '@/components/warehouse/IntlPackingPanel';
 import ChinaWarehousePanel from '@/components/warehouse/ChinaWarehousePanel';
 import { useTranslation } from 'react-i18next';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { ADMIN_LINKS } from '@/lib/navLinks';
 
 export default function Warehouse() {
@@ -13,18 +14,18 @@ export default function Warehouse() {
   const [tab, setTab] = useState('pick');
   const tabs = [['pick', t('warehouse.pick')], ['receive', t('warehouse.receive')], ['intl', t('originReceiving.tab')], ['pack', t('intlPacking.tab')], ['china', 'Chine']];
   return (
-    <div className="mx-auto max-w-6xl space-y-4 px-3 py-5 md:px-6">
+    <div className="portal-page space-y-6 pb-8">
       <DashboardNav title={t('warehouse.title')} links={ADMIN_LINKS} />
-      <div className="flex gap-2">
-        {tabs.map(([k, l]) => (
-          <button key={k} type="button" onClick={() => setTab(k)} className={`rounded-full border px-3.5 py-1.5 text-xs font-semibold ${tab === k ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-card'}`}>{l}</button>
-        ))}
-      </div>
-      {tab === 'pick' && <PickPackQueue />}
-      {tab === 'receive' && <ReceivingPanel />}
-      {tab === 'intl' && <OriginReceivingPanel />}
-      {tab === 'pack' && <IntlPackingPanel />}
-      {tab === 'china' && <ChinaWarehousePanel />}
+      <Tabs value={tab} onValueChange={setTab}>
+        <TabsList aria-label={t('warehouse.title')} className="flex w-full justify-start">
+          {tabs.map(([key, label]) => <TabsTrigger key={key} value={key}>{label}</TabsTrigger>)}
+        </TabsList>
+        <TabsContent value="pick"><PickPackQueue /></TabsContent>
+        <TabsContent value="receive"><ReceivingPanel /></TabsContent>
+        <TabsContent value="intl"><OriginReceivingPanel /></TabsContent>
+        <TabsContent value="pack"><IntlPackingPanel /></TabsContent>
+        <TabsContent value="china"><ChinaWarehousePanel /></TabsContent>
+      </Tabs>
     </div>
   );
 }

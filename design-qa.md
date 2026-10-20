@@ -28,3 +28,31 @@ Implementation checklist:
 - Shared theme respects tenant branding and supplies light/dark sidebar colors.
 - Visual and interaction verification remains blocked; no browser evidence is available.
 - Remaining visual checklist includes seller, admin, logistics, warehouse, finance, backoffice, auth, dialogs, and mobile forms/tables in light and dark themes.
+
+## Simple and clean iteration
+
+The user's latest direction supersedes literal reproduction of the reference board. The homepage now contains a short introduction, one workspace panel, product discovery and a compact seller/help footer. Repeated featured/local product rows, the five-stage marketing journey, the four marketing cards and duplicate promotional bands were removed. Empty flash offers and discovery sections are hidden. Existing product, seller, shipping, wallet, creator and assistant routes remain accessible.
+
+Shared navigation uses solid surfaces without logo rotation, pointer scaling or cart badge pulsing. Seller sections use quieter labels and no entrance/count animations. Decorative trust rings and seller panel patterns were removed. French and English copy was shortened, and unused introduction translations/styles were removed.
+
+Validation: lint, type checking, production build and all 224 tests passed. Translation coverage was checked again after removing unused copy. Vite reports large chunks. Browser screenshots, mobile interaction checks and visual comparison remain unavailable.
+
+final result: blocked
+
+## Portal consistency and contract iteration
+
+All 14 dashboard entry screens and their shared navigation/states were reviewed in code. Implemented contract fixes and the verification matrix are documented in `docs/PORTAL_READINESS.md`. The warehouse inspection panel now lists receipt records instead of passing purchase-order IDs to the receipt-inspection handler. Shared portal states include retry controls, translated loading/error copy and accessible status roles. Warehouse tabs use the existing keyboard-accessible tab primitive.
+
+Full suite: 236 passed. Lint, type checking, production build and follow-up translation/contract tests passed. Backend changes have not been deployed; no hosted integration or browser visual claim is made.
+
+Source visual target remains the attached board, with the user's newer simple/clean direction. Implementation screenshot: unavailable. Desktop/mobile viewport and density comparison, interaction checks and visual fidelity surfaces remain blocked by unavailable browser capture.
+
+final result: blocked
+
+## Shared component completion iteration
+
+Added six reusable components and integrated them into portal and account routes. Search/filter/pagination handle loaded records, clear-filter states and page shrinkage. Refresh controls expose healthy-state reloads. Warehouse deletion and API-key revocation use asynchronous confirmation dialogs. Forms have visible associated labels. Account-deletion controls now create compliance requests instead of displaying fake deletion success.
+
+Lint, type checking, build and all 240 tests passed. Collection and data-request regression tests cover accent-insensitive filtering, pagination boundaries, authenticated ownership and persistence failures. Browser evidence remains unavailable; dialogs, focus restoration and mobile layouts have not been visually verified.
+
+final result: blocked

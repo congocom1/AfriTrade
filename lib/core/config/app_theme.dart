@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 /// Application themes following AfriTrade brand system
 class AppTheme {
@@ -45,12 +44,13 @@ class AppTheme {
       colorScheme: colorScheme,
       scaffoldBackgroundColor: background,
       
-      appBarTheme: AppBarTheme(
+      appBarTheme: const AppBarTheme(
         backgroundColor: background,
         foregroundColor: foreground,
         elevation: 0,
         centerTitle: false,
-        titleTextStyle: GoogleFonts.poppins(
+        titleTextStyle: TextStyle(
+          fontFamily: 'Poppins',
           fontSize: 20,
           fontWeight: FontWeight.w600,
           color: foreground,
@@ -58,19 +58,19 @@ class AppTheme {
         systemOverlayStyle: SystemUiOverlayStyle.dark,
       ),
       
-      textTheme: GoogleFonts.poppinsTextTheme().copyWith(
-        displayLarge: GoogleFonts.poppins(fontSize: 36, fontWeight: FontWeight.bold, color: foreground),
-        headlineLarge: GoogleFonts.poppins(fontSize: 30, fontWeight: FontWeight.bold, color: foreground),
-        headlineMedium: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.w600, color: foreground),
-        titleLarge: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.w600, color: foreground),
-        titleMedium: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600, color: foreground),
-        titleSmall: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w500, color: foreground),
-        bodyLarge: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.normal, color: foreground),
-        bodyMedium: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.normal, color: foreground),
-        bodySmall: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.normal, color: mutedForeground),
-        labelLarge: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600),
-        labelMedium: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w500),
-        labelSmall: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w500),
+      textTheme: ThemeData(fontFamily: 'Poppins').textTheme.copyWith(
+        displayLarge: const TextStyle(fontFamily: 'Poppins', fontSize: 36, fontWeight: FontWeight.bold, color: foreground),
+        headlineLarge: const TextStyle(fontFamily: 'Poppins', fontSize: 30, fontWeight: FontWeight.bold, color: foreground),
+        headlineMedium: const TextStyle(fontFamily: 'Poppins', fontSize: 24, fontWeight: FontWeight.w600, color: foreground),
+        titleLarge: const TextStyle(fontFamily: 'Poppins', fontSize: 20, fontWeight: FontWeight.w600, color: foreground),
+        titleMedium: const TextStyle(fontFamily: 'Poppins', fontSize: 16, fontWeight: FontWeight.w600, color: foreground),
+        titleSmall: const TextStyle(fontFamily: 'Poppins', fontSize: 14, fontWeight: FontWeight.w500, color: foreground),
+        bodyLarge: const TextStyle(fontFamily: 'Poppins', fontSize: 16, fontWeight: FontWeight.normal, color: foreground),
+        bodyMedium: const TextStyle(fontFamily: 'Poppins', fontSize: 14, fontWeight: FontWeight.normal, color: foreground),
+        bodySmall: const TextStyle(fontFamily: 'Poppins', fontSize: 12, fontWeight: FontWeight.normal, color: mutedForeground),
+        labelLarge: const TextStyle(fontFamily: 'Poppins', fontSize: 14, fontWeight: FontWeight.w600),
+        labelMedium: const TextStyle(fontFamily: 'Poppins', fontSize: 12, fontWeight: FontWeight.w500),
+        labelSmall: const TextStyle(fontFamily: 'Poppins', fontSize: 11, fontWeight: FontWeight.w500),
       ),
       
       cardTheme: CardThemeData(
@@ -89,7 +89,7 @@ class AppTheme {
           elevation: 0,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          textStyle: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600),
+          textStyle: const TextStyle(fontFamily: 'Poppins', fontSize: 14, fontWeight: FontWeight.w600),
           minimumSize: const Size(64, 48), // Touch target
         ),
       ),
@@ -100,7 +100,7 @@ class AppTheme {
           side: BorderSide(color: secondary, width: 1.5),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          textStyle: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600),
+          textStyle: const TextStyle(fontFamily: 'Poppins', fontSize: 14, fontWeight: FontWeight.w600),
           minimumSize: const Size(64, 48),
         ),
       ),
@@ -108,7 +108,7 @@ class AppTheme {
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: secondary,
-          textStyle: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600),
+          textStyle: const TextStyle(fontFamily: 'Poppins', fontSize: 14, fontWeight: FontWeight.w600),
           minimumSize: const Size(48, 44),
         ),
       ),
@@ -137,13 +137,13 @@ class AppTheme {
           borderRadius: BorderRadius.circular(8),
           borderSide: BorderSide(color: destructive, width: 2),
         ),
-        labelStyle: GoogleFonts.poppins(fontSize: 14, color: mutedForeground),
-        hintStyle: GoogleFonts.poppins(fontSize: 14, color: mutedForeground.withValues(alpha: 0.7)),
+        labelStyle: const TextStyle(fontFamily: 'Poppins', fontSize: 14, color: mutedForeground),
+        hintStyle: TextStyle(fontFamily: 'Poppins', fontSize: 14, color: mutedForeground.withValues(alpha: 0.7)),
       ),
       
       chipTheme: ChipThemeData(
         backgroundColor: muted,
-        labelStyle: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w500),
+        labelStyle: const TextStyle(fontFamily: 'Poppins', fontSize: 12, fontWeight: FontWeight.w500),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       ),
@@ -154,8 +154,8 @@ class AppTheme {
         unselectedItemColor: mutedForeground,
         type: BottomNavigationBarType.fixed,
         elevation: 8,
-        selectedLabelStyle: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w600),
-        unselectedLabelStyle: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w400),
+        selectedLabelStyle: const TextStyle(fontFamily: 'Poppins', fontSize: 11, fontWeight: FontWeight.w600),
+        unselectedLabelStyle: const TextStyle(fontFamily: 'Poppins', fontSize: 11, fontWeight: FontWeight.w400),
       ),
       
       navigationBarTheme: NavigationBarThemeData(
@@ -163,8 +163,8 @@ class AppTheme {
         indicatorColor: secondary.withValues(alpha: 0.12),
         elevation: 8,
         height: 64,
-        labelTextStyle: WidgetStatePropertyAll(
-          GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w500),
+        labelTextStyle: const WidgetStatePropertyAll(
+          TextStyle(fontFamily: 'Poppins', fontSize: 11, fontWeight: FontWeight.w500),
         ),
       ),
       
@@ -182,7 +182,7 @@ class AppTheme {
       
       snackBarTheme: SnackBarThemeData(
         backgroundColor: primary,
-        contentTextStyle: GoogleFonts.poppins(fontSize: 14, color: Colors.white),
+        contentTextStyle: const TextStyle(fontFamily: 'Poppins', fontSize: 14, color: Colors.white),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
@@ -197,8 +197,8 @@ class AppTheme {
       dialogTheme: DialogThemeData(
         backgroundColor: card,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        titleTextStyle: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600, color: foreground),
-        contentTextStyle: GoogleFonts.poppins(fontSize: 14, color: foreground),
+        titleTextStyle: const TextStyle(fontFamily: 'Poppins', fontSize: 18, fontWeight: FontWeight.w600, color: foreground),
+        contentTextStyle: const TextStyle(fontFamily: 'Poppins', fontSize: 14, color: foreground),
       ),
       
       switchTheme: SwitchThemeData(
@@ -229,11 +229,12 @@ class AppTheme {
       brightness: Brightness.dark,
       scaffoldBackgroundColor: Color(0xFF0D0D0D),
       
-      appBarTheme: AppBarTheme(
+      appBarTheme: const AppBarTheme(
         backgroundColor: Color(0xFF0D0D0D),
         foregroundColor: Colors.white,
         elevation: 0,
-        titleTextStyle: GoogleFonts.poppins(
+        titleTextStyle: TextStyle(
+          fontFamily: 'Poppins',
           fontSize: 20,
           fontWeight: FontWeight.w600,
           color: Colors.white,
@@ -241,12 +242,12 @@ class AppTheme {
         systemOverlayStyle: SystemUiOverlayStyle.light,
       ),
       
-      textTheme: GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme).copyWith(
-        bodyLarge: GoogleFonts.poppins(fontSize: 16, color: Colors.white),
-        bodyMedium: GoogleFonts.poppins(fontSize: 14, color: Colors.white),
-        bodySmall: GoogleFonts.poppins(fontSize: 12, color: Colors.white70),
-        titleLarge: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.w600, color: Colors.white),
-        titleMedium: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white),
+      textTheme: ThemeData.dark().textTheme.apply(fontFamily: 'Poppins').copyWith(
+        bodyLarge: const TextStyle(fontFamily: 'Poppins', fontSize: 16, color: Colors.white),
+        bodyMedium: const TextStyle(fontFamily: 'Poppins', fontSize: 14, color: Colors.white),
+        bodySmall: const TextStyle(fontFamily: 'Poppins', fontSize: 12, color: Colors.white70),
+        titleLarge: const TextStyle(fontFamily: 'Poppins', fontSize: 20, fontWeight: FontWeight.w600, color: Colors.white),
+        titleMedium: const TextStyle(fontFamily: 'Poppins', fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white),
       ),
       
       cardTheme: CardThemeData(
@@ -272,7 +273,7 @@ class AppTheme {
       
       snackBarTheme: SnackBarThemeData(
         backgroundColor: Colors.white,
-        contentTextStyle: GoogleFonts.poppins(fontSize: 14, color: Colors.black),
+        contentTextStyle: const TextStyle(fontFamily: 'Poppins', fontSize: 14, color: Colors.black),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),

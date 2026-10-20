@@ -6,6 +6,8 @@ import sw from './sw.js';
 import intlShipment from './intlShipment.js';
 import homeCollections from './homeCollections.js';
 import commerceIntro from './commerceIntro.js';
+import portalStatus from './portalStatus.js';
+import portalComponents from './portalComponents.js';
 
 export const mergeNamespaces = (base, extra) =>
   Object.entries(extra).reduce((out, [ns, values]) => ({ ...out, [ns]: { ...(out[ns] || {}), ...values } }), { ...base });
@@ -32,6 +34,6 @@ const baseTranslations = {
 
 export const translations = Object.fromEntries(
   Object.entries(baseTranslations).map(([language, dictionary]) => [
-    language, mergeNamespaces(dictionary, commerceIntro[language] || commerceIntro.fr),
+    language, mergeNamespaces(mergeNamespaces(mergeNamespaces(dictionary, commerceIntro[language] || commerceIntro.fr), portalStatus[language] || portalStatus.fr), portalComponents[language] || portalComponents.fr),
   ]),
 );

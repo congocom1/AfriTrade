@@ -1,3 +1,5 @@
+import { usePortalData } from '@/hooks/usePortalData';
+import PortalStatus from '@/components/PortalStatus';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image as ImageIcon, Package } from 'lucide-react';
@@ -23,14 +25,13 @@ export default function OriginReceivingPanel() {
   const [busy, setBusy] = useState('');
   const [errors, setErrors] = useState({});
 
-  const load = async () => {
-    const list = await base44.entities.FulfillmentOrder
-      .filter({ source_type: 'international_supplier' }, '-created_date', 200)
-      .catch(() => []);
-    setRows(list.filter((f) => RECEIVABLE.includes(f.status)));
-  };
+  const { data: loadedRows, loading, error: loadError, reload: load } = usePortalData(['origin-receiving'], async () => {
+    const list = await base44.entities.FulfillmentOrder.filter({ source_type: 'international_supplier' }, '-created_date', 200);
+    if (!Array.isArray(list)) throw new Error('Invalid queue');
+    return list.filter((row) => RECEIVABLE.includes(row.status));
+  });
+  useEffect(() => { setRows(loadedRows || null); }, [loadedRows]);
 
-  useEffect(() => { load(); }, []);
 
   const uploadPhoto = async (id, file) => {
     if (!file) return;
@@ -75,6 +76,7 @@ export default function OriginReceivingPanel() {
     }
   };
 
+  if (loading || loadError) return <PortalStatus loading={loading} retry={load} />;
   if (!rows) return <p className="text-sm text-muted-foreground">{t('originReceiving.loading')}</p>;
   if (!rows.length) {
     return (
