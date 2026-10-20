@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { DRC_NETWORKS, validateMobileMoneyNumber } from '@/lib/mobileMoney';
+import { PHONE_NETWORKS, validateMobileMoneyNumber } from '@/lib/mobileMoney';
 
 const mobileMoneySchema = z.object({
   provider: z.string().min(1, 'payout.errProviderRequired'),
@@ -40,7 +40,7 @@ export default function MobileMoneyForm({ onAdd }) {
   return (
     <form onSubmit={handleSubmit(submit)} className="grid gap-2 md:grid-cols-3">
       <select {...register('provider')} className="h-9 rounded-md border border-input bg-card px-3 text-sm">
-        {DRC_NETWORKS.map((n) => <option key={n.providerId} value={n.providerId}>{n.name}</option>)}
+        {PHONE_NETWORKS.map((n) => <option key={`${n.country}-${n.providerId}`} value={n.providerId}>{n.name} · {n.country}</option>)}
       </select>
       <Input placeholder={t('payout.phoneNumber')} {...register('phone')} inputMode="tel" />
       <Input placeholder={t('payout.holderName')} {...register('holder')} />

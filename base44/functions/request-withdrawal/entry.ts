@@ -99,7 +99,14 @@ export default async function (req: Request) {
       return err(`Solde disponible insuffisant — disponible : ${available} USD.`, 409);
     }
 
-    const idempotencyKey = `withdraw:${wallet.id}:${amount}:${method}:${String(body.account || "").slice(0,20)}`;
+    // Caller-supplied request id. Keying on amount/method/account silently swallowed a
+    // second legitimate identical withdrawal as a replay (WALLET_PROTOCOL.md). The client
+    // retries with the SAME id, so a retry still dedupes while a new request is new money.
+    const requestId = String(body.request_id || "").trim();
+    if (requestId.length < 8 || requestId.length > 200) {
+      return err("Identifiant de demande manquant ou invalide.", 400);
+    }
+    const idempotencyKey = `withdraw:${wallet.id}:${requestId}`;
     const posted = await postWalletEntry(db, wallet, {
       type: "PAYOUT",
       direction: "debit",
@@ -112,6 +119,16 @@ export default async function (req: Request) {
     // The balance was read a moment ago; a concurrent debit may have taken it
     // since, in which case the ledger refuses the movement.
     if (!posted.ok) {
+      // `duplicate` is the ledger reporting THIS request id already applied —
+      // the retry succeeded in effect, so return the wallet instead of an error
+      // that would make the client retry a withdrawal that already exists.
+      if (posted.reason === 'duplicate') {
+        const current = await db.entities.Wallet.get(wallet.id);
+        const existing = posted.transaction?.id
+          ? await db.entities.WalletTransaction.get(posted.transaction.id).catch(() => null)
+          : null;
+        return addSecurityHeaders(Response.json({ wallet: current ?? wallet, transaction: existing }));
+      }
       if (posted.reason !== 'insufficient_funds') return err(`Retrait non appliqué : ${posted.reason}`, 409);
       return err(`Solde disponible insuffisant — disponible : ${posted.available ?? available} USD.`, 409);
     }

@@ -7,7 +7,7 @@ import InfoPage, { InfoSection } from '@/components/InfoPage';
 import { formatUSD } from '@/lib/format';
 
 function mapUrl(point) {
-  const query = [point.name, point.commune, point.address, point.city, 'RDC'].filter(Boolean).join(', ');
+  const query = [point.name, point.commune, point.address, point.city, 'AfriTrade'].filter(Boolean).join(', ');
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
 }
 

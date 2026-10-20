@@ -195,7 +195,7 @@ export default function OrderTracking({ initialOrderNumber: initialOrderNumberPr
                   <div>
                     <p className="text-sm font-bold">{f.seller_name || f.supplier_name || 'AfriTrade'}</p>
                     <p className="text-[11px] text-muted-foreground">
-                      {f.fulfillment_number} · {isIntl ? t('trackOrder.importIntl', 'Import international') : t('trackOrder.localDrc', 'Local RDC')}
+                      {f.fulfillment_number} · {isIntl ? t('trackOrder.importIntl', 'Import international') : t('trackOrder.localDrc', 'Local')}
                     </p>
                   </div>
                   <StatusBadge status={f.status} />

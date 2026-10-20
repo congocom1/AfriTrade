@@ -41,8 +41,8 @@ export default function CGV() {
 
       <LegalSection title={t('cgv.s3')}>
         <p>
-          Les prix sont affichés en dollars américains (USD), toutes taxes comprises. Le montant en francs
-          congolais (CDF) est fourni à titre indicatif au taux de conversion appliqué au moment de la commande.
+          Les prix sont affichés en dollars américains (USD), toutes taxes comprises. Toute conversion en devise
+          locale est fournie à titre indicatif au taux appliqué au moment de la commande.
         </p>
         {rate > 0 ? (
           <p>
@@ -149,9 +149,9 @@ export default function CGV() {
 
       <LegalSection title={t('cgv.s10')}>
         <p>
-          Les présentes conditions sont soumises au droit congolais. En cas de litige non résolu à l'amiable, les
-          juridictions de Kinshasa sont compétentes, sans préjudice des règles protectrices applicables aux
-          consommateurs.
+          Les présentes conditions sont soumises au droit du pays d'établissement de la marketplace. En cas de
+          litige non résolu à l'amiable, les juridictions de ce pays sont compétentes, sans préjudice des règles
+          protectrices applicables aux consommateurs.
         </p>
       </LegalSection>
     </LegalPage>

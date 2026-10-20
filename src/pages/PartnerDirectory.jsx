@@ -31,7 +31,7 @@ export default function PartnerDirectory() {
           {sellers.map((s) => (
             <Link key={s.id} to={`/store/${s.slug}`} className="rounded-2xl border border-border bg-card p-4 hover:border-primary">
               <p className="flex items-center gap-1.5 text-sm font-bold"><Store className="h-4 w-4" /> {s.name} <BadgeCheck className="h-3.5 w-3.5" /></p>
-              <p className="mt-1 text-[11px] text-muted-foreground">{t('partnerDirectory.sellerMeta', { city: s.city || 'RDC', count: s.products_count || 0, rating: Number(s.rating || 0).toFixed(1) })}</p>
+              <p className="mt-1 text-[11px] text-muted-foreground">{t('partnerDirectory.sellerMeta', { city: s.city || '—', count: s.products_count || 0, rating: Number(s.rating || 0).toFixed(1) })}</p>
               {s.description && <p className="mt-1.5 line-clamp-2 text-xs text-muted-foreground">{s.description}</p>}
             </Link>
           ))}
