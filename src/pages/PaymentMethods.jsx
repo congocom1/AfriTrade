@@ -2,11 +2,20 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Smartphone, CreditCard, Trash2, ShieldCheck } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
-import { PHONE_NETWORKS } from '@/lib/mobileMoney';
+import { findNetwork } from '@/lib/mobileMoney';
 import MobileMoneyForm from '@/components/payments/MobileMoneyForm';
 import BackButton from '@/components/BackButton';
 
-const mask = (p) => `${p.slice(0, 4)} ••• ••${p.slice(-3)}`;
+const mask = (p) => {
+  if (!p || typeof p !== 'string') return '';
+  return p.length <= 7 ? p : `${p.slice(0, 4)} ••• ••${p.slice(-3)}`;
+};
+
+/** Resolve display name from stored provider (legacy 'mpesa' or new 'mpesa-ng' key). */
+function providerDisplayName(provider) {
+  const net = findNetwork(provider);
+  return net?.name || provider || '';
+}
 
 export default function PaymentMethods() {
   const { t } = useTranslation();
@@ -34,7 +43,7 @@ export default function PaymentMethods() {
             {methods.map((m) => (
               <div key={m.id} className="flex items-center gap-3 py-2.5 text-xs">
                 <div className="flex-1">
-                  <p className="font-bold">{PHONE_NETWORKS.find((n) => n.providerId === m.provider)?.name} · {mask(m.phone)}</p>
+                  <p className="font-bold">{providerDisplayName(m.provider)} · {mask(m.phone)}</p>
                   <p className="text-muted-foreground">{m.holder}</p>
                 </div>
                 {m.is_default ? <span className="rounded-full bg-primary px-2 py-0.5 text-[11px] font-semibold text-primary-foreground">{t('payout.isDefault')}</span>
