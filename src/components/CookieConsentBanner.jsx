@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 const CookieConsentBanner = () => {
   const [consented, setConsented] = useState(false);
-  const [acceptedCategories, setAcceptedCategories] = useState<'necessary' | 'analytics' | 'marketing'>('necessary');
+  const [acceptedCategories, setAcceptedCategories] = useState('necessary');
 
   // Check if consent was already saved
   useEffect(() => {
@@ -59,14 +59,14 @@ const CookieConsentBanner = () => {
             Necessary
           </button>
           <button
-            onClick={() => setAcceptedCategories('necessary' | 'analytics')}
+            onClick={() => setAcceptedCategories('analytics')}
             className="rounded-md border px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100"
             aria-label="Accept necessary and analytics cookies"
           >
             Analytics
           </button>
           <button
-            onClick={() => setAcceptedCategories('necessary' | 'analytics' | 'marketing')}
+            onClick={() => setAcceptedCategories('marketing')}
             className="rounded-md border px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100"
             aria-label="Accept all cookies"
           >
