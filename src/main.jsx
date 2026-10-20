@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from '@/App.jsx';
 import '@/index.css';
+import '@/styles/trade-system.css';
 import '@/i18n';
 import CookieConsentBanner from '@/components/CookieConsentBanner';
 import StructuredData from '@/components/StructuredData';

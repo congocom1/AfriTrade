@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Zap, Truck, Play, ArrowRight, Store as StoreIcon } from 'lucide-react';
+import CommerceIntro from '@/components/CommerceIntro';
 import { base44 } from '@/api/base44Client';
 import { loadPlatformConfig } from '@/lib/config';
 import { Image } from '@/components/ui/image';
@@ -85,54 +86,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* Hero */}
-      <section className="brand-hero relative overflow-hidden">
-        <Image
-          src="/brand/cover.png"
-          alt="AfriTrade"
-          className="brand-hero__image absolute inset-0 h-full w-full object-cover"
-        />
-        <div className="brand-hero__wash absolute inset-0" />
-        <div className="brand-hero__grid absolute inset-0" aria-hidden="true" />
-        <div className="relative flex min-h-[26rem] flex-col justify-center gap-5 p-6 text-background md:min-h-[32rem] md:p-12">
-          <span className="brand-kicker w-fit">
-            {t('home.heroBadge')}
-          </span>
-          <h1 className="max-w-sm font-display text-4xl font-bold leading-[0.98] tracking-[-0.055em] md:max-w-2xl md:text-6xl">
-            {t('home.heroTitle')}
-          </h1>
-          <p className="max-w-lg text-sm leading-relaxed text-background/80 md:text-base">
-            {t('home.heroSubtitle')}
-          </p>
-          <div className="mt-1 flex flex-wrap items-center gap-3">
-            <Link to="/discover" className="brand-action brand-action--primary inline-flex min-h-11 items-center gap-1.5 px-5 py-3 text-sm font-semibold">
-              <Play className="h-4 w-4" aria-hidden="true" />
-              {t('home.discoverVideo')}
-            </Link>
-            <Link to="/categories" className="brand-action brand-action--quiet inline-flex min-h-11 items-center gap-1.5 px-5 py-3 text-sm font-semibold">
-              {t('home.browseCategories')}
-              <ArrowRight className="h-4 w-4" aria-hidden="true" />
-            </Link>
-            <Link to="/creator-showcase" className="inline-flex min-h-11 items-center px-1 text-sm font-medium text-background underline decoration-primary decoration-2 underline-offset-8">
-              {t('home.becomeCreator')}
-            </Link>
-          </div>
-          <div className="brand-hero__proof mt-2 flex flex-wrap items-center gap-x-5 gap-y-2 text-[11px] font-medium text-background/80">
-            <span className="inline-flex items-center gap-1.5">
-              <Truck className="h-3.5 w-3.5" aria-hidden="true" />
-              {t('home.featTrackedTitle')}
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <Zap className="h-3.5 w-3.5" aria-hidden="true" />
-              {t('home.featMobileTitle')}
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <StoreIcon className="h-3.5 w-3.5" aria-hidden="true" />
-              {t('home.featVerifiedTitle')}
-            </span>
-          </div>
-        </div>
-      </section>
+      <CommerceIntro />
       <section aria-label={t("homeCollections.title")} className="grid gap-4 sm:grid-cols-2">
         {[          { image: "electronics", title: t("homeCollections.electronics"), text: t("homeCollections.electronicsText") },          { image: "home-decor", title: t("homeCollections.home"), text: t("homeCollections.homeText") },        ].map((collection) => (          <CategoryCard            key={collection.image}            image={collection.image}            title={collection.title}            text={collection.text}          />        ))}
       </section>
