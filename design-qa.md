@@ -65,3 +65,9 @@ final result: blocked
 - Operations section headings use h2 beneath the workspace h1.
 - Checks: lint, typecheck, all 240 tests, and production build passed. Existing build warnings remain: absent Base44 build environment values, legacy chunk configuration, oversized bundles. No backend deployment or iOS changes in this pass.
 - Visual verification remains blocked: no browser tools are available in this environment. No screenshot or pixel-perfect claim is made.
+
+## Remote departments — 2026-10-20
+
+Added ten responsive department workspaces, employee membership management, task creation/reassignment, progress and handoff dialogs, search/filter/pagination, scoped counters and refresh. Desktop account navigation and mobile drawer link to `/employee`. Existing operations consoles remain administrator-only. Non-admin staff receive task access through a server-authorized function, never through client role changes or broadly relaxed entity permissions.
+
+Lint, typecheck, production build and 255 tests passed, including 15 new employee authorization/workflow tests. No backend publication, external invitations, native Flutter employee screens or browser screenshot verification were performed. Deployment/setup instructions are in `docs/REMOTE_EMPLOYEES.md`.

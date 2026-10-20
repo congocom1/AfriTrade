@@ -40,6 +40,8 @@ export const ADMIN_LINKS = [
   { to: '/platform-analytics', group: 'insights', label: 'Analytique plateforme' },
   { to: '/platform-health', group: 'administration', label: 'Santé plateforme' },
   { to: '/service-level-monitor', group: 'operations', label: 'Niveaux de service' },
+  { to: '/employee', group: 'administration', key: 'workforce.title', end: true },
+  { to: '/admin/employees', group: 'administration', key: 'workforce.team' },
   { to: '/admin/users', group: 'administration', label: 'Utilisateurs' },
   { to: '/admin/tenants', group: 'administration', label: 'Enseignes SaaS' },
   { to: '/admin/compliance', group: 'administration', label: 'Conformité' },

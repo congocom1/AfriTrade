@@ -1,0 +1,101 @@
+{
+  "name": "DepartmentTask",
+  "type": "object",
+  "properties": {
+    "department": {
+      "type": "string",
+      "enum": [
+        "sales",
+        "support",
+        "warehouse",
+        "logistics",
+        "finance",
+        "administration",
+        "procurement",
+        "marketing",
+        "people",
+        "technology"
+      ]
+    },
+    "title": {
+      "type": "string",
+      "maxLength": 160
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 4000
+    },
+    "assignee_id": {
+      "type": "string"
+    },
+    "assignee_name": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "todo",
+        "in_progress",
+        "blocked",
+        "done"
+      ],
+      "default": "todo"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "normal",
+        "high",
+        "urgent"
+      ],
+      "default": "normal"
+    },
+    "due_date": {
+      "type": "string"
+    },
+    "handoff_note": {
+      "type": "string",
+      "maxLength": 2000
+    },
+    "created_by_id": {
+      "type": "string"
+    },
+    "updated_by_id": {
+      "type": "string"
+    },
+    "updated_by_name": {
+      "type": "string"
+    },
+    "last_activity_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "department",
+    "title",
+    "status",
+    "priority"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
