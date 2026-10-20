@@ -12,7 +12,7 @@ export default function PartnerDirectory() {
   const [tab, setTab] = useState('sellers');
 
   useEffect(() => {
-    base44.entities.Seller.filter({ verified: true, status: 'active' }, 'name', 200).then(setSellers);
+    base44.entities.Seller.filter({ verified: true, status: 'active' }, 'name', 200).then(setSellers).catch(() => setSellers([]));
     base44.entities.Supplier.filter({ enabled: true, type: 'international' }, 'name', 100).then(setSuppliers).catch(() => setSuppliers([]));
   }, []);
 

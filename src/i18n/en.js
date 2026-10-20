@@ -460,7 +460,12 @@ export default {
     methodsPrivacy: 'Your numbers are linked to your account, visible only to you, and used only to pre-fill payments. No charge happens without your confirmation on your phone.',
     holderName: 'Holder name',
     addAccount: 'Add this account',
+    provider: 'Operator',
+    momoHint: 'Enter the mobile wallet number you will pay from.',
     errPhoneInvalid: 'Invalid phone number',
+    errProviderRequired: 'Choose an operator',
+    errPhoneRequired: 'Enter your phone number',
+    errHolderRequired: 'Enter the account holder name',
   },
   healthStatus: {
     ok: 'Operational',
