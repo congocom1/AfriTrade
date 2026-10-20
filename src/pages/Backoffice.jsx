@@ -1,3 +1,4 @@
+import { functionData } from '@/lib/portalData';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
@@ -12,7 +13,9 @@ export default function Backoffice() {
     setData(null);
     try {
       const response = await base44.functions.invoke('backofficeOverview', {});
-      setData(response.data);
+      const payload = functionData(response);
+      if (!['orders', 'tickets', 'executions', 'logs'].every((key) => Array.isArray(payload[key]))) throw new Error('Invalid overview');
+      setData(payload);
     } catch { setError(true); }
   }, []);
   useEffect(() => { load(); }, [load]);

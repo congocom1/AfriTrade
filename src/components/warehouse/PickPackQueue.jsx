@@ -1,3 +1,5 @@
+import { usePortalData } from '@/hooks/usePortalData';
+import PortalStatus from '@/components/PortalStatus';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { base44 } from '@/api/base44Client';
@@ -9,28 +11,35 @@ export default function PickPackQueue() {
   const { t } = useTranslation();
   const [orders, setOrders] = useState(null);
   const [busy, setBusy] = useState('');
+  const [actionError, setActionError] = useState(false);
 
-  const load = async () => {
+  const { data: loadedRows, loading, error: loadError, reload: load } = usePortalData(['pick-pack'], async () => {
     const list = await base44.entities.Order.filter({ status: { $in: ['CONFIRMED', 'PROCESSING'] } }, 'created_date', 200);
-    setOrders(list.filter((o) => !o.archived));
-  };
-  useEffect(() => { load(); }, []);
+    if (!Array.isArray(list)) throw new Error('Invalid queue');
+    return list.filter((row) => !row.archived);
+  });
+  useEffect(() => { setOrders(loadedRows || null); }, [loadedRows]);
+
 
   const advance = async (o) => {
-    setBusy(o.id);
+    if (busy) return;
+    setBusy(o.id); setActionError(false);
+    try {
     const next = o.status === 'CONFIRMED' ? 'PROCESSING' : 'SHIPPED';
     await base44.entities.Order.update(o.id, { status: next });
     setOrders((prev) => (next === 'SHIPPED' ? prev.filter((x) => x.id !== o.id) : prev.map((x) => (x.id === o.id ? { ...x, status: next } : x))));
-    setBusy('');
     if (next === 'SHIPPED') {
       try { await printShippingLabels([o]); } catch (err) { toast({ title: t('pickPackQueue.labelFailed'), description: err.message }); }
     }
+    } catch { setActionError(true); } finally { setBusy(''); }
   };
 
+  if (loading || loadError) return <PortalStatus loading={loading} retry={load} />;
   if (!orders) return <p className="text-sm text-muted-foreground">{t('pickPackQueue.loading')}</p>;
   if (!orders.length) return <p className="rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">{t('pickPackQueue.empty')}</p>;
   return (
     <div className="space-y-2">
+      {actionError && <p role="alert" className="text-sm text-destructive">{t('portalStatus.actionFailed')}</p>}
       {orders.map((o) => (
         <div key={o.id} className="rounded-2xl border border-border bg-card p-3">
           <div className="flex flex-wrap items-center justify-between gap-2">

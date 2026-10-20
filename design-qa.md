@@ -38,3 +38,13 @@ Shared navigation uses solid surfaces without logo rotation, pointer scaling or 
 Validation: lint, type checking, production build and all 224 tests passed. Translation coverage was checked again after removing unused copy. Vite reports large chunks. Browser screenshots, mobile interaction checks and visual comparison remain unavailable.
 
 final result: blocked
+
+## Portal consistency and contract iteration
+
+All 14 dashboard entry screens and their shared navigation/states were reviewed in code. Implemented contract fixes and the verification matrix are documented in `docs/PORTAL_READINESS.md`. The warehouse inspection panel now lists receipt records instead of passing purchase-order IDs to the receipt-inspection handler. Shared portal states include retry controls, translated loading/error copy and accessible status roles. Warehouse tabs use the existing keyboard-accessible tab primitive.
+
+Full suite: 236 passed. Lint, type checking, production build and follow-up translation/contract tests passed. Backend changes have not been deployed; no hosted integration or browser visual claim is made.
+
+Source visual target remains the attached board, with the user's newer simple/clean direction. Implementation screenshot: unavailable. Desktop/mobile viewport and density comparison, interaction checks and visual fidelity surfaces remain blocked by unavailable browser capture.
+
+final result: blocked

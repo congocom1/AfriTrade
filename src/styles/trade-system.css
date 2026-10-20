@@ -49,3 +49,8 @@
 .paper-label::after { content: none; }
 .paper-section { padding: 20px; }
 .paper-value { font-size: 30px; font-weight: 600; }
+
+.portal-page { width: 100%; min-width: 0; }
+.portal-page > section, .portal-page > div { min-width: 0; }
+.portal-page h1, .portal-page h2 { overflow-wrap: anywhere; }
+.portal-page [role="tablist"] { scrollbar-width: thin; }

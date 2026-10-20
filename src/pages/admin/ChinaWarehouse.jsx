@@ -1,3 +1,6 @@
+import { usePortalData } from '@/hooks/usePortalData';
+import { functionData } from '@/lib/portalData';
+import PortalStatus from '@/components/PortalStatus';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Warehouse, Plus, RefreshCw, Package, MapPin, Phone } from 'lucide-react';
@@ -10,27 +13,23 @@ import { formatUSD } from '@/lib/format';
 
 export default function ChinaWarehousePage() {
   const { t } = useTranslation();
-  const [warehouses, setWarehouses] = useState([]);
-  const [inventory, setInventory] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ name: '', city: '', province: '', address: '', contact_name: '', contact_phone: '', manager_email: '', capacity_sqm: '' });
   const [selectedWh, setSelectedWh] = useState(null);
   const [errors, setErrors] = useState({});
 
-  const load = async () => {
-    setLoading(true);
-    try {
-      const res = await base44.functions.invoke('chinaWarehouse', { action: 'list' });
-      setWarehouses(res?.warehouses || []);
-    } catch (e) {
-      setErrors((p) => ({ ...p, load: e?.message || 'Erreur de chargement' }));
-    }
-    setLoading(false);
-  };
-
-  useEffect(() => { load(); }, []);
+  const { data: warehouses = [], loading, error: loadError, reload: load } = usePortalData(['china-warehouses'], async () => {
+    const payload = functionData(await base44.functions.invoke('chinaWarehouse', { action: 'list' }));
+    if (!Array.isArray(payload.warehouses)) throw new Error('Invalid warehouses');
+    return payload.warehouses;
+  });
+  const { data: inventory = [], loading: loadingInventory, error: inventoryError, reload: reloadInventory } = usePortalData(['china-inventory', selectedWh?.id], async () => {
+    const payload = functionData(await base44.functions.invoke('chinaWarehouse', { action: 'inventory', warehouse_id: selectedWh.id }));
+    if (!Array.isArray(payload.inventory)) throw new Error('Invalid inventory');
+    return payload.inventory;
+  }, { enabled: Boolean(selectedWh) });
+  const [deleting, setDeleting] = useState('');
 
   const createWarehouse = async (e) => {
     e.preventDefault();
@@ -48,21 +47,21 @@ export default function ChinaWarehousePage() {
   };
 
   const deleteWarehouse = async (id) => {
-    if (!confirm('Supprimer cet entrepôt ?')) return;
-    await base44.functions.invoke('chinaWarehouse', { action: 'delete', id });
-    await load();
+    if (deleting || !confirm('Supprimer cet entrepôt ?')) return;
+    setDeleting(id); setErrors({});
+    try {
+      functionData(await base44.functions.invoke('chinaWarehouse', { action: 'delete', id }));
+      if (selectedWh?.id === id) setSelectedWh(null);
+      await load();
+    } catch { setErrors({ load: t('portalStatus.actionFailed') }); }
+    finally { setDeleting(''); }
   };
+  const viewInventory = (warehouse) => setSelectedWh(warehouse);
 
-  const viewInventory = async (wh) => {
-    setSelectedWh(wh);
-    const res = await base44.functions.invoke('chinaWarehouse', { action: 'inventory', warehouse_id: wh.id });
-    setInventory(res?.inventory || []);
-  };
-
-  if (loading) return <div className="h-64 animate-pulse rounded-2xl bg-secondary" />;
+  if (loading || loadError) return <div className="space-y-5"><DashboardNav title={t('chinaWarehouse.title', 'China Warehouses')} links={ADMIN_LINKS} /><PortalStatus loading={loading} retry={load} /></div>;
 
   return (
-    <div className="mx-auto max-w-6xl space-y-5 px-3 py-5 md:px-6">
+    <div className="portal-page space-y-6 pb-8">
       <DashboardNav title={t('chinaWarehouse.title', 'China Warehouses')} links={ADMIN_LINKS} />
 
       <div className="flex flex-wrap items-center gap-2">
@@ -92,7 +91,7 @@ export default function ChinaWarehousePage() {
         </form>
       )}
 
-      {errors.load && <p className="text-xs text-destructive">{errors.load}</p>}
+      {errors.load && <p role="alert" className="text-xs text-destructive">{errors.load}</p>}
 
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
         {warehouses.map((wh) => (
@@ -111,7 +110,7 @@ export default function ChinaWarehousePage() {
             </div>
             <div className="flex gap-2 pt-1">
               <Button size="sm" variant="outline" onClick={() => viewInventory(wh)} className="flex-1">{t('chinaWarehouse.viewInventory', 'Inventaire')}</Button>
-              <Button size="sm" variant="outline" onClick={() => deleteWarehouse(wh.id)}>{t('delete')}</Button>
+              <Button size="sm" variant="outline" disabled={Boolean(deleting)} onClick={() => deleteWarehouse(wh.id)}>{t('delete')}</Button>
             </div>
           </div>
         ))}
@@ -124,8 +123,8 @@ export default function ChinaWarehousePage() {
             <h2 className="text-sm font-bold">{t('chinaWarehouse.inventory', 'Inventaire —')} {selectedWh.name}</h2>
             <Button size="sm" variant="outline" onClick={() => setSelectedWh(null)}>{t('close')}</Button>
           </div>
-          <StockAdder warehouseId={selectedWh.id} warehouseName={selectedWh.name} onAdded={() => viewInventory(selectedWh)} />
-          <div className="overflow-x-auto rounded-2xl border border-border">
+          <StockAdder warehouseId={selectedWh.id} warehouseName={selectedWh.name} onAdded={async () => { await reloadInventory(); await load(); }} />
+          {loadingInventory || inventoryError ? <PortalStatus loading={loadingInventory} retry={reloadInventory} /> : <div className="overflow-x-auto rounded-2xl border border-border">
             <table className="w-full text-xs">
               <thead className="bg-secondary"><tr>
                 <th className="px-3 py-2 text-left">{t('sku')}</th>
@@ -151,7 +150,7 @@ export default function ChinaWarehousePage() {
                 {!inventory.length && <tr><td colSpan={7} className="px-3 py-6 text-center text-muted-foreground">{t('chinaWarehouse.noInventory', 'Aucun article')}</td></tr>}
               </tbody>
             </table>
-          </div>
+          </div>}
         </div>
       )}
     </div>
@@ -162,33 +161,36 @@ function StockAdder({ warehouseId, warehouseName, onAdded }) {
   const { t } = useTranslation();
   const [form, setForm] = useState({ product_id: '', product_title: '', sku: '', quantity: 1, cost_usd: 0, location: '' });
   const [products, setProducts] = useState([]);
+  const [error, setError] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => { base44.entities.Product.list('title', 200).then(setProducts).catch(() => []); }, []);
 
   const submit = async (e) => {
     e.preventDefault();
-    if (!form.sku || !form.quantity) return;
-    setSaving(true);
-    await base44.functions.invoke('chinaWarehouse', {
-      action: 'add-stock', warehouse_id: warehouseId, warehouse_name: warehouseName,
-      product_id: form.product_id, product_title: form.product_title, sku: form.sku,
-      quantity: Number(form.quantity), cost_usd: Number(form.cost_usd) || 0, location: form.location,
-    });
-    setSaving(false);
-    onAdded();
-    setForm({ product_id: '', product_title: '', sku: '', quantity: 1, cost_usd: 0, location: '' });
+    if (saving || !form.product_id || !form.sku || !Number.isInteger(Number(form.quantity)) || Number(form.quantity) <= 0) return;
+    setSaving(true); setError(false);
+    try {
+      functionData(await base44.functions.invoke('chinaWarehouse', {
+        action: 'add-stock', warehouse_id: warehouseId, warehouse_name: warehouseName,
+        product_id: form.product_id, product_title: form.product_title, sku: form.sku,
+        quantity: Number(form.quantity), cost_usd: Number(form.cost_usd) || 0, location: form.location,
+      }));
+      setForm({ product_id: '', product_title: '', sku: '', quantity: 1, cost_usd: 0, location: '' });
+      await onAdded();
+    } catch { setError(true); } finally { setSaving(false); }
   };
 
   return (
     <form onSubmit={submit} className="rounded-2xl border border-border bg-card p-3 space-y-2 md:grid md:grid-cols-5 md:gap-2">
-      <select value={form.product_id} onChange={(e) => { const p = products.find(x => x.id === e.target.value); setForm(f => ({ ...f, product_id: e.target.value, product_title: p?.title || '', sku: p?.sku || '' })); }} className="h-9 rounded-lg border border-border bg-background px-2 text-xs md:col-span-2">
+      {error && <p role="alert" className="text-sm text-destructive md:col-span-5">{t('portalStatus.actionFailed')}</p>}
+      <select required aria-label={t('common.product')} value={form.product_id} onChange={(e) => { const p = products.find(x => x.id === e.target.value); setForm(f => ({ ...f, product_id: e.target.value, product_title: p?.title || '', sku: p?.sku || '' })); }} className="h-9 rounded-lg border border-border bg-background px-2 text-xs md:col-span-2">
         <option value="">{t('common.product')}…</option>
         {products.map(p => <option key={p.id} value={p.id}>{p.title} ({p.sku})</option>)}
       </select>
       <input value={form.sku} onChange={(e) => setForm(f => ({ ...f, sku: e.target.value }))} placeholder="SKU" required className="h-9 rounded-lg border border-border bg-background px-2 text-xs" />
-      <input type="number" value={form.quantity} onChange={(e) => setForm(f => ({ ...f, quantity: e.target.value }))} placeholder="Qté" required className="h-9 rounded-lg border border-border bg-background px-2 text-xs" />
-      <input type="number" step="0.01" value={form.cost_usd} onChange={(e) => setForm(f => ({ ...f, cost_usd: e.target.value }))} placeholder="Coût USD" className="h-9 rounded-lg border border-border bg-background px-2 text-xs" />
+      <input type="number" min="1" step="1" aria-label="Quantité" value={form.quantity} onChange={(e) => setForm(f => ({ ...f, quantity: e.target.value }))} placeholder="Qté" required className="h-9 rounded-lg border border-border bg-background px-2 text-xs" />
+      <input type="number" min="0" step="0.01" aria-label="Coût USD" value={form.cost_usd} onChange={(e) => setForm(f => ({ ...f, cost_usd: e.target.value }))} placeholder="Coût USD" className="h-9 rounded-lg border border-border bg-background px-2 text-xs" />
       <input value={form.location} onChange={(e) => setForm(f => ({ ...f, location: e.target.value }))} placeholder="Emplacement" className="h-9 rounded-lg border border-border bg-background px-2 text-xs md:col-span-2" />
       <Button type="submit" disabled={saving} size="sm" className="md:col-span-5">{saving ? t('adding') : t('addStock')}</Button>
     </form>

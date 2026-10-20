@@ -1,4 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import { usePortalData } from '@/hooks/usePortalData';
+import { functionData } from '@/lib/portalData';
+import PortalStatus from '@/components/PortalStatus';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { base44 } from '@/api/base44Client';
 import { Package } from 'lucide-react';
@@ -13,25 +16,20 @@ const STATUS_COLORS = {
 
 export default function ChinaWarehousePanel() {
   const { t } = useTranslation();
-  const [receipts, setReceipts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [errors, setErrors] = useState({});
+  const [error, setError] = useState(false);
+  const [busy, setBusy] = useState('');
 
-  const load = async () => {
-    setLoading(true);
+  // Inspections require receipt IDs, not purchase-order history IDs.
+  const { data: receipts = [], loading, error: loadError, reload: load } = usePortalData(['china-receipts'], () => base44.entities.ChinaWarehouseReceipt.list('-created_date', 100));
+  const inspect = async (receipt, status) => {
+    if (busy) return;
+    setBusy(receipt.id); setError(false);
     try {
-      const res = await base44.functions.invoke('chinaSourcing', { action: 'history', limit: 100 });
-      const pos = res?.history || [];
-      setReceipts(pos);
-    } catch (e) {
-      setErrors((p) => ({ ...p, load: e?.message || 'Erreur' }));
-    }
-    setLoading(false);
+      functionData(await base44.functions.invoke('chinaSourcing', { action: 'inspect', receipt_id: receipt.id, status }));
+      await load();
+    } catch { setError(true); } finally { setBusy(''); }
   };
-
-  useEffect(() => { load(); }, []);
-
-  if (loading) return <div className="h-64 animate-pulse rounded-2xl bg-secondary" />;
+  if (loading || loadError) return <PortalStatus loading={loading} retry={load} />;
 
   return (
     <div className="space-y-4">
@@ -39,16 +37,16 @@ export default function ChinaWarehousePanel() {
         <h2 className="text-sm font-bold">{t('chinaWarehouse.receipts', 'Réceptions Chine')}</h2>
         <button type="button" onClick={load} className="rounded-full border border-border bg-card px-3 py-1 text-xs">{t('common.refresh')}</button>
       </div>
-      {errors.load && <p className="text-xs text-destructive">{errors.load}</p>}
+      {error && <p role="alert" className="text-sm text-destructive">{t('portalStatus.actionFailed')}</p>}
       <div className="space-y-2">
         {receipts.map((po) => (
           <div key={po.id} className="rounded-2xl border border-border bg-card p-4">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm font-bold">{po.po_number}</p>
+                <p className="text-sm font-bold">{po.receipt_id || po.purchase_order}</p>
                 <p className="text-xs text-muted-foreground">{po.supplier_name} → {po.warehouse_name || '—'}</p>
               </div>
-              <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${STATUS_COLORS[po.status] || 'bg-muted'}`}>{po.status.toUpperCase()}</span>
+              <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${STATUS_COLORS[po.status] || 'bg-muted'}`}>{String(po.status || '').toUpperCase()}</span>
             </div>
             <div className="mt-2 flex flex-wrap gap-3 text-xs text-muted-foreground">
               <span className="flex items-center gap-1"><Package className="h-3 w-3" /> {po.items?.length || 0} articles</span>
@@ -57,16 +55,10 @@ export default function ChinaWarehousePanel() {
             </div>
             <div className="mt-2 flex gap-2">
               {po.status === 'received' && (
-                <button type="button" onClick={async () => {
-                  await base44.functions.invoke('chinaSourcing', { action: 'inspect', receipt_id: po.id, status: 'approved', notes: 'Qualité OK' });
-                  load();
-                }} className="rounded-full bg-emerald-600 px-3 py-1 text-[10px] font-semibold text-white">{t('common.approve')}</button>
+                <button type="button" disabled={Boolean(busy)} onClick={() => inspect(po, 'approved')} className="rounded-full bg-emerald-600 px-3 py-1 text-[10px] font-semibold text-white">{t('common.approve')}</button>
               )}
               {po.status === 'received' && (
-                <button type="button" onClick={async () => {
-                  await base44.functions.invoke('chinaSourcing', { action: 'inspect', receipt_id: po.id, status: 'rejected', notes: 'Qualité défectueuse' });
-                  load();
-                }} className="rounded-full bg-destructive px-3 py-1 text-[10px] font-semibold text-white">{t('common.reject')}</button>
+                <button type="button" disabled={Boolean(busy)} onClick={() => inspect(po, 'rejected')} className="rounded-full bg-destructive px-3 py-1 text-[10px] font-semibold text-white">{t('common.reject')}</button>
               )}
             </div>
           </div>

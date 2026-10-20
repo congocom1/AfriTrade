@@ -1,4 +1,7 @@
-import React, { memo, useEffect, useState } from 'react';
+import { usePortalData } from '@/hooks/usePortalData';
+import { loadRecordGroups } from '@/lib/portalData';
+import PortalStatus from '@/components/PortalStatus';
+import React, { memo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Copy, Check, Plus, Sparkles, MousePointerClick, ShoppingBag, Coins, Eye } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
@@ -12,49 +15,20 @@ import DashboardShell from '@/components/DashboardShell';
 export default memo(function CreatorDashboard() {
   const { t } = useTranslation();
   const { format } = useCurrency();
-  const { tenants: creators, tenant: creator, isAdmin, loading: loadingCreator, selectTenant } = useTenantScope('Creator');
-  const [contents, setContents] = useState([]);
-  const [products, setProducts] = useState([]);
-  const [clicks, setClicks] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { tenants: creators, tenant: creator, isAdmin, loading: loadingCreator, selectTenant, error: scopeError, reload: reloadScope } = useTenantScope('Creator');
+  const { data, loading, error: dataError, reload } = usePortalData(['creator', creator?.id], () => loadRecordGroups({
+    products: () => base44.entities.Product.filter({ status: 'published' }, '-sold_count', 40),
+    contents: () => base44.entities.Content.filter({ creator_id: creator.id }, '-created_date', 50),
+    clicks: () => base44.entities.AffiliateClick.filter({ creator_id: creator.id }, '-created_date', 100),
+  }), { enabled: Boolean(creator) });
+  const contents = data?.contents || [];
+  const products = data?.products || [];
+  const clicks = data?.clicks || [];
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [draft, setDraft] = useState({ product_id: '', title: '', caption: '', media_url: '', media_type: 'image' });
   const [saving, setSaving] = useState(false);
-
-  const loadCreator = async (c) => {
-    if (!c) return;
-    try {
-      const [ct, cl] = await Promise.all([
-        base44.entities.Content.filter({ creator_id: c.id }, '-created_date', 50),
-        base44.entities.AffiliateClick.filter({ creator_id: c.id }, '-created_date', 100),
-      ]);
-      setContents(ct);
-      setClicks(cl);
-    } catch {
-      setError(t('creatorDashboard.loadFailed', 'Impossible de charger les données.'));
-    }
-  };
-
-  useEffect(() => {
-    let alive = true;
-    (async () => {
-      try {
-        const p = await base44.entities.Product.filter({ status: 'published' }, '-sold_count', 40);
-        if (alive) setProducts(p);
-      } catch {
-        if (alive) setError(t('creatorDashboard.loadFailed', 'Impossible de charger les données.'));
-      } finally {
-        if (alive) setLoading(false);
-      }
-    })();
-    return () => { alive = false; };
-  }, []);
-
-  useEffect(() => {
-    if (creator) loadCreator(creator);
-  }, [creator]);
 
   const switchCreator = (id) => selectTenant(id);
 
@@ -74,6 +48,7 @@ export default memo(function CreatorDashboard() {
     e.preventDefault();
     if (!creator || !draft.title) return;
     setSaving(true);
+    setError('');
     try {
       const product = products.find((p) => p.id === draft.product_id);
       await base44.entities.Content.create({
@@ -95,24 +70,13 @@ export default memo(function CreatorDashboard() {
       });
       setDraft({ product_id: '', title: '', caption: '', media_url: '', media_type: 'image' });
       setShowForm(false);
-      await loadCreator(creator);
-    } finally {
+      await reload();
+    } catch { setError(t('portalStatus.actionFailed')); } finally {
       setSaving(false);
     }
   };
 
-  if (loading || loadingCreator) return <div className="h-64 animate-pulse rounded-2xl bg-secondary" />;
-
-  if (error) {
-    return (
-      <div className="rounded-2xl border border-destructive bg-card p-6 text-center">
-        <p className="text-sm font-semibold text-destructive">{error}</p>
-        <button type="button" onClick={() => { setError(''); setLoading(true); }} className="mt-3 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground">
-          {t('common.retry', 'Réessayer')}
-        </button>
-      </div>
-    );
-  }
+  if (loadingCreator || (creator && loading) || dataError || scopeError) return <PortalStatus loading={loadingCreator || (creator && loading)} retry={scopeError ? reloadScope : reload} />;
 
   if (!creator) {
     return (
@@ -130,14 +94,16 @@ export default memo(function CreatorDashboard() {
   }
 
   const conversions = clicks.filter((c) => c.converted);
-  const earnings = conversions.reduce((s, c) => s + (c.commission_usd || 0), 0);
+  const earnings = conversions.reduce((s, c) => s + (Number(c.commission_usd) || 0), 0);
 
   return (
     <DashboardShell nav={[]} title={t('creatorDashboard.title')}>
       <>
+        {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
         <div className="flex flex-wrap items-center gap-2">
           {isAdmin ? (
             <select
+              aria-label={t('creatorDashboard.title')}
               value={creator.id}
               onChange={(e) => switchCreator(e.target.value)}
               className="ml-auto h-9 rounded-lg border border-border bg-card px-2 text-sm"

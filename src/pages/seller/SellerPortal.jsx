@@ -1,4 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import { usePortalData } from '@/hooks/usePortalData';
+import { loadRecordGroups } from '@/lib/portalData';
+import PortalStatus from '@/components/PortalStatus';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Store, Package, ShoppingBag, Wallet as WalletIcon, TrendingUp, AlertTriangle, Boxes, ArrowRight } from 'lucide-react';
@@ -14,39 +17,19 @@ const LOW_STOCK = 5;
 
 export default function SellerPortal() {
   const { t } = useTranslation();
-  const { seller, isAdmin, loading: loadingSeller } = useActiveSeller();
-  const [products, setProducts] = useState([]);
-  const [fulfillments, setFulfillments] = useState([]);
-  const [wallet, setWallet] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { seller, isAdmin, loading: loadingSeller, error: scopeError, reload: reloadScope } = useActiveSeller();
+  const { data, loading, error, reload } = usePortalData(['seller-overview', seller?.id], () => loadRecordGroups({
+    products: () => base44.entities.Product.filter({ seller_id: seller.id }, '-created_date', 200),
+    fulfillments: () => base44.entities.FulfillmentOrder.filter({ seller_id: seller.id }, '-created_date', 50),
+    wallets: () => base44.entities.Wallet.filter({ owner_type: 'seller', owner_id: seller.id }),
+  }), { enabled: Boolean(seller) });
+  const products = data?.products || [];
+  const fulfillments = data?.fulfillments || [];
+  const wallet = data?.wallets?.[0] || null;
 
-  useEffect(() => {
-    if (!seller) {
-      setLoading(false);
-      return;
-    }
-    let alive = true;
-    (async () => {
-      setLoading(true);
-      const [p, f, wallets] = await Promise.all([
-        base44.entities.Product.filter({ seller_id: seller.id }, '-created_date', 200).catch(() => []),
-        base44.entities.FulfillmentOrder.filter({ seller_id: seller.id }, '-created_date', 50).catch(() => []),
-        base44.entities.Wallet.filter({ owner_type: 'seller', owner_name: seller.name }).catch(() => []),
-      ]);
-      if (!alive) return;
-      setProducts(p);
-      setFulfillments(f);
-      setWallet(wallets[0] || null);
-      setLoading(false);
-    })();
-    return () => {
-      alive = false;
-    };
-  }, [seller]);
-
-  if (loadingSeller || loading) {
+  if (loadingSeller || (seller && loading)) {
     return (
-      <div className="space-y-3 pb-8">
+      <div role="status" aria-label={t('portalStatus.loading')} aria-busy="true" className="space-y-3 pb-8">
         <div className="h-9 w-64 animate-pulse rounded-full bg-secondary" />
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -57,6 +40,8 @@ export default function SellerPortal() {
       </div>
     );
   }
+
+  if (scopeError) return <PortalStatus retry={reloadScope} />;
 
   if (!seller) {
     return (
@@ -80,7 +65,9 @@ export default function SellerPortal() {
     );
   }
 
-  const revenue = fulfillments.reduce((s, f) => s + (f.subtotal_usd || 0), 0);
+  if (error) return <PortalStatus retry={reload} />;
+
+  const revenue = fulfillments.reduce((s, f) => s + (Number(f.subtotal_usd) || 0), 0);
   const toProcess = fulfillments.filter((f) => ['PENDING', 'CONFIRMED', 'PROCESSING'].includes(f.status));
   const inTransit = fulfillments.filter((f) => ['PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'READY_FOR_PICKUP'].includes(f.status));
   const delivered = fulfillments.filter((f) => f.status === 'DELIVERED');

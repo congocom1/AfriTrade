@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
+import { usePortalData } from '@/hooks/usePortalData';
+import PortalStatus from '@/components/PortalStatus';
 import { Link } from 'react-router-dom';
 import DashboardNav from '@/components/DashboardNav';
 import StatCard from '@/components/ops/StatCard';
@@ -22,17 +24,15 @@ const Section = ({ title, to, children }) => {
 const bad = (n) => (n > 0 ? 'bad' : 'good');
 
 export default function CommandCenter() {
-  const { t } = useTranslation();
-  const [d, setD] = useState(null);
-  const [at, setAt] = useState(null);
-  const refresh = () => loadCommandCenter().then((x) => { setD(x); setAt(new Date()); });
-  useEffect(() => { refresh(); const timer = setInterval(refresh, 60000); return () => clearInterval(timer); }, []);
+  const { t, i18n } = useTranslation();
+  const { data: d, loading, error, reload, updatedAt } = usePortalData(['command-center'], loadCommandCenter, { refreshInterval: 60_000 });
+  const at = updatedAt ? new Date(updatedAt) : null;
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 px-4 py-5 pb-24">
+    <div className="portal-page space-y-6 pb-8">
       <DashboardNav title={t('commandCenter.title')} links={ADMIN_LINKS} />
-      <p className="text-[11px] text-muted-foreground">{at ? t('commandCenter.fresh', { time: at.toLocaleTimeString('fr-FR') }) : t('commandCenter.loading')}</p>
-      {!d ? <div className="h-80 animate-pulse rounded-2xl bg-secondary" /> : (
+      <p className="text-[11px] text-muted-foreground">{at ? t('commandCenter.fresh', { time: at.toLocaleTimeString(i18n.language) }) : t('commandCenter.loading')}</p>
+      {loading || error || !d ? <PortalStatus loading={loading} retry={reload} /> : (
         <>
           <Section title={t('commandCenter.commerce')} to="/admin/orders">
             <StatCard label={t('commandCenter.ordersToday')} value={d.commerce.ordersToday} />

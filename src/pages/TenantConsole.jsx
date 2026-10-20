@@ -1,4 +1,7 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import { usePortalData } from '@/hooks/usePortalData';
+import { loadRecordGroups, functionData } from '@/lib/portalData';
+import PortalStatus from '@/components/PortalStatus';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Store } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
@@ -14,66 +17,46 @@ import { loadPlans } from '@/lib/plans';
 
 export default function TenantConsole() {
   const { t } = useTranslation();
-  const { tenant, tenants, isAdmin, loading, selectTenant, reload } = useActiveTenant();
-  const [plans, setPlans] = useState([]);
-  const [subscription, setSubscription] = useState(null);
-  const [domains, setDomains] = useState([]);
-  const [members, setMembers] = useState([]);
-  const [invoices, setInvoices] = useState([]);
-  const [usage, setUsage] = useState({ products: 0, stores: 0, sellers: 0, members: 0 });
+  const { tenant, tenants, isAdmin, loading, error: scopeError, selectTenant, reload } = useActiveTenant();
   const [busy, setBusy] = useState(false);
-  const [access, setAccess] = useState(null);
-  const [accessError, setAccessError] = useState('');
-
-  const loadTenantData = useCallback(async () => {
-    if (!tenant || !access?.granted) return;
-    const has = (key) => access.owner || access.permissions.includes(key);
-    const [subs, doms, mems, invs, products, sellers] = await Promise.all([
-      access.owner ? base44.entities.Subscription.filter({ tenant_id: tenant.id }, '-created_date', 1).catch(() => []) : [],
-      access.owner ? base44.entities.TenantDomain.filter({ tenant_id: tenant.id }, '-created_date', 20).catch(() => []) : [],
-      has('TEAM_MANAGE') ? base44.functions.invoke('manageTenantTeam', { action: 'list', tenantId: tenant.id }).then(r => r.data.members) : [],
-      access.owner ? base44.entities.TenantInvoice.filter({ tenant_id: tenant.id }, '-created_date', 20).catch(() => []) : [],
-      access.owner ? base44.entities.Product.filter({ tenant_id: tenant.id }, '-created_date', 500).catch(() => []) : [],
-      access.owner ? base44.entities.Seller.filter({ tenant_id: tenant.id }, '-created_date', 200).catch(() => []) : [],
-    ]);
-    setSubscription(subs[0] || null);
-    setDomains(doms);
-    setMembers(mems);
-    setInvoices(invs);
-    setUsage({ products: products.length, stores: 1, sellers: sellers.length, members: mems.length });
-  }, [tenant, access]);
-
-  useEffect(() => {
-    let alive = true;
-    setAccess(null);
-    setAccessError('');
-    if (tenant) base44.functions.invoke('manageTenantTeam', { action: 'access', tenantId: tenant.id })
-      .then(r => { if (alive) setAccess({ ...r.data, tenantId: tenant.id }); })
-      .catch(() => { if (alive) setAccessError('Impossible de vérifier vos droits.'); });
-    return () => { alive = false; };
-  }, [tenant?.id]);
-
-  useEffect(() => {
-    if (access && tenant && access.tenantId === tenant.id && access.owner) loadPlans().then(setPlans);
-  }, [tenant?.id, access]);
-
-  useEffect(() => {
-    if (access?.tenantId === tenant?.id) loadTenantData();
-  }, [access, loadTenantData, tenant?.id]);
+  const [saveError, setSaveError] = useState(false);
+  const { data: access, loading: checkingAccess, error: accessError, reload: reloadAccess } = usePortalData(['tenant-access', tenant?.id], async () => {
+    const result = functionData(await base44.functions.invoke('manageTenantTeam', { action: 'access', tenantId: tenant.id }));
+    return { ...result, permissions: Array.isArray(result.permissions) ? result.permissions : [] };
+  }, { enabled: Boolean(tenant) });
+  const has = (key) => access?.owner || access?.permissions?.includes(key);
+  const { data, loading: loadingData, error: dataError, reload: loadTenantData } = usePortalData(['tenant-data', tenant?.id, Boolean(access?.owner), (access?.permissions || []).join(',')], () => loadRecordGroups({
+    subscriptions: () => access.owner ? base44.entities.Subscription.filter({ tenant_id: tenant.id }, '-created_date', 1) : [],
+    domains: () => access.owner ? base44.entities.TenantDomain.filter({ tenant_id: tenant.id }, '-created_date', 20) : [],
+    members: async () => has('TEAM_MANAGE') ? functionData(await base44.functions.invoke('manageTenantTeam', { action: 'list', tenantId: tenant.id })).members : [],
+    invoices: () => access.owner ? base44.entities.TenantInvoice.filter({ tenant_id: tenant.id }, '-created_date', 20) : [],
+    products: () => access.owner ? base44.entities.Product.filter({ tenant_id: tenant.id }, '-created_date', 500) : [],
+    sellers: () => access.owner ? base44.entities.Seller.filter({ tenant_id: tenant.id }, '-created_date', 200) : [],
+    plans: () => access.owner ? loadPlans() : [],
+  }), { enabled: Boolean(tenant && access?.granted) });
+  const plans = data?.plans || [];
+  const subscription = data?.subscriptions?.[0] || null;
+  const domains = data?.domains || [];
+  const members = data?.members || [];
+  const invoices = data?.invoices || [];
+  const usage = { products: data?.products?.length || 0, stores: 1, sellers: data?.sellers?.length || 0, members: members.length };
 
   const saveTenant = async (form) => {
     setBusy(true);
+    setSaveError(false);
     try {
       await base44.entities.Tenant.update(tenant.id, { ...form, owner_email: tenant.owner_email });
       await reload();
-    } finally {
+    } catch { setSaveError(true); } finally {
       setBusy(false);
     }
   };
 
   if (loading) {
-    return <div className="h-64 animate-pulse rounded-2xl bg-secondary" />;
+    return <PortalStatus loading />;
   }
+
+  if (scopeError) return <PortalStatus retry={reload} />;
 
   if (!tenant) {
     return (
@@ -87,13 +70,14 @@ export default function TenantConsole() {
     );
   }
 
-  if (accessError) return <p role="alert" className="p-6 text-destructive">{accessError}</p>;
-  if (!access || access.tenantId !== tenant.id) return <div className="h-64 animate-pulse rounded-2xl bg-secondary" />;
+  if (accessError) return <PortalStatus retry={reloadAccess} />;
+  if (checkingAccess || !access) return <PortalStatus loading />;
   if (!access.granted) return <p role="alert" className="p-6">Accès refusé à cette enseigne.</p>;
-  const has = (key) => access.owner || access.permissions.includes(key);
+  if (loadingData || dataError) return <PortalStatus loading={loadingData} retry={loadTenantData} />;
 
   return (
     <div className="space-y-5 py-2">
+      {saveError && <p role="alert" className="text-sm text-destructive">{t('portalStatus.actionFailed')}</p>}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="font-heading text-xl font-bold md:text-2xl">{tenant.name}</h1>
@@ -103,6 +87,7 @@ export default function TenantConsole() {
         </div>
         {tenants.length > 1 && (
           <select
+            aria-label={t('tenantConsole.platformConsole')}
             value={tenant.id}
             onChange={(e) => selectTenant(e.target.value)}
             className="h-10 rounded-md border border-input bg-background px-3 text-sm"

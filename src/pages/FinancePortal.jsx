@@ -1,4 +1,8 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
+import { usePortalData } from '@/hooks/usePortalData';
+import { loadRecordGroups } from '@/lib/portalData';
+import PortalStatus from '@/components/PortalStatus';
+
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import DashboardNav from '@/components/DashboardNav';
@@ -15,23 +19,14 @@ const FAILED = ['FAILED', 'CANCELLED', 'REFUNDED'];
 
 export default function FinancePortal() {
   const { t } = useTranslation();
-  const [orders, setOrders] = useState([]);
-  const [purchases, setPurchases] = useState([]);
-  const [payouts, setPayouts] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    Promise.all([
-      base44.entities.Order.list('-created_date', 500),
-      base44.entities.Base44Purchase.list('-created_date', 200).catch(() => []),
-      base44.entities.WalletTransaction.filter({ type: 'PAYOUT', status: { $ne: 'preparing' } }, '-created_date', 200),
-    ]).then(([o, p, w]) => {
-      setOrders(o.filter((x) => !x.is_demo));
-      setPurchases(p);
-      setPayouts(w);
-      setLoading(false);
-    });
-  }, []);
+  const { data, loading, error, reload } = usePortalData(['finance'], () => loadRecordGroups({
+    orders: () => base44.entities.Order.list('-created_date', 500),
+    purchases: () => base44.entities.Base44Purchase.list('-created_date', 200),
+    payouts: () => base44.entities.WalletTransaction.filter({ type: 'PAYOUT', status: { $ne: 'preparing' } }, '-created_date', 200),
+  }));
+  const orders = (data?.orders || []).filter((order) => !order.is_demo);
+  const purchases = data?.purchases || [];
+  const payouts = data?.payouts || [];
 
   const rows = useMemo(() => {
     const map = {};
@@ -53,7 +48,7 @@ export default function FinancePortal() {
   const byNumber = Object.fromEntries(orders.map((o) => [o.order_number, o]));
   const mismatches = purchases.filter((p) => p.status === 'paid' && byNumber[p.productId]?.payment_status !== 'PAID');
 
-  if (loading) return <p className="p-6 text-sm text-muted-foreground">{t('financePortal.loading')}</p>;
+  if (loading || error) return <div className="space-y-5"><DashboardNav title={t('financePortal.title')} links={ADMIN_LINKS} /><PortalStatus loading={loading} retry={reload} /></div>;
 
   return (
     <div className="space-y-5">

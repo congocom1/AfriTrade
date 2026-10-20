@@ -1,4 +1,7 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { usePortalData } from '@/hooks/usePortalData';
+import { loadRecordGroups } from '@/lib/portalData';
+import PortalStatus from '@/components/PortalStatus';
+import React, { useEffect, useRef } from 'react';
 import { ShoppingBag, Users } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { base44 } from '@/api/base44Client';
@@ -13,23 +16,16 @@ const PAYMENT_ORDER = ['PAID', 'PENDING', 'AUTHORIZED', 'FAILED', 'REFUNDED', 'P
  */
 export default function AdminLiveOverview() {
   const { t } = useTranslation();
-  const [orders, setOrders] = useState(null);
-  const [fulfillments, setFulfillments] = useState([]);
-  const [updatedAt, setUpdatedAt] = useState(null);
+  const { data, loading, error, reload: load, updatedAt: changedAt } = usePortalData(['admin-live'], () => loadRecordGroups({
+    orders: () => base44.entities.Order.list('-created_date', 300),
+    fulfillments: () => base44.entities.FulfillmentOrder.list('-created_date', 300),
+  }));
+  const orders = data?.orders || [];
+  const fulfillments = data?.fulfillments || [];
+  const updatedAt = changedAt ? new Date(changedAt).toISOString() : null;
   const timer = useRef(null);
 
-  const load = useCallback(async () => {
-    const [o, f] = await Promise.all([
-      base44.entities.Order.list('-created_date', 300).catch(() => []),
-      base44.entities.FulfillmentOrder.list('-created_date', 300).catch(() => []),
-    ]);
-    setOrders(o);
-    setFulfillments(f);
-    setUpdatedAt(new Date().toISOString());
-  }, []);
-
   useEffect(() => {
-    load();
     const refresh = () => {
       clearTimeout(timer.current);
       timer.current = setTimeout(load, 600);
@@ -43,16 +39,16 @@ export default function AdminLiveOverview() {
     };
   }, [load]);
 
-  if (!orders) return <div className="h-40 animate-pulse rounded-2xl bg-secondary" />;
+  if (loading || error) return <PortalStatus loading={loading} retry={load} />;
 
   const live = orders.filter((o) => o.status !== 'CANCELLED');
-  const sales = live.reduce((s, o) => s + (o.total_usd || 0), 0);
-  const commissioned = fulfillments.filter((f) => (f.creator_commission_usd || 0) > 0);
-  const commissions = commissioned.reduce((s, f) => s + (f.creator_commission_usd || 0), 0);
+  const sales = live.reduce((s, o) => s + (Number(o.total_usd) || 0), 0);
+  const commissioned = fulfillments.filter((f) => (Number(f.creator_commission_usd) || 0) > 0);
+  const commissions = commissioned.reduce((s, f) => s + (Number(f.creator_commission_usd) || 0), 0);
 
   const byStatus = PAYMENT_ORDER.map((status) => {
     const rows = orders.filter((o) => (o.payment_status || 'PENDING') === status);
-    return { status, count: rows.length, amount: rows.reduce((a, o) => a + (o.total_usd || 0), 0) };
+    return { status, count: rows.length, amount: rows.reduce((a, o) => a + (Number(o.total_usd) || 0), 0) };
   }).filter((r) => r.count > 0);
 
   return (
