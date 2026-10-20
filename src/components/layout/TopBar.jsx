@@ -143,7 +143,7 @@ export default function TopBar() {
 
   return (
     <header
-      className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 pt-[env(safe-area-inset-top)]"
+      className="sticky top-0 z-50 border-b border-border bg-background pt-[env(safe-area-inset-top)]"
       role="banner"
     >
       {/* Main bar */}

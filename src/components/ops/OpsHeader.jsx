@@ -3,7 +3,7 @@ import React from 'react';
 /** Page title block shared by the operations screens. */
 export default function OpsHeader({ title, subtitle, children }) {
   return (
-    <div className="flex flex-wrap items-end justify-between gap-3">
+    <div className="trade-ops-header flex flex-wrap items-end justify-between gap-4 border-b border-border pb-5">
       <div>
         <h1 className="text-2xl font-bold tracking-tight md:text-3xl">{title}</h1>
         {subtitle ? <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">{subtitle}</p> : null}
