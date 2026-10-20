@@ -24,6 +24,8 @@ import { Suspense, lazy, useEffect } from 'react';
 import LoadingFallback from '@/components/LoadingFallback';
 
 // Customer - lazy load all page components for code splitting
+const EmployeeWorkspace = lazy(() => import('@/pages/EmployeeWorkspace'));
+const EmployeeManagement = lazy(() => import('@/pages/admin/EmployeeManagement'));
 const Home = lazy(() => import('@/pages/Home'));
 const Discover = lazy(() => import('@/pages/Discover'));
 const Categories = lazy(() => import('@/pages/Categories'));
@@ -288,6 +290,8 @@ const AuthenticatedApp = () => {
         <Route path="/cgv" element={<PageWrapper><CGV /></PageWrapper>} />
         <Route path="/confidentialite" element={<PageWrapper><Confidentialite /></PageWrapper>} />
         <Route element={<RequireLogin />}>
+          <Route path="/employee" element={<PageWrapper><EmployeeWorkspace /></PageWrapper>} />
+          <Route path="/employee/:department" element={<PageWrapper><EmployeeWorkspace /></PageWrapper>} />
           <Route path="/messages" element={<PageWrapper><ErrorBoundary><Messages /></ErrorBoundary></PageWrapper>} />
           <Route path="/payout-requests" element={<PageWrapper><PayoutRequests /></PageWrapper>} />
           <Route path="/dispute-resolution" element={<PageWrapper><DisputeResolution /></PageWrapper>} />
@@ -337,6 +341,7 @@ const AuthenticatedApp = () => {
           <Route path="/tenant-onboarding" element={<PageWrapper><TenantOnboarding /></PageWrapper>} />
 
           <Route element={<AdminOnly />}>
+            <Route path="/admin/employees" element={<PageWrapper><EmployeeManagement /></PageWrapper>} />
             <Route path="/marketing-analytics" element={<PageWrapper><MarketingAnalytics /></PageWrapper>} />
             <Route path="/platform-analytics" element={<PageWrapper><PlatformAnalytics /></PageWrapper>} />
             <Route path="/marketplace-promos" element={<PageWrapper><AdminPromotions /></PageWrapper>} />

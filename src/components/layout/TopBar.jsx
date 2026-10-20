@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Search, Heart, Bell, MessageCircle, User, LogOut, ChevronDown, Store, ShieldCheck, MoreHorizontal, X, Home, Compass, Grid } from 'lucide-react';
+import { Search, Heart, Bell, MessageCircle, User, LogOut, ChevronDown, Store, ShieldCheck, MoreHorizontal, X, Home, Compass, Grid, BriefcaseBusiness } from 'lucide-react';
 import { useCart } from '@/lib/cart';
 import { useAuth } from '@/lib/AuthContext';
 import CurrencyToggle from '@/components/CurrencyToggle';
@@ -290,6 +290,7 @@ export default function TopBar() {
                       <p className="text-center text-xs text-muted-foreground truncate">{user.email}</p>
                     </div>
                     <div className="flex flex-col gap-1 px-2 py-2">
+                      <DropdownItem onClick={() => { navigate('/employee'); setUserMenuOpen(false); }} icon={BriefcaseBusiness}>{t('workforce.title')}</DropdownItem>
                       <DropdownItem onClick={() => { navigate('/profile'); setUserMenuOpen(false); }} icon={User}>{t('nav.profile')}</DropdownItem>
                       <DropdownItem onClick={() => { navigate('/wishlist'); setUserMenuOpen(false); }} icon={Heart}>{t('nav.wishlist')}</DropdownItem>
                       <DropdownItem onClick={() => { navigate('/messages'); setUserMenuOpen(false); }} icon={MessageCircle}>{t('nav.messages')}</DropdownItem>

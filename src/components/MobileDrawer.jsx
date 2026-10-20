@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { X, LayoutGrid, Compass, ShoppingBag, User, Heart, MessageCircle, Bell, Store, ShieldCheck, LogOut } from 'lucide-react';
+import { X, LayoutGrid, Compass, ShoppingBag, User, Heart, MessageCircle, Bell, Store, ShieldCheck, LogOut, BriefcaseBusiness } from 'lucide-react';
 import { useCart } from '@/lib/cart';
 import { useAuth } from '@/lib/AuthContext';
 import {
@@ -18,6 +18,7 @@ const PRIMARY_ITEMS = [
 ];
 
 const USER_ITEMS = [
+  { key: 'workforce.title', path: '/employee', icon: BriefcaseBusiness },
   { key: 'nav.profile', path: '/profile', icon: User },
   { key: 'nav.wishlist', path: '/wishlist', icon: Heart },
   { key: 'nav.messages', path: '/messages', icon: MessageCircle },
