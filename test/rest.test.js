@@ -17,7 +17,13 @@ const products = [
 ];
 let failReads = false;
 let lastFilter;
-globalThis.__restTestClient = { asServiceRole: { entities: {
+let caller = null;
+let authFails = false;
+let reviewReads = 0;
+globalThis.__restTestClient = { auth: { me: async () => {
+  if (authFails) throw new Error('session unavailable');
+  return caller;
+} }, asServiceRole: { entities: {
   ApiRateLimit: { filter: async () => [], create: async () => ({}) },
   Product: {
     filter: async (filter) => {
@@ -28,7 +34,7 @@ globalThis.__restTestClient = { asServiceRole: { entities: {
     get: async id => products.find(p => p.id === id),
     list: async () => { throw new Error('Unfiltered reads are forbidden'); },
   },
-  Review: { filter: async filter => { lastFilter = filter; return []; } },
+  Review: { filter: async filter => { reviewReads++; lastFilter = filter; return []; } },
 } } };
 const get = path => handler(new Request(`https://example.test/api/${path}`));
 
@@ -45,9 +51,35 @@ test('wholesale catalog excludes drafts', async () => {
   const response = await get('b2b/products');
   assert.deepEqual((await response.json()).products.map(p => p.id), ['public']);
 });
-test('reviews only query published reviews', async () => {
-  assert.equal((await get('products/public/reviews')).status, 200);
-  assert.deepEqual(lastFilter, { product_id: 'public', status: 'published' });
+test('platform admin reviews only query published reviews', async () => {
+  caller = { id: 'admin-test', role: 'admin' };
+  try {
+    const response = await get('products/public/reviews');
+    assert.equal(response.status, 200);
+    assert.deepEqual(await response.json(), { reviews: [] });
+    assert.deepEqual(lastFilter, { product_id: 'public', status: 'published' });
+  } finally { caller = null; }
+});
+for (const identity of [null, { id: 'buyer', role: 'user' },
+  { id: 'seller', role: 'seller' }, { id: 'tenant-admin', role: 'tenant_admin' }]) {
+  test(`review service-role reads reject ${identity?.role ?? 'anonymous'} callers`, async () => {
+    caller = identity;
+    const before = reviewReads;
+    try {
+      const response = await get('products/public/reviews');
+      assert.equal(response.status, 403);
+      assert.deepEqual(await response.json(), { error: 'Not authorized' });
+      assert.equal(reviewReads, before);
+    } finally { caller = null; }
+  });
+}
+test('review authentication failure denies access before reading reviews', async () => {
+  authFails = true;
+  const before = reviewReads;
+  try {
+    assert.equal((await get('products/public/reviews')).status, 403);
+    assert.equal(reviewReads, before);
+  } finally { authFails = false; }
 });
 test('database failure does not fall back to an unfiltered catalog', async () => {
   failReads = true;

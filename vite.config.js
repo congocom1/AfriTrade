@@ -2,6 +2,7 @@ import base44 from "@base44/vite-plugin";
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import path from 'node:path';
+import { securityHeadersPlugin } from './scripts/security-headers-plugin.js';
 
 // Use a CommonJS-style config so builders that parse vite.config.js with
 // CJS (like some CI/build environments) won't fail with ESM-only syntax.
@@ -69,51 +70,6 @@ const performanceMonitorPlugin = () => {
         const totalKB = (totalSize / 1024).toFixed(2);
         console.log(`\n✅ Bundle optimization complete: ${totalKB}KB total size`);
       }
-    }
-  };
-};
-
-// Security headers plugin
-const securityHeadersPlugin = () => {
-  return {
-    name: 'security-headers',
-    // Apply security headers during HTML generation for production builds
-    generateBundle(options, bundle) {
-      if (process.env.NODE_ENV === 'production') {
-        for (const fileName in bundle) {
-          const chunk = bundle[fileName];
-          if (chunk.type === 'asset' && chunk.name?.endsWith('.html')) {
-            let html = chunk.source?.toString() || '';
-
-            // Add security headers as meta tags to the HTML
-            const securityMetaTags = `
-  <!-- Security Headers (Production) -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https: blob:; connect-src 'self' https://*.base44.app https://api.base44.com wss://*.base44.app; frame-ancestors 'none'; base-uri 'self'; form-action 'self';">
-  <meta http-equiv="X-Frame-Options" content="DENY">
-  <meta http-equiv="Strict-Transport-Security" content="max-age=31536000; includeSubDomains; preload">
-  <meta http-equiv="X-Content-Type-Options" content="nosniff">
-  <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
-  <meta http-equiv="X-XSS-Protection" content="1; mode=block">
-  <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=()">`;
-
-            html += securityMetaTags + '\n';
-
-            // Update the bundle with enhanced security headers
-            chunk.source = html;
-          }
-        }
-      }
-    },
-    // Keep server middleware for Vite dev server
-    configureServer(server) {
-      server.middlewares.use((req, res, next) => {
-        // Security headers for dev server
-        res.setHeader('X-Content-Type-Options', 'nosniff');
-        res.setHeader('X-Frame-Options', 'DENY');
-        res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-
-        next();
-      });
     }
   };
 };
