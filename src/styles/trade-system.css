@@ -42,3 +42,10 @@
   .paper-section { padding: 20px; }
   .trade-dashboard-nav h1, .trade-ops-header h1 { overflow-wrap: anywhere; }
 }
+
+/* Keep the seller workspace as quiet as the rest of the application. */
+.paper-hero, .paper-head, .paper-shop, .paper-section, .paper-tiles, .paper-value { animation: none; }
+.paper-label { text-transform: none; letter-spacing: .025em; font-size: 12px; }
+.paper-label::after { content: none; }
+.paper-section { padding: 20px; }
+.paper-value { font-size: 30px; font-weight: 600; }

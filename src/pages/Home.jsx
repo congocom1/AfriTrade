@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Zap, Truck, Play, ArrowRight, Store as StoreIcon } from 'lucide-react';
+import { Zap, Truck, Play, Store as StoreIcon } from 'lucide-react';
 import CommerceIntro from '@/components/CommerceIntro';
 import { base44 } from '@/api/base44Client';
 import { loadPlatformConfig } from '@/lib/config';
@@ -10,7 +10,6 @@ import SectionHeader from '@/components/SectionHeader';
 import ProductRow from '@/components/ProductRow';
 import ProductGrid from '@/components/ProductGrid';
 import SellerCard from '@/components/SellerCard';
-import ShoppingAssistant from '@/components/ShoppingAssistant';
 import CategoryCard from '@/components/categories/CategoryCard';
 import EmptyState from '@/components/EmptyState';
 import { resolveStorefrontScope, scopeRecords } from '@/lib/tenancy';
@@ -57,14 +56,11 @@ export default function Home() {
   }, [reloadKey]);
 
   const sections = useMemo(() => {
-    const local = products.filter((p) => p.source_type !== 'international_supplier');
     const intl = products.filter((p) => p.source_type === 'international_supplier');
     return {
       flash: products.filter((p) => p.is_flash_sale).slice(0, 8),
-      featured: products.filter((p) => p.is_featured).slice(0, 8),
       trending: [...products].sort((a, b) => (b.sold_count || 0) - (a.sold_count || 0)).slice(0, 8),
       fresh: products.slice(0, 8),
-      local: local.slice(0, 8),
       intl: intl.slice(0, 8),
     };
   }, [products]);
@@ -107,26 +103,18 @@ export default function Home() {
         </section>
       )}
 
-      {/* Flash sale */}
-      <section>
+      {/* Show promotions only when there is an active offer. */}
+      {!!sections.flash.length && <section>
         <div className="mb-3 flex items-center gap-2">
           <Zap className="h-5 w-5 text-primary" />
           <h2 className="text-base font-bold md:text-lg">{t('home.flashSale')}</h2>
           <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">{t('home.limitedTime')}</span>
         </div>
-        {sections.flash.length ? (
-          <ProductRow products={sections.flash} loading={loading} />
-        ) : (
-          <p className="rounded-xl border border-dashed border-border bg-card p-4 text-xs text-muted-foreground">
-            {t('home.noFlash')}
-          </p>
-        )}
-      </section>
-
-      <ShoppingAssistant />
+        <ProductRow products={sections.flash} loading={loading} />
+      </section>}
 
       {/* Discovery feed */}
-      <section>
+      {(loading || content.length > 0) && <section>
         <SectionHeader title={t('home.discovery')} subtitle={t('home.discoverySub')} to="/discover" />
         {loading ? (
           <div className="flex gap-3 overflow-hidden">
@@ -149,21 +137,13 @@ export default function Home() {
             ))}
           </div>
         )}
-      </section>
+      </section>}
 
       {/* Trending */}
       <section>
         <SectionHeader title={t('home.trending')} subtitle={t('home.trendingSub')} to="/search?sort=sold" />
         <ProductGrid products={sections.trending} loading={loading} skeletonCount={4} />
       </section>
-
-      {/* Featured */}
-      {!!sections.featured.length && (
-        <section>
-          <SectionHeader title={t('home.featured')} to="/search?sort=rating" />
-          <ProductRow products={sections.featured} />
-        </section>
-      )}
 
       {/* Local sellers */}
       <section>
@@ -191,14 +171,6 @@ export default function Home() {
         )}
       </section>
 
-      {/* Local products */}
-      {!!sections.local.length && (
-        <section>
-          <SectionHeader title={t('home.localProducts')} subtitle={t('home.localProductsSub')} to="/search?source=local" />
-          <ProductRow products={sections.local} />
-        </section>
-      )}
-
       {/* New arrivals */}
       {!!sections.fresh.length && (
         <section>
@@ -221,43 +193,15 @@ export default function Home() {
         </section>
       )}
 
-      {/* Trust band */}
-      <section aria-label={t('common.trustTitle')} className="brand-trust-band p-5 md:p-7">
-        <p className="brand-section-label">THE AFRITRADE STANDARD</p>
-        <h2 className="font-display text-xl font-bold tracking-tight md:text-2xl">{t('common.trustTitle')}</h2>
-        <p className="mt-1 text-xs text-muted-foreground">{t('common.trustSub')}</p>
-        <div className="mt-4 grid gap-4 sm:grid-cols-2 md:grid-cols-4">
-          {[
-            { icon: Truck, title: t('home.featTrackedTitle'), text: t('home.featTrackedText') },
-            { icon: Zap, title: t('home.featMobileTitle'), text: t('home.featMobileText') },
-            { icon: StoreIcon, title: t('home.featVerifiedTitle'), text: t('home.featVerifiedText') },
-            { icon: ArrowRight, title: t('home.featProtectionTitle'), text: t('home.featProtectionText') },
-          ].map((f) => (
-            <div key={f.title} className="flex gap-3">
-              <f.icon className="mt-0.5 h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
-              <div>
-                <p className="text-sm font-semibold">{f.title}</p>
-                <p className="text-xs text-muted-foreground">{f.text}</p>
-              </div>
-            </div>
-          ))}
+      <section className="flex flex-wrap items-center justify-between gap-4 border-t border-border pt-6">
+        <div>
+          <h2 className="text-lg font-semibold">{t('common.sellCtaTitle')}</h2>
+          <p className="mt-1 text-sm text-muted-foreground">{t('common.sellCtaText')}</p>
         </div>
-      </section>
-
-      {/* Seller / creator call-to-action */}
-      <section className="brand-seller-cta relative overflow-hidden p-6 text-primary-foreground md:p-10">
-        <div className="relative flex flex-col items-start gap-3">
-          <p className="brand-section-label brand-section-label--light">BUILD WITH AFRITRADE</p>
-          <h2 className="max-w-md font-display text-2xl font-bold leading-tight tracking-tight md:text-3xl">{t('common.sellCtaTitle')}</h2>
-          <p className="max-w-md text-sm opacity-90">{t('common.sellCtaText')}</p>
-          <div className="mt-1 flex flex-wrap gap-3">
-            <Link to="/seller-application" className="brand-action brand-action--paper inline-flex min-h-11 items-center px-5 py-3 text-sm font-semibold">
-              {t('home.openShop')}
-            </Link>
-            <Link to="/creator-showcase" className="brand-action brand-action--line inline-flex min-h-11 items-center px-5 py-3 text-sm font-semibold">
-              {t('home.becomeCreator')}
-            </Link>
-          </div>
+        <div className="flex flex-wrap gap-3">
+          <Link to="/seller-application" className="inline-flex min-h-11 items-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90">{t('home.openShop')}</Link>
+          <Link to="/creator-showcase" className="inline-flex min-h-11 items-center px-2 text-sm font-medium text-primary hover:underline">{t('home.becomeCreator')}</Link>
+          <Link to="/assistant" className="inline-flex min-h-11 items-center px-2 text-sm font-medium text-primary hover:underline">{t('commerceIntro.assistant')}</Link>
         </div>
       </section>
     </div>
