@@ -257,6 +257,11 @@ export default async function (req: Request): Promise<Response> {
     if (resource === "products" && id && action === "reviews") {
       const product = await db.entities.Product.get(id).catch(() => null);
       if (!product || product.status !== "published") return fail("Product not found", 404);
+      // Reviews hold reviewer names/contact details and the Review entity's read
+      // rule is admin-only. This route reads via the service role, which would
+      // otherwise publish those rows to anyone; enforce the same boundary here.
+      const caller = await base44.auth.me().catch(() => null);
+      if (!caller || caller.role !== "admin") return fail("Not authorized", 403);
       const reviews = await db.entities.Review
         .filter({ product_id: id, status: "published" }, "-created_date", 100)
         .catch(() => []);
