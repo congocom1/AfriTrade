@@ -5,6 +5,7 @@ import ln from './ln.js';
 import sw from './sw.js';
 import intlShipment from './intlShipment.js';
 import homeCollections from './homeCollections.js';
+import commerceIntro from './commerceIntro.js';
 
 export const mergeNamespaces = (base, extra) =>
   Object.entries(extra).reduce((out, [ns, values]) => ({ ...out, [ns]: { ...(out[ns] || {}), ...values } }), { ...base });
@@ -22,9 +23,15 @@ const frWithExtensions = mergeNamespaces(fr, frExtended);
  * does. Lingala and Kiswahili fall back to the French copy for the newer
  * namespaces.
  */
-export const translations = {
+const baseTranslations = {
   fr: mergeNamespaces(mergeNamespaces(frWithExtensions, intlShipment.fr), homeCollections.fr),
   en: mergeNamespaces(mergeNamespaces(en, intlShipment.en), homeCollections.en),
   ln: mergeNamespaces(mergeNamespaces(mergeNamespaces(ln, frExtended), intlShipment.fr), homeCollections.fr),
   sw: mergeNamespaces(mergeNamespaces(mergeNamespaces(sw, frExtended), intlShipment.fr), homeCollections.fr),
 };
+
+export const translations = Object.fromEntries(
+  Object.entries(baseTranslations).map(([language, dictionary]) => [
+    language, mergeNamespaces(dictionary, commerceIntro[language] || commerceIntro.fr),
+  ]),
+);

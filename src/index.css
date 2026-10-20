@@ -333,11 +333,7 @@
 
 /* AfriTrade brand system — a pragmatic trade house, not a generic storefront. */
 .brand-app-shell {
-  background:
-    linear-gradient(90deg, hsl(var(--primary) / 0.025) 1px, transparent 1px),
-    linear-gradient(hsl(var(--primary) / 0.025) 1px, transparent 1px),
-    hsl(var(--background));
-  background-size: 28px 28px;
+  background: hsl(var(--background));
 }
 
 .brand-lockup {
