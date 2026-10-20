@@ -37,6 +37,7 @@ const BackButton = ({
 
   return (
     <ButtonWithSpring
+      type="button"
       onClick={handleClick}
       className={`${baseStyles} ${variantStyles[variant]} ${className}`}
       aria-label={t('common.back')}

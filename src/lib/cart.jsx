@@ -2,12 +2,12 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useS
 import { trackEvent } from '@/lib/tracking';
 
 const CartContext = createContext(null);
-const KEY = 'congo_commerce:cart';
+import { CART_STORAGE_KEY as KEY, MAX_CART_QUANTITY, normalizeCartQuantity, parseStoredCart } from './cartStorage';
 
 function readCart() {
   try {
     const raw = localStorage.getItem(KEY);
-    return raw ? JSON.parse(raw) : [];
+    return parseStoredCart(raw);
   } catch {
     return [];
   }
@@ -18,11 +18,7 @@ function lineKey(productId, variant) {
 }
 
 export function CartProvider({ children }) {
-  const [items, setItems] = useState([]);
-
-  useEffect(() => {
-    setItems(readCart());
-  }, []);
+  const [items, setItems] = useState(readCart);
 
   useEffect(() => {
     try {
@@ -33,13 +29,15 @@ export function CartProvider({ children }) {
   }, [items]);
 
   const addItem = useCallback((product, quantity = 1, variant = null) => {
+    quantity = normalizeCartQuantity(quantity);
+    if (!product?.id || !quantity) return;
     trackEvent('cart_add', { product_id: product.id, value_usd: product.price_usd });
     setItems((prev) => {
       const key = lineKey(product.id, variant);
       const existing = prev.find((i) => lineKey(i.product_id, i.variant) === key);
       if (existing) {
         return prev.map((i) =>
-          lineKey(i.product_id, i.variant) === key ? { ...i, quantity: i.quantity + quantity } : i,
+          lineKey(i.product_id, i.variant) === key ? { ...i, quantity: Math.min(MAX_CART_QUANTITY, i.quantity + quantity) } : i,
         );
       }
       return [
@@ -67,7 +65,7 @@ export function CartProvider({ children }) {
     setItems((prev) =>
       prev
         .map((i) =>
-          lineKey(i.product_id, i.variant) === lineKey(productId, variant) ? { ...i, quantity: Math.max(0, quantity) } : i,
+          lineKey(i.product_id, i.variant) === lineKey(productId, variant) ? { ...i, quantity: normalizeCartQuantity(quantity) } : i,
         )
         .filter((i) => i.quantity > 0),
     );

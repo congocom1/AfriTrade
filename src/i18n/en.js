@@ -392,6 +392,7 @@ export default {
     tileExport: 'Export my data',
   },
   sellerWallet: {
+    loadFailed: "Unable to load the wallet. Retry before requesting a withdrawal.",
     title: 'Seller wallet',
     noWallet: 'No active wallet: your first payout will create it.',
     noWalletShort: 'No active wallet: your first refund will create it.',
@@ -634,6 +635,11 @@ export default {
   continueShopping: "Continue shopping",
 },
   orderConfirmation: {
+    canceled: "Order canceled",
+    canceledInfo: "This order has been canceled.",
+    paymentPending: "Order recorded — awaiting payment confirmation.",
+    totalOrder: "Order total",
+
   notFound: "Order not found",
   backHome: "Back to home",
   thanks: "Thank you, {{name}}!",

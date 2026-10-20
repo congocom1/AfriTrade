@@ -378,6 +378,7 @@ export default {
     tileExport: 'Exporter mes données',
   },
   sellerWallet: {
+    loadFailed: "Impossible de charger le portefeuille. Réessayez avant un retrait.",
     title: 'Portefeuille vendeur',
     noWallet: 'Aucun portefeuille actif : votre premier versement le créera.',
     noWalletShort: 'Aucun portefeuille actif : votre premier remboursement le créera.',
@@ -608,6 +609,11 @@ export default {
   continueShopping: "Continuer mes achats",
 },
   orderConfirmation: {
+    canceled: "Commande annulée",
+    canceledInfo: "Cette commande a été annulée.",
+    paymentPending: "Commande enregistrée — confirmation du paiement en attente.",
+    totalOrder: "Total de la commande",
+
   notFound: "Commande introuvable",
   backHome: "Retour à l'accueil",
   thanks: "Merci {{name}} !",

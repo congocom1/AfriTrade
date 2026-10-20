@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { CheckCircle2, Package, Truck, MapPin, Wallet } from 'lucide-react';
+import { CheckCircle2, Clock, XCircle, Package, Truck, MapPin, Wallet } from 'lucide-react';
 import { getProfile } from '@/lib/session';
 import { lookupOrder } from '@/lib/orderLookup';
 import { Image } from '@/components/ui/image';
@@ -37,7 +37,8 @@ export default function OrderConfirmation() {
   }
 
   if (notFound || !order) {
-    return (
+    const StateIcon = canceled ? XCircle : paid ? CheckCircle2 : Clock;
+  return (
       <div className="rounded-2xl border border-dashed border-border bg-card p-10 text-center">
         <p className="font-semibold">{t('orderConfirmation.notFound')}</p>
         <Link to="/" className="mt-4 inline-block rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground">
@@ -47,18 +48,20 @@ export default function OrderConfirmation() {
     );
   }
 
-  const paid = order.payment_status === 'PAID' || order.payment_status === 'AUTHORIZED';
+  const canceled = order.status === 'CANCELLED';
+  const paid = order.payment_status === 'PAID';
 
+  const StateIcon = canceled ? XCircle : paid ? CheckCircle2 : Clock;
   return (
       <div className="mx-auto max-w-3xl space-y-5 pb-8">
         <BackButton fallback="/order-history" className="md:hidden" />
         <div className="rounded-2xl border border-border bg-card p-5 text-center">
-        <CheckCircle2 className="mx-auto h-10 w-10 text-emerald-600" />
-        <h1 className="mt-2 text-lg font-bold md:text-xl">{t('orderConfirmation.thanks', { name: order.customer_name })}</h1>
+        <StateIcon className={`mx-auto h-10 w-10 ${paid ? "text-emerald-600" : "text-muted-foreground"}`} />
+        <h1 className="mt-2 text-lg font-bold md:text-xl">{canceled ? t('orderConfirmation.canceled') : t('orderConfirmation.thanks', { name: order.customer_name })}</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          {paid
+          {canceled ? t('orderConfirmation.canceledInfo') : paid
             ? t('orderConfirmation.paidVia', { method: order.payment_method })
-            : t('orderConfirmation.codReserved', { method: order.payment_method })}
+            : order.payment_provider === 'cod' ? t('orderConfirmation.codReserved', { method: order.payment_method }) : t('orderConfirmation.paymentPending')}
         </p>
         <p className="mt-2 inline-block rounded-full bg-secondary px-3 py-1 text-sm font-bold">{order.order_number}</p>
         <p className="mt-1 text-[11px] text-muted-foreground">{t('orderConfirmation.placedOn', { date: formatDateTime(order.created_date) })}</p>
@@ -120,7 +123,7 @@ export default function OrderConfirmation() {
             : `${order.address}, ${order.city}`}
         </p>
         <p className="text-xs text-muted-foreground">{order.customer_phone}</p>
-        {order.delivery_method === 'pickup_point' && order.pickup_code && (
+        {!canceled && order.delivery_method === 'pickup_point' && order.pickup_code && (
           <div className="rounded-xl border border-primary/30 bg-primary/5 p-3">
             <p className="text-[11px] font-semibold text-muted-foreground">{t('orderConfirmation.pickupCodeLabel')}</p>
             <p className="mt-1 text-2xl font-black tracking-[0.3em] text-primary">{order.pickup_code}</p>
@@ -167,14 +170,14 @@ export default function OrderConfirmation() {
             </div>
           )}
           <div className="flex justify-between border-t border-border pt-2 text-base font-bold">
-            <span>{t('orderConfirmation.totalPaid')}</span>
+            <span>{t(paid ? 'orderConfirmation.totalPaid' : 'orderConfirmation.totalOrder')}</span>
             <span className="text-primary">{formatUSD(order.total_usd)}</span>
           </div>
           <p className="text-[11px] text-muted-foreground">
             {t('orderConfirmation.cdfApprox', { amount: Math.round(order.total_cdf || 0).toLocaleString('fr-FR') })}
           </p>
         </div>
-        <div className="flex items-center gap-2 rounded-lg bg-secondary/50 p-2.5 text-xs">
+        <div className="flex flex-wrap items-center gap-2 break-all rounded-lg bg-secondary/50 p-2.5 text-xs">
           <Wallet className="h-3.5 w-3.5 text-primary" />
           <span>{t('orderConfirmation.payRef', { ref: order.payment_reference || '—' })}</span>
           <StatusBadge status={order.payment_status} />

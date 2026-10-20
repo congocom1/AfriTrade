@@ -29,18 +29,20 @@ export default function SellerWallet() {
   const [amount, setAmount] = useState('');
   const [method, setMethod] = useState(METHODS[0]);
   const [message, setMessage] = useState('');
+  const [loadError, setLoadError] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const load = async () => {
-    if (!seller) return;
-    const wallets = await base44.entities.Wallet.filter({ owner_type: 'seller', owner_id: seller.id }).catch(() => []);
-    const mine = wallets[0] || null;
-    setWallet(mine);
-    if (mine) {
-      const txs = await base44.entities.WalletTransaction.filter({ wallet_id: mine.id, status: { $ne: 'preparing' } }, '-created_date', 50).catch(() => []);
-      setTransactions(txs);
-    }
-    setLoading(false);
+    if (!seller) { setLoading(false); return; }
+    setLoadError(false);
+    try {
+      const wallets = await base44.entities.Wallet.filter({ owner_type: 'seller', owner_id: seller.id });
+      if (wallets.length > 1) throw new Error('Ambiguous wallet');
+      const mine = wallets[0] || null;
+      setWallet(mine);
+      setTransactions(mine ? await base44.entities.WalletTransaction.filter({ wallet_id: mine.id, status: { $ne: 'preparing' } }, '-created_date', 50) : []);
+    } catch { setLoadError(true); }
+    finally { setLoading(false); }
   };
 
   useEffect(() => {
@@ -75,12 +77,13 @@ export default function SellerWallet() {
     <div className="space-y-5 pb-8">
       <DashboardNav title={t('sellerWallet.title')} links={LINKS} />
 
+      {loadError && <p role="alert" className="text-sm text-destructive">{t('sellerWallet.loadFailed')} <button type="button" onClick={load} className="min-h-11 px-3 underline">{t('refresh')}</button></p>}
       <section className="rounded-2xl bg-gradient-to-br from-primary to-primary/70 p-5 text-primary-foreground">
         <p className="flex items-center gap-2 text-xs font-semibold opacity-90">
           <WalletIcon className="h-4 w-4" /> {t('wallet.balance')}
         </p>
         <p className="mt-2 text-3xl font-black">{formatUSD(wallet?.balance_usd || 0)}</p>
-        <div className="mt-2 flex gap-4 text-[11px] opacity-90">
+        <div className="mt-2 flex flex-wrap gap-4 text-[11px] opacity-90">
           <span>{t('wallet.awaitingDelivery')} : {formatUSD(wallet?.pending_usd || 0)}</span>
           <span>{t('wallet.totalEarned')} : {formatUSD(wallet?.lifetime_credit_usd || 0)}</span>
         </div>
@@ -92,6 +95,9 @@ export default function SellerWallet() {
         </h2>
         <div className="grid gap-3 md:grid-cols-2">
           <Input
+            aria-label={t('sellerWallet.amountUsd')}
+            min="0.01"
+            required
             type="number"
             step="0.01"
             value={amount}
@@ -100,7 +106,7 @@ export default function SellerWallet() {
             className="h-11 rounded-lg border border-border bg-background px-3 text-sm"
           />
           <Select value={method} onValueChange={(v) => setMethod(String(v))} className="h-11 rounded-lg border border-border bg-background px-3 text-sm">
-            <SelectTrigger className="w-full">
+            <SelectTrigger aria-label={t('sellerWallet.method')} className="w-full">
               <SelectValue placeholder={t('sellerWallet.method')} />
             </SelectTrigger>
             <SelectContent>
@@ -110,8 +116,8 @@ export default function SellerWallet() {
             </SelectContent>
           </Select>
         </div>
-        {message && <p className="text-xs text-primary">{message}</p>}
-        <button type="submit" disabled={saving} className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground disabled:opacity-50">{saving ? t('common.saving') : t('sellerWallet.sendRequest')}</button>
+        {message && <p role="status" className="text-xs text-primary">{message}</p>}
+        <button type="submit" disabled={saving || !wallet || loadError} className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground disabled:opacity-50">{saving ? t('common.saving') : t('sellerWallet.sendRequest')}</button>
         <p className="text-[11px] text-muted-foreground">
           {t('sellerWallet.localSalesNote')}
         </p>
