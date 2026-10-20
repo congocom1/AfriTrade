@@ -59,6 +59,67 @@
   --font-body: 'Manrope', sans-serif;
   --font-display: 'Sora', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
+
+  /* Color system tokens (matching BRAND.md palette) */
+  --color-primary-50: 210 100% 97%;
+  --color-primary-100: 210 100% 94%;
+  --color-primary-200: 210 100% 89%;
+  --color-primary-300: 210 100% 78%;
+  --color-primary-400: 210 100% 66%;
+  --color-primary-500: 210 100% 50%;
+  --color-primary-600: 210 100% 44%;
+  --color-primary-700: 210 100% 38%;
+  --color-primary-800: 210 100% 32%;
+  --color-primary-900: 210 100% 26%;
+
+  --color-success-50: 142 76% 94%;
+  --color-success-400: 142 71% 48%;
+  --color-success-500: 142 76% 44%;
+
+  --color-warning-50: 48 96% 95%;
+  --color-warning-400: 48 96% 70%;
+  --color-warning-500: 48 96% 60%;
+
+  --color-error-50: 0 84% 95%;
+  --color-error-400: 0 84% 59%;
+  --color-error-500: 0 84% 52%;
+
+  --color-info-50: 207 90% 95%;
+  --color-info-400: 207 90% 58%;
+  --color-info-500: 207 90% 50%;
+
+  --color-bg-primary: 0 0% 100%;
+  --color-bg-secondary: 210 40% 98%;
+  --color-bg-tertiary: 0 0% 96%;
+  --color-bg-elevated: 0 0% 100%;
+
+  --color-text-primary: 215 25% 31%;
+  --color-text-secondary: 215 16% 47%;
+  --color-text-tertiary: 215 12% 66%;
+  --color-text-disabled: 215 12% 84%;
+  --color-text-inverted: 0 0% 100%;
+
+  --color-border-primary: 220 13% 91%;
+  --color-border-secondary: 220 13% 86%;
+  --color-border-tertiary: 220 13% 79%;
+  /* Typography system tokens */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+  --text-5xl: 3rem;
+  --text-6xl: 3.75rem;
+
+  /* Line height scale */
+  --leading-tight: 1.25;
+  --leading-snug: 1.375;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
+  --leading-loose: 2;
   --sidebar-background: 0 0% 98%;
   --sidebar-foreground: 240 5.3% 26.1%;
   --sidebar-primary: 240 5.9% 10%;
