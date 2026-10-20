@@ -94,8 +94,18 @@ flutter:
     enable-swift-package-manager: true
   uses-material-design: true
   
-  # Fonts are loaded at runtime by google_fonts (Poppins / Inter), so no
-  # bundled .ttf assets are declared here.
   assets:
     - assets/images/
     - assets/icons/
+    - assets/fonts/OFL.txt
+  fonts:
+    - family: Poppins
+      fonts:
+        - asset: assets/fonts/Poppins-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Poppins-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Poppins-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Poppins-Bold.ttf
+          weight: 700

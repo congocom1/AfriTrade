@@ -1,0 +1,16 @@
+name: Set up AfriTrade Flutter
+description: Use the Flutter release matching pubspec.lock and the iOS SPM project.
+runs:
+  using: composite
+  steps:
+    - uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.47.7'
+        channel: stable
+        cache: true
+    - name: Configure plugin integration
+      shell: bash
+      run: |
+        flutter config --enable-swift-package-manager
+        flutter --version
+        dart --version
