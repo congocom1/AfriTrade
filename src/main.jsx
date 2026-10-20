@@ -3,10 +3,8 @@ import ReactDOM from 'react-dom/client';
 import App from '@/App.jsx';
 import '@/index.css';
 import '@/i18n';
-import SEOMetadata from '@/components/SEOMetadata';
 import CookieConsentBanner from '@/components/CookieConsentBanner';
 import StructuredData from '@/components/StructuredData';
-import Base44Router from '@/components/Base44Router';
 
 // Apply the OS colour scheme synchronously, before first paint.
 // This must NOT be a useEffect call: this file is entrypoint code, not a
@@ -23,10 +21,8 @@ if (typeof window !== 'undefined' && window.matchMedia) {
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.Fragment>
-    <SEOMetadata />
     <CookieConsentBanner />
     <StructuredData />
-    <Base44Router />
     <App />
   </React.Fragment>
 );
