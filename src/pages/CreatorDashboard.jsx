@@ -1,3 +1,4 @@
+import PortalRefresh from '@/components/portal/PortalRefresh';
 import { usePortalData } from '@/hooks/usePortalData';
 import { loadRecordGroups } from '@/lib/portalData';
 import PortalStatus from '@/components/PortalStatus';
@@ -16,7 +17,7 @@ export default memo(function CreatorDashboard() {
   const { t } = useTranslation();
   const { format } = useCurrency();
   const { tenants: creators, tenant: creator, isAdmin, loading: loadingCreator, selectTenant, error: scopeError, reload: reloadScope } = useTenantScope('Creator');
-  const { data, loading, error: dataError, reload } = usePortalData(['creator', creator?.id], () => loadRecordGroups({
+  const { data, loading, error: dataError, reload, updatedAt } = usePortalData(['creator', creator?.id], () => loadRecordGroups({
     products: () => base44.entities.Product.filter({ status: 'published' }, '-sold_count', 40),
     contents: () => base44.entities.Content.filter({ creator_id: creator.id }, '-created_date', 50),
     clicks: () => base44.entities.AffiliateClick.filter({ creator_id: creator.id }, '-created_date', 100),
@@ -99,6 +100,7 @@ export default memo(function CreatorDashboard() {
   return (
     <DashboardShell nav={[]} title={t('creatorDashboard.title')}>
       <>
+        <PortalRefresh onRefresh={reload} updatedAt={updatedAt} />
         {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
         <div className="flex flex-wrap items-center gap-2">
           {isAdmin ? (

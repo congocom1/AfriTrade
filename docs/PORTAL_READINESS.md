@@ -52,3 +52,13 @@ Pending verification and material limits:
 - The repository's existing wallet/refund release block remains applicable.
 
 Visual QA final result: blocked.
+
+## Completed shared component gaps
+
+An import-resolution scan found no missing source component files. Added and integrated the missing interaction pieces: collection search/filter toolbar, pagination, dashboard refresh controls, asynchronous destructive confirmations, persistent form labels and account-deletion request dialogs. Supplier, warehouse and API-key collections use loaded-record pagination and searchable status filters. Dashboard refresh controls now work outside error states.
+
+Profile/privacy deletion buttons previously showed a success alert without any backend operation. They now open an authenticated compliance-request form. The form persists a received DataRequest under the authenticated user's ownership, then reports its reference. A notification failure can no longer turn a saved request into an apparent failure, because notification creation is no longer attempted from the browser.
+
+Checks: lint, type checking, production build and 240 tests passed, followed by targeted collection/privacy/translation checks. Visual/browser and hosted integration checks remain pending.
+
+Existing supplier HTTP-adapter TODOs require provider endpoint/authentication specifications. They are integration work rather than missing UI component imports and are not represented as working connections by this change.

@@ -1,3 +1,4 @@
+import PortalRefresh from '@/components/portal/PortalRefresh';
 import React from 'react';
 import { usePortalData } from '@/hooks/usePortalData';
 import PortalStatus from '@/components/PortalStatus';
@@ -31,6 +32,7 @@ export default function CommandCenter() {
   return (
     <div className="portal-page space-y-6 pb-8">
       <DashboardNav title={t('commandCenter.title')} links={ADMIN_LINKS} />
+      <PortalRefresh onRefresh={reload} updatedAt={updatedAt} />
       <p className="text-[11px] text-muted-foreground">{at ? t('commandCenter.fresh', { time: at.toLocaleTimeString(i18n.language) }) : t('commandCenter.loading')}</p>
       {loading || error || !d ? <PortalStatus loading={loading} retry={reload} /> : (
         <>

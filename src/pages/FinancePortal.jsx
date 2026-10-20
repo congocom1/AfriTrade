@@ -1,3 +1,4 @@
+import PortalRefresh from '@/components/portal/PortalRefresh';
 import React, { useMemo } from 'react';
 import { usePortalData } from '@/hooks/usePortalData';
 import { loadRecordGroups } from '@/lib/portalData';
@@ -19,7 +20,7 @@ const FAILED = ['FAILED', 'CANCELLED', 'REFUNDED'];
 
 export default function FinancePortal() {
   const { t } = useTranslation();
-  const { data, loading, error, reload } = usePortalData(['finance'], () => loadRecordGroups({
+  const { data, loading, error, reload, updatedAt } = usePortalData(['finance'], () => loadRecordGroups({
     orders: () => base44.entities.Order.list('-created_date', 500),
     purchases: () => base44.entities.Base44Purchase.list('-created_date', 200),
     payouts: () => base44.entities.WalletTransaction.filter({ type: 'PAYOUT', status: { $ne: 'preparing' } }, '-created_date', 200),
@@ -56,6 +57,7 @@ export default function FinancePortal() {
       <OpsHeader title={t('financePortal.title')} subtitle={t('financePortal.subtitle')}>
         <Link to="/admin/payouts" className="rounded-full bg-primary px-4 py-2 text-xs font-bold text-primary-foreground">{t('financePortal.processPayouts')}</Link>
       </OpsHeader>
+      <PortalRefresh onRefresh={reload} updatedAt={updatedAt} />
       <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
         <StatCard label={t('financePortal.collected')} value={formatUSD(sum('paid'))} tone="good" />
         <StatCard label={t('financePortal.pending')} value={formatUSD(sum('pending'))} tone="warn" />

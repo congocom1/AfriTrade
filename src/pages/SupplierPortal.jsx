@@ -1,3 +1,8 @@
+import { useCollectionView } from '@/hooks/useCollectionView';
+import CollectionToolbar from '@/components/portal/CollectionToolbar';
+import CollectionPagination from '@/components/portal/CollectionPagination';
+import PortalRefresh from '@/components/portal/PortalRefresh';
+import EmptyState from '@/components/EmptyState';
 import React, { useState } from 'react';
 import { usePortalData } from '@/hooks/usePortalData';
 import PortalStatus from '@/components/PortalStatus';
@@ -10,7 +15,8 @@ import SupplierHealthCard, { feedHealth } from '@/components/suppliers/SupplierH
 
 export default function SupplierPortal() {
   const { t } = useTranslation();
-  const { data: suppliers, loading, error, reload } = usePortalData(['suppliers'], () => base44.entities.Supplier.list('name', 200));
+  const { data: suppliers, loading, error, reload, updatedAt } = usePortalData(['suppliers'], () => base44.entities.Supplier.list('name', 200));
+  const view = useCollectionView(suppliers, ['name', 'code', 'country', 'adapter'], (supplier, filter) => filter === 'all' || (filter === 'active' && supplier.enabled) || (filter === 'inactive' && !supplier.enabled) || (filter === 'healthy' && feedHealth(supplier)[0] === 'healthOk'));
   const [actionError, setActionError] = useState(false);
   const [updating, setUpdating] = useState(null);
   const [checks, setChecks] = useState({});
@@ -49,16 +55,20 @@ export default function SupplierPortal() {
         <StatCard label={t('supplierPortal.statActive')} value={(suppliers || []).filter((s) => s.enabled).length} />
         <StatCard label={t('supplierPortal.statHealthy')} value={healthy} tone={healthy ? 'good' : 'warning'} />
       </div>
+      <CollectionToolbar query={view.query} onQueryChange={view.setQuery} filter={view.filter} onFilterChange={view.setFilter} options={['all', 'active', 'inactive', 'healthy'].map((value) => ({ value, label: t(`portalComponents.${value}`) }))}>
+        <PortalRefresh onRefresh={reload} updatedAt={updatedAt} />
+      </CollectionToolbar>
       <p className="text-xs text-muted-foreground">{t('supplierPortal.hint')}</p>
-      {!suppliers ? <div className="h-40 animate-pulse rounded-2xl bg-secondary" /> : suppliers.length === 0 ? (
-        <p className="text-xs text-muted-foreground">{t('supplierPortal.empty')}</p>
+      {view.count === 0 ? (
+        <EmptyState title={t('portalComponents.noResults')} description={t('portalComponents.noResultsDescription')} actionLabel={t('portalComponents.clearFilters')} onAction={view.reset} />
       ) : (
         <div className="grid gap-3 md:grid-cols-2">
-          {suppliers.map((s) => (
+          {view.records.map((s) => (
             <SupplierHealthCard key={s.id} supplier={s} check={checks[s.id]} checking={checking === s.id} updating={updating === s.id} onCheck={() => verify(s)} onToggle={(on) => toggle(s, on)} />
           ))}
         </div>
       )}
+      <CollectionPagination view={view} onPageChange={view.setPage} />
       </>}
     </div>
   );

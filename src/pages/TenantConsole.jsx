@@ -1,3 +1,4 @@
+import PortalRefresh from '@/components/portal/PortalRefresh';
 import { usePortalData } from '@/hooks/usePortalData';
 import { loadRecordGroups, functionData } from '@/lib/portalData';
 import PortalStatus from '@/components/PortalStatus';
@@ -25,7 +26,7 @@ export default function TenantConsole() {
     return { ...result, permissions: Array.isArray(result.permissions) ? result.permissions : [] };
   }, { enabled: Boolean(tenant) });
   const has = (key) => access?.owner || access?.permissions?.includes(key);
-  const { data, loading: loadingData, error: dataError, reload: loadTenantData } = usePortalData(['tenant-data', tenant?.id, Boolean(access?.owner), (access?.permissions || []).join(',')], () => loadRecordGroups({
+  const { data, loading: loadingData, error: dataError, reload: loadTenantData, updatedAt } = usePortalData(['tenant-data', tenant?.id, Boolean(access?.owner), (access?.permissions || []).join(',')], () => loadRecordGroups({
     subscriptions: () => access.owner ? base44.entities.Subscription.filter({ tenant_id: tenant.id }, '-created_date', 1) : [],
     domains: () => access.owner ? base44.entities.TenantDomain.filter({ tenant_id: tenant.id }, '-created_date', 20) : [],
     members: async () => has('TEAM_MANAGE') ? functionData(await base44.functions.invoke('manageTenantTeam', { action: 'list', tenantId: tenant.id })).members : [],
@@ -102,6 +103,7 @@ export default function TenantConsole() {
         )}
       </div>
 
+      <PortalRefresh onRefresh={loadTenantData} updatedAt={updatedAt} />
       {access.owner && <TenantPlanPanel tenant={tenant} subscription={subscription} plans={plans} invoices={invoices} usage={usage} onChange={loadTenantData} />}
 
       {access.owner && <TenantDomainPanel tenant={tenant} domains={domains} onChange={loadTenantData} />}

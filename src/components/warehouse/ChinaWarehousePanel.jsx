@@ -1,3 +1,4 @@
+import PortalRefresh from '@/components/portal/PortalRefresh';
 import { usePortalData } from '@/hooks/usePortalData';
 import { functionData } from '@/lib/portalData';
 import PortalStatus from '@/components/PortalStatus';
@@ -20,7 +21,7 @@ export default function ChinaWarehousePanel() {
   const [busy, setBusy] = useState('');
 
   // Inspections require receipt IDs, not purchase-order history IDs.
-  const { data: receipts = [], loading, error: loadError, reload: load } = usePortalData(['china-receipts'], () => base44.entities.ChinaWarehouseReceipt.list('-created_date', 100));
+  const { data: receipts = [], loading, error: loadError, reload: load, updatedAt } = usePortalData(['china-receipts'], () => base44.entities.ChinaWarehouseReceipt.list('-created_date', 100));
   const inspect = async (receipt, status) => {
     if (busy) return;
     setBusy(receipt.id); setError(false);
@@ -35,7 +36,7 @@ export default function ChinaWarehousePanel() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-bold">{t('chinaWarehouse.receipts', 'Réceptions Chine')}</h2>
-        <button type="button" onClick={load} className="rounded-full border border-border bg-card px-3 py-1 text-xs">{t('common.refresh')}</button>
+        <PortalRefresh onRefresh={load} updatedAt={updatedAt} />
       </div>
       {error && <p role="alert" className="text-sm text-destructive">{t('portalStatus.actionFailed')}</p>}
       <div className="space-y-2">

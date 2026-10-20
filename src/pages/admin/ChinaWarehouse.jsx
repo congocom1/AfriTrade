@@ -1,9 +1,16 @@
+import { useCollectionView } from '@/hooks/useCollectionView';
+import CollectionToolbar from '@/components/portal/CollectionToolbar';
+import CollectionPagination from '@/components/portal/CollectionPagination';
+import PortalRefresh from '@/components/portal/PortalRefresh';
+import ConfirmActionDialog from '@/components/portal/ConfirmActionDialog';
+import EmptyState from '@/components/EmptyState';
+import FormField from '@/components/portal/FormField';
 import { usePortalData } from '@/hooks/usePortalData';
 import { functionData } from '@/lib/portalData';
 import PortalStatus from '@/components/PortalStatus';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Warehouse, Plus, RefreshCw, Package, MapPin, Phone } from 'lucide-react';
+import { Warehouse, Plus, Package, MapPin, Phone } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { DashboardNav } from '@/components/DashboardNav';
 import { ADMIN_LINKS } from '@/lib/navLinks';
@@ -19,7 +26,7 @@ export default function ChinaWarehousePage() {
   const [selectedWh, setSelectedWh] = useState(null);
   const [errors, setErrors] = useState({});
 
-  const { data: warehouses = [], loading, error: loadError, reload: load } = usePortalData(['china-warehouses'], async () => {
+  const { data: warehouses = [], loading, error: loadError, reload: load, updatedAt } = usePortalData(['china-warehouses'], async () => {
     const payload = functionData(await base44.functions.invoke('chinaWarehouse', { action: 'list' }));
     if (!Array.isArray(payload.warehouses)) throw new Error('Invalid warehouses');
     return payload.warehouses;
@@ -30,6 +37,8 @@ export default function ChinaWarehousePage() {
     return payload.inventory;
   }, { enabled: Boolean(selectedWh) });
   const [deleting, setDeleting] = useState('');
+  const [pendingDeletion, setPendingDeletion] = useState(null);
+  const view = useCollectionView(warehouses, ['name', 'city', 'province', 'address'], (warehouse, filter) => filter === 'all' || (filter === 'active' && warehouse.active !== false) || (filter === 'inactive' && warehouse.active === false));
 
   const createWarehouse = async (e) => {
     e.preventDefault();
@@ -47,13 +56,14 @@ export default function ChinaWarehousePage() {
   };
 
   const deleteWarehouse = async (id) => {
-    if (deleting || !confirm('Supprimer cet entrepôt ?')) return;
+    if (deleting) return false;
     setDeleting(id); setErrors({});
     try {
       functionData(await base44.functions.invoke('chinaWarehouse', { action: 'delete', id }));
       if (selectedWh?.id === id) setSelectedWh(null);
       await load();
-    } catch { setErrors({ load: t('portalStatus.actionFailed') }); }
+      return true;
+    } catch { setErrors({ load: t('portalStatus.actionFailed') }); return false; }
     finally { setDeleting(''); }
   };
   const viewInventory = (warehouse) => setSelectedWh(warehouse);
@@ -68,22 +78,20 @@ export default function ChinaWarehousePage() {
         <Button onClick={() => setShowForm(!showForm)} className="gap-1.5">
           <Plus className="h-4 w-4" /> {t('chinaWarehouse.add', 'Ajouter un entrepôt')}
         </Button>
-        <Button variant="outline" onClick={load} className="gap-1.5">
-          <RefreshCw className="h-4 w-4" /> {t('refresh')}
-        </Button>
+
       </div>
 
       {showForm && (
         <form onSubmit={createWarehouse} className="rounded-2xl border border-border bg-card p-4 space-y-3 md:grid md:grid-cols-3 md:gap-3">
           {errors.submit && <p className="text-xs text-destructive md:col-span-3">{errors.submit}</p>}
-          <Input placeholder={t('chinaWarehouse.namePh', 'Nom')} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required className="h-10" />
-          <Input placeholder={t('chinaWarehouse.cityPh', 'Ville')} value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} required className="h-10" />
-          <Input placeholder={t('chinaWarehouse.provincePh', 'Province')} value={form.province} onChange={(e) => setForm({ ...form, province: e.target.value })} className="h-10" />
-          <Input placeholder={t('chinaWarehouse.addressPh', 'Adresse')} value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} className="h-10" />
-          <Input placeholder={t('chinaWarehouse.contactPh', 'Contact')} value={form.contact_name} onChange={(e) => setForm({ ...form, contact_name: e.target.value })} className="h-10" />
-          <Input placeholder={t('chinaWarehouse.phonePh', 'Téléphone')} value={form.contact_phone} onChange={(e) => setForm({ ...form, contact_phone: e.target.value })} className="h-10" />
-          <Input placeholder={t('chinaWarehouse.emailPh', 'Email manager')} value={form.manager_email} onChange={(e) => setForm({ ...form, manager_email: e.target.value })} className="h-10" />
-          <Input type="number" placeholder={t('chinaWarehouse.capacityPh', 'Capacité m²')} value={form.capacity_sqm} onChange={(e) => setForm({ ...form, capacity_sqm: e.target.value })} className="h-10" />
+          <FormField label={t('chinaWarehouse.namePh', 'Nom')}><Input placeholder={t('chinaWarehouse.namePh', 'Nom')} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required className="h-10" /></FormField>
+          <FormField label={t('chinaWarehouse.cityPh', 'Ville')}><Input placeholder={t('chinaWarehouse.cityPh', 'Ville')} value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} required className="h-10" /></FormField>
+          <FormField label={t('chinaWarehouse.provincePh', 'Province')}><Input placeholder={t('chinaWarehouse.provincePh', 'Province')} value={form.province} onChange={(e) => setForm({ ...form, province: e.target.value })} className="h-10" /></FormField>
+          <FormField label={t('chinaWarehouse.addressPh', 'Adresse')}><Input placeholder={t('chinaWarehouse.addressPh', 'Adresse')} value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} className="h-10" /></FormField>
+          <FormField label={t('chinaWarehouse.contactPh', 'Contact')}><Input placeholder={t('chinaWarehouse.contactPh', 'Contact')} value={form.contact_name} onChange={(e) => setForm({ ...form, contact_name: e.target.value })} className="h-10" /></FormField>
+          <FormField label={t('chinaWarehouse.phonePh', 'Téléphone')}><Input placeholder={t('chinaWarehouse.phonePh', 'Téléphone')} value={form.contact_phone} onChange={(e) => setForm({ ...form, contact_phone: e.target.value })} className="h-10" /></FormField>
+          <FormField label={t('chinaWarehouse.emailPh', 'Email manager')}><Input placeholder={t('chinaWarehouse.emailPh', 'Email manager')} value={form.manager_email} onChange={(e) => setForm({ ...form, manager_email: e.target.value })} className="h-10" /></FormField>
+          <FormField label={t('chinaWarehouse.capacityPh', 'Capacité m²')}><Input type="number" min="0" placeholder={t('chinaWarehouse.capacityPh', 'Capacité m²')} value={form.capacity_sqm} onChange={(e) => setForm({ ...form, capacity_sqm: e.target.value })} className="h-10" /></FormField>
           <div className="flex gap-2">
             <Button type="submit" disabled={saving} className="h-10">{saving ? t('saving') : t('save')}</Button>
             <Button type="button" variant="outline" onClick={() => setShowForm(false)} className="h-10">{t('cancel')}</Button>
@@ -93,8 +101,11 @@ export default function ChinaWarehousePage() {
 
       {errors.load && <p role="alert" className="text-xs text-destructive">{errors.load}</p>}
 
+      <CollectionToolbar query={view.query} onQueryChange={view.setQuery} filter={view.filter} onFilterChange={view.setFilter} options={['all', 'active', 'inactive'].map((value) => ({ value, label: t(`portalComponents.${value}`) }))}><PortalRefresh onRefresh={load} updatedAt={updatedAt} /></CollectionToolbar>
+      <ConfirmActionDialog open={Boolean(pendingDeletion)} onOpenChange={(open) => { if (!open) setPendingDeletion(null); }} title={t('portalComponents.deleteWarehouse')} description={t('portalComponents.deleteWarehouseDescription', { name: pendingDeletion?.name || '' })} confirmLabel={t('portalComponents.delete')} onConfirm={() => deleteWarehouse(pendingDeletion.id)} />
+      {view.count === 0 && <EmptyState title={t('portalComponents.noResults')} description={t('portalComponents.noResultsDescription')} actionLabel={t('portalComponents.clearFilters')} onAction={view.reset} />}
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-        {warehouses.map((wh) => (
+        {view.records.map((wh) => (
           <div key={wh.id} className="rounded-2xl border border-border bg-card p-4 space-y-2">
             <div className="flex items-start justify-between">
               <div>
@@ -110,13 +121,14 @@ export default function ChinaWarehousePage() {
             </div>
             <div className="flex gap-2 pt-1">
               <Button size="sm" variant="outline" onClick={() => viewInventory(wh)} className="flex-1">{t('chinaWarehouse.viewInventory', 'Inventaire')}</Button>
-              <Button size="sm" variant="outline" disabled={Boolean(deleting)} onClick={() => deleteWarehouse(wh.id)}>{t('delete')}</Button>
+              <Button size="sm" variant="outline" disabled={Boolean(deleting)} onClick={() => setPendingDeletion(wh)}>{t('delete')}</Button>
             </div>
           </div>
         ))}
         {!warehouses.length && <p className="text-sm text-muted-foreground md:col-span-3">{t('chinaWarehouse.none', 'Aucun entrepôt Chine configuré')}</p>}
       </div>
 
+      <CollectionPagination view={view} onPageChange={view.setPage} />
       {selectedWh && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">

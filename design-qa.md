@@ -48,3 +48,11 @@ Full suite: 236 passed. Lint, type checking, production build and follow-up tran
 Source visual target remains the attached board, with the user's newer simple/clean direction. Implementation screenshot: unavailable. Desktop/mobile viewport and density comparison, interaction checks and visual fidelity surfaces remain blocked by unavailable browser capture.
 
 final result: blocked
+
+## Shared component completion iteration
+
+Added six reusable components and integrated them into portal and account routes. Search/filter/pagination handle loaded records, clear-filter states and page shrinkage. Refresh controls expose healthy-state reloads. Warehouse deletion and API-key revocation use asynchronous confirmation dialogs. Forms have visible associated labels. Account-deletion controls now create compliance requests instead of displaying fake deletion success.
+
+Lint, type checking, build and all 240 tests passed. Collection and data-request regression tests cover accent-insensitive filtering, pagination boundaries, authenticated ownership and persistence failures. Browser evidence remains unavailable; dialogs, focus restoration and mobile layouts have not been visually verified.
+
+final result: blocked

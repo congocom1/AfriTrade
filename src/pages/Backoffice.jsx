@@ -1,3 +1,4 @@
+import PortalRefresh from '@/components/portal/PortalRefresh';
 import { functionData } from '@/lib/portalData';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -29,6 +30,7 @@ export default function Backoffice() {
     <main className="min-w-0 flex-1 p-4 md:p-8">
       <div className="mx-auto max-w-5xl space-y-5">
         <header><p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Espace réservé · administration</p><h1 className="mt-1 text-2xl font-bold tracking-tight">Vue opérationnelle</h1><p className="text-sm text-muted-foreground">Activité récente de la plateforme.</p></header>
+        {data && <PortalRefresh onRefresh={load} />}
         {!data && !error && <div role="status" aria-label="Chargement" className="grid gap-3 sm:grid-cols-3">{[1,2,3].map(n => <div key={n} className="h-28 animate-pulse rounded-xl bg-secondary" />)}</div>}
         {error && <div role="alert" className="rounded-xl border border-destructive/40 bg-card p-5"><p>Impossible de charger le tableau de bord.</p><button type="button" onClick={load} className="mt-3 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">Réessayer</button></div>}
         {data && <>

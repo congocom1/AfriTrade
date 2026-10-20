@@ -1,3 +1,4 @@
+import PortalRefresh from '@/components/portal/PortalRefresh';
 import React from 'react';
 import { usePortalData } from '@/hooks/usePortalData';
 import { loadRecordGroups } from '@/lib/portalData';
@@ -15,7 +16,7 @@ import { useTranslation } from 'react-i18next';
 
 export default function AdminDashboard() {
   const { t } = useTranslation();
-  const { data, loading, error, reload } = usePortalData(['admin-dashboard'], () => loadRecordGroups({
+  const { data, loading, error, reload, updatedAt } = usePortalData(['admin-dashboard'], () => loadRecordGroups({
     orders: () => base44.entities.Order.list('-created_date', 200),
     fulfillments: () => base44.entities.FulfillmentOrder.list('-created_date', 300),
     products: () => base44.entities.Product.list('-created_date', 300),
@@ -48,6 +49,7 @@ export default function AdminDashboard() {
 
   return (
     <DashboardShell nav={ADMIN_LINKS} title={t('adminDashboard.title')}>
+      <PortalRefresh onRefresh={reload} updatedAt={updatedAt} />
       <AdminLiveOverview />
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">

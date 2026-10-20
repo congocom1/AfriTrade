@@ -1,3 +1,4 @@
+import PortalRefresh from '@/components/portal/PortalRefresh';
 import { usePortalData } from '@/hooks/usePortalData';
 import { loadRecordGroups } from '@/lib/portalData';
 import PortalStatus from '@/components/PortalStatus';
@@ -32,7 +33,7 @@ export default function LogisticsHub() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [error, setError] = useState('');
 
-  const { data, loading, error: loadError, reload } = usePortalData(['logistics'], () => loadRecordGroups({
+  const { data, loading, error: loadError, reload, updatedAt } = usePortalData(['logistics'], () => loadRecordGroups({
     points: () => base44.entities.PickupPoint.list('name', 200),
     zones: () => base44.entities.DeliveryZone.list('name', 200),
     couriers: () => base44.entities.Courier.list('name', 100),
@@ -117,6 +118,7 @@ export default function LogisticsHub() {
         subtitle={t('logisticsHub.subtitle')}
       />
 
+      <PortalRefresh onRefresh={reload} updatedAt={updatedAt} />
       <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
         <StatCard label={t('logisticsHub.statPoints')} value={`${activePoints.length} / ${points.length}`} hint={t('logisticsHub.statActiveTotal')} tone={activePoints.length ? 'good' : 'bad'} />
         <StatCard label={t('logisticsHub.statFleets')} value={`${activeCouriers.length} / ${couriers.length}`} hint={t('logisticsHub.statFleetsHint')} tone={activeCouriers.length ? 'good' : 'bad'} />

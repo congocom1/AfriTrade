@@ -1,3 +1,4 @@
+import PortalRefresh from '@/components/portal/PortalRefresh';
 import { usePortalData } from '@/hooks/usePortalData';
 import { loadRecordGroups } from '@/lib/portalData';
 import PortalStatus from '@/components/PortalStatus';
@@ -18,7 +19,7 @@ const LOW_STOCK = 5;
 export default function SellerPortal() {
   const { t } = useTranslation();
   const { seller, isAdmin, loading: loadingSeller, error: scopeError, reload: reloadScope } = useActiveSeller();
-  const { data, loading, error, reload } = usePortalData(['seller-overview', seller?.id], () => loadRecordGroups({
+  const { data, loading, error, reload, updatedAt } = usePortalData(['seller-overview', seller?.id], () => loadRecordGroups({
     products: () => base44.entities.Product.filter({ seller_id: seller.id }, '-created_date', 200),
     fulfillments: () => base44.entities.FulfillmentOrder.filter({ seller_id: seller.id }, '-created_date', 50),
     wallets: () => base44.entities.Wallet.filter({ owner_type: 'seller', owner_id: seller.id }),
@@ -85,6 +86,7 @@ export default function SellerPortal() {
         { to: '/seller/wallet', label: t('sellerPortal.navWallet') },
         { to: '/seller/settings', label: t('sellerPortal.navShop') },
       ]} />
+      <PortalRefresh onRefresh={reload} updatedAt={updatedAt} />
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         {[

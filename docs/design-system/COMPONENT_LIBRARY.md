@@ -22,6 +22,29 @@ The Component Library serves as the comprehensive inventory and usage guide for 
 
 ## Component Inventory
 
+### Portal Controls
+
+The following controls are implemented and connected to production source routes:
+
+| Component | Purpose | Current consumers |
+| --- | --- | --- |
+| `portal/CollectionToolbar` | Labeled search, clear-search control and status filtering | Supplier portal, China warehouses, API keys |
+| `portal/CollectionPagination` | Result range, previous/next controls and page boundaries | Supplier portal, China warehouses, API keys |
+| `portal/PortalRefresh` | Refresh action, pending/error state and optional update time | Dashboard entry screens, backoffice and China receiving panel |
+| `portal/ConfirmActionDialog` | Async destructive confirmation that stays open on failure | Warehouse deletion and API-key revocation |
+| `portal/FormField` | Visible label, control ID, help text and validation association | Warehouse creation and data-rights forms |
+| `settings/AccountDeletionRequest` | Authenticated request form in a dialog | Profile and privacy settings |
+
+`EmptyState` also accepts `onAction` with `actionLabel`, for clearing filters without navigation. Its existing `actionTo` link remains supported.
+
+Collection controls search and paginate records already loaded by the page. Their result labels explicitly describe loaded records; they do not represent a server-side catalogue search or total count. Pages clamp automatically after filtering, refresh or deletion reduces the record count.
+
+`ConfirmActionDialog` awaits `onConfirm`. A thrown error or a `false` result keeps the dialog open with an error. Other resolved results close it. Controls are disabled while the action is pending.
+
+`AccountDeletionRequest` records a `DataRequest` of type `deletion` for review. It does not delete the account. Authentication and ownership use the existing entity permissions; the form shows a reference only after persistence succeeds. It does not send verification emails from the browser.
+
+Translations are in `src/i18n/portalComponents.js`, with English/French copy and the application's existing French fallback for other languages.
+
 ### DashboardShell Component
 **Purpose**: Shared wrapper for admin and seller dashboards with consistent layout patterns.
 

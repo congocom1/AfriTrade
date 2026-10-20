@@ -1,3 +1,4 @@
+import AccountDeletionRequest from '@/components/settings/AccountDeletionRequest';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -40,14 +41,6 @@ export default function Profile() {
     saveProfile(profile);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
-  };
-
-  const handleDeleteAccount = () => {
-    if (window.confirm(t('profile.deleteConfirm'))) {
-      // TODO: Call backend cleanup function
-      alert(t('profile.deleteSuccess'));
-      window.location.href = '/';
-    }
   };
 
     return (
@@ -175,13 +168,7 @@ export default function Profile() {
             <p className="text-[11px] text-muted-foreground">{t('profile.adminSub')}</p>
           </div>
         </Link>
-        <Link to="#" className="flex items-center gap-3 rounded-xl border border-border bg-card p-3.5 text-red-500" onClick={handleDeleteAccount}>
-          <RotateCcw className="h-4 w-4 text-red-500" />
-          <div>
-            <p className="text-sm font-semibold text-red-500">{t('profile.deleteAccount')}</p>
-            <p className="text-[11px] text-muted-foreground">{t('profile.deleteAccountSub')}</p>
-          </div>
-        </Link>
+        <AccountDeletionRequest />
       </section>
     </div>
   );

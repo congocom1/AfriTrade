@@ -1,3 +1,4 @@
+import PortalRefresh from '@/components/portal/PortalRefresh';
 import { usePortalData } from '@/hooks/usePortalData';
 import { functionData } from '@/lib/portalData';
 import PortalStatus from '@/components/PortalStatus';
@@ -36,7 +37,7 @@ export default function CourierConsole() {
   const fleetNames = useMemo(() => fleets.map((f) => f.name).filter(Boolean), [fleets]);
   const fleetKey = fleets.map((f) => f.id).join(',');
 
-  const { data, loading, error: loadError, reload } = usePortalData(['courier', fleetKey], async () => {
+  const { data, loading, error: loadError, reload, updatedAt } = usePortalData(['courier', fleetKey], async () => {
     const names = fleetNames;
     if (!names.length) return { ships: [], fulfillments: {}, orders: {}, wallet: null, transactions: [] };
       const [shipGroups, foGroups, allOrders, walletGroups] = await Promise.all([
@@ -135,6 +136,7 @@ export default function CourierConsole() {
   return (
     <DashboardShell nav={[]} title={t('courierConsole.title')}>
       <>
+        <PortalRefresh onRefresh={reload} updatedAt={updatedAt} />
         {!loadingCourier && (
           <CourierHeader
             user={user}

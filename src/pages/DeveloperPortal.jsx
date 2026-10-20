@@ -1,3 +1,9 @@
+import { useCollectionView } from '@/hooks/useCollectionView';
+import CollectionToolbar from '@/components/portal/CollectionToolbar';
+import CollectionPagination from '@/components/portal/CollectionPagination';
+import PortalRefresh from '@/components/portal/PortalRefresh';
+import ConfirmActionDialog from '@/components/portal/ConfirmActionDialog';
+import EmptyState from '@/components/EmptyState';
 import { usePortalData } from '@/hooks/usePortalData';
 import { functionData } from '@/lib/portalData';
 import PortalStatus from '@/components/PortalStatus';
@@ -62,12 +68,14 @@ export default function DeveloperPortal() {
 
 function ApiKeysTab({ tab, setTab }) {
   const { t } = useTranslation();
-  const { data, loading, error, reload } = usePortalData(['api-keys'], async () => {
+  const { data, loading, error, reload, updatedAt } = usePortalData(['api-keys'], async () => {
     const payload = functionData(await base44.functions.invoke('manage-api-keys', { action: 'list' }));
     if (!Array.isArray(payload.keys)) throw new Error('Invalid key list');
     return payload.keys;
   });
   const apiKeys = data || [];
+  const view = useCollectionView(apiKeys, ['name', 'key_prefix', 'tenant_id', 'tenant_name'], (key, filter) => filter === 'all' || (filter === 'active' && key.active) || (filter === 'inactive' && !key.active));
+  const [revokingKey, setRevokingKey] = useState(null);
   const [actionError, setActionError] = useState(false);
   const [busy, setBusy] = useState('');
   const [creating, setCreating] = useState(false);
@@ -95,13 +103,14 @@ function ApiKeysTab({ tab, setTab }) {
   };
 
   const handleRevoke = async (id) => {
-    if (busy) return;
+    if (busy) return false;
     setBusy(id); setActionError(false);
     try {
       functionData(await base44.functions.invoke('manage-api-keys', { action: 'revoke', id }));
       setGeneratedKey(null);
       await reload();
-    } catch { setActionError(true); } finally { setBusy(''); }
+      return true;
+    } catch { setActionError(true); return false; } finally { setBusy(''); }
   };
 
   const copyToClipboard = async (text) => {
@@ -228,13 +237,15 @@ function ApiKeysTab({ tab, setTab }) {
             </form>
           )}
 
+          {!loading && !error && <CollectionToolbar query={view.query} onQueryChange={view.setQuery} filter={view.filter} onFilterChange={view.setFilter} options={['all', 'active', 'inactive'].map((value) => ({ value, label: t(`portalComponents.${value}`) }))}><PortalRefresh onRefresh={reload} updatedAt={updatedAt} /></CollectionToolbar>}
+          <ConfirmActionDialog open={Boolean(revokingKey)} onOpenChange={(open) => { if (!open) setRevokingKey(null); }} title={t('portalComponents.revokeKey')} description={t('portalComponents.revokeKeyDescription', { name: revokingKey?.name || '' })} confirmLabel={t('portalComponents.revoke')} onConfirm={() => handleRevoke(revokingKey.id)} />
           {loading || error ? (
             <PortalStatus loading={loading} retry={reload} />
-          ) : apiKeys.length === 0 ? (
-            <p className="py-8 text-center text-sm text-muted-foreground">Aucune clé API pour le moment</p>
+          ) : view.count === 0 ? (
+            <EmptyState title={t('portalComponents.noResults')} description={t('portalComponents.noResultsDescription')} onAction={view.reset} actionLabel={t('portalComponents.clearFilters')} />
           ) : (
             <div className="space-y-2">
-              {apiKeys.map((key) => (
+              {view.records.map((key) => (
                 <div key={key.id} className="flex items-center justify-between rounded-xl border border-border p-3">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
@@ -253,7 +264,7 @@ function ApiKeysTab({ tab, setTab }) {
                     </div>
                   </div>
                   {key.active && (
-                    <Button variant="ghost" size="sm" disabled={Boolean(busy)} aria-label={t('portalStatus.revoke', { name: key.name })} onClick={() => handleRevoke(key.id)} className="text-destructive hover:text-destructive">
+                    <Button variant="ghost" size="sm" disabled={Boolean(busy)} aria-label={t('portalStatus.revoke', { name: key.name })} onClick={() => setRevokingKey(key)} className="text-destructive hover:text-destructive">
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   )}
@@ -261,6 +272,7 @@ function ApiKeysTab({ tab, setTab }) {
               ))}
             </div>
           )}
+          {!loading && !error && <CollectionPagination view={view} onPageChange={view.setPage} />}
         </CardContent>
       </Card>
     </div>
