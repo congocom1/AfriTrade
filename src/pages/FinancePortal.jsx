@@ -8,7 +8,6 @@ import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import DashboardNav from '@/components/DashboardNav';
 import { ADMIN_LINKS } from '@/lib/navLinks';
-import OpsHeader from '@/components/ops/OpsHeader';
 import StatCard from '@/components/ops/StatCard';
 import ReconciliationTable from '@/components/finance/ReconciliationTable';
 import { providerLabel } from '@/lib/payments';
@@ -53,11 +52,15 @@ export default function FinancePortal() {
 
   return (
     <div className="space-y-5">
-      <DashboardNav title={t('financePortal.admin')} links={ADMIN_LINKS} />
-      <OpsHeader title={t('financePortal.title')} subtitle={t('financePortal.subtitle')}>
+      <DashboardNav title={t('financePortal.title')} links={ADMIN_LINKS} />
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="space-y-2"><p className="max-w-2xl text-sm text-muted-foreground">{t('financePortal.subtitle')}</p>
+        <p className="text-xs text-muted-foreground">{t('portalComponents.recordScope')}</p></div>
+        <div className="flex flex-wrap items-center gap-3">
+        <PortalRefresh onRefresh={reload} updatedAt={updatedAt} />
         <Link to="/admin/payouts" className="rounded-full bg-primary px-4 py-2 text-xs font-bold text-primary-foreground">{t('financePortal.processPayouts')}</Link>
-      </OpsHeader>
-      <PortalRefresh onRefresh={reload} updatedAt={updatedAt} />
+        </div>
+      </div>
       <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
         <StatCard label={t('financePortal.collected')} value={formatUSD(sum('paid'))} tone="good" />
         <StatCard label={t('financePortal.pending')} value={formatUSD(sum('pending'))} tone="warn" />
