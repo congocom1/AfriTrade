@@ -9,6 +9,7 @@ import { ShoppingBag, TrendingUp, AlertTriangle, Users, Package, Wallet as Walle
 import { base44 } from '@/api/base44Client';
 import DashboardShell from '@/components/DashboardShell';
 import StatusBadge from '@/components/StatusBadge';
+import StatCard from '@/components/ops/StatCard';
 import AdminLiveOverview from '@/components/admin/AdminLiveOverview';
 import { ADMIN_LINKS } from '@/lib/navLinks';
 import { formatUSD, formatDateTime } from '@/lib/format';
@@ -50,15 +51,11 @@ export default function AdminDashboard() {
   return (
     <DashboardShell nav={ADMIN_LINKS} title={t('adminDashboard.title')}>
       <PortalRefresh onRefresh={reload} updatedAt={updatedAt} />
-      <AdminLiveOverview />
+      <p className="text-xs text-muted-foreground">{t('portalComponents.recordScope')}</p>
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         {kpis.map((k) => (
-          <div key={k.label} className="rounded-xl border border-border bg-card p-3.5">
-            <k.icon className="h-4 w-4 text-primary" />
-            <p className="mt-1.5 text-lg font-bold">{k.value}</p>
-            <p className="text-[11px] text-muted-foreground">{k.label}</p>
-          </div>
+          <StatCard key={k.label} label={k.label} value={k.value} />
         ))}
       </div>
 
@@ -69,7 +66,8 @@ export default function AdminDashboard() {
         </Link>
       )}
 
-      <section className="rounded-2xl border border-border bg-card p-4">
+      <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+      <section className="min-w-0 rounded-xl border border-border bg-card p-5">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-sm font-bold">{t('adminDashboard.latestOrders')}</h2>
           <Link to="/admin/orders" className="text-xs font-semibold text-primary">{t('adminDashboard.viewAll')}</Link>
@@ -94,7 +92,7 @@ export default function AdminDashboard() {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-border bg-card p-4">
+      <section className="min-w-0 rounded-xl border border-border bg-card p-5">
         <h2 className="mb-3 text-sm font-bold">{t('adminDashboard.audit')}</h2>
         <div className="space-y-1.5">
           {logs.map((l) => (
@@ -107,6 +105,8 @@ export default function AdminDashboard() {
           {!logs.length && <p className="text-xs text-muted-foreground">{t('adminDashboard.noLogs')}</p>}
         </div>
       </section>
+      </div>
+      <AdminLiveOverview />
     </DashboardShell>
   );
 }

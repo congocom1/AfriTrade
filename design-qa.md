@@ -56,3 +56,12 @@ Added six reusable components and integrated them into portal and account routes
 Lint, type checking, build and all 240 tests passed. Collection and data-request regression tests cover accent-insensitive filtering, pagination boundaries, authenticated ownership and persistence failures. Browser evidence remains unavailable; dialogs, focus restoration and mobile layouts have not been visually verified.
 
 final result: blocked
+
+## Dashboard organization — 2026-10-20
+
+- Shared dashboard navigation now shows a compact set of primary destinations and the current section. Larger workspaces expose all existing routes in a searchable, grouped Radix popover; mobile uses native grouped navigation. Search ignores accents. Links retain router authorization boundaries.
+- Admin metrics use the shared KPI component, disputes precede the work queue, orders and audit activity form responsive columns, and the secondary live overview follows the work queue.
+- Finance places its title, explanatory copy, refresh control and payout action in a consistent hierarchy. Both overview pages disclose that figures cover loaded records.
+- Operations section headings use h2 beneath the workspace h1.
+- Checks: lint, typecheck, all 240 tests, and production build passed. Existing build warnings remain: absent Base44 build environment values, legacy chunk configuration, oversized bundles. No backend deployment or iOS changes in this pass.
+- Visual verification remains blocked: no browser tools are available in this environment. No screenshot or pixel-perfect claim is made.

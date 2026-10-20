@@ -1,6 +1,18 @@
 export default {
   "en": {
     "portalComponents": {
+      "workspace": "Workspace",
+      "searchSections": "Find a section…",
+      "noSections": "No matching sections",
+      "overview": "Overview",
+      "commerce": "Commerce",
+      "operations": "Operations",
+      "finance": "Finance",
+      "insights": "Insights",
+      "support": "Support",
+      "administration": "Administration",
+      "recordScope": "Metrics reflect the recently loaded records.",
+
       "search": "Search loaded records",
       "clearSearch": "Clear search",
       "filter": "Status",
@@ -34,6 +46,18 @@ export default {
   },
   "fr": {
     "portalComponents": {
+      "workspace": "Espace de travail",
+      "searchSections": "Rechercher une rubrique…",
+      "noSections": "Aucune rubrique correspondante",
+      "overview": "Vue d’ensemble",
+      "commerce": "Commerce",
+      "operations": "Opérations",
+      "finance": "Finance",
+      "insights": "Analyses",
+      "support": "Assistance",
+      "administration": "Administration",
+      "recordScope": "Les indicateurs reflètent les données récemment chargées.",
+
       "search": "Rechercher dans les données chargées",
       "clearSearch": "Effacer la recherche",
       "filter": "Statut",
