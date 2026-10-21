@@ -1,14 +1,7 @@
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowDown, LoaderCircle } from 'lucide-react';
-
-export const REFRESH_THRESHOLD = 76;
-export function pullDistance(start, current) {
-  if (!start || !current) return 0;
-  const dx = current.x - start.x;
-  const dy = current.y - start.y;
-  return dy > 8 && dy > Math.abs(dx) * 1.25 ? Math.min(112, dy * 0.55) : 0;
-}
+import { REFRESH_THRESHOLD, pullDistance } from '@/lib/pullGesture';
 
 /** Only starts at the top-level scroll origin; never hijacks horizontal rails. */
 export default function usePullToRefresh(onRefresh, { disabled = false } = {}) {
