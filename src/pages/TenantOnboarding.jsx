@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Palette, Rocket, ShieldCheck } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import PlanCard from '@/components/saas/PlanCard';
 import TenantForm from '@/components/saas/TenantForm';
+import OnboardingStepper from '@/components/onboarding/OnboardingStepper';
 import { DEFAULT_PLANS, loadPlans, planByCode } from '@/lib/plans';
 import { BILLING_CYCLES, startSubscription } from '@/lib/saas';
 import { writeActiveTenantId } from '@/lib/tenancy';
@@ -29,6 +30,24 @@ export default function TenantOnboarding() {
   }, []);
 
   const plan = planByCode(plans, planCode);
+  const [formStarted, setFormStarted] = useState(false);
+  const step = done ? 2 : formStarted ? 1 : 0;
+  const steps = useMemo(
+    () => [
+      { id: 'plan', label: t('tenantOnboarding.stepPlan') },
+      { id: 'brand', label: t('tenantOnboarding.stepBrand') },
+      { id: 'live', label: t('tenantOnboarding.stepLive') },
+    ],
+    [t]
+  );
+  const reassurances = useMemo(
+    () => [
+      { icon: ShieldCheck, label: t('tenantOnboarding.perkTrial') },
+      { icon: Palette, label: t('tenantOnboarding.perkBrand') },
+      { icon: Rocket, label: t('tenantOnboarding.perkLaunch') },
+    ],
+    [t]
+  );
 
   const create = async (form) => {
     setBusy(true);
@@ -64,29 +83,46 @@ export default function TenantOnboarding() {
 
   if (done) {
     return (
-      <Card className="mx-auto max-w-xl">
-        <CardContent className="space-y-3 p-6 text-center">
-          <CheckCircle2 className="mx-auto h-10 w-10 text-emerald-600" />
-          <h1 className="font-heading text-xl font-bold">{t('tenantOnboarding.doneTitle', { name: done.name })}</h1>
-          <p className="text-sm text-muted-foreground">
-            {t('tenantOnboarding.doneDesc', { plan: plan.name })}
-          </p>
-          <div className="flex flex-wrap justify-center gap-2">
-            <Button onClick={() => navigate('/tenant')}>{t('tenantOnboarding.openConsole')}</Button>
-            <Button variant="outline" onClick={() => navigate('/seller-portal')}>{t('tenantOnboarding.manageProducts')}</Button>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="mx-auto max-w-xl space-y-5">
+        <OnboardingStepper steps={steps} current={2} />
+        <Card>
+          <CardContent className="space-y-3 p-6 text-center">
+            <CheckCircle2 className="mx-auto h-10 w-10 text-emerald-600" />
+            <h1 className="font-heading text-xl font-bold">{t('tenantOnboarding.doneTitle', { name: done.name })}</h1>
+            <p className="text-sm text-muted-foreground">
+              {t('tenantOnboarding.doneDesc', { plan: plan.name })}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {t('tenantOnboarding.doneProof')}
+            </p>
+            <div className="flex flex-wrap justify-center gap-2">
+              <Button onClick={() => navigate('/tenant')}>{t('tenantOnboarding.openConsole')}</Button>
+              <Button variant="outline" onClick={() => navigate('/seller-portal')}>{t('tenantOnboarding.manageProducts')}</Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   return (
     <div className="space-y-5 py-2">
-      <div>
-        <h1 className="font-heading text-2xl font-bold">{t('tenantOnboarding.title')}</h1>
-        <p className="text-sm text-muted-foreground">
-          {t('tenantOnboarding.subtitle')}
-        </p>
+      <div className="space-y-3">
+        <OnboardingStepper steps={steps} current={step} />
+        <div>
+          <h1 className="font-heading text-2xl font-bold">{t('tenantOnboarding.title')}</h1>
+          <p className="text-sm text-muted-foreground">
+            {t('tenantOnboarding.subtitle')}
+          </p>
+        </div>
+        <ul className="flex flex-wrap gap-x-6 gap-y-2">
+          {reassurances.map(({ icon: PerkIcon, label }) => (
+            <li key={label} className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+              <PerkIcon className="h-4 w-4 text-primary" aria-hidden="true" />
+              {label}
+            </li>
+          ))}
+        </ul>
       </div>
 
       <div className="inline-flex rounded-full border border-border bg-card p-1">
@@ -108,7 +144,7 @@ export default function TenantOnboarding() {
         ))}
       </div>
 
-      <Card>
+      <Card onFocusCapture={() => setFormStarted(true)}>
         <CardContent className="space-y-4 p-5">
           <div>
             <h2 className="font-heading text-base font-bold">{t('tenantOnboarding.infoTitle')}</h2>
