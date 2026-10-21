@@ -54,7 +54,7 @@ export default function MobileDrawer({ isOpen, onClose }) {
           onClick={onClose}
           aria-current={active ? 'page' : undefined}
           // P0 M-06: Add press feedback on mobile
-          className={`flex items-center gap-3 rounded-xl px-4 py-4 text-base font-medium transition-colors active:scale-[0.98] active:bg-accent duration-75 ease-out ${
+          className={`app-nav-item flex min-h-11 items-center gap-3 rounded-xl px-4 py-4 text-base font-medium transition-colors active:scale-[0.98] active:bg-accent duration-75 ease-out ${
             active ? 'bg-primary text-primary-foreground' : 'text-foreground hover:bg-secondary'
           }`}
         >
@@ -71,16 +71,18 @@ export default function MobileDrawer({ isOpen, onClose }) {
     <Drawer
       open={isOpen}
       onOpenChange={(open) => { if (!open) onClose(); }}
-      // Enable swipe-to-close for iOS/Android (vaul Drawer supports this by default)
-      // P0 M-03: Added swipe-to-close gesture support
+      direction="bottom"
+      dismissible
+      // Vaul provides pointer/touch drag-down to dismiss; navigation links
+      // remain keyboard and screen-reader accessible.
     >
-        <DrawerContent id="mobile-drawer" aria-describedby={undefined} className="mx-auto max-h-[85dvh] max-w-md w-full rounded-t-[16px] border-l-0 border-r-0 border-b-0 bg-card/95 backdrop-blur-xl shadow-xl">
+        <DrawerContent id="mobile-drawer" aria-describedby={undefined} className="mx-auto pb-[env(safe-area-inset-bottom)] max-h-[85dvh] max-w-md w-full rounded-t-[16px] border-l-0 border-r-0 border-b-0 bg-card/95 backdrop-blur-xl shadow-xl">
           <DrawerHeader className="flex h-16 items-center justify-between border-b border-border px-4 sm:text-left">
             <DrawerTitle className="text-base font-semibold">{t('nav.menu')}</DrawerTitle>
             <button
               type="button"
               onClick={onClose}
-              className="flex h-10 w-10 items-center justify-center rounded-lg hover:bg-secondary focus:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-90"
+              className="flex h-11 w-11 items-center justify-center rounded-lg hover:bg-secondary focus:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-90"
               aria-label={t('nav.close')}
             >
               <X className="h-6 w-6" aria-hidden="true" />

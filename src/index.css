@@ -269,7 +269,7 @@
     color: hsl(var(--muted-foreground));
   }
 
-  button, [role="button"], .bottom-nav-item {
+  button, [role="button"], .bottom-nav-item, .app-nav-item {
     -webkit-user-select: none;
     user-select: none;
   }
@@ -1099,12 +1099,20 @@ header[role='banner'] {
 
 /* Mobile optimizations */
 html, body {
-  overscroll-behavior: none;
+  overscroll-behavior-y: none;
   height: 100%;
 }
 
+/* Keep interior scroll containers inside the host WebView. The scrollable
+   discovery rail still uses its own overflow and touch behavior. */
+main, .brand-app-shell main, [data-webview-scroll] {
+  overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+
 /* Prevent text selection on interactive elements (but not links - M-08) */
-button, [role="button"], .bottom-nav-item {
+button, [role="button"], .bottom-nav-item, .app-nav-item {
   user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;

@@ -30,7 +30,7 @@ export default function BottomNav() {
               to={item.path}
               aria-current={active ? 'page' : undefined}
               aria-label={t(item.key)}
-              className={`relative flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-lg px-1 text-[10px] font-medium transition-colors duration-150 active:bg-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring ${
+              className={`bottom-nav-item relative flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-lg px-1 text-[10px] font-medium transition-colors duration-150 active:bg-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring ${
                 active ? 'text-primary' : 'text-muted-foreground'
               }`}
             >
