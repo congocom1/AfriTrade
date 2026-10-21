@@ -112,6 +112,7 @@ export default defineConfig({
           groups: [
             { name: 'three-addons', test: /node_modules\/three\/examples\/jsm\// },
             { name: 'three-core', test: /node_modules\/three\// },
+            { name: 'translations', test: /src\/i18n\/(en|fr|ln|sw|resources)\.js$/ },
             { name: 'charts', test: /node_modules\/(recharts|d3-[^/]+)\// },
             { name: 'pdf', test: /node_modules\/jspdf\// },
             { name: 'html2canvas', test: /node_modules\/html2canvas\// },
