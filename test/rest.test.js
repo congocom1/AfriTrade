@@ -35,6 +35,7 @@ globalThis.__restTestClient = { auth: { me: async () => {
     list: async () => { throw new Error('Unfiltered reads are forbidden'); },
   },
   Review: { filter: async filter => { reviewReads++; lastFilter = filter; return []; } },
+  Supplier: { list: async () => [{ id: 's1', name: 'Public Supplier', country: 'CN', code: 'INTERNAL-001', adapter: 'private-adapter', default_markup_percent: 55, description: 'Catalog supplier' }] },
 } } };
 const get = path => handler(new Request(`https://example.test/api/${path}`));
 
@@ -91,4 +92,15 @@ test('hosted function mount accepts catalog route through path parameter', async
   const response = await handler(new Request('https://example.test/api/apps/app1/functions/rest?path=%2Fproducts&category=fashion'));
   assert.equal(response.status, 200);
   assert.deepEqual((await response.json()).products.map(p => p.id), ['public']);
+});
+
+test('public supplier directory omits internal integration and markup metadata', async () => {
+  const response = await get('suppliers');
+  assert.equal(response.status, 200);
+  const result = await response.json();
+  assert.equal(result.suppliers[0].name, 'Public Supplier');
+  assert.equal(result.suppliers[0].country, 'CN');
+  for (const key of ['code', 'adapter', 'default_markup_percent']) {
+    assert.equal(Object.hasOwn(result.suppliers[0], key), false, `Private field leaked: ${key}`);
+  }
 });
