@@ -78,7 +78,7 @@ export default function Search() {
   }, [category, categories]);
 
   const results = useMemo(() => {
-    const trimmed = term.trim();
+    const trimmed = (params.get('q') || '').trim();
     // Score once so relevance sort reflects the query, then filter.
     const scored = new Map(
       products.map((product) => [product, trimmed ? scoreProductRelevance(product, trimmed) : 0]),
@@ -107,7 +107,7 @@ export default function Search() {
       return [...productsList].sort((a, b) => (scored.get(b) ?? 0) - (scored.get(a) ?? 0));
     }
     return sortProducts(productsList, sort);
-  }, [products, term, categoryId, source, sort, maxPrice, minRating, inStock]);
+  }, [products, params, categoryId, source, sort, maxPrice, minRating, inStock]);
 
   const applyTerm = (value) => {
     const next = new URLSearchParams(params);
@@ -123,7 +123,7 @@ export default function Search() {
     setMinRating(0);
     setInStock(false);
     const next = new URLSearchParams();
-    if (term) next.set('q', term);
+    if (params.get('q')) next.set('q', params.get('q'));
     setParams(next);
   };
 
@@ -239,7 +239,7 @@ export default function Search() {
       <div className="flex items-center justify-between gap-2">
         <p className="text-xs text-muted-foreground">
           {loading ? t('common.loading') : t('search.resultsCount', { count: results.length })}
-          {term ? t('search.resultsForTerm', { term }) : ''}
+          {params.get('q') ? t('search.resultsForTerm', { term: params.get('q') }) : ''}
         </p>
         <select
           value={sort}
@@ -252,7 +252,7 @@ export default function Search() {
         </select>
       </div>
 
-      {loadError && <AsyncState error onRetry={() => setReloadToken(v => v + 1)} errorTitle={t('portalStatus.actionFailed')} errorDescription={t('search.emptyDesc')} />}
+      {loadError && <AsyncState error onRetry={() => setReloadToken(v => v + 1)} errorTitle={t('asyncState.errorTitle')} errorDescription={t('asyncState.errorDescription')} />}
       {!loadError && <ProductGrid
         products={results.slice(0, visible)}
         loading={loading}

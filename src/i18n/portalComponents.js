@@ -1,5 +1,6 @@
 export default {
   "en": {
+    "asyncState": { "loading": "Loading…", "errorTitle": "Unable to load content", "errorDescription": "Check your connection and try again.", "retry": "Try again" },
     "portalComponents": {
       "workspace": "Workspace",
       "home": "Home",
@@ -48,6 +49,7 @@ export default {
     }
   },
   "fr": {
+    "asyncState": { "loading": "Chargement…", "errorTitle": "Impossible de charger le contenu", "errorDescription": "Vérifiez votre connexion et réessayez.", "retry": "Réessayer" },
     "portalComponents": {
       "workspace": "Espace de travail",
       "home": "Accueil",
