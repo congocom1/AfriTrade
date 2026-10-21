@@ -1,10 +1,7 @@
-# npm security status — 2026-10-21
+# npm dependency security remediation — October 21, 2026
 
-`npm audit fix` previously applied available nonbreaking fixes. The remaining advisories are **not resolved** by this patch. `npm run security:check` fails on new high/critical affected package names or an unavailable audit report; its reviewed temporary baseline is in the script. This is a regression guard, NOT a green security audit.
+The repository has migrated React Router to v7, Tailwind CSS to v4 (using @tailwindcss/postcss with its existing configuration), and replaced Tailwind animation plugin with tw-animate-css. Unused Quill editor dependency was removed.
 
-- Tailwind CSS 3 with chokidar, braces, micromatch and fast-glob: remaining high findings; no compatible nonbreaking upgrades reported by npm audit. Moving to Tailwind 4 requires CSS/PostCSS and visual regression testing.
-- React Router 6: advisory fix requires a major v7 migration and authentication/navigation E2E testing.
-- react-quill-new/Quill: remaining low-severity issue with major upgrade path.
-- PostCSS dependencies: additional moderate advisories, revisit with the Tailwind migration.
+Verified with a clean npm installation and `npm audit --json`: zero reported advisories at the time of this change. `npm run security:check` now fails if any high or critical vulnerabilities recur, or audit cannot run.
 
-Run `npm audit` for the current complete advisory report. Reassess baseline on every dependency update. Do not approve unrestricted production on the basis of this regression check.
+Validation: lint, typecheck, 267 automated tests and Vite production build passed. Note that CLI checks do not prove UI visual parity, accessibility, authentication routes, or hosted Base44 functionality; run browser E2E and screenshot regression testing before shipping this major CSS/router upgrade to production.
