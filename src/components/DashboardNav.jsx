@@ -10,14 +10,16 @@ export function DashboardNav({ title, links = [], variant }) {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
-  const active = [...links].sort((a, b) => b.to.length - a.to.length).find(l => pathname === l.to || (!l.end && pathname.startsWith(`${l.to}/`)));
+  // One destination per route, even when multiple workspace modules supply the same link.
+  const uniqueLinks = [...new Map(links.filter(l => l?.to).map(l => [l.to.replace(/\/$/, '') || '/', l])).values()];
+  const active = [...uniqueLinks].sort((a, b) => b.to.length - a.to.length).find(l => pathname === l.to || (!l.end && pathname.startsWith(`${l.to}/`)));
   const label = l => l.key ? t(l.key) : l.label;
-  const grouped = links.length > 7;
-  const primary = grouped ? links.slice(0, 4) : links;
+  const grouped = uniqueLinks.length > 7;
+  const primary = grouped ? uniqueLinks.slice(0, 4) : uniqueLinks;
   const visible = active && !primary.includes(active) ? [...primary, active] : primary;
-  const groups = [...new Set(links.map(l => l.group || 'workspace'))];
+  const groups = [...new Set(uniqueLinks.map(l => l.group || 'workspace'))];
   const normalize = value => String(value).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase();
-  const matches = links.filter(l => normalize(`${label(l)} ${t(`portalComponents.${l.group || 'workspace'}`)}`).includes(normalize(search.trim())));
+  const matches = uniqueLinks.filter(l => normalize(`${label(l)} ${t(`portalComponents.${l.group || 'workspace'}`)}`).includes(normalize(search.trim())));
   const linkClass = selected => `workspace-link${selected ? ' workspace-link--active' : ''}`;
 
   return (
@@ -64,10 +66,10 @@ export function DashboardNav({ title, links = [], variant }) {
           </PopoverContent>
         </Popover>}
       </div>
-      {links.length > 0 && <>
+      {uniqueLinks.length > 0 && <>
         <select aria-label={title} value={active?.to || ''} onChange={e => navigate(e.target.value)} className="h-12 w-full rounded-lg border border-border bg-card px-3 text-sm font-medium md:hidden">
           {!active && <option value="" disabled>{title}</option>}
-          {groups.map(group => <optgroup key={group} label={t(`portalComponents.${group}`)}>{links.filter(l => (l.group || 'workspace') === group).map(l => <option key={l.to} value={l.to}>{label(l)}</option>)}</optgroup>)}
+          {groups.map(group => <optgroup key={group} label={t(`portalComponents.${group}`)}>{uniqueLinks.filter(l => (l.group || 'workspace') === group).map(l => <option key={l.to} value={l.to}>{label(l)}</option>)}</optgroup>)}
         </select>
         <nav aria-label={title} className="hidden flex-wrap gap-1 border-b border-border pb-2 md:flex">
           {visible.map(l => <NavLink key={l.to} to={l.to} end={l.end} className={() => linkClass(active?.to === l.to)}>{label(l)}</NavLink>)}
