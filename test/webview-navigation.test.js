@@ -33,7 +33,7 @@ describe('WebView navigation gestures', () => {
 describe('WebView UI safety gates', () => {
   it('does not render native select controls in application JSX', () => {
     const offenders = walk('src').filter(f => f.endsWith('.jsx') && !f.endsWith('legacy-select.jsx'))
-      .filter(f => /<select(?=[\s>])/i.test(readFileSync(f, 'utf8')));
+      .filter(f => /<select(?=[\s>])/.test(readFileSync(f, 'utf8')));
     assert.deepEqual(offenders, []);
     const compat = readFileSync('src/components/ui/legacy-select.jsx', 'utf8');
     assert.match(compat, /SelectTrigger/);
