@@ -82,8 +82,20 @@
 ## Open P2
 
 - Large JS chunks >500kB
-- Flutter parity not verified
 - Legacy audit docs noise
+
+## Flutter Parity Verification (2026-10-21) — VERIFIED
+
+Verified on branch main with Flutter SDK at /home/hermes/flutter (`flutter analyze`: no issues found, 4.3s; 26 Dart files under `lib/`).
+
+- **Gateway contract:** mobile routes all calls through `AppConstants.gatewayPath` → `/apps/<appId>/functions/{auth,rest}` (lib/core/config/app_constants.dart:13). Both `auth` and `rest` functions exist in base44/functions/.
+- **Auth actions:** all 9 mobile calls (login, register, refresh, logout, me, forgot-password, reset-password, verify-email, resend-verification) are in the auth function's action allowlist (base44/functions/auth/entry.ts:52). Bearer + single 401-refresh-retry in lib/core/services/api_client.dart matches the refresh action contract.
+- **REST resources:** product_repository calls map to the rest function's supported resources (products, products/:id, similar, reviews, categories, b2b; base44/functions/rest/entry.ts:20-25,54).
+- **Product contract:** server-side `productToFlutter` mapper (rest/entry.ts:65) emits exactly the snake_case keys `ProductModel.fromJson` consumes; every model field exists in base44/entities/Product.jsonc. Entity-only fields (variants, tags, attributes, dimensions, shipping_options, estimated_delivery) are not consumed by mobile — no mismatch.
+- **User contract:** user_model fields map to Base44 built-in user fields; the only custom schema prop is `role`.
+- **Cart/orders/wallet:** cart is client-side persisted (lib/core/services/cart_persistence.dart); mobile checkout screen is a placeholder and the wallet menu item is a stub (`() {}`). Mobile performs no order/wallet mutations, so the P0 wallet/payment server fixes have no mobile caller — no parity risk, but a feature gap vs web.
+
+**Parity gaps found:** none in consumed API contracts. **Feature gaps (not contract gaps):** mobile checkout and wallet are placeholders; `AppConstants.websocketUrl` (ws.afritrade.com) is unused placeholder config.
 
 ## Next steps
 
