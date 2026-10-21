@@ -1,9 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import { usePortalData } from '@/hooks/usePortalData';
+import { loadRecordGroups } from '@/lib/portalData';
+import PortalStatus from '@/components/PortalStatus';
+import PortalRefresh from '@/components/portal/PortalRefresh';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { base44 } from '@/api/base44Client';
 import { useActiveSeller } from '@/lib/seller';
 import { SELLER_LINKS } from '@/lib/navLinks';
-import { formatUSD } from '@/lib/format';
+import { formatUsdAmount } from '@/lib/format';
 import DashboardNav from '@/components/DashboardNav';
 import StatCard from '@/components/ops/StatCard';
 import SalesTrendChart from '@/components/reports/SalesTrendChart';
@@ -18,37 +22,35 @@ function weekly(fulfillments) {
   });
   fulfillments.forEach((f) => {
     const idx = WEEKS - 1 - Math.floor((now - new Date(f.created_date)) / (7 * 864e5));
-    if (idx >= 0 && idx < WEEKS) { buckets[idx].sales += f.subtotal_usd || 0; buckets[idx].orders += 1; }
+    if (idx >= 0 && idx < WEEKS) { buckets[idx].sales += Number(f.subtotal_usd) || 0; buckets[idx].orders += 1; }
   });
   return buckets;
 }
 
 export default function SellerReports() {
   const { t } = useTranslation();
-  const { sellers, seller, isAdmin, loading, selectSeller } = useActiveSeller();
-  const [data, setData] = useState(null);
-
-  useEffect(() => {
-    if (!seller) return;
-    setData(null);
-    Promise.all([
-      base44.entities.FulfillmentOrder.filter({ seller_id: seller.id }, '-created_date', 500),
-      base44.entities.Review.filter({ seller_id: seller.id, status: 'published' }, '-created_date', 100),
-    ]).then(([fulfillments, reviews]) => setData({ fulfillments, reviews }));
-  }, [seller]);
+  const { sellers, seller, isAdmin, loading, error: scopeError, reload: reloadScope, selectSeller } = useActiveSeller();
+  const { data, loading: loadingData, error, reload, updatedAt } = usePortalData(['seller-reports', seller?.id], () => loadRecordGroups({
+    fulfillments: () => base44.entities.FulfillmentOrder.filter({ seller_id: seller.id }, '-created_date', 500),
+    reviews: () => base44.entities.Review.filter({ seller_id: seller.id, status: 'published' }, '-created_date', 100),
+  }), { enabled: Boolean(seller) });
+  if (scopeError) return <PortalStatus retry={reloadScope} />;
+  if (seller && (loadingData || error)) return <PortalStatus loading={loadingData} retry={reload} />;
 
   if (loading) return <div className="mx-auto mt-6 h-40 max-w-5xl animate-pulse rounded-2xl bg-secondary" />;
   if (!seller) return <p className="mx-auto max-w-5xl px-4 py-10 text-sm text-muted-foreground">{t('sellerReports.noShop')}</p>;
 
   const valid = (data?.fulfillments || []).filter((f) => !['CANCELLED', 'RETURNED'].includes(f.status));
-  const gross = valid.reduce((s, f) => s + (f.subtotal_usd || 0), 0);
-  const commission = gross * (seller.commission_rate || 10) / 100;
+  const gross = valid.reduce((s, f) => s + (Number(f.subtotal_usd) || 0), 0);
+  const commission = gross * (seller.commission_rate ?? 10) / 100;
   const reviews = data?.reviews || [];
   const avg = reviews.length ? reviews.reduce((s, r) => s + (r.rating || 0), 0) / reviews.length : 0;
 
   return (
     <div className="mx-auto max-w-5xl space-y-5 px-4 py-5 pb-24">
       <DashboardNav title={t('sellerReports.title')} links={SELLER_LINKS} />
+      <PortalRefresh onRefresh={reload} updatedAt={updatedAt} />
+      <p className="text-xs text-muted-foreground">{t('portalComponents.recordScope')}</p>
       {isAdmin && (
         <select value={seller.id} onChange={(e) => selectSeller(e.target.value)} className="h-9 rounded-lg border border-border bg-card px-2 text-sm">
           {sellers.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
@@ -57,9 +59,9 @@ export default function SellerReports() {
       {!data ? <div className="h-60 animate-pulse rounded-2xl bg-secondary" /> : (
         <>
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-            <StatCard label={t('sellerReports.gross')} value={formatUSD(gross)} />
-            <StatCard label={t('sellerReports.commission', { rate: seller.commission_rate || 10 })} value={formatUSD(commission)} />
-            <StatCard label={t('sellerReports.net')} value={formatUSD(gross - commission)} tone="good" />
+            <StatCard label={t('sellerReports.gross')} value={formatUsdAmount(gross)} />
+            <StatCard label={t('sellerReports.commission', { rate: seller.commission_rate ?? 10 })} value={formatUsdAmount(commission)} />
+            <StatCard label={t('sellerReports.net')} value={formatUsdAmount(gross - commission)} tone="good" />
             <StatCard label={t('sellerReports.avgRating')} value={reviews.length ? `${avg.toFixed(1)}/5` : '–'} hint={t('sellerReports.reviewCount', { count: reviews.length })} />
           </div>
           <section className="rounded-2xl border border-border bg-card p-4">
