@@ -9,10 +9,9 @@ describe('normalizePhone', () => {
     assert.equal(normalizePhone('243 81 234 5678'), '+243812345678');
     assert.equal(normalizePhone('081 234 5678'), '+243812345678');
   });
-  it('accepts Nigerian numbers, which the checkout also offers', () => {
-    assert.equal(normalizePhone('08031234567'), '+2348031234567');
-    assert.equal(normalizePhone('+2348031234567'), '+2348031234567');
-    assert.equal(normalizePhone('0903 123 4567'), '+2349031234567');
+  it('rejects unsupported international numbers', () => {
+    assert.equal(normalizePhone('08031234567'), '');
+    assert.equal(normalizePhone('+2348031234567'), '');
   });
   it('rejects wrong lengths and non-mobile prefixes', () => {
     assert.equal(normalizePhone('081234567'), '');
@@ -28,8 +27,8 @@ describe('networkForPhone', () => {
     assert.equal(networkForPhone('0812345678')?.providerId, 'mpesa');
     assert.equal(networkForPhone('0991234567')?.providerId, 'airtel');
     assert.equal(networkForPhone('0891234567')?.providerId, 'orange');
-    assert.equal(networkForPhone('08031234567')?.providerId, 'mpesa');
-    assert.equal(networkForPhone('+2349031234567')?.providerId, 'airtel');
+    assert.equal(networkForPhone('08031234567'), null);
+    assert.equal(networkForPhone('+2349031234567'), null);
   });
   it('returns null for unknown input', () => {
     assert.equal(networkForPhone('not a number'), null);
