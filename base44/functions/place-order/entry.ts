@@ -540,7 +540,7 @@ async function resolveTenantId(client, slug) {
  * submitted an order through place-order. Never expose this as a callable
  * standalone public function or accept price, amount or email from its caller.
  */
-async function startVerifiedCardCheckout(db, order, { buyerId, buyerEmail, appUrl }) {
+export async function startVerifiedCardCheckout(db, order, { buyerId, buyerEmail, appUrl }) {
   if (!buyerId || !buyerEmail) throw new ClientInputError("Connectez-vous pour payer par carte.");
   const apiKey = Deno.env.get("WIX_CHECKOUT_API_KEY");
   const siteId = Deno.env.get("WIX_CHECKOUT_SITE_ID");
