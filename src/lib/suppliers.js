@@ -157,57 +157,26 @@ function createMockProvider(adapterCode) {
 }
 
 /**
- * Create a real provider stub.
- * In a real implementation, you would replace the placeholder URLs and logic
- * with actual HTTP calls to the supplier's API, using env vars for credentials.
- * For now, we keep the mock behavior but log a warning.
+ * Unimplemented supplier integration. Configuration alone is not proof of a
+ * working provider. Never return simulated products, inventory, confirmations,
+ * or tracking as if a real supplier had responded. Supplier credentials and
+ * API requests belong in authenticated server-side functions, not VITE_ vars.
  */
 function createRealProvider(adapterCode, _config) {
-  // _config would contain baseUrl, apiKey, etc. from env vars.
+  // No live API client exists yet: explicitly fail rather than fabricate data.
+  const unavailable = async () => { throw new Error(`Supplier ${adapterCode} integration is not implemented; configure a verified server-side adapter.`); };
   return {
     adapterCode,
-    isMock: false, // indicates real provider
-    async searchProducts(query, supplier) {
-      // TODO: Implement real HTTP call to supplier's search endpoint
-      // Fallback to mock for now
-      const mock = createMockProvider(adapterCode);
-      return await mock.searchProducts(query, supplier);
-    },
-    async getProduct(externalId, supplier) {
-      // TODO: Implement real HTTP call to supplier's getProduct endpoint
-      const mock = createMockProvider(adapterCode);
-      return await mock.getProduct(externalId, supplier);
-    },
-    async getInventory(externalId) {
-      // TODO: Implement real HTTP call to supplier's getInventory endpoint
-      const mock = createMockProvider(adapterCode);
-      return await mock.getInventory(externalId);
-    },
-    async getVariants(externalId, supplier) {
-      // TODO: Implement real HTTP call to supplier's getVariants endpoint
-      const mock = createMockProvider(adapterCode);
-      return await mock.getVariants(externalId, supplier);
-    },
-    async calculateShipping({ externalProductId, quantity = 1, supplier }) {
-      // TODO: Implement real HTTP call to supplier's calculateShipping endpoint
-      const mock = createMockProvider(adapterCode);
-      return await mock.calculateShipping({ externalProductId, quantity, supplier });
-    },
-    async createOrder({ externalProductId, quantity, supplier }) {
-      // TODO: Implement real HTTP call to supplier's createOrder endpoint
-      const mock = createMockProvider(adapterCode);
-      return await mock.createOrder({ externalProductId, quantity, supplier });
-    },
-    async cancelOrder(supplierOrderId) {
-      // TODO: Implement real HTTP call to supplier's cancelOrder endpoint
-      const mock = createMockProvider(adapterCode);
-      return await mock.cancelOrder(supplierOrderId);
-    },
-    async getTracking(supplierOrderId) {
-      // TODO: Implement real HTTP call to supplier's getTracking endpoint
-      const mock = createMockProvider(adapterCode);
-      return await mock.getTracking(supplierOrderId);
-    },
+    isMock: false,
+    isAvailable: false,
+    searchProducts: unavailable,
+    getProduct: unavailable,
+    getInventory: unavailable,
+    getVariants: unavailable,
+    calculateShipping: unavailable,
+    createOrder: unavailable,
+    cancelOrder: unavailable,
+    getTracking: unavailable,
   };
 }
 
