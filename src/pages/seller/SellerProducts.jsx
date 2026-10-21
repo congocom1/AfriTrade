@@ -25,14 +25,14 @@ const productSchema = z.object({
   b2b_only: z.boolean().default(false),
   wholesale_price_usd: z.coerce.number().nonnegative().default(0),
   moq: z.coerce.number().int().positive().default(1),
-  origin_country: z.string().length(2).default('NG'),
+  origin_country: z.string().length(2).default('CD'),
 }).superRefine((data, context) => {
   if (data.is_b2b && !(data.wholesale_price_usd > 0)) {
     context.addIssue({ code: z.ZodIssueCode.custom, path: ['wholesale_price_usd'], message: 'Enter a wholesale unit price greater than zero.' });
   }
 });
 
-const EMPTY = { title: '', description: '', price_usd: '', compare_at_usd: '', stock: '', category_id: '', images: '', is_b2b: false, b2b_only: false, wholesale_price_usd: '', moq: '1', origin_country: 'NG' };
+const EMPTY = { title: '', description: '', price_usd: '', compare_at_usd: '', stock: '', category_id: '', images: '', is_b2b: false, b2b_only: false, wholesale_price_usd: '', moq: '1', origin_country: 'CD' };
 
 export default function SellerProducts() {
   const { t } = useTranslation();
@@ -78,7 +78,7 @@ export default function SellerProducts() {
       b2b_only: Boolean(p.b2b_only),
       wholesale_price_usd: p.wholesale_price_usd ?? '',
       moq: p.moq ?? 1,
-      origin_country: p.origin_country || 'NG',
+      origin_country: p.origin_country || 'CD',
     });
     setEditingId(p.id);
     setShowForm(true);
@@ -104,7 +104,7 @@ export default function SellerProducts() {
       source_type: 'local_seller',
       supplier_price: Number(formData.price_usd) || 0,
       currency: 'USD',
-      origin_country: String(formData.origin_country || 'NG').toUpperCase(),
+      origin_country: String(formData.origin_country || 'CD').toUpperCase(),
       is_b2b: Boolean(formData.is_b2b),
       b2b_only: Boolean(formData.is_b2b && formData.b2b_only),
       wholesale_price_usd: formData.is_b2b ? Number(formData.wholesale_price_usd) : null,

@@ -10,9 +10,9 @@ import i18n from '@/i18n';
 
 /**
  * `prefixes` are the first digits of the national number as the operator
- * publishes them (trunk 0 included, as Nigerian operators publish them).
+ * publishes them.
  * `national` is how many digits the national number has *including* that trunk
- * 0 — Nigerian mobiles are 11 digits dialled locally, 10 without it — so a
+ * 0 where applicable — so a
  * cut-off number is rejected instead of being sent to a gateway.
  */
 export const PHONE_NETWORKS = [
@@ -20,9 +20,6 @@ export const PHONE_NETWORKS = [
   { key: 'airtel-cd', providerId: 'airtel', name: 'Airtel Money', country: 'CD', dial: '+243', national: 9, prefixes: ['96', '97', '98', '99'] },
   { key: 'orange-cd', providerId: 'orange', name: 'Orange Money', country: 'CD', dial: '+243', national: 9, prefixes: ['84', '85', '89'] },
   { key: 'africell-cd', providerId: 'africell', name: 'Afrimoney (Africell)', country: 'CD', dial: '+243', national: 9, prefixes: ['90', '91'] },
-  { key: 'mpesa-ng', providerId: 'mpesa', name: 'M-Pesa', country: 'NG', dial: '+234', national: 11, prefixes: ['080'] },
-  { key: 'airtel-ng', providerId: 'airtel', name: 'Airtel Money', country: 'NG', dial: '+234', national: 11, prefixes: ['070', '090'] },
-  { key: 'orange-ng', providerId: 'orange', name: 'Orange Money', country: 'NG', dial: '+234', national: 11, prefixes: ['081', '082'] },
 ];
 
 /**
@@ -59,7 +56,7 @@ function matchNetwork(input) {
 /** Strips spaces, dashes and the country code into E.164 (+<dial><national>), or '' if unusable. */
 export function normalizePhone(input) {
   const match = matchNetwork(input);
-  // E.164 has no trunk 0; Nigerian prefixes carry one, so at most one is dropped.
+  // E.164 has no national trunk prefix.
   return match ? `${match.network.dial}${match.local.replace(/^0/, '')}` : '';
 }
 
@@ -72,9 +69,9 @@ export function networkForPhone(input) {
  * Resolves a provider reference to a single network.
  *
  * Accepts both legacy provider ids ('mpesa') and country-qualified keys
- * ('mpesa-NG', 'airtel-cd'). The qualifier disambiguates networks that share a
+ * ('mpesa-cd', 'airtel-cd'). The qualifier disambiguates networks that share a
  * provider id across countries — without it the first match (always CD) would
- * be returned, which previously mis-routed Nigerian numbers to DRC validation.
+ * be returned.
  */
 export function findNetwork(providerRef) {
   if (!providerRef) return null;
@@ -88,8 +85,7 @@ export function findNetwork(providerRef) {
  * Checks a number against the operator the customer picked, so a payment is
  * never sent to a wallet the gateway cannot debit.
  *
- * Matches on the full network identity (provider + country) so a Nigerian
- * M-Pesa number is rejected against the DRC M-Pesa selection, and vice-versa.
+ * Matches on the full network identity (provider + country).
  */
 export function validateMobileMoneyNumber(providerRef, raw) {
   const t = i18n.t.bind(i18n);

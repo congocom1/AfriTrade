@@ -91,7 +91,7 @@ function productToFlutter(p: any) {
     compare_at_usd: p.compare_at_usd ?? null,
     stock: p.stock ?? 0,
     weight_kg: p.weight_kg ?? null,
-    origin_country: p.origin_country ?? "NG",
+    origin_country: p.origin_country ?? "CD",
     status: p.status ?? "published",
     is_featured: p.is_featured ?? false,
     is_flash_sale: p.is_flash_sale ?? false,

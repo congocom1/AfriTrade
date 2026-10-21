@@ -344,7 +344,7 @@ export default function B2BMarketplace() {
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="quote-country">Delivery country</Label>
-                  <Input id="quote-country" maxLength={2} placeholder="NG" value={quote.country} onChange={(event) => setQuote((state) => ({ ...state, country: event.target.value.toUpperCase() }))} />
+                  <Input id="quote-country" maxLength={2} placeholder="CD" value={quote.country} onChange={(event) => setQuote((state) => ({ ...state, country: event.target.value.toUpperCase() }))} />
                 </div>
               </div>
               <div className="space-y-1.5">

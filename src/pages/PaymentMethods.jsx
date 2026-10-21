@@ -11,7 +11,7 @@ const mask = (p) => {
   return p.length <= 7 ? p : `${p.slice(0, 4)} ••• ••${p.slice(-3)}`;
 };
 
-/** Resolve display name from stored provider (legacy 'mpesa' or new 'mpesa-ng' key). */
+/** Resolve display name from stored provider (legacy 'mpesa' or country-specific 'mpesa-cd' key). */
 function providerDisplayName(provider) {
   const net = findNetwork(provider);
   return net?.name || provider || '';

@@ -17,20 +17,19 @@ export const DEFAULT_PRICING_CONFIG = {
 };
 
 export const DEFAULT_COUNTRY_CONFIG = {
-  code: 'NG',
-  name: 'Nigeria',
-  default_currency: 'NGN',
-  currencies: ['NGN', 'USD'],
-  usd_to_ngn_rate: 1500,
-  timezone: 'Africa/Lagos',
-  phone_prefix: '+234',
-  languages: ['en', 'yo', 'ig'],
-  cities: ['Lagos', 'Abuja', 'Kano', 'Ibadan', 'Port Harcourt', 'Benin City', 'Maiduguri', 'Zaria', 'Abeokuta', 'Jos'],
+  code: 'CD',
+  name: 'DR Congo',
+  default_currency: 'CDF',
+  currencies: ['CDF', 'USD'],
+  usd_to_cdf_rate: 2800,
+  timezone: 'Africa/Kinshasa',
+  phone_prefix: '+243',
+  languages: ['fr', 'ln', 'sw'],
+  cities: ['Kinshasa', 'Lubumbashi', 'Goma', 'Bukavu', 'Kisangani', 'Kolwezi', 'Kalemie'],
 };
 
 // All supported African countries for pan-African marketplace
 export const AFRICAN_COUNTRIES = [
-  { code: 'NG', name: 'Nigeria', currency: 'NGN', phone: '+234', languages: ['en', 'yo', 'ig'], timezone: 'Africa/Lagos' },
   { code: 'KE', name: 'Kenya', currency: 'KES', phone: '+254', languages: ['en', 'sw'], timezone: 'Africa/Nairobi' },
   { code: 'GH', name: 'Ghana', currency: 'GHS', phone: '+233', languages: ['en'], timezone: 'Africa/Accra' },
   { code: 'CM', name: 'Cameroon', currency: 'XAF', phone: '+237', languages: ['en', 'fr'], timezone: 'Africa/Douala' },
@@ -59,7 +58,7 @@ export const DEFAULT_COMPANY_CONFIG = {
   vat_number: '',
   capital: '',
   address: '',
-  city: 'Lagos',
+  city: 'Kinshasa',
   country: 'Pan-African',
   email: '',
   phone: '',
