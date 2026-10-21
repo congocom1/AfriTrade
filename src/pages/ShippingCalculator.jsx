@@ -38,7 +38,7 @@ export default function ShippingCalculator() {
     e.preventDefault();
     setError('');
     const kg = Math.max(Number(weight) || 0, 0);
-    if (!kg) {
+    if (!Number.isFinite(kg) || kg <= 0) {
       setError(t('shippingCalculator.weightRequired'));
       return;
     }
@@ -73,7 +73,7 @@ export default function ShippingCalculator() {
           <div className="grid gap-3 md:grid-cols-3">
             <select
               value={city}
-              onChange={(e) => setCity(e.target.value)}
+              onChange={(e) => { setCity(e.target.value); setResult(null); }}
               className="h-11 rounded-lg border border-border bg-background px-3 text-sm"
             >
               {cities.map((c) => (
@@ -82,7 +82,7 @@ export default function ShippingCalculator() {
             </select>
             <input
               value={commune}
-              onChange={(e) => setCommune(e.target.value)}
+              onChange={(e) => { setCommune(e.target.value); setResult(null); }}
               placeholder={t('shippingCalculator.communePh')}
               className="h-11 rounded-lg border border-border bg-background px-3 text-sm"
             />
@@ -91,7 +91,7 @@ export default function ShippingCalculator() {
               min="0"
               step="0.1"
               value={weight}
-              onChange={(e) => setWeight(e.target.value)}
+              onChange={(e) => { setWeight(e.target.value); setResult(null); }}
               placeholder={t('shippingCalculator.weightPh')}
               className="h-11 rounded-lg border border-border bg-background px-3 text-sm"
             />
@@ -113,9 +113,9 @@ export default function ShippingCalculator() {
                 <p className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
                   <MapPin className="h-3.5 w-3.5 text-primary" /> {t('shippingCalculator.homeDelivery')}
                 </p>
-                <p className="mt-1.5 text-lg font-bold text-primary">{formatUSD(result.homeTotal)}</p>
+                <p className="mt-1.5 text-lg font-bold text-primary">{formatUSD(result.homeTotalCents)}</p>
                 <p className="mt-1 text-[11px]">
-                  {t('shippingCalculator.zoneFeePart', { fee: formatUSD(result.zoneFee) })}
+                  {t('shippingCalculator.zoneFeePart', { fee: formatUSD(result.zoneFeeCents) })}
                   {result.carrier ? t('shippingCalculator.carrierPart', { name: result.carrier.name, fee: formatUSD(result.carrier.quote.fee) }) : t('shippingCalculator.noCarrier')}
                 </p>
                 <p className="mt-1 flex items-center gap-1">
