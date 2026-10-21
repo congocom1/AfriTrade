@@ -11,9 +11,12 @@ export default function Categories() {
   const [categories, setCategories] = useState([]);
   const [counts, setCounts] = useState({});
   const [loading, setLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [reloadToken, setReloadToken] = useState(0);
 
   const load = useCallback(async (isActive = () => true) => {
     setLoading(true);
+    setLoadFailed(false);
     try {
       const [cats, products] = await Promise.all([
         base44.entities.Category.list('sort_order', 40),
@@ -25,7 +28,8 @@ export default function Categories() {
       });
       if (isActive()) { setCategories(cats); setCounts(map); }
     } catch {
-      // Keep the last successful feed visible on intermittent mobile networks.
+      // Keep the last successful feed visible and offer a retry on mobile networks.
+      if (isActive()) setLoadFailed(true);
     } finally {
       if (isActive()) setLoading(false);
     }
@@ -34,12 +38,18 @@ export default function Categories() {
     let active = true;
     load(() => active);
     return () => { active = false; };
-  }, [load]);
+  }, [load, reloadToken]);
   const { handlers: pullHandlers, indicator: pullIndicator } = usePullToRefresh(load, { disabled: loading });
 
   return (
     <div className="space-y-4 pb-6" {...pullHandlers}>
       {pullIndicator}
+      {loadFailed && (
+        <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card p-3 text-sm">
+          <span>{t('home.loadFailed')}</span>
+          <button type="button" onClick={() => setReloadToken(x => x + 1)} className="min-h-11 rounded-lg bg-primary px-4 font-semibold text-primary-foreground">{t('common.retry')}</button>
+        </div>
+      )}
       <SectionHeader title={t('categories.title')} subtitle={t('categories.subtitle')} />
       {loading ? (
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">

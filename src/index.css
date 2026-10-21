@@ -269,11 +269,6 @@
     color: hsl(var(--muted-foreground));
   }
 
-  button, [role="button"], [role="tab"], .header-icon-button {
-    -webkit-user-select: none;
-    user-select: none;
-  }
-
   * {
     @apply border-border outline-ring/50;
   }

@@ -88,6 +88,8 @@ export default function AdminWorkflows() {
           .catch(notifyLoadError);
         setStepsByExecution((prev) => ({ ...prev, [execution.id]: steps }));
       }
+    } catch (error) {
+      setNotice(error?.message || t('portalStatus.actionFailed', 'Opération échouée.'));
     } finally {
       setBusy(false);
     }

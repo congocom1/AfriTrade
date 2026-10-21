@@ -24,6 +24,7 @@ export default function Store() {
     let alive = true;
     (async () => {
       setLoading(true);
+      setNotFound(false); // A failed prior slug must not hide a subsequently valid store.
       try {
         let rows = await base44.entities.Seller.filter({ slug });
         if (!rows.length) rows = await base44.entities.Seller.filter({ id: slug }).catch(() => []);
