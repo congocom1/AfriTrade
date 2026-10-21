@@ -45,7 +45,7 @@ export default function AdminOrders() {
     if (!target) return;
     setBusy(f.id);
     try {
-      const updated = await advanceFulfillment(f, target);
+      const updated = await advanceFulfillment(base44, f, target);
       setFulfillments((prev) => prev.map((x) => (x.id === f.id ? updated : x)));
       if (target === 'DELIVERED') {
         const orderFul = fulfillments.filter((x) => x.order_id === f.order_id && x.id !== f.id);

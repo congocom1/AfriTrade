@@ -89,7 +89,7 @@ export default function CourierConsole() {
     setBusy(shipment.id);
     setError('');
     try {
-      const updated = await respondToShipment({ shipment, accepted });
+      const updated = await respondToShipment(base44, { shipment, accepted });
       setShipments((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
       if (accepted) setTab('active');
       return true;
@@ -105,7 +105,7 @@ export default function CourierConsole() {
     setBusy(shipment.id);
     setError('');
     try {
-      await courierUpdateShipment({
+      await courierUpdateShipment(base44, {
         shipment,
         fulfillment: fulfillments[shipment.fulfillment_order_id],
         status,

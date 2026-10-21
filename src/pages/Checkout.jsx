@@ -91,7 +91,7 @@ export default function Checkout() {
     }
     let alive = true;
     setLoadingQuote(true);
-    buildCheckoutQuote({ items, deliveryFee, coupon, intlOption: selectedIntlOption })
+    buildCheckoutQuote(base44, { items, deliveryFee, coupon, intlOption: selectedIntlOption })
       .then((q) => {
         if (alive) setQuote(q);
       })
@@ -166,7 +166,7 @@ export default function Checkout() {
 
   const applyCoupon = async () => {
     setCouponMessage('');
-    const found = await findCoupon(couponInput);
+    const found = await findCoupon(base44, couponInput);
     if (!found) {
       setCoupon(null);
       setCouponMessage(t('checkout.couponInvalid'));

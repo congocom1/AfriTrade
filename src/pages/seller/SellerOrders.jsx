@@ -42,7 +42,7 @@ export default function SellerOrders() {
     setActionError(false);
     setBusy(f.id);
     try {
-      await advanceFulfillment(f, target);
+      await advanceFulfillment(base44, f, target);
       await reload();
     } catch {
       setActionError(true);
@@ -56,7 +56,7 @@ export default function SellerOrders() {
     setActionError(false);
     setBusy(f.id);
     try {
-      await advanceFulfillment(f, 'CANCELLED');
+      await advanceFulfillment(base44, f, 'CANCELLED');
       await reload();
     } catch {
       setActionError(true);

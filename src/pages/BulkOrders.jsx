@@ -95,7 +95,7 @@ export default function BulkOrders() {
             ? SHIPMENT_STATUS_FLOW[index + 1]
             : null;
         if (!target) continue;
-        const updated = await advanceFulfillment(f, target);
+        const updated = await advanceFulfillment(base44, f, target);
         done.push(updated);
       }
       setRows((prev) => prev.map((f) => done.find((d) => d.id === f.id) || f));
