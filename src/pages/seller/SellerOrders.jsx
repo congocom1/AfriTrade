@@ -1,5 +1,9 @@
+import { usePortalData } from '@/hooks/usePortalData';
+import { loadRecordGroups } from '@/lib/portalData';
+import PortalStatus from '@/components/PortalStatus';
+import PortalRefresh from '@/components/portal/PortalRefresh';
 import { SELLER_LINKS } from '@/lib/navLinks';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronRight, PackageCheck } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
@@ -16,22 +20,14 @@ const SELLER_FLOW = ['PENDING', 'CONFIRMED', 'PROCESSING', 'READY_FOR_PICKUP', '
 
 export default function SellerOrders() {
   const { t } = useTranslation();
-  const { seller, loading: loadingSeller } = useActiveSeller();
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { seller, loading: loadingSeller, error: scopeError, reload: reloadScope } = useActiveSeller();
+  const { data, loading, error, reload, updatedAt } = usePortalData(['seller-orders', seller?.id], () => loadRecordGroups({
+    orders: () => base44.entities.FulfillmentOrder.filter({ seller_id: seller.id }, '-created_date', 100),
+  }), { enabled: Boolean(seller) });
+  const orders = data?.orders || [];
   const [filter, setFilter] = useState('open');
   const [busy, setBusy] = useState('');
-
-  useEffect(() => {
-    if (!seller) {
-      setLoading(false);
-      return;
-    }
-    base44.entities.FulfillmentOrder.filter({ seller_id: seller.id }, '-created_date', 100)
-      .then(setOrders)
-      .catch(() => setOrders([]))
-      .finally(() => setLoading(false));
-  }, [seller]);
+  const [actionError, setActionError] = useState(false);
 
   const next = (status) => {
     const i = SELLER_FLOW.indexOf(status);
@@ -42,20 +38,28 @@ export default function SellerOrders() {
   const advance = async (f) => {
     const target = next(f.status);
     if (!target) return;
+    if (busy) return;
+    setActionError(false);
     setBusy(f.id);
     try {
-      const updated = await advanceFulfillment(f, target);
-      setOrders((prev) => prev.map((x) => (x.id === f.id ? updated : x)));
+      await advanceFulfillment(f, target);
+      await reload();
+    } catch {
+      setActionError(true);
     } finally {
       setBusy('');
     }
   };
 
   const cancel = async (f) => {
+    if (busy) return;
+    setActionError(false);
     setBusy(f.id);
     try {
-      const updated = await advanceFulfillment(f, 'CANCELLED');
-      setOrders((prev) => prev.map((x) => (x.id === f.id ? updated : x)));
+      await advanceFulfillment(f, 'CANCELLED');
+      await reload();
+    } catch {
+      setActionError(true);
     } finally {
       setBusy('');
     }
@@ -65,12 +69,16 @@ export default function SellerOrders() {
     filter === 'open' ? !['DELIVERED', 'CANCELLED', 'RETURNED'].includes(f.status) : true,
   );
 
-  if (loadingSeller) return <div className="h-40 animate-pulse rounded-2xl bg-secondary" />;
+  if (loadingSeller || scopeError) return <PortalStatus loading={loadingSeller} retry={reloadScope} />;
+  if (!seller) return <p>{t('seller.noShop')}</p>;
+  if (loading || error) return <PortalStatus loading={loading} retry={reload} />;
 
   return (
     <div className="space-y-5 pb-8">
       <DashboardNav title={t('sellerOrders.title')} links={SELLER_LINKS} />
 
+      <PortalRefresh onRefresh={reload} updatedAt={updatedAt} />
+      {actionError && <p role="alert" className="text-sm text-destructive">{t('portalStatus.actionFailed')}</p>}
       <div className="flex gap-2">
         {[
           { id: 'open', label: t('sellerOrders.filterOpen') },
@@ -141,7 +149,7 @@ export default function SellerOrders() {
                 {next(f.status) && (
                   <button
                     type="button"
-                    disabled={busy === f.id}
+                    disabled={Boolean(busy)}
                     onClick={() => advance(f)}
                     className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground disabled:opacity-50"
                   >
@@ -149,7 +157,7 @@ export default function SellerOrders() {
                     {t('sellerOrders.advanceTo', { status: t(SHIPMENT_STATUS_LABELS[next(f.status)] || 'status.UNKNOWN') })}
                   </button>
                 )}
-                {f.status === 'DELIVERED' && (
+                {f.status === 'DELIVERED' && f.payout_released && (
                   <span className="flex items-center gap-1.5 rounded-full bg-emerald-100 px-4 py-2 text-xs font-semibold text-emerald-900">
                     <PackageCheck className="h-3.5 w-3.5" /> {t('sellerOrders.payoutReleased')}
                   </span>
@@ -157,7 +165,7 @@ export default function SellerOrders() {
                 {!['DELIVERED', 'CANCELLED', 'RETURNED'].includes(f.status) && (
                   <button
                     type="button"
-                    disabled={busy === f.id}
+                    disabled={Boolean(busy)}
                     onClick={() => cancel(f)}
                     className="rounded-full border border-border px-4 py-2 text-xs font-semibold text-destructive disabled:opacity-50"
                   >
