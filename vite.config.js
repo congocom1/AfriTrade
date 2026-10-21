@@ -110,6 +110,8 @@ export default defineConfig({
       output: {
         codeSplitting: {
           groups: [
+            { name: 'three-engine-core', test: /node_modules\/three\/build\/three\.core\.js$/ },
+            { name: 'three-engine-module', test: /node_modules\/three\/build\/three\.module\.js$/ },
             { name: 'three-renderers', test: /node_modules\/three\/src\/renderers\// },
             { name: 'three-math', test: /node_modules\/three\/src\/math\// },
             { name: 'three-loaders', test: /node_modules\/three\/examples\/jsm\/loaders\// },
