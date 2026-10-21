@@ -1,4 +1,3 @@
-import { jsPDF } from 'jspdf';
 
 /** CSV / PDF helpers for offline bookkeeping. No data leaves the browser. */
 
@@ -32,7 +31,8 @@ export function downloadCsv(filename, columns, rows) {
 }
 
 /** Simple landscape table — enough for bookkeeping, no extra dependency. */
-export function downloadPdf(filename, title, columns, rows) {
+export async function downloadPdf(filename, title, columns, rows) {
+  const { jsPDF } = await import('jspdf');
   const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
   const margin = 12;
   const lineHeight = 6;
