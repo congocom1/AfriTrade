@@ -62,6 +62,39 @@ export default async function handler(req: Request) {
       const tasks = rows(await db.DepartmentTask.filter(filter, '-last_activity_at', 201));
       return respond({ tasks: tasks.slice(0, 200), truncated: tasks.length > 200 });
     }
+    // Bounded, deterministic task-routing agent. It never creates approvals,
+    // changes money, edits roles, or moves assigned tasks.
+    if (body.action === 'automate_tasks') {
+      if (!admin) fail(403, 'ACCESS_DENIED');
+      if (typeof body.apply !== 'boolean') fail(400, 'INVALID_INPUT');
+      const employees = rows(await db.EmployeeMembership.list('-created_date', 500));
+      if (employees.length === 500) fail(409, 'EMPLOYEE_DIRECTORY_TRUNCATED');
+      const eligible = employees.filter((e: any) => e.active === true && e.user_id && memberDepartments(e).includes(department));
+      const unique = new Set(eligible.map((e: any) => e.user_id));
+      if (unique.size !== eligible.length) fail(409, 'DUPLICATE_MEMBERSHIP');
+      const taskList = rows(await db.DepartmentTask.filter({ department }, '-created_date', 201));
+      if (taskList.length > 200) fail(409, 'TASK_QUEUE_TRUNCATED');
+      const open = taskList.filter((task: any) => task.status !== 'done');
+      const counts = new Map(eligible.map((e: any) => [e.user_id, open.filter((t: any) => t.assignee_id === e.user_id).length]));
+      const unassigned = open.filter((task: any) => !task.assignee_id).slice(0, 50);
+      const proposed = unassigned.map((task: any) => {
+        const worker = [...eligible].sort((a: any, b: any) => (counts.get(a.user_id)! - counts.get(b.user_id)!) || a.user_id.localeCompare(b.user_id))[0];
+        if (!worker) return null;
+        counts.set(worker.user_id, counts.get(worker.user_id)! + 1);
+        return { task_id: task.id, title: task.title, assignee_id: worker.user_id, assignee_name: worker.display_name || worker.email };
+      }).filter(Boolean);
+      if (!body.apply) return respond({ proposed, applied: 0, unassigned: unassigned.length, eligible: eligible.length });
+      let applied = 0;
+      for (const assignment of proposed as any[]) {
+        // Re-read immediately before each write; do not overwrite an existing owner.
+        const current = await db.DepartmentTask.get(assignment.task_id);
+        if (!current?.id || current.department !== department || current.assignee_id || current.status === 'done') continue;
+        const saved = await db.DepartmentTask.update(current.id, { assignee_id: assignment.assignee_id, assignee_name: assignment.assignee_name, updated_by_id: user.id, updated_by_name: 'Workforce Task Agent', last_activity_at: new Date().toISOString() });
+        if (!saved?.id) fail(503, 'UNAVAILABLE');
+        applied++;
+      }
+      return respond({ proposed, applied, unassigned: unassigned.length, eligible: eligible.length });
+    }
     const resolveAssignee = async (value: unknown) => {
       const id = text(value ?? '', 200);
       if (!id) return { assignee_id: '', assignee_name: '' };

@@ -19,6 +19,7 @@ export async function workforceRequest(payload) {
   if (!data || typeof data !== 'object' || data.error) throw new Error(data?.error || 'UNAVAILABLE');
   if (payload.action === 'bootstrap' && (!Array.isArray(data.departments) || typeof data.admin !== 'boolean')) throw new Error('UNAVAILABLE');
   if (payload.action === 'tasks' && !Array.isArray(data.tasks)) throw new Error('UNAVAILABLE');
+  if (payload.action === 'automate_tasks' && (!Array.isArray(data.proposed) || typeof data.applied !== 'number')) throw new Error('UNAVAILABLE');
   if (payload.action === 'team' && !Array.isArray(data.employees)) throw new Error('UNAVAILABLE');
   if (payload.action === 'save_employee' && !data.employee?.id) throw new Error('UNAVAILABLE');
   if (['create_task', 'update_task'].includes(payload.action) && !data.task?.id) throw new Error('UNAVAILABLE');

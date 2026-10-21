@@ -45,12 +45,27 @@ function DepartmentQueue({ department, admin, scope }) {
   const tasks = query.data?.tasks || [];
   const view = useCollectionView(tasks, ['title', 'description', 'assignee_name', 'handoff_note'], (task, filter) => filter === 'all' || task.status === filter);
   const [form, setForm] = useState(null);
+  const [agent, setAgent] = useState(null);
+  const [agentBusy, setAgentBusy] = useState(false);
+  const [agentError, setAgentError] = useState('');
+  const runAgent = async (apply) => {
+    if (agentBusy) return;
+    setAgentBusy(true); setAgentError('');
+    try {
+      const result = await workforceRequest({ action: 'automate_tasks', department, apply });
+      setAgent(result);
+      if (apply) await query.reload();
+    } catch (error) { setAgentError(error?.message || 'UNAVAILABLE'); }
+    finally { setAgentBusy(false); }
+  };
   const now = new Date();
   const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   const overdue = tasks.filter(task => task.due_date && task.due_date < today && task.status !== 'done').length;
   if (query.loading || query.error) return <PortalStatus loading={query.loading} retry={query.reload} />;
   return <>
-    <div className="flex flex-wrap items-start justify-between gap-4"><div><p className="max-w-2xl text-sm text-muted-foreground">{t(`workforce.${department}Description`)}</p><p className="mt-2 text-xs font-medium text-primary">{t(`workforce.${scope === 'department' ? 'department' : 'assigned'}`)}</p></div><div className="flex flex-wrap gap-3"><PortalRefresh onRefresh={query.reload} updatedAt={query.updatedAt} />{admin && <Button onClick={() => setForm({ kind: 'create' })} disabled={team.loading || Boolean(team.error)}><Plus className="h-4 w-4" />{t('workforce.create')}</Button>}</div></div>
+    <div className="flex flex-wrap items-start justify-between gap-4"><div><p className="max-w-2xl text-sm text-muted-foreground">{t(`workforce.${department}Description`)}</p><p className="mt-2 text-xs font-medium text-primary">{t(`workforce.${scope === 'department' ? 'department' : 'assigned'}`)}</p></div><div className="flex flex-wrap gap-3"><PortalRefresh onRefresh={query.reload} updatedAt={query.updatedAt} />{admin && <Button variant="outline" disabled={agentBusy} onClick={() => runAgent(false)}>Preview task agent</Button>}{admin && <Button onClick={() => setForm({ kind: 'create' })} disabled={team.loading || Boolean(team.error)}><Plus className="h-4 w-4" />{t('workforce.create')}</Button>}</div></div>
+    {agentError && <p role="alert" className="text-sm text-destructive">Task agent: {agentError}</p>}
+    {admin && agent && <section className="rounded-xl border border-border bg-card p-4 space-y-3" aria-live="polite"><h2 className="font-semibold">Employee task routing agent</h2><p className="text-sm text-muted-foreground">{agent.eligible} eligible employees · {agent.proposed.length} proposed assignments · {agent.applied} applied. Only unassigned, unfinished tasks are considered.</p><ul className="text-sm space-y-1">{agent.proposed.slice(0, 10).map(p => <li key={p.task_id}>{p.title} → {p.assignee_name}</li>)}</ul>{agent.proposed.length > 10 && <p className="text-xs text-muted-foreground">Showing 10 of {agent.proposed.length} suggestions.</p>}{agent.proposed.length > 0 && agent.applied === 0 && <Button disabled={agentBusy} onClick={() => runAgent(true)}>Approve and assign tasks</Button>}</section>}
     {admin && team.error && <PortalStatus retry={team.reload} />}
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4"><StatCard label={t('workforce.todo')} value={tasks.filter(task => task.status === 'todo').length} /><StatCard label={t('workforce.in_progress')} value={tasks.filter(task => task.status === 'in_progress').length} tone="good" /><StatCard label={t('workforce.blocked')} value={tasks.filter(task => task.status === 'blocked').length} tone={tasks.some(task => task.status === 'blocked') ? 'warn' : 'default'} /><StatCard label={t('workforce.overdue')} value={overdue} tone={overdue ? 'bad' : 'default'} /></div>
     <p className="text-xs text-muted-foreground">{t('workforce.loaded')}{query.data.truncated && <span role="status" className="ml-2 font-medium text-foreground">{t('workforce.truncated')}</span>}</p>
