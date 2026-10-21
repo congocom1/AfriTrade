@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster"
 import ErrorBoundary from "@/components/ErrorBoundary"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, Navigate, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Navigate, Route, Routes, useLocation, useNavigationType } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
@@ -19,9 +19,10 @@ import { CurrencyProvider } from '@/lib/currency';
 import AppLayout from '@/components/layout/AppLayout';
 import Backoffice from '@/pages/Backoffice';
 import SalesIntelligence from '@/pages/admin/SalesIntelligence';
-import { motion } from 'framer-motion';
-import { Suspense, lazy, useEffect } from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { Suspense, lazy, useEffect, useRef } from 'react';
 import LoadingFallback from '@/components/LoadingFallback';
+import { navigationDirection, routeMotion } from '@/lib/navigationDirection';
 
 // Customer - lazy load all page components for code splitting
 const EmployeeWorkspace = lazy(() => import('@/pages/EmployeeWorkspace'));
@@ -175,34 +176,21 @@ const PageWrapper = ({ children }) => (
   </ErrorBoundary>
 );
 
-// Page transition variants
-const pageVariants = {
-  initial: {
-    opacity: 0,
-    x: 20,
-  },
-  animate: {
-    opacity: 1,
-    x: 0,
-    transition: {
-      type: 'spring',
-      stiffness: 300,
-      damping: 20,
-    },
-  },
-  exit: {
-    opacity: 0,
-    x: -20,
-    transition: {
-      type: 'spring',
-      stiffness: 300,
-      damping: 20,
-    },
-  },
-}
-
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const location = useLocation();
+  const navigationType = useNavigationType();
+  const prefersReducedMotion = useReducedMotion();
+  const prior = useRef({ key: location.key, index: window.history.state?.idx });
+  const currentIndex = window.history.state?.idx;
+  const direction = prior.current.key === location.key
+    ? 0
+    : navigationDirection(prior.current.index, currentIndex, navigationType);
+  if (prior.current.key !== location.key) prior.current = { key: location.key, index: currentIndex };
+  // Preserve browser Back/Forward semantics. A replace has no horizontal exit.
+  const variants = prefersReducedMotion ? {
+    initial: { opacity: 1, x: 0 }, animate: { opacity: 1, x: 0 }, exit: { opacity: 1, x: 0 },
+  } : routeMotion;
 
   useEffect(() => {
     if (authError?.type === 'auth_required') {
@@ -230,8 +218,9 @@ const AuthenticatedApp = () => {
 
   // Render the main app
   return (
-    <motion.div variants={pageVariants} initial="initial" animate="animate" exit="exit">
-      <Routes>
+    <AnimatePresence mode="wait" initial={false} custom={direction}>
+      <motion.div key={location.pathname} custom={direction} variants={variants} initial="initial" animate="animate" exit="exit">
+      <Routes location={location}>
         <Route element={<AppLayout />}>
         <Route path="/" element={<PageWrapper><Home /></PageWrapper>} />
         <Route path="/discover" element={<PageWrapper><Discover /></PageWrapper>} />
@@ -404,7 +393,8 @@ const AuthenticatedApp = () => {
       <Route path="/oauth/consent" element={<OAuthConsent />} />
       <Route path="*" element={<div className="min-h-screen flex items-center justify-center p-6 bg-slate-50"><div className="max-w-md w-full text-center space-y-6"><h1 className="text-7xl font-black tracking-tight text-slate-900">404</h1><p className="text-lg text-slate-600">Page not found</p></div></div>} />
       </Routes>
-    </motion.div>
+      </motion.div>
+    </AnimatePresence>
   );
 };
 
