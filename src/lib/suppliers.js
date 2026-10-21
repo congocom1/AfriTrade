@@ -143,34 +143,7 @@ function createMockProvider(adapterCode) {
   };
 }
 
-/**
- * Unimplemented supplier integration. Configuration alone is not proof of a
- * working provider. Never return simulated products, inventory, confirmations,
- * or tracking as if a real supplier had responded. Supplier credentials and
- * API requests belong in authenticated server-side functions, not VITE_ vars.
- */
-function createRealProvider(adapterCode, _config) {
-  // No live API client exists yet: explicitly fail rather than fabricate data.
-  const unavailable = async () => { throw new Error(`Supplier ${adapterCode} integration is not implemented; configure a verified server-side adapter.`); };
-  return {
-    adapterCode,
-    isMock: false,
-    isAvailable: false,
-    searchProducts: unavailable,
-    getProduct: unavailable,
-    getInventory: unavailable,
-    getVariants: unavailable,
-    calculateShipping: unavailable,
-    createOrder: unavailable,
-    cancelOrder: unavailable,
-    getTracking: unavailable,
-  };
-}
-
-/**
- * Registry — suppliers are registered here based on env vars.
- * If env vars for a real supplier are set, we use the real provider; otherwise mock.
- */
+/** Demo providers are registered explicitly; real providers require backend integration. */
 export const SUPPLIER_REGISTRY = {};
 
 // Explicit demo-only adapters. Real integrations must be registered from a
