@@ -7,7 +7,7 @@ const src = readFileSync('base44/functions/runWorkflow/entry.ts', 'utf8').replac
 assert.doesNotMatch(src, /^import /m);
 const preamble = `const { createClientFromRequest, cancelExecution, listDefinitions, resumeExecution, requireAdmin, addSecurityHeaders } = globalThis.__runWorkflowDeps;\n`;
 const compiled = ts.transpileModule(preamble + src, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText;
-const deps = { currentUser: null, calls: [],
+const deps = { currentUser: null, calls: [], rejectCancel: false,
   createClientFromRequest: () => ({ auth: { me: async () => deps.currentUser }, asServiceRole: { entities: new Proxy({}, { get() { assert.fail('Unauthorized privileged read/write'); } }) } }),
   requireAdmin: async client => {
     const user = await client.auth.me();
@@ -16,7 +16,7 @@ const deps = { currentUser: null, calls: [],
   addSecurityHeaders: response => response,
   listDefinitions: async () => { deps.calls.push(['list']); return [{ code: 'seller_onboarding' }]; },
   resumeExecution: async (_client, id, options) => { deps.calls.push(['retry', id, options]); return { ok: true, status: 'COMPLETED' }; },
-  cancelExecution: async (_client, id, options) => { deps.calls.push(['cancel', id, options]); return { ok: true, status: 'CANCELLED' }; },
+  cancelExecution: async (_client, id, options) => { deps.calls.push(['cancel', id, options]); return deps.rejectCancel ? { ok: false, error: 'Already completed' } : { ok: true, status: 'CANCELLED' }; },
 };
 globalThis.__runWorkflowDeps = deps;
 const { default: handler } = await import(`data:text/javascript;base64,${Buffer.from(compiled).toString('base64')}`);
@@ -52,7 +52,9 @@ describe('runWorkflow admin gateway', () => {
     assert.equal(deps.calls[2][2].reason, 'Owner approved');
   });
   it('does not report false success when the engine refuses an operation', async () => {
-    deps.cancelExecution = async () => ({ ok: false, error: 'Already completed' });
-    assert.equal((await handler(post({ action: 'cancel', execution_id: 'e3' }))).status, 409);
+    deps.rejectCancel = true;
+    try {
+      assert.equal((await handler(post({ action: 'cancel', execution_id: 'e3' }))).status, 409);
+    } finally { deps.rejectCancel = false; }
   });
 });

@@ -52,8 +52,8 @@ describe('frontend-to-Base44 wiring', () => {
     for (const file of sourceFiles(root)) {
       for (const match of source(file).matchAll(/\bfunctions\.invoke\(\s*['"]([^'"]+)['"]/g)) invoked.add(match[1]);
     }
-    // runWorkflow has no local implementation; tracked as a deployment blocker.
-    const outstanding = new Set(['runWorkflow']);
+    // All statically invoked frontend functions now have backend entries.
+    const outstanding = new Set();
     assert.deepEqual([...invoked].filter((name) => !registered.has(name)).sort(), [...outstanding]);
   });
 });
