@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Bot, Check, Copy, KeyRound, Link2, Save, ShieldCheck } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
@@ -111,7 +112,7 @@ export default function PartnerAiSettings() {
         <div className="mt-3 grid gap-3 md:grid-cols-3">
           <div>
             <Label htmlFor="ai-provider" className="text-[11px]">Fournisseur</Label>
-            <select
+            <LegacySelect
               id="ai-provider"
               value={form.provider}
               onChange={(e) => {
@@ -121,7 +122,7 @@ export default function PartnerAiSettings() {
               className="h-9 w-full rounded-md border border-input bg-card px-3 text-sm"
             >
               {PROVIDERS.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
-            </select>
+            </LegacySelect>
           </div>
           <div>
             <Label htmlFor="ai-model" className="text-[11px]">Modèle</Label>

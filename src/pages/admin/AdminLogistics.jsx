@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import React, { useEffect, useState } from 'react';
 import { Plus, Trash2, Truck, MapPin, Store } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
@@ -173,11 +174,11 @@ export default function AdminLogistics() {
         <>
           <form onSubmit={addZone} className="grid gap-3 rounded-2xl border border-border bg-card p-4 md:grid-cols-4">
             <input value={drafts.zones.name} onChange={(e) => setDrafts({ ...drafts, zones: { ...drafts.zones, name: e.target.value } })} placeholder={t('adminLogistics.zoneName')} required className="h-11 rounded-lg border border-border bg-background px-3 text-sm" />
-            <select value={drafts.zones.city} onChange={(e) => setDrafts({ ...drafts, zones: { ...drafts.zones, city: e.target.value } })} className="h-11 rounded-lg border border-border bg-background px-3 text-sm">
+            <LegacySelect value={drafts.zones.city} onChange={(e) => setDrafts({ ...drafts, zones: { ...drafts.zones, city: e.target.value } })} className="h-11 rounded-lg border border-border bg-background px-3 text-sm">
               {getCities().map((c) => (
                 <option key={c} value={c}>{c}</option>
               ))}
-            </select>
+            </LegacySelect>
             <input type="number" step="0.1" value={drafts.zones.fee_usd} onChange={(e) => setDrafts({ ...drafts, zones: { ...drafts.zones, fee_usd: Number(e.target.value) } })} placeholder={t('adminLogistics.feeUsd')} className="h-11 rounded-lg border border-border bg-background px-3 text-sm" />
             <input value={drafts.zones.eta_days} onChange={(e) => setDrafts({ ...drafts, zones: { ...drafts.zones, eta_days: e.target.value } })} placeholder={t('adminLogistics.eta')} className="h-11 rounded-lg border border-border bg-background px-3 text-sm" />
             <button type="submit" disabled={savingZone} className="flex items-center justify-center gap-1.5 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground md:col-span-4 disabled:opacity-50">
@@ -204,11 +205,11 @@ export default function AdminLogistics() {
         <>
           <form onSubmit={addPickup} className="grid gap-3 rounded-2xl border border-border bg-card p-4 md:grid-cols-3">
             <input value={drafts.pickups.name} onChange={(e) => setDrafts({ ...drafts, pickups: { ...drafts.pickups, name: e.target.value } })} placeholder={t('adminLogistics.pickupName')} required className="h-11 rounded-lg border border-border bg-background px-3 text-sm" />
-            <select value={drafts.pickups.city} onChange={(e) => setDrafts({ ...drafts, pickups: { ...drafts.pickups, city: e.target.value } })} className="h-11 rounded-lg border border-border bg-background px-3 text-sm">
+            <LegacySelect value={drafts.pickups.city} onChange={(e) => setDrafts({ ...drafts, pickups: { ...drafts.pickups, city: e.target.value } })} className="h-11 rounded-lg border border-border bg-background px-3 text-sm">
               {getCities().map((c) => (
                 <option key={c} value={c}>{c}</option>
               ))}
-            </select>
+            </LegacySelect>
             <input value={drafts.pickups.commune} onChange={(e) => setDrafts({ ...drafts, pickups: { ...drafts.pickups, commune: e.target.value } })} placeholder={t('adminLogistics.commune')} className="h-11 rounded-lg border border-border bg-background px-3 text-sm" />
             <input value={drafts.pickups.address} onChange={(e) => setDrafts({ ...drafts, pickups: { ...drafts.pickups, address: e.target.value } })} placeholder={t('adminLogistics.address')} className="h-11 rounded-lg border border-border bg-background px-3 text-sm md:col-span-2" />
             <input value={drafts.pickups.phone} onChange={(e) => setDrafts({ ...drafts, pickups: { ...drafts.pickups, phone: e.target.value } })} placeholder={t('adminLogistics.phone')} className="h-11 rounded-lg border border-border bg-background px-3 text-sm" />

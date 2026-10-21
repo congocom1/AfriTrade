@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import PortalRefresh from '@/components/portal/PortalRefresh';
 import { usePortalData } from '@/hooks/usePortalData';
 import { loadRecordGroups } from '@/lib/portalData';
@@ -104,7 +105,7 @@ export default memo(function CreatorDashboard() {
         {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
         <div className="flex flex-wrap items-center gap-2">
           {isAdmin ? (
-            <select
+            <LegacySelect
               aria-label={t('creatorDashboard.title')}
               value={creator.id}
               onChange={(e) => switchCreator(e.target.value)}
@@ -113,7 +114,7 @@ export default memo(function CreatorDashboard() {
               {creators.map((c) => (
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
-            </select>
+            </LegacySelect>
           ) : (
             <span className="ml-auto text-sm font-semibold">{creator.name}</span>
           )}
@@ -160,12 +161,12 @@ export default memo(function CreatorDashboard() {
 
         {showForm && (
           <form onSubmit={publish} className="space-y-3 rounded-2xl border border-border bg-card p-4">
-            <select value={draft.product_id} onChange={(e) => setDraft({ ...draft, product_id: e.target.value })} className="h-11 w-full rounded-lg border border-border bg-background px-3 text-sm">
+            <LegacySelect value={draft.product_id} onChange={(e) => setDraft({ ...draft, product_id: e.target.value })} className="h-11 w-full rounded-lg border border-border bg-background px-3 text-sm">
               <option value="">{t('creatorDashboard.optionalProduct')}</option>
               {products.map((p) => (
                 <option key={p.id} value={p.id}>{p.title} — {format(p.price_usd)}</option>
               ))}
-            </select>
+            </LegacySelect>
             <input value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} placeholder={t('creatorDashboard.contentTitle')} required className="h-11 w-full rounded-lg border border-border bg-background px-3 text-sm" />
             <textarea value={draft.caption} onChange={(e) => setDraft({ ...draft, caption: e.target.value })} rows={2} placeholder={t('creatorDashboard.caption')} className="w-full rounded-lg border border-border bg-background p-3 text-sm" />
             <input value={draft.media_url} onChange={(e) => setDraft({ ...draft, media_url: e.target.value })} placeholder={t('creatorDashboard.mediaUrl')} className="h-11 w-full rounded-lg border border-border bg-background px-3 text-sm" />

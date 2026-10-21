@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import AccountDeletionRequest from '@/components/settings/AccountDeletionRequest';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -70,7 +71,7 @@ export default function Profile() {
               placeholder={t('profile.emailPh')}
               className="h-11 rounded-lg border border-border bg-background px-3 text-sm"
             />
-            <select
+            <LegacySelect
               value={profile.city}
               onChange={(e) => setProfile({ ...profile, city: e.target.value })}
               className="h-11 rounded-lg border border-border bg-background px-3 text-sm"
@@ -78,7 +79,7 @@ export default function Profile() {
               {getCities().map((c) => (
                 <option key={c} value={c}>{c}</option>
               ))}
-            </select>
+            </LegacySelect>
           </div>
           <textarea
             value={profile.address}

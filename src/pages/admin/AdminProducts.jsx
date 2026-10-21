@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import { usePortalData } from '@/hooks/usePortalData';
 import { loadRecordGroups } from '@/lib/portalData';
 import PortalStatus from '@/components/PortalStatus';
@@ -68,17 +69,17 @@ export default function AdminProducts() {
             className="h-10 w-full rounded-full border border-border bg-card pl-9 pr-3 text-sm"
           />
         </div>
-        <select aria-label={t('adminProducts.allStatuses')} value={status} onChange={(e) => setStatus(e.target.value)} className="h-10 rounded-lg border border-border bg-card px-3 text-xs">
+        <LegacySelect aria-label={t('adminProducts.allStatuses')} value={status} onChange={(e) => setStatus(e.target.value)} className="h-10 rounded-lg border border-border bg-card px-3 text-xs">
           <option value="all">{t('adminProducts.allStatuses')}</option>
           <option value="published">{t('adminProducts.published')}</option>
           <option value="draft">{t('adminProducts.drafts')}</option>
           <option value="archived">{t('adminProducts.archived')}</option>
-        </select>
-        <select aria-label={t('adminProducts.allSources')} value={source} onChange={(e) => setSource(e.target.value)} className="h-10 rounded-lg border border-border bg-card px-3 text-xs">
+        </LegacySelect>
+        <LegacySelect aria-label={t('adminProducts.allSources')} value={source} onChange={(e) => setSource(e.target.value)} className="h-10 rounded-lg border border-border bg-card px-3 text-xs">
           <option value="all">{t('adminProducts.allSources')}</option>
           <option value="local">{t('adminProducts.local')}</option>
           <option value="international">{t('adminProducts.intl')}</option>
-        </select>
+        </LegacySelect>
       </div>
 
       {loading ? (

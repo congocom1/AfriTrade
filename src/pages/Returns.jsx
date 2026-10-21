@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import { formatUsdAmount } from '@/lib/format';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -150,7 +151,7 @@ export default function Returns() {
             placeholder={t('returns.itemPh')}
             className="h-11 w-full rounded-lg border border-border bg-background px-3 text-sm"
           />
-          <select
+          <LegacySelect
             value={form.reason}
             onChange={(e) => setForm({ ...form, reason: e.target.value })}
             className="h-11 w-full rounded-lg border border-border bg-background px-3 text-sm"
@@ -158,7 +159,7 @@ export default function Returns() {
             {REASONS.map((r) => (
               <option key={r.id} value={r.id}>{r.label}</option>
             ))}
-          </select>
+          </LegacySelect>
           <label className="block text-xs font-semibold">
             {copy.expectedRefund}
             <input

@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import React, { useEffect, useMemo, useState } from 'react';
 import { ArrowDownLeft, ArrowUpRight, Download, FileText } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
@@ -139,14 +140,14 @@ export default function PayoutLedger() {
             {TYPE_LABELS[t]}
           </button>
         ))}
-        <select
+        <LegacySelect
           value={status}
           onChange={(e) => setStatus(e.target.value)}
           className="ml-auto rounded-full border border-input bg-card px-3.5 py-1.5 text-xs font-semibold"
         >
           <option value="all">Tous les statuts</option>
           {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
-        </select>
+        </LegacySelect>
       </div>
 
       <section className="overflow-hidden rounded-2xl border border-border bg-card">

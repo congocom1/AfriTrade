@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import React, { useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -67,10 +68,10 @@ export function DashboardNav({ title, links = [], variant }) {
         </Popover>}
       </div>
       {uniqueLinks.length > 0 && <>
-        <select aria-label={title} value={active?.to || ''} onChange={e => navigate(e.target.value)} className="h-12 w-full rounded-lg border border-border bg-card px-3 text-sm font-medium md:hidden">
+        <LegacySelect aria-label={title} value={active?.to || ''} onChange={e => navigate(e.target.value)} className="h-12 w-full rounded-lg border border-border bg-card px-3 text-sm font-medium md:hidden">
           {!active && <option value="" disabled>{title}</option>}
           {groups.map(group => <optgroup key={group} label={t(`portalComponents.${group}`)}>{uniqueLinks.filter(l => (l.group || 'workspace') === group).map(l => <option key={l.to} value={l.to}>{label(l)}</option>)}</optgroup>)}
-        </select>
+        </LegacySelect>
         <nav aria-label={title} className="hidden flex-wrap gap-1 border-b border-border pb-2 md:flex">
           {visible.map(l => <NavLink key={l.to} to={l.to} end={l.end} className={() => linkClass(active?.to === l.to)}>{label(l)}</NavLink>)}
         </nav>

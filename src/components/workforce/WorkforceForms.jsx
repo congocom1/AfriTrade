@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -43,19 +44,19 @@ export function WorkforceForm({ kind, initial, department, employees = [], admin
             <fieldset className="rounded-lg border border-border p-4"><legend className="px-1 text-xs font-medium">{t('workforce.departments')}</legend>
               <div className="grid gap-2 sm:grid-cols-2">{DEPARTMENTS.map(d => <label key={d.id} className="flex min-h-11 cursor-pointer items-center gap-3 text-sm"><input type="checkbox" checked={values.departments.includes(d.id)} onChange={e => set('departments', e.target.checked ? [...values.departments, d.id] : values.departments.filter(id => id !== d.id))} />{t(`workforce.${d.id}`)}</label>)}</div>
             </fieldset>
-            <FormField label={t('workforce.access')} hint={t('workforce.scopeHelp')}><select className={selectClass} value={values.access_scope} onChange={e => set('access_scope', e.target.value)}><option value="assigned">{t('workforce.assigned')}</option><option value="department">{t('workforce.department')}</option></select></FormField>
+            <FormField label={t('workforce.access')} hint={t('workforce.scopeHelp')}><LegacySelect className={selectClass} value={values.access_scope} onChange={e => set('access_scope', e.target.value)}><option value="assigned">{t('workforce.assigned')}</option><option value="department">{t('workforce.department')}</option></LegacySelect></FormField>
             <label className="flex min-h-11 items-center gap-3 text-sm"><input type="checkbox" checked={values.active} onChange={e => set('active', e.target.checked)} />{t('workforce.active')}</label>
           </> : update ? <>
             <p className="whitespace-pre-wrap text-sm text-muted-foreground">{initial.description}</p>
-            {admin && <FormField label={t('workforce.assignee')}><select className={selectClass} value={values.assignee_id || ''} onChange={e => set('assignee_id', e.target.value)}><option value="">{t('workforce.unassigned')}</option>{employees.filter(e => e.active && e.departments?.includes(department)).map(e => <option key={e.id} value={e.user_id}>{e.display_name || e.email}</option>)}</select></FormField>}
-            <FormField label={t('workforce.status')}><select className={selectClass} value={values.status} onChange={e => set('status', e.target.value)}>{TASK_STATUSES.map(s => <option key={s} value={s}>{t(`workforce.${s}`)}</option>)}</select></FormField>
+            {admin && <FormField label={t('workforce.assignee')}><LegacySelect className={selectClass} value={values.assignee_id || ''} onChange={e => set('assignee_id', e.target.value)}><option value="">{t('workforce.unassigned')}</option>{employees.filter(e => e.active && e.departments?.includes(department)).map(e => <option key={e.id} value={e.user_id}>{e.display_name || e.email}</option>)}</LegacySelect></FormField>}
+            <FormField label={t('workforce.status')}><LegacySelect className={selectClass} value={values.status} onChange={e => set('status', e.target.value)}>{TASK_STATUSES.map(s => <option key={s} value={s}>{t(`workforce.${s}`)}</option>)}</LegacySelect></FormField>
             <FormField label={t('workforce.handoff')} hint={t('workforce.handoffHelp')}><Textarea maxLength={2000} rows={4} value={values.handoff_note || ''} onChange={e => set('handoff_note', e.target.value)} /></FormField>
           </> : <>
             <FormField label={t('workforce.taskTitle')}><Input required maxLength={160} value={values.title} onChange={e => set('title', e.target.value)} /></FormField>
             <FormField label={t('workforce.description')}><Textarea rows={4} maxLength={4000} value={values.description} onChange={e => set('description', e.target.value)} /></FormField>
-            <FormField label={t('workforce.assignee')}><select className={selectClass} value={values.assignee_id} onChange={e => set('assignee_id', e.target.value)}><option value="">{t('workforce.unassigned')}</option>{employees.filter(e => e.active && e.departments?.includes(department)).map(e => <option key={e.id} value={e.user_id}>{e.display_name || e.email}</option>)}</select></FormField>
+            <FormField label={t('workforce.assignee')}><LegacySelect className={selectClass} value={values.assignee_id} onChange={e => set('assignee_id', e.target.value)}><option value="">{t('workforce.unassigned')}</option>{employees.filter(e => e.active && e.departments?.includes(department)).map(e => <option key={e.id} value={e.user_id}>{e.display_name || e.email}</option>)}</LegacySelect></FormField>
             <div className="grid gap-4 sm:grid-cols-2">
-              <FormField label={t('workforce.priority')}><select className={selectClass} value={values.priority} onChange={e => set('priority', e.target.value)}>{['normal', 'high', 'urgent'].map(s => <option key={s} value={s}>{t(`workforce.${s}`)}</option>)}</select></FormField>
+              <FormField label={t('workforce.priority')}><LegacySelect className={selectClass} value={values.priority} onChange={e => set('priority', e.target.value)}>{['normal', 'high', 'urgent'].map(s => <option key={s} value={s}>{t(`workforce.${s}`)}</option>)}</LegacySelect></FormField>
               <FormField label={t('workforce.dueDate')}><Input type="date" value={values.due_date} onChange={e => set('due_date', e.target.value)} /></FormField>
             </div>
           </>}

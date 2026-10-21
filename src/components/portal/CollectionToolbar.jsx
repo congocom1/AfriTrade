@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import { useId } from 'react';
 import { Search, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -19,9 +20,9 @@ export default function CollectionToolbar({ query, onQueryChange, filter, onFilt
       </div>
       {options.length > 0 && <div className="min-w-36 flex-1 basis-36 sm:flex-none">
         <label htmlFor={`${id}-filter`} className="mb-1.5 block text-xs font-medium">{t('portalComponents.filter')}</label>
-        <select id={`${id}-filter`} value={filter} onChange={(event) => onFilterChange(event.target.value)} className="h-11 w-full rounded-md border border-input bg-card px-3 text-sm">
+        <LegacySelect id={`${id}-filter`} value={filter} onChange={(event) => onFilterChange(event.target.value)} className="h-11 w-full rounded-md border border-input bg-card px-3 text-sm">
           {options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-        </select>
+        </LegacySelect>
       </div>}
       {children}
     </div>

@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import { useCollectionView } from '@/hooks/useCollectionView';
 import CollectionToolbar from '@/components/portal/CollectionToolbar';
 import CollectionPagination from '@/components/portal/CollectionPagination';
@@ -197,10 +198,10 @@ function StockAdder({ warehouseId, warehouseName, onAdded }) {
   return (
     <form onSubmit={submit} className="rounded-2xl border border-border bg-card p-3 space-y-2 md:grid md:grid-cols-5 md:gap-2">
       {error && <p role="alert" className="text-sm text-destructive md:col-span-5">{t('portalStatus.actionFailed')}</p>}
-      <select required aria-label={t('common.product')} value={form.product_id} onChange={(e) => { const p = products.find(x => x.id === e.target.value); setForm(f => ({ ...f, product_id: e.target.value, product_title: p?.title || '', sku: p?.sku || '' })); }} className="h-9 rounded-lg border border-border bg-background px-2 text-xs md:col-span-2">
+      <LegacySelect required aria-label={t('common.product')} value={form.product_id} onChange={(e) => { const p = products.find(x => x.id === e.target.value); setForm(f => ({ ...f, product_id: e.target.value, product_title: p?.title || '', sku: p?.sku || '' })); }} className="h-9 rounded-lg border border-border bg-background px-2 text-xs md:col-span-2">
         <option value="">{t('common.product')}…</option>
         {products.map(p => <option key={p.id} value={p.id}>{p.title} ({p.sku})</option>)}
-      </select>
+      </LegacySelect>
       <input value={form.sku} onChange={(e) => setForm(f => ({ ...f, sku: e.target.value }))} placeholder="SKU" required className="h-9 rounded-lg border border-border bg-background px-2 text-xs" />
       <input type="number" min="1" step="1" aria-label="Quantité" value={form.quantity} onChange={(e) => setForm(f => ({ ...f, quantity: e.target.value }))} placeholder="Qté" required className="h-9 rounded-lg border border-border bg-background px-2 text-xs" />
       <input type="number" min="0" step="0.01" aria-label="Coût USD" value={form.cost_usd} onChange={(e) => setForm(f => ({ ...f, cost_usd: e.target.value }))} placeholder="Coût USD" className="h-9 rounded-lg border border-border bg-background px-2 text-xs" />

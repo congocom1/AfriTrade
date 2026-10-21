@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import { formatUsdAmount } from '@/lib/format';
 import React, { memo, useState } from 'react';
 import { base44 } from '@/api/base44Client';
@@ -66,9 +67,9 @@ export default memo(function TenantPlanPanel({ tenant, subscription, plans, invo
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <select value={cycle} onChange={(e) => setCycle(e.target.value)} className="h-9 rounded-md border border-input bg-background px-2 text-sm">
+            <LegacySelect value={cycle} onChange={(e) => setCycle(e.target.value)} className="h-9 rounded-md border border-input bg-background px-2 text-sm">
               {BILLING_CYCLES.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
-            </select>
+            </LegacySelect>
             <Button size="sm" variant="outline" disabled={busy} onClick={() => run(() => changePlan(subscription, plan, cycle), t('tenantPlanPanel.planUpdated'))}>
               {t('tenantPlanPanel.apply')}
             </Button>

@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import { SELLER_LINKS } from '@/lib/navLinks';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -78,7 +79,7 @@ export default function SellerSettings() {
             placeholder={t('sellerSettings.phName')}
             className="h-11 rounded-lg border border-border bg-background px-3 text-sm"
           />
-          <select
+          <LegacySelect
             value={form.city}
             onChange={(e) => setForm({ ...form, city: e.target.value })}
             className="h-11 rounded-lg border border-border bg-background px-3 text-sm"
@@ -86,7 +87,7 @@ export default function SellerSettings() {
             {getCities().map((c) => (
               <option key={c} value={c}>{c}</option>
             ))}
-          </select>
+          </LegacySelect>
           <input
             value={form.phone}
             onChange={(e) => setForm({ ...form, phone: e.target.value })}

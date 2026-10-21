@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -168,7 +169,7 @@ export default function Search() {
         <div id="catalog-filters" className="space-y-3 rounded-xl border border-border bg-card p-3">
           <div>
             <p className="mb-1.5 text-xs font-semibold text-muted-foreground">{t('search.category')}</p>
-            <select
+            <LegacySelect
               value={category}
               onChange={(e) => setCategory(e.target.value)}
               className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm"
@@ -177,7 +178,7 @@ export default function Search() {
               {categories.map((c) => (
                 <option key={c.id} value={c.slug}>{c.name}</option>
               ))}
-            </select>
+            </LegacySelect>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -193,7 +194,7 @@ export default function Search() {
             </div>
             <div>
               <p className="mb-1.5 text-xs font-semibold text-muted-foreground">{t('search.minRating')}</p>
-              <select
+              <LegacySelect
                 value={minRating}
                 onChange={(e) => setMinRating(Number(e.target.value))}
                 className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm"
@@ -202,7 +203,7 @@ export default function Search() {
                 <option value={3}>{t('search.rate3')}</option>
                 <option value={4}>{t('search.rate4')}</option>
                 <option value={4.5}>{t('search.rate45')}</option>
-              </select>
+              </LegacySelect>
             </div>
           </div>
           <div>
@@ -241,7 +242,7 @@ export default function Search() {
           {loading ? t('common.loading') : t('search.resultsCount', { count: results.length })}
           {params.get('q') ? t('search.resultsForTerm', { term: params.get('q') }) : ''}
         </p>
-        <select
+        <LegacySelect
           value={sort}
           onChange={(e) => setSort(e.target.value)}
           className="h-9 rounded-lg border border-border bg-card px-2 text-xs"
@@ -249,7 +250,7 @@ export default function Search() {
           {SORTS.map((s) => (
             <option key={s.id} value={s.id}>{s.label}</option>
           ))}
-        </select>
+        </LegacySelect>
       </div>
 
       {loadError && <AsyncState error onRetry={() => setReloadToken(v => v + 1)} errorTitle={t('asyncState.errorTitle')} errorDescription={t('asyncState.errorDescription')} />}

@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import { usePortalData } from '@/hooks/usePortalData';
 import { functionData } from '@/lib/portalData';
 import PortalStatus from '@/components/PortalStatus';
@@ -88,13 +89,13 @@ export default function TicketAutomation() {
         <Button onClick={checkSLA} disabled={saving} variant="outline" className="gap-1.5">
           <AlertTriangle className="h-4 w-4" /> {t('common.checkSLA', 'Vérifier SLA')}
         </Button>
-        <select value={filter} onChange={(e) => setFilter(e.target.value)} className="h-10 rounded-lg border border-border bg-background px-3 text-sm">
+        <LegacySelect value={filter} onChange={(e) => setFilter(e.target.value)} className="h-10 rounded-lg border border-border bg-background px-3 text-sm">
           <option value="">{t('common.all')}</option>
           <option value="open">Open</option>
           <option value="routed">Routed</option>
           <option value="escalated">Escalated</option>
           <option value="resolved">Resolved</option>
-        </select>
+        </LegacySelect>
       </div>
 
       <div className="space-y-2">

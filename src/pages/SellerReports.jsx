@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import { usePortalData } from '@/hooks/usePortalData';
 import { loadRecordGroups } from '@/lib/portalData';
 import PortalStatus from '@/components/PortalStatus';
@@ -52,9 +53,9 @@ export default function SellerReports() {
       <PortalRefresh onRefresh={reload} updatedAt={updatedAt} />
       <p className="text-xs text-muted-foreground">{t('portalComponents.recordScope')}</p>
       {isAdmin && (
-        <select value={seller.id} onChange={(e) => selectSeller(e.target.value)} className="h-9 rounded-lg border border-border bg-card px-2 text-sm">
+        <LegacySelect value={seller.id} onChange={(e) => selectSeller(e.target.value)} className="h-9 rounded-lg border border-border bg-card px-2 text-sm">
           {sellers.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-        </select>
+        </LegacySelect>
       )}
       {!data ? <div className="h-60 animate-pulse rounded-2xl bg-secondary" /> : (
         <>

@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import React, { memo, useState } from 'react';
 import { UserPlus, Trash2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
@@ -63,9 +64,9 @@ export default memo(function TenantTeamPanel({ tenant, members, onChange, permis
         <div className="grid gap-2 sm:grid-cols-[1.2fr_1fr_auto_auto]">
           <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="membre@exemple.cd" />
           <Input value={name} onChange={(e) => setName(e.target.value)} placeholder={t('tenantTeamPanel.namePlaceholder')} />
-          <select value={role} onChange={(e) => setRole(e.target.value)} className="h-10 rounded-md border border-input bg-background px-3 text-sm">
+          <LegacySelect value={role} onChange={(e) => setRole(e.target.value)} className="h-10 rounded-md border border-input bg-background px-3 text-sm">
             {allowedRoles.map((r) => <option key={r.id} value={r.id}>{r.label}</option>)}
-          </select>
+          </LegacySelect>
           <Button onClick={invite} disabled={busy || !email || !allowedRoles.some(r => r.id === role)}>
             <UserPlus className="mr-1.5 h-4 w-4" /> {t('tenantTeamPanel.invite')}
           </Button>
@@ -84,14 +85,14 @@ export default memo(function TenantTeamPanel({ tenant, members, onChange, permis
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <select
+                  <LegacySelect
                     value={m.role}
                     onChange={(e) => changeRole(m, e.target.value)}
                     disabled={busy || m.email === tenant.owner_email || (!owner && m.role === 'TENANT_ADMIN')}
                     className="h-9 rounded-md border border-input bg-background px-2 text-sm"
                   >
                     {allowedRoles.map((r) => <option key={r.id} value={r.id}>{r.label}</option>)}
-                  </select>
+                  </LegacySelect>
                   <Button variant="ghost" size="sm" disabled={busy || m.email === tenant.owner_email || (!owner && m.role === 'TENANT_ADMIN')} aria-label={`Retirer ${m.email}`} onClick={() => remove(m)}>
                     <Trash2 className="h-4 w-4" />
                   </Button>

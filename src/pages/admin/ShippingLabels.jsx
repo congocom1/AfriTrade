@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import { usePortalData } from '@/hooks/usePortalData';
 import { functionData } from '@/lib/portalData';
 import PortalStatus from '@/components/PortalStatus';
@@ -74,14 +75,14 @@ export default function ShippingLabelsPage() {
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input placeholder={t('common.search')} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 h-10" />
         </div>
-        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="h-10 rounded-lg border border-border bg-background px-3 text-sm">
+        <LegacySelect value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="h-10 rounded-lg border border-border bg-background px-3 text-sm">
           <option value="">{t('common.allStatus')}</option>
           <option value="pending">Pending</option>
           <option value="generated">Generated</option>
           <option value="printed">Printed</option>
           <option value="in_transit">In Transit</option>
           <option value="delivered">Delivered</option>
-        </select>
+        </LegacySelect>
         <Button onClick={load} variant="outline" size="sm" className="gap-1.5"><RefreshCw className="h-4 w-4" /> {t('common.refresh')}</Button>
         <Button onClick={handlePrintAll} disabled={saving || !labels.filter((l) => l.status !== 'printed' && l.status !== 'delivered').length} className="gap-1.5">
           <Printer className="h-4 w-4" /> {t('common.printAll')}

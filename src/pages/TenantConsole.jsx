@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import PortalRefresh from '@/components/portal/PortalRefresh';
 import { usePortalData } from '@/hooks/usePortalData';
 import { loadRecordGroups, functionData } from '@/lib/portalData';
@@ -87,14 +88,14 @@ export default function TenantConsole() {
           </p>
         </div>
         {tenants.length > 1 && (
-          <select
+          <LegacySelect
             aria-label={t('tenantConsole.platformConsole')}
             value={tenant.id}
             onChange={(e) => selectTenant(e.target.value)}
             className="h-10 rounded-md border border-input bg-background px-3 text-sm"
           >
             {tenants.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
-          </select>
+          </LegacySelect>
         )}
         {isAdmin && (
           <Button variant="outline" size="sm" onClick={() => { window.location.href = '/admin/tenants'; }}>

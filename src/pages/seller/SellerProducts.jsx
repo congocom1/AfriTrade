@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import { SELLER_LINKS } from '@/lib/navLinks';
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -222,7 +223,7 @@ export default function SellerProducts() {
               {errors.stock && <p className="mt-1 text-[11px] text-destructive">{t(errors.stock.message)}</p>}
             </div>
           </div>
-          <select
+          <LegacySelect
             {...register('category_id')}
             className="h-11 w-full rounded-lg border border-border bg-background px-3 text-sm"
           >
@@ -230,7 +231,7 @@ export default function SellerProducts() {
             {categories.map((c) => (
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
-          </select>
+          </LegacySelect>
           <input
             {...register('images')}
             placeholder={t('sellerProducts.phImages')}

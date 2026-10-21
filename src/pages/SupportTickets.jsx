@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -106,7 +107,7 @@ export default function SupportTickets() {
             className="h-11 w-full rounded-lg border border-border bg-background px-3 text-sm"
           />
           <div className="grid gap-3 md:grid-cols-2">
-            <select
+            <LegacySelect
               value={form.category}
               onChange={(e) => setForm({ ...form, category: e.target.value })}
               className="h-11 rounded-lg border border-border bg-background px-3 text-sm"
@@ -114,7 +115,7 @@ export default function SupportTickets() {
               {CATEGORIES.map((c) => (
                 <option key={c.id} value={c.id}>{c.label}</option>
               ))}
-            </select>
+            </LegacySelect>
             <input
               value={form.order_number}
               onChange={(e) => setForm({ ...form, order_number: e.target.value.toUpperCase() })}

@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import { SELLER_LINKS } from '@/lib/navLinks';
 import PortalRefresh from '@/components/portal/PortalRefresh';
 import { usePortalData } from '@/hooks/usePortalData';
@@ -101,7 +102,7 @@ export default function SellerDashboard() {
         <span className="paper-shopmark" />
         <strong>{t('seller.managedShop')}</strong>
         {isAdmin ? (
-          <select
+          <LegacySelect
             value={seller.id}
             onChange={(e) => selectSeller(e.target.value)}
             aria-label={t('seller.managedShop')}
@@ -110,7 +111,7 @@ export default function SellerDashboard() {
             {sellers.map((s) => (
               <option key={s.id} value={s.id}>{s.name}</option>
             ))}
-          </select>
+          </LegacySelect>
         ) : (
           <span className="paper-shopname">{seller.name}</span>
         )}

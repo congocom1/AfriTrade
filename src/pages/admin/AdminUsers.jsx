@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import React, { useEffect, useState } from 'react';
 import { UserPlus, Plus, BadgeCheck, Power } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
@@ -151,11 +152,11 @@ export default function AdminUsers() {
           {showSellerForm && (
             <form onSubmit={createSeller} className="grid gap-3 rounded-2xl border border-border bg-card p-4 md:grid-cols-2">
               <input value={newSeller.name} onChange={(e) => setNewSeller({ ...newSeller, name: e.target.value })} placeholder={t('adminUsers.shopName')} required className="h-11 rounded-lg border border-border bg-background px-3 text-sm" />
-              <select value={newSeller.city} onChange={(e) => setNewSeller({ ...newSeller, city: e.target.value })} className="h-11 rounded-lg border border-border bg-background px-3 text-sm">
+              <LegacySelect value={newSeller.city} onChange={(e) => setNewSeller({ ...newSeller, city: e.target.value })} className="h-11 rounded-lg border border-border bg-background px-3 text-sm">
                 {getCities().map((c) => (
                   <option key={c} value={c}>{c}</option>
                 ))}
-              </select>
+              </LegacySelect>
               <input value={newSeller.phone} onChange={(e) => setNewSeller({ ...newSeller, phone: e.target.value })} placeholder={t('adminUsers.phone')} className="h-11 rounded-lg border border-border bg-background px-3 text-sm" />
               <input type="email" value={newSeller.email} onChange={(e) => setNewSeller({ ...newSeller, email: e.target.value })} placeholder={t('adminUsers.sellerEmail')} className="h-11 rounded-lg border border-border bg-background px-3 text-sm" />
               <input type="number" value={newSeller.commission_rate} onChange={(e) => setNewSeller({ ...newSeller, commission_rate: Number(e.target.value) })} placeholder={t('adminUsers.commission')} className="h-11 rounded-lg border border-border bg-background px-3 text-sm" />
@@ -270,10 +271,10 @@ export default function AdminUsers() {
               placeholder="adresse@exemple.cd"
               className="h-11 rounded-lg border border-border bg-background px-3 text-sm"
             />
-            <select value={invite.role} onChange={(e) => setInvite({ ...invite, role: e.target.value })} className="h-11 rounded-lg border border-border bg-background px-3 text-sm">
+            <LegacySelect value={invite.role} onChange={(e) => setInvite({ ...invite, role: e.target.value })} className="h-11 rounded-lg border border-border bg-background px-3 text-sm">
               <option value="user">{t('adminUsers.roleUser')}</option>
               <option value="admin">{t('adminUsers.roleAdmin')}</option>
-            </select>
+            </LegacySelect>
           </div>
           <button type="submit" disabled={savingInvite} className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground disabled:opacity-50">{savingInvite ? t('common.saving') : t('adminUsers.sendInvite')}</button>
           <p className="text-[11px] text-muted-foreground">

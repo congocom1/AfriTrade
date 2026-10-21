@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import React, { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AlertTriangle, Banknote, MessageSquare, PackageCheck, Paperclip, Send, ShieldCheck, X } from 'lucide-react';
@@ -197,13 +198,13 @@ export default memo(function DisputeCaseCard({ dispute, ticket, isAdmin, actor, 
           {!isAdmin ? (
             <label className="block text-[11px] font-semibold">
               {t('disputeCase.proposedResolution')}
-              <select
+              <LegacySelect
                 value={resolution}
                 onChange={(e) => setResolution(e.target.value)}
                 className="mt-1 h-9 w-full rounded-lg border border-input bg-card px-2 text-xs"
               >
                 {RESOLUTIONS.map((r) => <option key={r.id} value={r.id}>{t(r.labelKey)}</option>)}
-              </select>
+              </LegacySelect>
             </label>
           ) : null}
           {isAdmin ? (

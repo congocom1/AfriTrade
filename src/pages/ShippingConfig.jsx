@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Globe, Plus, Save, Trash2 } from 'lucide-react';
@@ -173,14 +174,14 @@ export default function ShippingConfig() {
           </label>
           <label className="text-[11px] text-muted-foreground">
             {t('shippingConfig.origin')}
-            <select
+            <LegacySelect
               value={estimate.originCountry}
               onChange={(e) => setEstimate({ ...estimate, originCountry: e.target.value })}
               className="mt-1 h-11 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground"
             >
               <option value="CN">{t('shippingConfig.originImport')}</option>
               <option value="CD">{t('shippingConfig.originLocal')}</option>
-            </select>
+            </LegacySelect>
           </label>
         </div>
         <div className="space-y-1 rounded-xl bg-secondary/50 p-3 text-xs">

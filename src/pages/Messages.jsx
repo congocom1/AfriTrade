@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { base44 } from '@/api/base44Client';
@@ -39,10 +40,10 @@ export default function Messages() {
   return (<div className="mx-auto max-w-6xl space-y-4 px-3 py-5 md:px-6">
       <h1 className="text-xl font-bold">{t('messages.title')}</h1>
       <div className="flex flex-wrap gap-2 rounded-2xl border border-border bg-card p-3">
-        <select value={target} onChange={(e) => setTarget(e.target.value)} className="h-10 flex-1 rounded-full border border-border bg-background px-3 text-sm">
+        <LegacySelect value={target} onChange={(e) => setTarget(e.target.value)} className="h-10 flex-1 rounded-full border border-border bg-background px-3 text-sm">
           <option value="support">{t('messages.supportOption')}</option>
           {sellers.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-        </select>
+        </LegacySelect>
         <button type="button" onClick={start} className="h-10 rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground">{t('messages.write')}</button>
       </div>
       <ChatInbox threads={threads} activeId={activeId} onSelect={setActiveId} role="customer" senderName={name} emptyText={t('messages.emptyText')} />

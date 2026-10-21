@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import React, { useEffect, useState } from 'react';
 import { Plus, Trash2, Zap, Power } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
@@ -88,11 +89,11 @@ export default function AdminPromotions() {
       {showForm && (
         <form onSubmit={create} className="grid gap-3 rounded-2xl border border-border bg-card p-4 md:grid-cols-3">
           <input value={draft.code} onChange={(e) => setDraft({ ...draft, code: e.target.value.toUpperCase() })} placeholder="CODE" required className="h-11 rounded-lg border border-border bg-background px-3 text-sm uppercase" />
-          <select value={draft.type} onChange={(e) => setDraft({ ...draft, type: e.target.value })} className="h-11 rounded-lg border border-border bg-background px-3 text-sm">
+          <LegacySelect value={draft.type} onChange={(e) => setDraft({ ...draft, type: e.target.value })} className="h-11 rounded-lg border border-border bg-background px-3 text-sm">
             <option value="percent">{t('adminPromotions.percent')}</option>
             <option value="fixed">{t('adminPromotions.fixed')}</option>
             <option value="free_shipping">{t('adminPromotions.freeShipping')}</option>
-          </select>
+          </LegacySelect>
           <input type="number" step="0.01" value={draft.value} onChange={(e) => setDraft({ ...draft, value: Number(e.target.value) })} placeholder={t('adminPromotions.value')} className="h-11 rounded-lg border border-border bg-background px-3 text-sm" />
           <input type="number" step="0.01" value={draft.min_order_usd} onChange={(e) => setDraft({ ...draft, min_order_usd: Number(e.target.value) })} placeholder={t('adminPromotions.minOrder')} className="h-11 rounded-lg border border-border bg-background px-3 text-sm" />
           <input type="number" step="0.01" value={draft.max_discount_usd} onChange={(e) => setDraft({ ...draft, max_discount_usd: Number(e.target.value) })} placeholder={t('adminPromotions.maxDiscount')} className="h-11 rounded-lg border border-border bg-background px-3 text-sm" />

@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -107,7 +108,7 @@ export default function Wallet() {
               placeholder={t('sellerWallet.amountUsd')}
               className="h-11 rounded-lg border border-border bg-background px-3 text-sm"
             />
-            <select
+            <LegacySelect
               value={method}
               onChange={(e) => setMethod(e.target.value)}
               className="h-11 rounded-lg border border-border bg-background px-3 text-sm"
@@ -115,7 +116,7 @@ export default function Wallet() {
               {METHODS.map((m) => (
                 <option key={m} value={m}>{m}</option>
               ))}
-            </select>
+            </LegacySelect>
           </div>
           {error && <p className="text-xs text-destructive">{error}</p>}
           {message && <p className="text-xs text-primary">{message}</p>}

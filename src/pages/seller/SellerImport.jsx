@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import { SELLER_LINKS } from '@/lib/navLinks';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -225,7 +226,7 @@ export default function SellerImport() {
             <button type="button" onClick={writeDescription} className="text-xs font-semibold text-primary">
               {t('sellerImport.generateDesc')}
             </button>
-            <select
+            <LegacySelect
               value={draft.category_id}
               onChange={(e) => setDraft({ ...draft, category_id: e.target.value })}
               className="h-11 w-full rounded-lg border border-border bg-background px-3 text-sm"
@@ -234,7 +235,7 @@ export default function SellerImport() {
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
-            </select>
+            </LegacySelect>
             <div>
               <label className="text-xs font-semibold text-muted-foreground">{t('sellerImport.marginLabel', { value: draft.markup_percent })}</label>
               <input

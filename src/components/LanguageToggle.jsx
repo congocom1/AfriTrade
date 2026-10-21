@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { LANGUAGES, resolveLanguage, setLanguage } from '@/i18n';
@@ -6,7 +7,7 @@ import { LANGUAGES, resolveLanguage, setLanguage } from '@/i18n';
 export default function LanguageToggle({ className = '' }) {
   const { i18n } = useTranslation();
   return (
-    <select
+    <LegacySelect
       aria-label="Langue / Language"
       value={resolveLanguage(i18n.resolvedLanguage || i18n.language) || 'fr'}
       onChange={(e) => setLanguage(e.target.value)}
@@ -17,6 +18,6 @@ export default function LanguageToggle({ className = '' }) {
           {l.label} · {l.name}
         </option>
       ))}
-    </select>
+    </LegacySelect>
   );
 }

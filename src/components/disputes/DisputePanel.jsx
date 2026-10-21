@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Gavel, AlertCircle } from 'lucide-react';
@@ -89,7 +90,7 @@ export default function DisputePanel() {
               className="h-11 rounded-lg border border-border bg-background px-3 text-sm"
             />
           </div>
-          <select
+          <LegacySelect
             value={form.type}
             onChange={(e) => setForm({ ...form, type: e.target.value })}
             className="h-11 w-full rounded-lg border border-border bg-background px-3 text-sm"
@@ -97,7 +98,7 @@ export default function DisputePanel() {
             {TYPES.map((tx) => (
               <option key={tx.id} value={tx.id}>{tx.label}</option>
             ))}
-          </select>
+          </LegacySelect>
           <textarea
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}

@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -71,7 +72,7 @@ export default function ShippingCalculator() {
       <section className="space-y-3 rounded-2xl border border-border bg-card p-5">
         <form onSubmit={calculate} className="space-y-3">
           <div className="grid gap-3 md:grid-cols-3">
-            <select
+            <LegacySelect
               value={city}
               onChange={(e) => { setCity(e.target.value); setResult(null); }}
               className="h-11 rounded-lg border border-border bg-background px-3 text-sm"
@@ -79,7 +80,7 @@ export default function ShippingCalculator() {
               {cities.map((c) => (
                 <option key={c} value={c}>{c}</option>
               ))}
-            </select>
+            </LegacySelect>
             <input
               value={commune}
               onChange={(e) => { setCommune(e.target.value); setResult(null); }}
