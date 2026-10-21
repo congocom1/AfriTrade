@@ -15,7 +15,7 @@ import StatusBadge from '@/components/StatusBadge';
 import { Image } from '@/components/ui/image';
 import { formatUsdAmount } from '@/lib/format';
 
-const HERO_IMAGE = 'https://media.base44.com/images/public/6ab43a1371d65d1a911b0fe7/5c6b76710_generated_016c1e6f.jpg';
+const HERO_IMAGE = '/photography/warehouse-operations.jpg';
 
 
 const TILES = [
@@ -94,7 +94,7 @@ export default function SellerDashboard() {
     <DashboardShell nav={SELLER_LINKS} title={t('seller.title')} variant="paper" className="paper-console">
       <PortalRefresh onRefresh={reload} updatedAt={updatedAt} />
       <div className="paper-hero">
-        <Image src={HERO_IMAGE} alt="" />
+        <Image src={HERO_IMAGE} alt="Warehouse shelves with parcels ready for fulfillment, illustrative stock photography" />
       </div>
 
       <div className="paper-shop">
