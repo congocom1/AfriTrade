@@ -17,6 +17,7 @@ const deps = {
   useState: initial => [state.values.shift() ?? initial, () => {}],
   useParams: () => ({ number: 'DOES-NOT-EXIST' }),
   useTranslation: () => ({ t: key => key }),
+  // eslint-disable-next-line react/prop-types -- lightweight router stub in an isolated SSR test
   Link: props => React.createElement('a', { href: props.to }, props.children),
   CheckCircle2: dumbIcon, Clock: dumbIcon, XCircle: dumbIcon,
   Package: dumbIcon, Truck: dumbIcon, MapPin: dumbIcon, Wallet: dumbIcon,
