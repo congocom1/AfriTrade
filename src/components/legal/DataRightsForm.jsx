@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import { submitDataRightsRequest } from '@/lib/dataRightsRequest';
@@ -64,7 +65,7 @@ export default function DataRightsForm({ initialType = 'access', lockType = fals
       </p>
       {error && <p role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 p-2.5 text-xs text-destructive">{error}</p>}
       <form onSubmit={submit} className="space-y-2.5">
-        {!lockType && <FormField label={t('portalComponents.type')}><select
+        {!lockType && <FormField label={t('portalComponents.type')}><LegacySelect
           value={form.type}
           onChange={(e) => setForm({ ...form, type: e.target.value })}
           className="h-11 w-full rounded-lg border border-border bg-background px-3 text-sm"
@@ -72,7 +73,7 @@ export default function DataRightsForm({ initialType = 'access', lockType = fals
           {TYPES.map((tx) => (
             <option key={tx.id} value={tx.id}>{tx.label}</option>
           ))}
-        </select></FormField>}
+        </LegacySelect></FormField>}
         <FormField label={t('dataRightsForm.namePlaceholder')}><input required maxLength={200}
           value={form.name}
           onChange={(e) => setForm({ ...form, name: e.target.value })}

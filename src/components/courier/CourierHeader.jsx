@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Truck } from 'lucide-react';
@@ -48,7 +49,7 @@ export default function CourierHeader({ user, fleets, activeFleet, isAdmin, cour
       {isAdmin ? (
         <label className="mt-3 flex flex-wrap items-center gap-2 border-t border-border pt-3 text-xs text-muted-foreground">
           {t('courierHeader.deliverFor')}
-          <select
+          <LegacySelect
             value={activeFleet?.id || ''}
             onChange={(e) => onSelectFleet(e.target.value)}
             className="h-11 min-w-0 max-w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground"
@@ -57,7 +58,7 @@ export default function CourierHeader({ user, fleets, activeFleet, isAdmin, cour
             {couriers.map((c) => (
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
-          </select>
+          </LegacySelect>
         </label>
       ) : (
         fleets.length > 1 && (

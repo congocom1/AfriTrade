@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import React, { memo } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -45,13 +46,13 @@ export default memo(function ReturnOrderCard({ order, eligibility, selection, on
                 <div className="mt-2 pl-7">
                   <label className="block text-[11px] font-semibold">
                     {t('returnOrderCard.reasonForItem')}
-                    <select
+                    <LegacySelect
                       value={picked.reason}
                       onChange={(e) => onReason(key, e.target.value)}
                       className="mt-1 h-9 w-full rounded-lg border border-input bg-background px-2 text-xs"
                     >
                       {RETURN_REASONS.map((r) => <option key={r.id} value={r.id}>{t(r.labelKey)}</option>)}
-                    </select>
+                    </LegacySelect>
                   </label>
                 </div>
               ) : null}

@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MapPin, Store, Truck, Split, Plane } from 'lucide-react';
@@ -62,7 +63,7 @@ export default function StepDelivery({
           aria-label={t('checkout.emailOptional')}
           className={FIELD}
         />
-        <select
+        <LegacySelect
           aria-label="Ville de livraison"
           value={profile.city}
           onChange={(e) => setProfile({ ...profile, city: e.target.value })}
@@ -71,7 +72,7 @@ export default function StepDelivery({
           {getCities().map((c) => (
             <option key={c} value={c}>{c}</option>
           ))}
-        </select>
+        </LegacySelect>
       </div>
 
       <div className="flex gap-2">

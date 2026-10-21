@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import React, { useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -47,14 +48,14 @@ export default function MobileMoneyForm({ onAdd }) {
         <label className="text-xs font-semibold text-muted-foreground" htmlFor="provider">
           {t('payout.provider')}
         </label>
-        <select
+        <LegacySelect
           id="provider"
           {...register('provider')}
           className="h-9 rounded-md border border-input bg-card px-3 text-sm"
           aria-invalid={!!errors.provider}
         >
           {providerOptions.map((o) => <option key={o.key} value={o.value}>{o.label}</option>)}
-        </select>
+        </LegacySelect>
         {errors.provider && <p className="text-[11px] text-destructive">{t(errors.provider.message)}</p>}
       </div>
       <div className="flex flex-col gap-1">

@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import { usePortalData } from '@/hooks/usePortalData';
 import { loadRecordGroups } from '@/lib/portalData';
 import PortalStatus from '@/components/PortalStatus';
@@ -43,10 +44,10 @@ export default function ReceivingPanel() {
     <div className="space-y-4">
       {actionError && <p role="alert" className="text-sm text-destructive">{t('portalStatus.actionFailed')}</p>}
       <form onSubmit={submit} className="grid gap-2 rounded-2xl border border-border bg-card p-3 md:grid-cols-[2fr_100px_1fr_1fr_auto]">
-        <select required value={form.product_id} onChange={(e) => setForm({ ...form, product_id: e.target.value })} className={field}>
+        <LegacySelect required value={form.product_id} onChange={(e) => setForm({ ...form, product_id: e.target.value })} className={field}>
           <option value="">{t('receivingPanel.productPh')}</option>
           {products.map((p) => <option key={p.id} value={p.id}>{p.title} (stock {p.stock ?? 0})</option>)}
-        </select>
+        </LegacySelect>
         <input type="number" value={form.quantity} onChange={(e) => setForm({ ...form, quantity: e.target.value })} className={field} title={t('receivingPanel.qtyTitle')} />
         <input placeholder={t('receivingPanel.locationPh')} value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} className={field} />
         <input placeholder={t('receivingPanel.notePh')} value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} className={field} />
