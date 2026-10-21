@@ -28,6 +28,20 @@ describe('shadcn select compatibility adapter', () => {
     assert.ok(React.Children.toArray(options[1].props.children).some(child => child.type === components.SelectItem && child.props.value === 'a'));
     assert.ok(React.Children.toArray(options[1].props.children).some(child => child.type === components.SelectItem && child.props.value === 'b' && child.props.disabled));
   });
+  it('required fields preserve their true empty value and the first blank option label', () => {
+    const result = LegacySelect({ value: '', name: 'product_id', required: true, children: [
+      React.createElement('option', { value: '', key: 'empty' }, 'Choose product'),
+      React.createElement('option', { value: 'p1', key: 'p1' }, 'Product 1'),
+    ] });
+    assert.equal(result.props.value, '', 'Radix must receive a genuinely empty value for native form validation');
+    assert.equal(result.props.required, true);
+    const trigger = React.Children.toArray(result.props.children)[0];
+    const value = React.Children.toArray(trigger.props.children)[0];
+    assert.equal(value.props.placeholder, 'Choose product');
+    const unchecked = LegacySelect({ defaultValue: '', children: [], required: true });
+    assert.equal(unchecked.props.defaultValue, '');
+  });
+
   it('supports the legacy event.target.value change handler and empty option', () => {
     let selected;
     const result = LegacySelect({ value: 'fr', name: 'language', onChange: e => { selected = e.target.value; }, children: [

@@ -7,6 +7,19 @@ import { cn } from '@/lib/utils';
 // Children describe options; they are never mounted as native <select>/<option>.
 const EMPTY = '__afritrade_empty_choice__';
 const asValue = value => String(value ?? '');
+const emptyOptionLabel = children => {
+  for (const node of React.Children.toArray(children)) {
+    if (!React.isValidElement(node)) continue;
+    if (node.type === React.Fragment || node.type === 'optgroup') {
+      const nested = emptyOptionLabel(node.props.children);
+      if (nested) return nested;
+    }
+    if (node.type === 'option' && asValue(node.props.value) === '') {
+      return node.props.label || labelText(node.props.children);
+    }
+  }
+  return '';
+};
 const labelText = children => React.Children.toArray(children).map(node => {
   if (typeof node === 'string' || typeof node === 'number') return String(node);
   return React.isValidElement(node) ? labelText(node.props.children) : '';
@@ -33,9 +46,16 @@ export function toSelectItems(children) {
 }
 
 export default function LegacySelect({ children, value, defaultValue, onChange, onBlur, onFocus, className, id, name, required, disabled, placeholder, ...props }) {
-  const selection = value == null ? undefined : (asValue(value) || EMPTY);
-  const initial = defaultValue == null ? undefined : (asValue(defaultValue) || EMPTY);
-  const handleChange = next => onChange?.({ target: { value: next === EMPTY ? '' : next, name }, currentTarget: { value: next === EMPTY ? '' : next, name } });
+  // Radix's hidden native select needs an actual empty string for required
+  // validation. Keep EMPTY only for the clickable clear choice: Radix forbids
+  // SelectItem value="", but a root value="" correctly shows a placeholder.
+  const selection = value == null ? undefined : asValue(value);
+  const initial = defaultValue == null ? undefined : asValue(defaultValue);
+  const handleChange = next => {
+    const selected = next === EMPTY ? '' : next;
+    onChange?.({ target: { value: selected, name }, currentTarget: { value: selected, name } });
+  };
+  const visiblePlaceholder = placeholder || emptyOptionLabel(children) || 'Sélectionner';
   return (
     <Select value={selection} defaultValue={initial} onValueChange={handleChange} name={name} required={required} disabled={disabled}>
       <SelectTrigger
@@ -43,7 +63,7 @@ export default function LegacySelect({ children, value, defaultValue, onChange, 
         className={cn('min-h-11 min-w-0 text-left', className)}
         {...props}
       >
-        <SelectValue placeholder={placeholder || 'Sélectionner'} />
+        <SelectValue placeholder={visiblePlaceholder} />
       </SelectTrigger>
       <SelectContent>{toSelectItems(children)}</SelectContent>
     </Select>
