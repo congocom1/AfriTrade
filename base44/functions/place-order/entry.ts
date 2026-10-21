@@ -1249,8 +1249,16 @@ export default async function (request) {
       return rateLimitErrorResponse(rateLimitResult);
     }
 
+    // Refuse unauthenticated card requests before user-keyed quotas or writes.
+    if (intent.paymentMethodId === "card" && (!user?.id || !user?.email)) {
+      return addSecurityHeaders(Response.json(
+        { error: "Sign in before paying by card." },
+        { status: 401, headers: { "Cache-Control": "no-store" } },
+      ));
+    }
+
     // An additional, tighter account quota protects the billable Wix API.
-    // This is defense in depth; also configure an atomic provider/edge quota
+    // This is defense in depth; configure an atomic provider/edge quota too,
     // because entity-based counters can race under concurrent requests.
     if (intent.paymentMethodId === "card") {
       const cardLimit = await checkRateLimit(db, `buyer:${user.id}`, {
@@ -1261,14 +1269,6 @@ export default async function (request) {
       if (!cardLimit.ok) return rateLimitErrorResponse(cardLimit);
     }
 
-    // Ensure anonymous requests cannot spend Wix credits or create card orders.
-    // Authentication is checked before entering the privileged ordering engine.
-    if (intent.paymentMethodId === "card" && (!user?.id || !user?.email)) {
-      return addSecurityHeaders(Response.json(
-        { error: "Sign in before paying by card." },
-        { status: 401, headers: { "Cache-Control": "no-store" } },
-      ));
-    }
     const result = await placeOrder(db, {
       ...intent,
       // For card payments the email and identity must come from auth.me(),
