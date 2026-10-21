@@ -19,7 +19,8 @@
     "test:e2e:ci": "npx playwright test --reporter=list",
     "test:e2e:debug": "NODE_OPTIONS=--inspect-brk npx playwright test",
     "seed-fraud": "node scripts/seed-fraud-rules.js",
-    "seed-fraud:mock": "node scripts/seed-fraud-rules.js --mock"
+    "seed-fraud:mock": "node scripts/seed-fraud-rules.js --mock",
+    "security:check": "node scripts/check-npm-security.mjs"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.54",
