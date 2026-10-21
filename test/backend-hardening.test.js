@@ -22,7 +22,8 @@ const deny = async (client) => {
 };
 const noEntities = new Proxy({}, { get(_target, name) { assert.fail(`Unauthorized service-role use: ${String(name)}`); } });
 const securityDeps = {
-  createClientFromRequest: () => ({ auth: { me: async () => null }, asServiceRole: { entities: noEntities } }),
+  currentClient: { auth: { me: async () => null }, asServiceRole: { entities: noEntities } },
+  createClientFromRequest: () => securityDeps.currentClient,
   requireAdmin: deny,
   addSecurityHeaders: (res) => res,
   getClientKey: () => 'test-client',
@@ -52,12 +53,12 @@ describe('unauthorized service-role write protection', () => {
     ['processWorkflowQueue', queue, {}],
   ]) {
     it(`${name} rejects anonymous calls before touching any service-role entity`, async () => {
-      securityDeps.createClientFromRequest = () => ({ auth: { me: async () => null }, asServiceRole: { entities: noEntities } });
+      securityDeps.currentClient = ({ auth: { me: async () => null }, asServiceRole: { entities: noEntities } });
       const response = await handler(post(name, data));
       assert.equal(response.status, 401);
     });
     it(`${name} rejects nonadmins without side effects`, async () => {
-      securityDeps.createClientFromRequest = () => ({ auth: { me: async () => ({ role: 'user' }) }, asServiceRole: { entities: noEntities } });
+      securityDeps.currentClient = ({ auth: { me: async () => ({ role: 'user' }) }, asServiceRole: { entities: noEntities } });
       const response = await handler(post(name, data));
       assert.equal(response.status, 403);
     });
@@ -71,7 +72,7 @@ describe('manual payment confirmation cannot forge card payments', () => {
       Order: { filter: async () => [cardOrder], update: async () => assert.fail('Card order was marked paid') },
       FulfillmentOrder: { filter: async () => assert.fail('Fulfillment was advanced') },
     };
-    securityDeps.createClientFromRequest = () => ({
+    securityDeps.currentClient = ({
       auth: { me: async () => ({ role: 'admin', id: 'u1' }) },
       asServiceRole: { entities },
     });
@@ -85,7 +86,7 @@ describe('shipping label status controls', () => {
   it('rejects invalid and skipped transitions without updating label', async () => {
     const entry = { id: 'label-1', label_id: 'LBL-1', order_number: 'CMD-1', status: 'generated' };
     let updated = 0;
-    securityDeps.createClientFromRequest = () => ({
+    securityDeps.currentClient = ({
       auth: { me: async () => ({ role: 'admin', email: 'admin@example.test' }) },
       asServiceRole: { entities: {
         ShippingLabel: { get: async () => entry, update: async (_id, patch) => { updated++; Object.assign(entry, patch); return entry; } },
