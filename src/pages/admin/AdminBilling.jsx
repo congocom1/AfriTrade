@@ -1,3 +1,4 @@
+import { formatUsdAmount } from '@/lib/format';
 import React, { useEffect, useState } from 'react';
 import { CreditCard, TrendingUp, AlertTriangle, RefreshCw } from 'lucide-react';
 import { base44 } from '@/api/base44Client';

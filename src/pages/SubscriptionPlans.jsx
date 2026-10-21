@@ -1,3 +1,4 @@
+import { formatUsdAmount } from '@/lib/format';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AlertCircle, CheckCircle2, Store } from 'lucide-react';

@@ -1,3 +1,4 @@
+import { formatUsdAmount } from '@/lib/format';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Building2, CreditCard, TrendingUp, Users } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
