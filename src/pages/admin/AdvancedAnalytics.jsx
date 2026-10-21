@@ -1,37 +1,26 @@
-import React, { useEffect, useState } from 'react';
+import { usePortalData } from '@/hooks/usePortalData';
+import { functionData } from '@/lib/portalData';
+import PortalStatus from '@/components/PortalStatus';
+import PortalRefresh from '@/components/portal/PortalRefresh';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ShoppingCart, DollarSign, Users, Package } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import DashboardNav from '@/components/DashboardNav';
 import { ADMIN_LINKS } from '@/lib/navLinks';
-import { formatUSD } from '@/lib/format';
+import { formatUsdAmount } from '@/lib/format';
 
 export default function AdvancedAnalytics() {
   const { t } = useTranslation();
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState(30);
-  const [errors, setErrors] = useState({});
-
-  const load = async () => {
-    setLoading(true);
-    try {
-      const [dash, funnel, cohort, rev] = await Promise.all([
-        base44.functions.invoke('advancedAnalytics', { action: 'dashboard', days: period }),
-        base44.functions.invoke('advancedAnalytics', { action: 'conversion-funnel', days: period }),
-        base44.functions.invoke('advancedAnalytics', { action: 'cohort', days: period * 3 }),
-        base44.functions.invoke('advancedAnalytics', { action: 'revenue', days: period }),
-      ]);
-      setData({ dashboard: dash, funnel: funnel, cohort: cohort, revenue: rev });
-    } catch (e) {
-      setErrors((p) => ({ ...p, load: e?.message || 'Erreur' }));
-    }
-    setLoading(false);
-  };
-
-  useEffect(() => { load(); }, [period]);
-
-  if (loading) return <div className="h-64 animate-pulse rounded-2xl bg-secondary" />;
+  const { data, loading, error, reload, updatedAt } = usePortalData(['advanced-analytics', period], async () => {
+    const [dashboard, funnel, cohort, revenue] = await Promise.all([
+      ['dashboard', period], ['conversion-funnel', period], ['cohort', period * 3], ['revenue', period],
+    ].map(async ([action, days]) => functionData(await base44.functions.invoke('advancedAnalytics', { action, days }))));
+    if (!Array.isArray(funnel.funnel) || !Array.isArray(cohort.cohort) || !revenue.revenue_by_status || typeof dashboard.total_orders !== 'number') throw new Error('Invalid analytics response');
+    return { dashboard, funnel, cohort, revenue };
+  });
+  if (loading || error) return <div className="space-y-5"><DashboardNav title={t('analytics.title', 'Analytics')} links={ADMIN_LINKS} /><PortalStatus loading={loading} retry={reload} /></div>;
 
   const d = data?.dashboard || {};
   const f = data?.funnel?.funnel || [];
@@ -42,12 +31,13 @@ export default function AdvancedAnalytics() {
     <div className="mx-auto max-w-6xl space-y-5 px-3 py-5 md:px-6">
       <DashboardNav title={t('analytics.title', 'Analytics avancée')} links={ADMIN_LINKS} />
 
-      {errors.load && <p className="text-xs text-destructive">{errors.load}</p>}
+      <PortalRefresh onRefresh={reload} updatedAt={updatedAt} />
+      <p className="text-xs text-muted-foreground">{t('portalComponents.recordScope')}</p>
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         {[
           { icon: ShoppingCart, label: 'Commandes', value: d.total_orders, color: 'text-blue-600' },
-          { icon: DollarSign, label: 'Revenus', value: formatUSD(d.total_revenue), color: 'text-emerald-600' },
+          { icon: DollarSign, label: 'Revenus', value: formatUsdAmount(d.total_revenue), color: 'text-emerald-600' },
           { icon: Users, label: 'Clients', value: d.new_customers, color: 'text-purple-600' },
           { icon: Package, label: 'Produits', value: d.total_products, color: 'text-amber-600' },
         ].map((k) => (
@@ -81,7 +71,7 @@ export default function AdvancedAnalytics() {
             {Object.entries(r).map(([status, amount]) => (
               <div key={status} className="flex justify-between text-sm">
                 <span className="capitalize text-muted-foreground">{status}</span>
-                <span className="font-semibold">{formatUSD(Number(amount) || 0)}</span>
+                <span className="font-semibold">{formatUsdAmount(Number(amount) || 0)}</span>
               </div>
             ))}
           </div>
@@ -92,7 +82,7 @@ export default function AdvancedAnalytics() {
             {c.slice(-6).map((coh) => (
               <div key={coh.month} className="flex justify-between text-sm">
                 <span className="text-muted-foreground">{coh.month}</span>
-                <span className="font-semibold">{coh.count} commandes · {formatUSD(coh.revenue)}</span>
+                <span className="font-semibold">{coh.count} commandes · {formatUsdAmount(coh.revenue)}</span>
               </div>
             ))}
           </div>

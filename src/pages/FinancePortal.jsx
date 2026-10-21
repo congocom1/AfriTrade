@@ -1,3 +1,4 @@
+import { formatUsdAmount } from '@/lib/format';
 import PortalRefresh from '@/components/portal/PortalRefresh';
 import React, { useMemo } from 'react';
 import { usePortalData } from '@/hooks/usePortalData';
@@ -14,7 +15,7 @@ import { providerLabel } from '@/lib/payments';
 import { formatUSD, formatDateTime } from '@/lib/format';
 import { useTranslation } from 'react-i18next';
 
-const PAID = ['PAID', 'AUTHORIZED'];
+const PAID = ['PAID'];
 const FAILED = ['FAILED', 'CANCELLED', 'REFUNDED'];
 
 export default function FinancePortal() {
@@ -62,10 +63,10 @@ export default function FinancePortal() {
         </div>
       </div>
       <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
-        <StatCard label={t('financePortal.collected')} value={formatUSD(sum('paid'))} tone="good" />
-        <StatCard label={t('financePortal.pending')} value={formatUSD(sum('pending'))} tone="warn" />
-        <StatCard label={t('financePortal.vat')} value={formatUSD(vat)} />
-        <StatCard label={t('financePortal.payoutsDue')} value={formatUSD(pendingPayouts.reduce((s, p) => s + (Number(p.amount_usd) || 0), 0))} hint={t('financePortal.requestCount', { count: pendingPayouts.length })} tone={pendingPayouts.length ? 'warn' : 'default'} />
+        <StatCard label={t('financePortal.collected')} value={formatUsdAmount(sum('paid'))} tone="good" />
+        <StatCard label={t('financePortal.pending')} value={formatUsdAmount(sum('pending'))} tone="warn" />
+        <StatCard label={t('financePortal.vat')} value={formatUsdAmount(vat)} />
+        <StatCard label={t('financePortal.payoutsDue')} value={formatUsdAmount(pendingPayouts.reduce((s, p) => s + (Number(p.amount_usd) || 0), 0))} hint={t('financePortal.requestCount', { count: pendingPayouts.length })} tone={pendingPayouts.length ? 'warn' : 'default'} />
         <StatCard label={t('financePortal.cardGaps')} value={mismatches.length} tone={mismatches.length ? 'bad' : 'good'} hint={t('financePortal.cardGapsHint')} />
       </div>
       <ReconciliationTable rows={rows} />

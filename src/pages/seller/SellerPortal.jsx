@@ -11,7 +11,7 @@ import { base44 } from '@/api/base44Client';
 import { useActiveSeller } from '@/lib/seller';
 import DashboardNav from '@/components/DashboardNav';
 import StatusBadge from '@/components/StatusBadge';
-import { formatUsdAmount, formatUSD } from '@/lib/format';
+import { formatUsdAmount } from '@/lib/format';
 
 const LOW_STOCK = 5;
 
@@ -84,7 +84,7 @@ export default function SellerPortal() {
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         {[
-          { icon: TrendingUp, label: t('sellerPortal.kpiRevenue'), value: formatUSD(revenue) },
+          { icon: TrendingUp, label: t('sellerPortal.kpiRevenue'), value: formatUsdAmount(revenue) },
           { icon: ShoppingBag, label: t('sellerPortal.kpiToProcess'), value: toProcess.length },
           { icon: Package, label: t('sellerPortal.kpiInTransit'), value: inTransit.length },
           { icon: WalletIcon, label: t('sellerPortal.kpiBalance'), value: formatUsdAmount(wallet?.balance_usd || 0) },

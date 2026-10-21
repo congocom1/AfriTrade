@@ -12,7 +12,7 @@ import StatusBadge from '@/components/StatusBadge';
 import StatCard from '@/components/ops/StatCard';
 import AdminLiveOverview from '@/components/admin/AdminLiveOverview';
 import { ADMIN_LINKS } from '@/lib/navLinks';
-import { formatUsdAmount, formatUSD, formatDateTime } from '@/lib/format';
+import { formatUsdAmount, formatDateTime } from '@/lib/format';
 import { useTranslation } from 'react-i18next';
 
 export default function AdminDashboard() {
@@ -38,8 +38,8 @@ export default function AdminDashboard() {
   const openDisputes = disputes.filter((d) => !['resolved_buyer', 'resolved_seller', 'closed'].includes(d.status));
 
   const kpis = [
-    { icon: TrendingUp, label: t('adminDashboard.gmv'), value: formatUSD(gmv) },
-    { icon: Coins, label: t('adminDashboard.revenue'), value: formatUSD(revenue) },
+    { icon: TrendingUp, label: t('adminDashboard.gmv'), value: formatUsdAmount(gmv) },
+    { icon: Coins, label: t('adminDashboard.revenue'), value: formatUsdAmount(revenue) },
     { icon: ShoppingBag, label: t('adminDashboard.orders'), value: orders.length },
     { icon: Package, label: t('adminDashboard.pendingShip'), value: pendingFulfillments.length },
     { icon: Store, label: t('adminDashboard.sellers'), value: sellers.length },

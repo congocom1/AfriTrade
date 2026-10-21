@@ -10,7 +10,7 @@ import { generateProductDescription, suggestProductTags } from '@/lib/ai';
 import { loadPlatformConfig } from '@/lib/config';
 import DashboardNav from '@/components/DashboardNav';
 import { Image } from '@/components/ui/image';
-import { formatUsdAmount, formatUSD } from '@/lib/format';
+import { formatUsdAmount } from '@/lib/format';
 import { notifyLoadError } from '@/lib/safeList';
 
 
@@ -197,7 +197,7 @@ export default function SellerImport() {
                 <p className="text-[11px] text-muted-foreground">
                   {t('sellerImport.resultMeta', { supplier: r.supplierName, ref: r.externalProductId, stock: r.stock })}
                 </p>
-                <p className="text-xs font-bold">{t('sellerImport.supplierCost', { price: formatUSD(r.supplierPrice) })}</p>
+                <p className="text-xs font-bold">{t('sellerImport.supplierCost', { price: formatUsdAmount(r.supplierPrice) })}</p>
               </div>
             </button>
           ))}
@@ -249,13 +249,13 @@ export default function SellerImport() {
 
             {preview && (
               <div className="space-y-1 rounded-xl bg-secondary/50 p-3 text-xs">
-                <div className="flex justify-between"><span className="text-muted-foreground">{t('sellerImport.costRow')}</span><span>{formatUSD(preview.supplierPrice)}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">{t('sellerImport.intlShipRow')}</span><span>{formatUSD(preview.intlShipping)}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">{t('sellerImport.importRow')}</span><span>{formatUSD(preview.importCosts)}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">{t('sellerImport.localRow')}</span><span>{formatUSD(preview.logistics)}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">{t('sellerImport.marginRow')}</span><span>{formatUSD(preview.margin)}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">{t('sellerImport.costRow')}</span><span>{formatUsdAmount(preview.supplierPrice)}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">{t('sellerImport.intlShipRow')}</span><span>{formatUsdAmount(preview.intlShipping)}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">{t('sellerImport.importRow')}</span><span>{formatUsdAmount(preview.importCosts)}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">{t('sellerImport.localRow')}</span><span>{formatUsdAmount(preview.logistics)}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">{t('sellerImport.marginRow')}</span><span>{formatUsdAmount(preview.margin)}</span></div>
                 <div className="flex justify-between border-t border-border pt-1 text-sm font-bold">
-                  <span>{t('sellerImport.clientPrice')}</span><span className="text-primary">{formatUSD(preview.total)}</span>
+                  <span>{t('sellerImport.clientPrice')}</span><span className="text-primary">{formatUsdAmount(preview.total)}</span>
                 </div>
               </div>
             )}

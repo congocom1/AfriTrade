@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 import DashboardNav from '@/components/DashboardNav';
 import StatCard from '@/components/ops/StatCard';
 import { ADMIN_LINKS } from '@/lib/navLinks';
-import { formatUSD } from '@/lib/format';
+import { formatUsdAmount } from '@/lib/format';
 import { loadCommandCenter } from '@/lib/commandCenter';
 import { useTranslation } from 'react-i18next';
 
@@ -38,15 +38,15 @@ export default function CommandCenter() {
         <>
           <Section title={t('commandCenter.commerce')} to="/admin/orders">
             <StatCard label={t('commandCenter.ordersToday')} value={d.commerce.ordersToday} />
-            <StatCard label={t('commandCenter.gmvToday')} value={formatUSD(d.commerce.gmvToday)} />
-            <StatCard label={t('commandCenter.revenueToday')} value={formatUSD(d.commerce.revenueToday)} />
+            <StatCard label={t('commandCenter.gmvToday')} value={formatUsdAmount(d.commerce.gmvToday)} />
+            <StatCard label={t('commandCenter.revenueToday')} value={formatUsdAmount(d.commerce.revenueToday)} />
             <StatCard label={t('commandCenter.activeCustomers')} value={d.commerce.activeCustomers} />
           </Section>
           <Section title={t('commandCenter.finance')} to="/payout-ledger">
             <StatCard label={t('commandCenter.paymentsToday')} value={d.finance.paymentsToday} />
             <StatCard label={t('commandCenter.failedPayments')} value={d.finance.failedPayments} tone={bad(d.finance.failedPayments)} />
             <StatCard label={t('commandCenter.refunds')} value={d.finance.refunds} />
-            <StatCard label={t('commandCenter.mrr')} value={formatUSD(d.finance.mrr)} />
+            <StatCard label={t('commandCenter.mrr')} value={formatUsdAmount(d.finance.mrr)} />
           </Section>
           <Section title={t('commandCenter.logistics')} to="/delivery-map">
             <StatCard label={t('commandCenter.inTransit')} value={d.logistics.inTransit} />

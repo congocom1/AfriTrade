@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 const E = base44.entities;
 const today = () => new Date(new Date().toDateString());
 const isToday = (d) => new Date(d) >= today();
-const sum = (a, k) => a.reduce((s, x) => s + (x[k] || 0), 0);
+const sum = (a, k) => a.reduce((s, x) => s + (Number(x[k]) || 0), 0);
 
 /** Loads live operational signals across every domain. Real records only — no estimates. */
 export async function loadCommandCenter() {

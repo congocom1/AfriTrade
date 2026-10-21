@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 import DashboardNav from '@/components/DashboardNav';
 import { Input } from '@/components/ui/input';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
-import { formatUsdAmount, formatUSD, formatDateTime } from '@/lib/format';
+import { formatUsdAmount, formatDateTime } from '@/lib/format';
 
 
 const METHODS = ['M-Pesa', 'Airtel Money', 'Orange Money', 'Virement bancaire'];
@@ -55,7 +55,7 @@ export default function SellerWallet() {
       const updated = await requestWithdrawal({ wallet, amount: value, method: WITHDRAWAL_METHOD_IDS[method] || 'mpesa' });
       setWallet(updated);
       setAmount('');
-      setMessage(t('sellerWallet.sent', { amount: formatUSD(value), method }));
+      setMessage(t('sellerWallet.sent', { amount: formatUsdAmount(value), method }));
       await load();
     } catch (err) {
       setMessage(err?.message || t('sellerWallet.failed'));

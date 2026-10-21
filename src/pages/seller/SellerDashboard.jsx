@@ -13,7 +13,7 @@ import { sellerInsights } from '@/lib/ai';
 import DashboardShell from '@/components/DashboardShell';
 import StatusBadge from '@/components/StatusBadge';
 import { Image } from '@/components/ui/image';
-import { formatUsdAmount, formatUSD } from '@/lib/format';
+import { formatUsdAmount } from '@/lib/format';
 
 const HERO_IMAGE = 'https://media.base44.com/images/public/6ab43a1371d65d1a911b0fe7/5c6b76710_generated_016c1e6f.jpg';
 
@@ -85,7 +85,7 @@ export default function SellerDashboard() {
 
   const stats = [
     { icon: Package, key: 'seller.publishedProducts', value: `${published}/${products.length}` },
-    { icon: TrendingUp, key: 'seller.revenue', value: formatUSD(revenue) },
+    { icon: TrendingUp, key: 'seller.revenue', value: formatUsdAmount(revenue) },
     { icon: ShoppingBag, key: 'seller.toProcess', value: pending.length },
     { icon: WalletIcon, key: 'wallet.available', value: formatUsdAmount(wallet?.balance_usd || 0) },
   ];
