@@ -110,6 +110,8 @@ export default defineConfig({
       output: {
         codeSplitting: {
           groups: [
+            { name: 'three-loaders', test: /node_modules\/three\/examples\/jsm\/loaders\// },
+            { name: 'three-controls', test: /node_modules\/three\/examples\/jsm\/controls\// },
             { name: 'three-addons', test: /node_modules\/three\/examples\/jsm\// },
             { name: 'three-core', test: /node_modules\/three\// },
             { name: 'translations', test: /src\/i18n\/(en|fr|ln|sw|resources)\.js$/ },
