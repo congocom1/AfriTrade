@@ -101,8 +101,8 @@ Verified on branch main with Flutter SDK at /home/hermes/flutter (`flutter analy
 
 1. Run Playwright smoke against staging.
 2. Add unit tests for walletLedger atomic debit.
-3. Implement webhook signature verification.
-4. Create CI pipeline.
+3. ~~Implement webhook signature verification~~ — done (P0-01 closed 2026-10-20).
+4. ~~Create CI pipeline~~ — done (.github/workflows/ci.yml on origin/main, commit 204ed67).
 5. Archive legacy Congo Commerce docs.
 
 ## Production Readiness Gates

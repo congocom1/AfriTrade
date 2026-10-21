@@ -545,13 +545,13 @@ Premise table (every factual claim in the plan, with receipt):
 | Dev-only headers | "Production deployment lacks CSP, HSTS, X-Frame-Options" (plan:48-49) | vite.config.js:89 wires securityHeadersPlugin; scripts/security-headers-plugin.js:29-45 injects CSP + Referrer-Policy via `transformIndexHtml` on build only; X-Frame-Options DENY on dev/preview middleware; docs/audit/PRODUCTION_HARDENING.md is the host-header release gate | **stale — implemented as planned** |
 | No code-splitting | "No code-splitting strategy implemented" (plan:73) | vite.config.js:138-157 rolldownOptions codeSplitting groups (three.js splits, translations by language, charts, pdf) + route-level `lazy()` src/App.jsx:26-30 | **stale — implemented (rolldown equivalent of manualChunks)** |
 | ESLint React warning | "ESLint warning about React version mismatch" (plan:130-131) | eslint.config.js:30 `version: "detect"` present; `npm run lint` exits 0 with no output (measured 2026-10-21) | **stale — clean** |
-| Flutter unverified | "Flutter project exists but not verified" (plan:100-101) | pre-verification snapshot: docs/audit/REMEDIATION_LOG.md:85 held "Flutter parity not verified" at review time; verification section now at docs/audit/REMEDIATION_LOG.md:88; flutter SDK present at /home/hermes/flutter/bin/flutter | **CONFIRMED open at review time — CLOSED 2026-10-21 (T5 verified, branch docs/flutter-parity-verification)** |
+| Flutter unverified | "Flutter project exists but not verified" (plan:100-101) | pre-verification snapshot: docs/audit/REMEDIATION_LOG.md:85 held "Flutter parity not verified" at review time; verification section now at docs/audit/REMEDIATION_LOG.md:87; flutter SDK present at /home/hermes/flutter/bin/flutter | **CONFIRMED open at review time — CLOSED 2026-10-21 (T5 verified, branch docs/flutter-parity-verification)** |
 
 REALITY: premise-table finding 4 of 5 plan premises are stale — T1/T2/T3/T4 already landed on main; only Flutter parity (T5) confirmed open plans/systematic-execution-plan.md:19
 REALITY: already-done finding `git fetch origin main` + log shows ci.yml landed (204ed67), security headers middleware (cf88b9e, c72dffd), bundle optimization (d55640a, 25a5214), ESLint fixes (e8edccc, 25bf867); T1-T4 tasks in this plan are already done .github/workflows/ci.yml:1
 REALITY: surface-check pass `npm run lint|typecheck|test|build` all defined at package.json:10-15 (lint exit 0, measured 2026-10-21); `flutter` on PATH at /home/hermes/flutter/bin/flutter; `codex` at /snap/bin/codex but not authenticated (outside voice stays unavailable) package.json:10-15
 REALITY: binding-decisions pass `gstack-decision-search --scope branch --recent 50` returned no records; plan has no `## Binding decisions` section; nothing overruled plans/systematic-execution-plan.md:7
-REALITY: numbers pass plan figures (>30% bundle reduction, 80% unit / 100% critical-path coverage, 4-week timeline, 500kB chunk threshold) are targets tagged [estimated]; no measured baselines cited, so none required re-derivation plans/systematic-execution-plan.md:190-197
+REALITY: numbers pass — untagged targets, no measured baselines cited, none re-derived: >30% bundle reduction plans/systematic-execution-plan.md:194; 80% unit / 100% critical-path coverage plans/systematic-execution-plan.md:209; 4-week timeline plans/systematic-execution-plan.md:188; 500kB chunk threshold plans/systematic-execution-plan.md:72
 REALITY: deferred-asks pass no linked issue or external request; nothing deferred plans/systematic-execution-plan.md:7
 REALITY: pr-count pass no .gstack/ship-policy.json; default one PR per wave; this plan is a single wave plans/systematic-execution-plan.md:14
 
@@ -559,11 +559,12 @@ REALITY: pr-count pass no .gstack/ship-policy.json; default one PR per wave; thi
 None deferred or rejected (HOLD SCOPE, no expansions proposed). Deferred work: none. Rejected work: none.
 
 ### What already exists section
+(Review-time snapshot from the prior /autoplan pass; bullets superseded by the 2026-10-21 reality-row rework above are annotated.)
 - P0 fixes in place (payment webhook signature, wallet concurrency, privilege escalation) — plan builds on them plans/systematic-execution-plan.md:8
-- Existing iOS CI workflow only (no `.github/workflows/ci.yml`) plans/systematic-execution-plan.md:19
-- Vite dev server with basic security headers (dev only) plans/systematic-execution-plan.md:47
+- Existing iOS CI workflow only (no `.github/workflows/ci.yml`) plans/systematic-execution-plan.md:19 — SUPERSEDED: ci.yml exists at .github/workflows/ci.yml:1 (origin/main 204ed67)
+- Vite dev server with basic security headers (dev only) plans/systematic-execution-plan.md:47 — SUPERSEDED: build-time CSP/Referrer injection at scripts/security-headers-plugin.js:29-45
 - Route-based React Router lazy loading already implemented plans/systematic-execution-plan.md:76
-- ESLint config with `version: "detect"` (may need adjustment) plans/systematic-execution-plan.md:135
+- ESLint config with `version: "detect"` (may need adjustment) plans/systematic-execution-plan.md:135 — SUPERSEDED: eslint.config.js:30 confirmed clean (`npm run lint` exit 0, 2026-10-21)
 - Flutter SDK present at /home/hermes/flutter/, analyze clean, 32/32 tests pass (summary)
 - axe E2E tests at 0 violations on `/` and `/seller` (verified c388601)
 - Site live at https://afritrade-1.base44.app (deployed)
