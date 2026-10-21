@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { base44 } from '@/api/base44Client';
 import { Image } from '@/components/ui/image';
 import SectionHeader from '@/components/SectionHeader';
+import usePullToRefresh from '@/hooks/usePullToRefresh';
 
 export default function Categories() {
   const { t } = useTranslation();
@@ -11,25 +12,34 @@ export default function Categories() {
   const [counts, setCounts] = useState({});
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    (async () => {
+  const load = useCallback(async (isActive = () => true) => {
+    setLoading(true);
+    try {
       const [cats, products] = await Promise.all([
         base44.entities.Category.list('sort_order', 40),
         base44.entities.Product.filter({ status: 'published' }, '-created_date', 200),
       ]);
       const map = {};
-      products.forEach((p) => {
-        if (!p.category_id) return;
-        map[p.category_id] = (map[p.category_id] || 0) + 1;
+      products.forEach(p => {
+        if (p.category_id) map[p.category_id] = (map[p.category_id] || 0) + 1;
       });
-      setCategories(cats);
-      setCounts(map);
-      setLoading(false);
-    })();
+      if (isActive()) { setCategories(cats); setCounts(map); }
+    } catch {
+      // Keep the last successful feed visible on intermittent mobile networks.
+    } finally {
+      if (isActive()) setLoading(false);
+    }
   }, []);
+  useEffect(() => {
+    let active = true;
+    load(() => active);
+    return () => { active = false; };
+  }, [load]);
+  const { handlers: pullHandlers, indicator: pullIndicator } = usePullToRefresh(load, { disabled: loading });
 
   return (
-    <div className="space-y-4 pb-6">
+    <div className="space-y-4 pb-6" {...pullHandlers}>
+      {pullIndicator}
       <SectionHeader title={t('categories.title')} subtitle={t('categories.subtitle')} />
       {loading ? (
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">

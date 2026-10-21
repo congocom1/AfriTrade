@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Zap, Truck, Play, Store as StoreIcon } from 'lucide-react';
@@ -13,6 +13,7 @@ import SellerCard from '@/components/SellerCard';
 import CategoryCard from '@/components/categories/CategoryCard';
 import EmptyState from '@/components/EmptyState';
 import { resolveStorefrontScope, scopeRecords } from '@/lib/tenancy';
+import usePullToRefresh from '@/hooks/usePullToRefresh';
 
 export default function Home() {
   const { t } = useTranslation();
@@ -24,36 +25,36 @@ export default function Home() {
   const [loadFailed, setLoadFailed] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
 
+  const load = useCallback(async (isActive = () => true) => {
+    setLoading(true);
+    setLoadFailed(false);
+    try {
+      await loadPlatformConfig();
+      const scope = await resolveStorefrontScope();
+      const [p, c, sellers, ct] = await Promise.all([
+        base44.entities.Product.filter({ status: 'published' }, '-created_date', 60),
+        base44.entities.Category.list('sort_order', 20),
+        base44.entities.Seller.filter({ status: 'active' }, '-rating', 8),
+        base44.entities.Content.filter({ status: 'published' }, '-likes_count', 10),
+      ]);
+      if (!isActive()) return;
+      setProducts(scopeRecords(p, scope));
+      setCategories(c);
+      setSellers(scopeRecords(sellers, scope));
+      setContent(ct);
+    } catch {
+      if (isActive()) setLoadFailed(true);
+    } finally {
+      if (isActive()) setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     let alive = true;
-    (async () => {
-      setLoading(true);
-      setLoadFailed(false);
-      try {
-        await loadPlatformConfig();
-        const scope = await resolveStorefrontScope();
-        const [p, c, s, ct] = await Promise.all([
-          base44.entities.Product.filter({ status: 'published' }, '-created_date', 60),
-          base44.entities.Category.list('sort_order', 20),
-          base44.entities.Seller.filter({ status: 'active' }, '-rating', 8),
-          base44.entities.Content.filter({ status: 'published' }, '-likes_count', 10),
-        ]);
-        if (!alive) return;
-        setProducts(scopeRecords(p, scope));
-        setCategories(c);
-        setSellers(scopeRecords(s, scope));
-        setContent(ct);
-      } catch {
-        // Une coupure réseau ne doit pas vider la page : on propose de réessayer.
-        if (alive) setLoadFailed(true);
-      } finally {
-        if (alive) setLoading(false);
-      }
-    })();
-    return () => {
-      alive = false;
-    };
-  }, [reloadKey]);
+    load(() => alive);
+    return () => { alive = false; };
+  }, [reloadKey, load]);
+  const { handlers: pullHandlers, indicator: pullIndicator } = usePullToRefresh(load, { disabled: loading });
 
   const sections = useMemo(() => {
     const intl = products.filter((p) => p.source_type === 'international_supplier');
@@ -66,7 +67,8 @@ export default function Home() {
   }, [products]);
 
   return (
-    <div className="brand-home space-y-10 pb-6 md:space-y-14">
+    <div className="brand-home space-y-10 pb-6 md:space-y-14" {...pullHandlers}>
+      {pullIndicator}
       {loadFailed && (
         <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-border bg-card p-4">
           <p className="text-xs text-muted-foreground">

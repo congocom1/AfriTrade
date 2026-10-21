@@ -1,5 +1,5 @@
 import LegacySelect from '@/components/ui/legacy-select';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Search as SearchIcon, SlidersHorizontal, X } from 'lucide-react';
@@ -8,6 +8,7 @@ import ProductGrid from '@/components/ProductGrid';
 import EmptyState from '@/components/EmptyState';
 import AsyncState from '@/components/ui/async-state';
 import { resolveStorefrontScope, scopeRecords } from '@/lib/tenancy';
+import usePullToRefresh from '@/hooks/usePullToRefresh';
 import {
   scoreProductRelevance,
   filterByCategory,
@@ -40,29 +41,31 @@ export default function Search() {
   const [minRating, setMinRating] = useState(0);
   const [inStock, setInStock] = useState(false);
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      setLoading(true);
-      setLoadError(false);
-      try {
-        const scope = await resolveStorefrontScope();
-        const [p, c] = await Promise.all([
-          base44.entities.Product.filter({ status: 'published' }, '-created_date', 200),
-          base44.entities.Category.list('sort_order', 40),
-        ]);
-        if (!cancelled) {
-          setProducts(scopeRecords(p, scope));
-          setCategories(c);
-        }
-      } catch {
-        if (!cancelled) setLoadError(true);
-      } finally {
-        if (!cancelled) setLoading(false);
+  const load = useCallback(async (isActive = () => true) => {
+    setLoading(true);
+    setLoadError(false);
+    try {
+      const scope = await resolveStorefrontScope();
+      const [p, c] = await Promise.all([
+        base44.entities.Product.filter({ status: 'published' }, '-created_date', 200),
+        base44.entities.Category.list('sort_order', 40),
+      ]);
+      if (isActive()) {
+        setProducts(scopeRecords(p, scope));
+        setCategories(c);
       }
-    })();
-    return () => { cancelled = true; };
-  }, [reloadToken]);
+    } catch {
+      if (isActive()) setLoadError(true);
+    } finally {
+      if (isActive()) setLoading(false);
+    }
+  }, []);
+  useEffect(() => {
+    let alive = true;
+    load(() => alive);
+    return () => { alive = false; };
+  }, [reloadToken, load]);
+  const { handlers: pullHandlers, indicator: pullIndicator } = usePullToRefresh(load, { disabled: loading });
 
   useEffect(() => {
     setTerm(params.get('q') || '');
@@ -131,7 +134,8 @@ export default function Search() {
   const activeFilters = [category, source !== 'all' ? source : '', maxPrice, minRating, inStock].filter(Boolean).length;
 
   return (
-    <div className="space-y-4 pb-6">
+    <div className="space-y-4 pb-6" {...pullHandlers}>
+      {pullIndicator}
       <form
         onSubmit={(e) => {
           e.preventDefault();
