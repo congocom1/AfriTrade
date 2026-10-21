@@ -6,6 +6,7 @@ import { ADMIN_LINKS } from '@/lib/navLinks';
 import { formatDateTime } from '@/lib/format';
 import { deliverEmail, markNotificationSent, smsHref, whatsAppHref } from '@/lib/orderNotifications';
 import { useTranslation } from 'react-i18next';
+import { notifyLoadError } from '@/lib/safeList';
 
 const TAB_IDS = ['queued', 'failed', 'sent', 'skipped'];
 
@@ -26,7 +27,7 @@ export default function AdminNotifications() {
   const [busy, setBusy] = useState('');
 
   const load = async () => {
-    const data = await base44.entities.OrderNotification.list('-created_date', 200).catch(() => []);
+    const data = await base44.entities.OrderNotification.list('-created_date', 200).catch(notifyLoadError);
     setRows(data);
     setLoading(false);
   };

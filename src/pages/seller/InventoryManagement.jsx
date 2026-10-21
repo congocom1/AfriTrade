@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import DashboardNav from '@/components/DashboardNav';
 import { Image } from '@/components/ui/image';
 import { formatUSD } from '@/lib/format';
+import { notifyLoadError } from '@/lib/safeList';
 
 const LOW_STOCK = 5;
 
@@ -39,7 +40,7 @@ export default function InventoryManagement() {
         setLoading(false);
         return;
       }
-      const rows = await base44.entities.Product.filter({ seller_id: seller.id }, 'title', 200).catch(() => []);
+      const rows = await base44.entities.Product.filter({ seller_id: seller.id }, 'title', 200).catch(notifyLoadError);
       setProducts(rows);
       setLoading(false);
     })();

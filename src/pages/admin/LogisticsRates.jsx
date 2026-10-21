@@ -11,6 +11,7 @@ import { DEFAULT_SHIPPING_CONFIG, averageRate, loadShippingConfig } from '@/lib/
 import { getCities, loadPlatformConfig } from '@/lib/config';
 import { formatUSD } from '@/lib/format';
 import { useTranslation } from 'react-i18next';
+import { notifyLoadError } from '@/lib/safeList';
 
 export default function LogisticsRates() {
   const { t } = useTranslation();
@@ -24,8 +25,8 @@ export default function LogisticsRates() {
     loadPlatformConfig();
     (async () => {
       const [rows, carrierRows, cfg] = await Promise.all([
-        base44.entities.ShippingRate.list('-priority', 200).catch(() => []),
-        base44.entities.Courier.list('name', 50).catch(() => []),
+        base44.entities.ShippingRate.list('-priority', 200).catch(notifyLoadError),
+        base44.entities.Courier.list('name', 50).catch(notifyLoadError),
         loadShippingConfig(),
       ]);
       setRates(rows);

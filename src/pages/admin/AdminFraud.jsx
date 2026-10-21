@@ -9,6 +9,7 @@ import FraudRuleEditor from '@/components/fraud/FraudRuleEditor';
 import FraudRiskSimulator from '@/components/fraud/FraudRiskSimulator';
 import { evaluateRisk, loadFraudRules, reviewFraudEvent, saveFraudRule } from '@/lib/fraud';
 import { useTranslation } from 'react-i18next';
+import { notifyLoadError } from '@/lib/safeList';
 
 const TAB_DEFS = [
   { id: 'queue', icon: ListChecks },
@@ -36,7 +37,7 @@ export default function AdminFraud() {
       const me = await base44.auth.me().catch(() => null);
       if (me?.email) setReviewer(me.email);
       const [rows, ruleRows] = await Promise.all([
-        base44.entities.FraudEvent.list('-created_date', 100).catch(() => []),
+        base44.entities.FraudEvent.list('-created_date', 100).catch(notifyLoadError),
         loadFraudRules(base44),
       ]);
       setEvents(rows);

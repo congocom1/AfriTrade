@@ -6,6 +6,7 @@ import WorkflowDefinitionCard from '@/components/admin/WorkflowDefinitionCard';
 import WorkflowExecutionCard from '@/components/admin/WorkflowExecutionCard';
 import { ADMIN_LINKS } from '@/lib/navLinks';
 import { useTranslation } from 'react-i18next';
+import { notifyLoadError } from '@/lib/safeList';
 
 const STUCK_AFTER_MS = 15 * 60 * 1000;
 
@@ -24,7 +25,7 @@ export default function AdminWorkflows() {
   const [notice, setNotice] = useState('');
 
   const loadExecutions = useCallback(async () => {
-    const rows = await base44.entities.WorkflowExecution.list('-created_date', 60).catch(() => []);
+    const rows = await base44.entities.WorkflowExecution.list('-created_date', 60).catch(notifyLoadError);
     setExecutions(rows);
     return rows;
   }, []);
@@ -32,7 +33,7 @@ export default function AdminWorkflows() {
   useEffect(() => {
     let alive = true;
     Promise.all([
-      base44.functions.invoke('runWorkflow', { action: 'list' }).then((res) => res?.data?.definitions || []).catch(() => []),
+      base44.functions.invoke('runWorkflow', { action: 'list' }).then((res) => res?.data?.definitions || []).catch(notifyLoadError),
       loadExecutions(),
     ])
       .then(([defs]) => {
@@ -60,7 +61,7 @@ export default function AdminWorkflows() {
     if (!next || stepsByExecution[execution.id]) return;
     const rows = await base44.entities.WorkflowStep
       .filter({ execution_id: execution.id }, 'step_index', 50)
-      .catch(() => []);
+      .catch(notifyLoadError);
     setStepsByExecution((prev) => ({ ...prev, [execution.id]: rows }));
   };
 
@@ -84,7 +85,7 @@ export default function AdminWorkflows() {
       if (refreshed) {
         const steps = await base44.entities.WorkflowStep
           .filter({ execution_id: execution.id }, 'step_index', 50)
-          .catch(() => []);
+          .catch(notifyLoadError);
         setStepsByExecution((prev) => ({ ...prev, [execution.id]: steps }));
       }
     } finally {

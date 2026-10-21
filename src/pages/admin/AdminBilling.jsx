@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { useTranslation } from 'react-i18next';
 import { formatDate, formatUSD } from '@/lib/format';
 import { monthlyRecurring, annualRunRate } from '@/lib/saas';
+import { notifyLoadError } from '@/lib/safeList';
 
 export default function AdminBilling() {
   const { t } = useTranslation();
@@ -19,8 +20,8 @@ export default function AdminBilling() {
 
   const load = async () => {
     const [inv, subs] = await Promise.all([
-      base44.entities.TenantInvoice.list('-issued_at', 100).catch(() => []),
-      base44.entities.Subscription.list('-created_date', 200).catch(() => []),
+      base44.entities.TenantInvoice.list('-issued_at', 100).catch(notifyLoadError),
+      base44.entities.Subscription.list('-created_date', 200).catch(notifyLoadError),
     ]);
     setInvoices(inv);
     setSubscriptions(subs);

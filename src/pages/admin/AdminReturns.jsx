@@ -6,6 +6,7 @@ import StatusBadge from '@/components/StatusBadge';
 import { ADMIN_LINKS } from '@/lib/navLinks';
 import { formatUSD, formatDateTime } from '@/lib/format';
 import { useTranslation } from 'react-i18next';
+import { notifyLoadError } from '@/lib/safeList';
 
 const REASON_IDS = ['not_received', 'wrong_product', 'damaged', 'not_as_described', 'missing_item', 'changed_mind', 'payment_issue'];
 
@@ -21,8 +22,8 @@ export default function AdminReturns() {
 
   const load = async () => {
     const [r, d] = await Promise.all([
-      base44.entities.Return.list('-created_date', 100).catch(() => []),
-      base44.entities.Dispute.list('-created_date', 100).catch(() => []),
+      base44.entities.Return.list('-created_date', 100).catch(notifyLoadError),
+      base44.entities.Dispute.list('-created_date', 100).catch(notifyLoadError),
     ]);
     setReturns(r);
     setDisputes(d);

@@ -17,6 +17,7 @@ import { ADMIN_LINKS } from '@/lib/navLinks';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { formatUSD } from '@/lib/format';
+import { notifyLoadError } from '@/lib/safeList';
 
 export default function ChinaWarehousePage() {
   const { t } = useTranslation();
@@ -176,7 +177,7 @@ function StockAdder({ warehouseId, warehouseName, onAdded }) {
   const [error, setError] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => { base44.entities.Product.list('title', 200).then(setProducts).catch(() => []); }, []);
+  useEffect(() => { base44.entities.Product.list('title', 200).then(setProducts).catch(notifyLoadError); }, []);
 
   const submit = async (e) => {
     e.preventDefault();
