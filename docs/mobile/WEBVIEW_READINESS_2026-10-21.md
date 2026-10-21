@@ -20,3 +20,11 @@ Updated 2026-10-21. Source-only UX improvements; no native iOS/Android build or 
 - Exercise WebView auth/login redirects, Base44 API availability, HTTPS/SSL, permissions, upload pickers, deep links, and payment-provider redirects before native app publishing.
 - The production Base44 hostname last returned HTTP 503; this code work does not address hosting availability.
 - The page-motion and pull gestures are tested by source contracts and pure gesture unit tests, not end-to-end on real hardware.
+
+## Additional mobile presentation hardening — October 21
+
+- Root html/body now use `overscroll-behavior: none`; native scrollbar indicators are hidden below 768px while scrolling itself stays enabled. Desktop scrollbar behavior remains untouched.
+- `user-select: none` is scoped to buttons, role-buttons, tabs and header icon controls. Text links and body content remain selectable.
+- Framer Motion transitions moved from the outer `AuthenticatedApp` wrapper into `AppLayout` around the routed `Outlet`. TopBar, BottomNav and legal footer do not remount on page navigation. Back/forward history index and reduced-motion preferences continue to determine animation direction.
+- The shared Radix Dialog, AlertDialog, Sheet and Select content primitives (and Vaul Drawer) use responsive bottom placement below 768px, with safe-area bottom padding, max-height, scrollable contents, and a Radix Select backdrop for dismissing picker lists. Desktop Popper/dialog placement remains unchanged.
+- Regression coverage: `test/webview-bottom-drawers.test.js` guards the above layout and accessibility contracts. Mobile Safari and Android WebView should be manually verified with real keyboard, focus, screen reader, picker and scroll interactions before publishing native wrappers.
