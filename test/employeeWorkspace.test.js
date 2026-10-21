@@ -121,7 +121,7 @@ describe('remote employee trust boundaries', () => {
   });
   it('keeps direct entity CRUD admin-only so clients cannot self-grant membership', () => {
     for (const name of ['EmployeeMembership', 'DepartmentTask']) {
-      const schema = JSON.parse(fs.readFileSync(new URL(`../base44/entities/${name}.json`, import.meta.url), 'utf8'));
+      const schema = JSON.parse(fs.readFileSync(new URL(`../base44/entities/${name}.jsonc`, import.meta.url), 'utf8'));
       for (const action of ['read', 'create', 'update', 'delete']) assert.deepEqual(schema.rls[action], { user_condition: { role: 'admin' } });
     }
   });
