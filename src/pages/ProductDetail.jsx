@@ -55,6 +55,13 @@ export default function ProductDetail() {
     let alive = true;
     setLoading(true);
     setNotFound(false);
+    setProduct(null);
+    setRelated([]);
+    setZone(null);
+    setSellerSlug('');
+    setCategorySlug('');
+    setSelection({});
+    setQty(1);
     setView3d(false);
     setActiveImage(0);
 
