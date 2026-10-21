@@ -110,9 +110,12 @@ export default defineConfig({
       output: {
         codeSplitting: {
           groups: [
-            { name: 'three', test: /node_modules\/three\// },
+            { name: 'three-addons', test: /node_modules\/three\/examples\/jsm\// },
+            { name: 'three-core', test: /node_modules\/three\// },
             { name: 'charts', test: /node_modules\/(recharts|d3-[^/]+)\// },
-            { name: 'pdf', test: /node_modules\/(jspdf|html2canvas)\// },
+            { name: 'pdf', test: /node_modules\/jspdf\// },
+            { name: 'html2canvas', test: /node_modules\/html2canvas\// },
+            { name: 'pdf-deps', test: /node_modules\/(fflate|canvg|@babel)\// },
           ],
         },
       },
