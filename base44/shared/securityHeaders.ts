@@ -200,7 +200,7 @@ export async function checkRateLimit(
     // A missing counter table or failed write MUST NOT authorize financial
     // and paid API operations. Other (legacy) paths retain their previous
     // availability behavior until their infrastructure can be validated.
-    console.error('Rate limit storage unavailable', { keyPrefix: config.keyPrefix, error: String(error) });
+    console.error('Rate limit storage unavailable', { keyPrefix: config.keyPrefix, failure: error instanceof Error ? error.name : 'unknown' });
     if (config.failClosed) {
       return { ok: false, used: 0, limit: config.limit, unavailable: true };
     }
