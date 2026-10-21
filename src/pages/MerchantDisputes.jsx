@@ -7,7 +7,7 @@ import { fetchSellerDisputes, fetchSellerThreads, sendCaseMessage } from '@/lib/
 import OpsHeader from '@/components/ops/OpsHeader';
 import StatCard from '@/components/ops/StatCard';
 import StatusBadge from '@/components/StatusBadge';
-import { formatUSD } from '@/lib/format';
+import { formatUsdAmount, formatUSD } from '@/lib/format';
 
 const OPEN_STATUSES = ['open', 'investigating', 'escalated'];
 
@@ -125,7 +125,7 @@ export default function MerchantDisputes() {
                   <div className="min-w-0">
                     <p className="text-sm font-bold">{d.order_number}</p>
                     <p className="text-[11px] text-muted-foreground">
-                      {TYPE_LABELS[d.type] || d.type} · {d.customer_name || t('merchantDisputes.customerFallback')} · {formatUSD(d.amount_usd)} · {t('merchantDisputes.openedOn', { date: new Date(d.created_date).toLocaleDateString('fr-FR') })}
+                      {TYPE_LABELS[d.type] || d.type} · {d.customer_name || t('merchantDisputes.customerFallback')} · {formatUsdAmount(d.amount_usd)} · {t('merchantDisputes.openedOn', { date: new Date(d.created_date).toLocaleDateString('fr-FR') })}
                     </p>
                     {d.description ? <p className="mt-1.5 max-w-2xl text-xs text-muted-foreground">{d.description}</p> : null}
                   </div>

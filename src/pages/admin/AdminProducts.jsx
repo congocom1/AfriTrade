@@ -5,7 +5,7 @@ import DashboardNav from '@/components/DashboardNav';
 import StatusBadge from '@/components/StatusBadge';
 import { Image } from '@/components/ui/image';
 import { ADMIN_LINKS } from '@/lib/navLinks';
-import { formatUSD } from '@/lib/format';
+import { formatUsdAmount, } from '@/lib/format';
 import { useTranslation } from 'react-i18next';
 
 export default function AdminProducts() {
@@ -95,7 +95,7 @@ export default function AdminProducts() {
                   {t('adminProducts.meta', { seller: p.seller_name || p.supplier_name, ref: p.external_product_id || t('adminProducts.localRef'), stock: p.stock ?? 0 })}
                 </p>
                 <div className="mt-0.5 flex items-center gap-2">
-                  <span className="text-xs font-bold">{formatUSD(p.price_usd)}</span>
+                  <span className="text-xs font-bold">{formatUsdAmount(p.price_usd)}</span>
                   <StatusBadge status={p.status} />
                   {p.is_flash_sale && <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-900">Flash</span>}
                 </div>

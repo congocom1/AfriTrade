@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Truck, MapPin, Clock, Wallet } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import InfoPage, { InfoSection } from '@/components/InfoPage';
-import { formatUSD } from '@/lib/format';
+import { formatUsdAmount, } from '@/lib/format';
 
 export default function ShippingInfo() {
   const { t } = useTranslation();
@@ -42,7 +42,7 @@ export default function ShippingInfo() {
                 <p className="text-xs font-semibold text-foreground">{z.name}</p>
                 <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
                   <span className="inline-flex items-center gap-1">
-                    <Wallet className="h-3.5 w-3.5" /> {formatUSD(z.fee_usd || 0)}
+                    <Wallet className="h-3.5 w-3.5" /> {formatUsdAmount(z.fee_usd || 0)}
                   </span>
                   <span className="inline-flex items-center gap-1">
                     <Clock className="h-3.5 w-3.5" /> {t('shippingInfo.daysLabel', { days: z.eta_days || '2-4' })}
@@ -82,7 +82,7 @@ export default function ShippingInfo() {
                             <Clock className="h-3.5 w-3.5" /> {p.hours || '08:00 - 18:00'}
                           </span>
                           <span className="inline-flex items-center gap-1">
-                            <Wallet className="h-3.5 w-3.5" /> {formatUSD(p.fee_usd || 0)}
+                            <Wallet className="h-3.5 w-3.5" /> {formatUsdAmount(p.fee_usd || 0)}
                           </span>
                           {p.phone && <span>{p.phone}</span>}
                         </p>

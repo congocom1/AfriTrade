@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Ticket, Copy, Check } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import EmptyState from '@/components/EmptyState';
-import { formatUSD, formatDate } from '@/lib/format';
+import { formatUsdAmount, formatUSD, formatDate } from '@/lib/format';
 
 export default function Coupons() {
   const { t } = useTranslation();
@@ -14,7 +14,7 @@ export default function Coupons() {
   function describe(c) {
     if (c.type === 'percent') {
       return c.max_discount_usd
-        ? t('coupons.percentOffMax', { value: c.value, max: formatUSD(c.max_discount_usd) })
+        ? t('coupons.percentOffMax', { value: c.value, max: formatUsdAmount(c.max_discount_usd) })
         : t('coupons.percentOff', { value: c.value });
     }
     if (c.type === 'fixed') return t('coupons.fixedOff', { value: formatUSD(c.value) });
@@ -59,7 +59,7 @@ export default function Coupons() {
                 <p className="text-sm font-bold">{c.code}</p>
                 <p className="text-xs text-muted-foreground">{describe(c)}</p>
                 <p className="text-[11px] text-muted-foreground">
-                  {c.min_order_usd > 0 ? t('coupons.minOrder', { min: formatUSD(c.min_order_usd) }) : ''}
+                  {c.min_order_usd > 0 ? t('coupons.minOrder', { min: formatUsdAmount(c.min_order_usd) }) : ''}
                   {c.expires_at ? t('coupons.expiresOn', { date: formatDate(c.expires_at) }) : t('coupons.noExpiry')}
                 </p>
               </div>

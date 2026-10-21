@@ -1,3 +1,4 @@
+import { SELLER_LINKS } from '@/lib/navLinks';
 import PortalRefresh from '@/components/portal/PortalRefresh';
 import { usePortalData } from '@/hooks/usePortalData';
 import { loadRecordGroups } from '@/lib/portalData';
@@ -10,7 +11,7 @@ import { base44 } from '@/api/base44Client';
 import { useActiveSeller } from '@/lib/seller';
 import DashboardNav from '@/components/DashboardNav';
 import StatusBadge from '@/components/StatusBadge';
-import { formatUSD } from '@/lib/format';
+import { formatUsdAmount, formatUSD } from '@/lib/format';
 
 const LOW_STOCK = 5;
 
@@ -78,14 +79,7 @@ export default function SellerPortal() {
 
   return (
     <div className="space-y-5 pb-8">
-      <DashboardNav title={t('sellerPortal.title', { name: seller.name })} links={[
-        { to: '/seller-portal', label: t('sellerPortal.navPortal'), end: true },
-        { to: '/seller/products', label: t('sellerPortal.navProducts') },
-        { to: '/inventory-management', label: t('sellerPortal.navStock') },
-        { to: '/seller/orders', label: t('sellerPortal.navOrders') },
-        { to: '/seller/wallet', label: t('sellerPortal.navWallet') },
-        { to: '/seller/settings', label: t('sellerPortal.navShop') },
-      ]} />
+      <DashboardNav title={t('sellerPortal.title', { name: seller.name })} links={SELLER_LINKS} />
       <PortalRefresh onRefresh={reload} updatedAt={updatedAt} />
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -93,7 +87,7 @@ export default function SellerPortal() {
           { icon: TrendingUp, label: t('sellerPortal.kpiRevenue'), value: formatUSD(revenue) },
           { icon: ShoppingBag, label: t('sellerPortal.kpiToProcess'), value: toProcess.length },
           { icon: Package, label: t('sellerPortal.kpiInTransit'), value: inTransit.length },
-          { icon: WalletIcon, label: t('sellerPortal.kpiBalance'), value: formatUSD(wallet?.balance_usd || 0) },
+          { icon: WalletIcon, label: t('sellerPortal.kpiBalance'), value: formatUsdAmount(wallet?.balance_usd || 0) },
         ].map((k) => (
           <div key={k.label} className="rounded-xl border border-border bg-card p-3.5">
             <k.icon className="h-4 w-4 text-primary" />
@@ -173,7 +167,7 @@ export default function SellerPortal() {
               </div>
               <div className="flex items-center gap-2">
                 <StatusBadge status={f.status} />
-                <span className="text-sm font-semibold">{formatUSD(f.subtotal_usd)}</span>
+                <span className="text-sm font-semibold">{formatUsdAmount(f.subtotal_usd)}</span>
               </div>
             </div>
           ))

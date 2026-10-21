@@ -1,3 +1,4 @@
+import { SELLER_LINKS } from '@/lib/navLinks';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Save, Store, BadgeCheck } from 'lucide-react';
@@ -52,14 +53,7 @@ export default function SellerSettings() {
 
   return (
     <div className="space-y-5 pb-8">
-      <DashboardNav title={t('sellerSettings.title')} links={[
-        { to: '/seller', label: t('sellerSettings.navDashboard'), end: true },
-        { to: '/seller/products', label: t('sellerSettings.navProducts') },
-        { to: '/seller/orders', label: t('sellerSettings.navOrders') },
-        { to: '/seller/import', label: t('sellerSettings.navImport') },
-        { to: '/seller/wallet', label: t('sellerSettings.navWallet') },
-        { to: '/seller/settings', label: t('sellerSettings.navShop') },
-      ]} />
+      <DashboardNav title={t('sellerSettings.title')} links={SELLER_LINKS} />
 
       <div className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4">
         <Store className="h-5 w-5 text-primary" />

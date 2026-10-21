@@ -13,7 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ADMIN_LINKS } from '@/lib/navLinks';
-import { formatUSD } from '@/lib/format';
+import { formatUsdAmount, } from '@/lib/format';
 
 /** Statuses where a parcel is still sitting at (or heading to) a node. */
 const IN_FLIGHT = ['CONFIRMED', 'PROCESSING', 'READY_FOR_PICKUP', 'PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY'];
@@ -145,7 +145,7 @@ export default function LogisticsHub() {
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold">{p.name}</p>
                 <p className="text-[11px] text-muted-foreground">
-                  {[p.commune, p.city].filter(Boolean).join(' · ')} {p.hours ? `· ${p.hours}` : ''} · {formatUSD(p.fee_usd)}
+                  {[p.commune, p.city].filter(Boolean).join(' · ')} {p.hours ? `· ${p.hours}` : ''} · {formatUsdAmount(p.fee_usd)}
                 </p>
               </div>
               <div className="flex items-center gap-3">
@@ -213,7 +213,7 @@ export default function LogisticsHub() {
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold">{c.name} <span className="font-normal text-muted-foreground">({c.code})</span></p>
                 <p className="text-[11px] text-muted-foreground">
-                  {(c.service_areas || []).join(', ') || t('logisticsHub.noZones')} · {formatUSD(c.base_rate_usd)} + {formatUSD(c.per_kg_usd)}/kg · {c.avg_days ? t('logisticsHub.daysCount', { count: c.avg_days }) : '—'}
+                  {(c.service_areas || []).join(', ') || t('logisticsHub.noZones')} · {formatUsdAmount(c.base_rate_usd)} + {formatUsdAmount(c.per_kg_usd)}/kg · {c.avg_days ? t('logisticsHub.daysCount', { count: c.avg_days }) : '—'}
                   {c.is_mock ? t('logisticsHub.testCarrier') : ''}
                 </p>
               </div>
@@ -248,7 +248,7 @@ export default function LogisticsHub() {
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold">{z.name}</p>
                 <p className="text-[11px] text-muted-foreground">
-                  {z.city} · {formatUSD(z.fee_usd)} · {t('logisticsHub.zoneEta', { days: z.eta_days })} {z.supports_pickup ? t('logisticsHub.pickupOk') : t('logisticsHub.deliveryOnly')}
+                  {z.city} · {formatUsdAmount(z.fee_usd)} · {t('logisticsHub.zoneEta', { days: z.eta_days })} {z.supports_pickup ? t('logisticsHub.pickupOk') : t('logisticsHub.deliveryOnly')}
                 </p>
               </div>
               <div className="flex items-center gap-2">

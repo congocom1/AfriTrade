@@ -1,3 +1,4 @@
+import { SELLER_LINKS } from '@/lib/navLinks';
 import React, { useEffect, useState } from 'react';
 import { Wallet as WalletIcon, ArrowDownLeft, ArrowUpRight, Banknote } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
@@ -7,16 +8,8 @@ import { useTranslation } from 'react-i18next';
 import DashboardNav from '@/components/DashboardNav';
 import { Input } from '@/components/ui/input';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
-import { formatUSD, formatDateTime } from '@/lib/format';
+import { formatUsdAmount, formatUSD, formatDateTime } from '@/lib/format';
 
-const LINKS = [
-  { to: '/seller', key: 'sellerNav.dashboard', end: true },
-  { to: '/seller/products', key: 'sellerNav.products' },
-  { to: '/seller/orders', key: 'sellerNav.orders' },
-  { to: '/seller/import', key: 'seller.import' },
-  { to: '/seller/wallet', key: 'sellerNav.wallet' },
-  { to: '/seller/settings', key: 'seller.shop' },
-];
 
 const METHODS = ['M-Pesa', 'Airtel Money', 'Orange Money', 'Virement bancaire'];
 
@@ -75,17 +68,17 @@ export default function SellerWallet() {
 
   return (
     <div className="space-y-5 pb-8">
-      <DashboardNav title={t('sellerWallet.title')} links={LINKS} />
+      <DashboardNav title={t('sellerWallet.title')} links={SELLER_LINKS} />
 
       {loadError && <p role="alert" className="text-sm text-destructive">{t('sellerWallet.loadFailed')} <button type="button" onClick={load} className="min-h-11 px-3 underline">{t('refresh')}</button></p>}
       <section className="rounded-2xl bg-gradient-to-br from-primary to-primary/70 p-5 text-primary-foreground">
         <p className="flex items-center gap-2 text-xs font-semibold opacity-90">
           <WalletIcon className="h-4 w-4" /> {t('wallet.balance')}
         </p>
-        <p className="mt-2 text-3xl font-black">{formatUSD(wallet?.balance_usd || 0)}</p>
+        <p className="mt-2 text-3xl font-black">{formatUsdAmount(wallet?.balance_usd || 0)}</p>
         <div className="mt-2 flex flex-wrap gap-4 text-[11px] opacity-90">
-          <span>{t('wallet.awaitingDelivery')} : {formatUSD(wallet?.pending_usd || 0)}</span>
-          <span>{t('wallet.totalEarned')} : {formatUSD(wallet?.lifetime_credit_usd || 0)}</span>
+          <span>{t('wallet.awaitingDelivery')} : {formatUsdAmount(wallet?.pending_usd || 0)}</span>
+          <span>{t('wallet.totalEarned')} : {formatUsdAmount(wallet?.lifetime_credit_usd || 0)}</span>
         </div>
       </section>
 
@@ -141,7 +134,7 @@ export default function SellerWallet() {
                   </p>
                 </div>
                 <span className={`text-sm font-bold ${tx.direction === 'credit' ? 'text-emerald-600' : ''}`}>
-                  {tx.direction === 'credit' ? '+' : '−'}{formatUSD(tx.amount_usd)}
+                  {tx.direction === 'credit' ? '+' : '−'}{formatUsdAmount(tx.amount_usd)}
                 </span>
               </div>
             ))}

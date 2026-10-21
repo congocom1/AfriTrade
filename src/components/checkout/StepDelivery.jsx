@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MapPin, Store, Truck, Split, Plane } from 'lucide-react';
 import { getCities } from '@/lib/config';
-import { formatUSD } from '@/lib/format';
+import { formatUsdAmount, formatUSD } from '@/lib/format';
 import { intlFee } from '@/lib/intlDelivery';
 import IntlShippingBreakdown from '@/components/checkout/IntlShippingBreakdown';
 
@@ -120,7 +120,7 @@ export default function StepDelivery({
                   <p className="text-sm font-semibold">{p.name}</p>
                   <p className="text-[11px] text-muted-foreground">{p.address}, {p.commune} · {p.hours}</p>
                 </div>
-                <span className="text-xs font-semibold">{formatUSD(p.fee_usd || 0)}</span>
+                <span className="text-xs font-semibold">{formatUsdAmount(p.fee_usd || 0)}</span>
               </button>
             ))
           ) : (

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { AlertTriangle, Banknote, MessageSquare, PackageCheck, Paperclip, Send, ShieldCheck, X } from 'lucide-react';
 import StatusBadge from '@/components/StatusBadge';
 import DisputeProofUpload from '@/components/disputes/DisputeProofUpload';
-import { formatUSD, formatDateTime } from '@/lib/format';
+import { formatUsdAmount, formatDateTime } from '@/lib/format';
 import {
   DISPUTE_TYPES,
   OPEN_STATUSES,
@@ -79,7 +79,7 @@ export default memo(function DisputeCaseCard({ dispute, ticket, isAdmin, actor, 
         <div className="flex items-center gap-2">
           <StatusBadge status={dispute.priority} />
           <StatusBadge status={dispute.status} />
-          <span className="text-sm font-bold">{formatUSD(dispute.amount_usd)}</span>
+          <span className="text-sm font-bold">{formatUsdAmount(dispute.amount_usd)}</span>
         </div>
       </div>
 
@@ -138,10 +138,10 @@ export default memo(function DisputeCaseCard({ dispute, ticket, isAdmin, actor, 
                 amount: dispute.amount_usd,
                 note,
                 reviewer: actor,
-              }), t('disputeCase.refundDone', { amount: formatUSD(dispute.amount_usd) }))}
+              }), t('disputeCase.refundDone', { amount: formatUsdAmount(dispute.amount_usd) }))}
               className="flex items-center gap-1.5 rounded-full bg-emerald-100 px-3.5 py-1.5 text-xs font-semibold text-emerald-900 disabled:opacity-50"
             >
-              <Banknote className="h-3.5 w-3.5" /> {t('disputeCase.refundAction', { amount: formatUSD(dispute.amount_usd) })}
+              <Banknote className="h-3.5 w-3.5" /> {t('disputeCase.refundAction', { amount: formatUsdAmount(dispute.amount_usd) })}
             </button>
             <button
               type="button"

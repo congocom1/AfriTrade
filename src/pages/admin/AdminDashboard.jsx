@@ -12,7 +12,7 @@ import StatusBadge from '@/components/StatusBadge';
 import StatCard from '@/components/ops/StatCard';
 import AdminLiveOverview from '@/components/admin/AdminLiveOverview';
 import { ADMIN_LINKS } from '@/lib/navLinks';
-import { formatUSD, formatDateTime } from '@/lib/format';
+import { formatUsdAmount, formatUSD, formatDateTime } from '@/lib/format';
 import { useTranslation } from 'react-i18next';
 
 export default function AdminDashboard() {
@@ -45,7 +45,7 @@ export default function AdminDashboard() {
     { icon: Store, label: t('adminDashboard.sellers'), value: sellers.length },
     { icon: Users, label: t('adminDashboard.products'), value: products.length },
     { icon: AlertTriangle, label: t('adminDashboard.openReturns'), value: openReturns.length },
-    { icon: WalletIcon, label: t('adminDashboard.treasury'), value: formatUSD(wallet?.balance_usd || 0) },
+    { icon: WalletIcon, label: t('adminDashboard.treasury'), value: formatUsdAmount(wallet?.balance_usd || 0) },
   ];
 
   return (
@@ -84,7 +84,7 @@ export default function AdminDashboard() {
               <div className="flex items-center gap-2">
                 <StatusBadge status={o.payment_status} />
                 <StatusBadge status={o.status} />
-                <span className="text-sm font-semibold">{formatUSD(o.total_usd)}</span>
+                <span className="text-sm font-semibold">{formatUsdAmount(o.total_usd)}</span>
               </div>
             </div>
           ))}

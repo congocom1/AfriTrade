@@ -1,3 +1,4 @@
+import { SELLER_LINKS } from '@/lib/navLinks';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AlertTriangle, PackageX, Minus, Plus, Save, Boxes } from 'lucide-react';
@@ -6,18 +7,11 @@ import { useActiveSeller } from '@/lib/seller';
 import { useTranslation } from 'react-i18next';
 import DashboardNav from '@/components/DashboardNav';
 import { Image } from '@/components/ui/image';
-import { formatUSD } from '@/lib/format';
+import { formatUsdAmount, } from '@/lib/format';
 import { notifyLoadError } from '@/lib/safeList';
 
 const LOW_STOCK = 5;
 
-const LINKS = [
-  { to: '/seller-portal', key: 'inventoryManagement.navPortal' },
-  { to: '/seller/products', key: 'inventoryManagement.navProducts' },
-  { to: '/inventory-management', key: 'inventoryManagement.navStock', end: true },
-  { to: '/seller/orders', key: 'inventoryManagement.navOrders' },
-  { to: '/seller/wallet', key: 'inventoryManagement.navWallet' },
-];
 
 const FILTERS = [
   { id: 'all', key: 'inventoryManagement.filterAll' },
@@ -94,7 +88,7 @@ export default function InventoryManagement() {
 
   return (
     <div className="space-y-5 pb-8">
-      <DashboardNav title={t('inventoryManagement.title')} links={LINKS} />
+      <DashboardNav title={t('inventoryManagement.title')} links={SELLER_LINKS} />
 
       <div className="grid grid-cols-3 gap-3">
         {[
@@ -159,7 +153,7 @@ export default function InventoryManagement() {
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">{p.title}</p>
                 <p className="text-[11px] text-muted-foreground">
-                  {formatUSD(p.price_usd)} · {p.sold_count || 0} {t('inventoryManagement.sold')} · {p.status === 'published' ? t('inventoryManagement.online') : t('inventoryManagement.offline')}
+                  {formatUsdAmount(p.price_usd)} · {p.sold_count || 0} {t('inventoryManagement.sold')} · {p.status === 'published' ? t('inventoryManagement.online') : t('inventoryManagement.offline')}
                 </p>
                 <p
                   className={`text-[11px] font-semibold ${

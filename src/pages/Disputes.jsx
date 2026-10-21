@@ -6,7 +6,7 @@ import { base44 } from '@/api/base44Client';
 import StatusBadge from '@/components/StatusBadge';
 import { getProfile } from '@/lib/session';
 import { fetchMyDisputes, openDispute } from '@/lib/customerAccount';
-import { formatUSD, formatDate } from '@/lib/format';
+import { formatUsdAmount, formatDate } from '@/lib/format';
 import { emitEvent } from '@/lib/events';
 import { lookupOrder } from '@/lib/orderLookup';
 import { RETURN_COPY } from '@/lib/returnCopy';
@@ -169,7 +169,7 @@ export default function Disputes() {
                   <p className="text-sm font-semibold">{d.order_number}</p>
                   <div className="flex items-center gap-2">
                     <StatusBadge status={d.status} />
-                    <span className="text-sm font-semibold">{formatUSD(d.amount_usd)}</span>
+                    <span className="text-sm font-semibold">{formatUsdAmount(d.amount_usd)}</span>
                   </div>
                 </div>
                 <p className="text-[11px] text-muted-foreground">

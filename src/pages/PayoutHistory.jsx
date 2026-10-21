@@ -5,7 +5,7 @@ import { ArrowDownLeft, ArrowUpRight, Banknote, Clock, Wallet as WalletIcon } fr
 import { base44 } from '@/api/base44Client';
 import { useActiveSeller } from '@/lib/seller';
 import DashboardNav from '@/components/DashboardNav';
-import { formatUSD, formatDateTime } from '@/lib/format';
+import { formatUsdAmount, formatDateTime } from '@/lib/format';
 
 const LINKS = [
   { to: '/seller', key: 'sellerNav.dashboard', end: true },
@@ -78,10 +78,10 @@ export default function PayoutHistory() {
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         {[
-          { icon: WalletIcon, key: 'wallet.available', value: formatUSD(wallet?.balance_usd || 0) },
-          { icon: Clock, key: 'wallet.awaitingDelivery', value: formatUSD(wallet?.pending_usd || 0) },
-          { icon: ArrowDownLeft, key: 'wallet.totalEarned', value: formatUSD(wallet?.lifetime_credit_usd || 0) },
-          { icon: Banknote, key: 'wallet.totalWithdrawn', value: formatUSD(wallet?.lifetime_debit_usd || 0) },
+          { icon: WalletIcon, key: 'wallet.available', value: formatUsdAmount(wallet?.balance_usd || 0) },
+          { icon: Clock, key: 'wallet.awaitingDelivery', value: formatUsdAmount(wallet?.pending_usd || 0) },
+          { icon: ArrowDownLeft, key: 'wallet.totalEarned', value: formatUsdAmount(wallet?.lifetime_credit_usd || 0) },
+          { icon: Banknote, key: 'wallet.totalWithdrawn', value: formatUsdAmount(wallet?.lifetime_debit_usd || 0) },
         ].map((k) => (
           <div key={k.key} className="rounded-xl border border-border bg-card p-3.5">
             <k.icon className="h-4 w-4 text-primary" />
@@ -138,7 +138,7 @@ export default function PayoutHistory() {
                 </div>
                 <span className={`text-sm font-bold ${tx.direction === 'credit' ? 'text-emerald-600' : ''}`}>
                   {tx.direction === 'credit' ? '+' : '−'}
-                  {formatUSD(tx.amount_usd)}
+                  {formatUsdAmount(tx.amount_usd)}
                 </span>
               </div>
             ))}

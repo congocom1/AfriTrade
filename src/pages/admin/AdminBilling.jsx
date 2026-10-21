@@ -124,7 +124,7 @@ export default function AdminBilling() {
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-xs font-semibold uppercase">{inv.status}</span>
-                <span className="text-sm font-semibold">{formatUSD(inv.total_usd)}</span>
+                <span className="text-sm font-semibold">{formatUsdAmount(inv.total_usd)}</span>
               </div>
             </div>
           ))}
@@ -147,7 +147,7 @@ export default function AdminBilling() {
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-xs font-semibold uppercase">{sub.status}</span>
-                <span className="text-sm font-semibold">{formatUSD(sub.amount_usd)}</span>
+                <span className="text-sm font-semibold">{formatUsdAmount(sub.amount_usd)}</span>
               </div>
             </div>
           ))}

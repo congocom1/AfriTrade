@@ -16,7 +16,7 @@ import { DashboardNav } from '@/components/DashboardNav';
 import { ADMIN_LINKS } from '@/lib/navLinks';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { formatUSD } from '@/lib/format';
+import { formatUsdAmount, } from '@/lib/format';
 import { notifyLoadError } from '@/lib/safeList';
 
 export default function ChinaWarehousePage() {
@@ -156,7 +156,7 @@ export default function ChinaWarehousePage() {
                     <td className="px-3 py-2 text-right">{item.quantity_on_hand}</td>
                     <td className="px-3 py-2 text-right font-semibold">{item.quantity_available}</td>
                     <td className="px-3 py-2 text-right">{item.quantity_reserved}</td>
-                    <td className="px-3 py-2 text-right">{formatUSD(item.cost_usd)}</td>
+                    <td className="px-3 py-2 text-right">{formatUsdAmount(item.cost_usd)}</td>
                     <td className="px-3 py-2 text-right text-muted-foreground">{item.location || '—'}</td>
                   </tr>
                 ))}

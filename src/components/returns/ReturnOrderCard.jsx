@@ -2,7 +2,7 @@ import React, { memo } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import StatusBadge from '@/components/StatusBadge';
-import { formatUSD, formatDate } from '@/lib/format';
+import { formatUsdAmount, formatDate } from '@/lib/format';
 import { RETURN_REASONS } from '@/lib/returns';
 
 /** One delivered order with its items, each selectable with its own reason. */
@@ -14,7 +14,7 @@ export default memo(function ReturnOrderCard({ order, eligibility, selection, on
         <div>
           <p className="text-sm font-semibold">{order.order_number}</p>
           <p className="text-[11px] text-muted-foreground">
-            {formatDate(order.created_date)} · {formatUSD(order.total_usd)} · {t('returnOrderCard.itemsLine', { count: order.items?.length || 0 })}
+            {formatDate(order.created_date)} · {formatUsdAmount(order.total_usd)} · {t('returnOrderCard.itemsLine', { count: order.items?.length || 0 })}
           </p>
         </div>
         <StatusBadge status={order.status} />
@@ -38,7 +38,7 @@ export default memo(function ReturnOrderCard({ order, eligibility, selection, on
                 />
                 <span className="min-w-0 flex-1 truncate text-xs font-medium">{item.title}</span>
                 <span className="text-[11px] text-muted-foreground">
-                  ×{item.quantity} · {formatUSD(item.line_total_usd)}
+                  ×{item.quantity} · {formatUsdAmount(item.line_total_usd)}
                 </span>
               </label>
               {picked ? (

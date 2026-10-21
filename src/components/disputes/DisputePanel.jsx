@@ -4,7 +4,7 @@ import { Gavel, AlertCircle } from 'lucide-react';
 import StatusBadge from '@/components/StatusBadge';
 import { openDispute, fetchMyDisputes } from '@/lib/customerAccount';
 import { getProfile } from '@/lib/session';
-import { formatUSD, formatDate } from '@/lib/format';
+import { formatUsdAmount, formatDate } from '@/lib/format';
 
 export default function DisputePanel() {
   const { t } = useTranslation();
@@ -135,7 +135,7 @@ export default function DisputePanel() {
                     <p className="text-sm font-semibold">{d.order_number}</p>
                     <div className="flex items-center gap-2">
                       <StatusBadge status={d.status} />
-                      <span className="text-sm font-semibold">{formatUSD(d.amount_usd)}</span>
+                      <span className="text-sm font-semibold">{formatUsdAmount(d.amount_usd)}</span>
                     </div>
                   </div>
                   <p className="text-[11px] text-muted-foreground">

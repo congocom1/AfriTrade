@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image } from '@/components/ui/image';
-import { formatUSD } from '@/lib/format';
+import { formatUsdAmount, formatUSD } from '@/lib/format';
 import { splitVat } from '@/lib/tax';
 import CheckoutConsent from '@/components/CheckoutConsent';
 
@@ -26,7 +26,7 @@ export default memo(function StepReview({ quote, loadingQuote, coupon, vatRate, 
                     <p className="truncate text-xs font-medium">{l.product.title}</p>
                     <p className="text-[11px] text-muted-foreground">× {l.quantity}</p>
                   </div>
-                  <span className="shrink-0 text-xs font-semibold">{formatUSD(l.line_total_usd)}</span>
+                  <span className="shrink-0 text-xs font-semibold">{formatUsdAmount(l.line_total_usd)}</span>
                 </div>
               ))}
             </div>

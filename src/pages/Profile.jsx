@@ -9,7 +9,7 @@ import { fetchMyOrders } from '@/lib/customerAccount';
 import { getProfile, saveProfile } from '@/lib/session';
 import { getCities } from '@/lib/config';
 import StatusBadge from '@/components/StatusBadge';
-import { formatUSD, formatDate } from '@/lib/format';
+import { formatUsdAmount, formatDate } from '@/lib/format';
 import BackButton from '@/components/BackButton';
 
 export default function Profile() {
@@ -116,7 +116,7 @@ export default function Profile() {
                 </div>
                 <div className="flex items-center gap-2">
                   <StatusBadge status={o.status} />
-                  <span className="text-sm font-semibold">{formatUSD(o.total_usd)}</span>
+                  <span className="text-sm font-semibold">{formatUsdAmount(o.total_usd)}</span>
                 </div>
               </Link>
             ))}

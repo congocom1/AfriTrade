@@ -1,3 +1,4 @@
+import { SELLER_LINKS } from '@/lib/navLinks';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronRight, PackageCheck } from 'lucide-react';
@@ -7,7 +8,7 @@ import { advanceFulfillment } from '@/lib/orderService';
 import { SHIPMENT_STATUS_FLOW, SHIPMENT_STATUS_LABELS } from '@/lib/logistics';
 import DashboardNav from '@/components/DashboardNav';
 import StatusBadge from '@/components/StatusBadge';
-import { formatUSD } from '@/lib/format';
+import { formatUsdAmount, } from '@/lib/format';
 
 
 
@@ -68,14 +69,7 @@ export default function SellerOrders() {
 
   return (
     <div className="space-y-5 pb-8">
-      <DashboardNav title={t('sellerOrders.title')} links={[
-        { to: '/seller', label: t('sellerOrders.navDashboard'), end: true },
-        { to: '/seller/products', label: t('sellerOrders.navProducts') },
-        { to: '/seller/orders', label: t('sellerOrders.navOrders') },
-        { to: '/seller/import', label: t('sellerOrders.navImport') },
-        { to: '/seller/wallet', label: t('sellerOrders.navWallet') },
-        { to: '/seller/settings', label: t('sellerOrders.navShop') },
-      ]} />
+      <DashboardNav title={t('sellerOrders.title')} links={SELLER_LINKS} />
 
       <div className="flex gap-2">
         {[
@@ -127,11 +121,11 @@ export default function SellerOrders() {
               <div className="mt-3 grid grid-cols-2 gap-2 rounded-xl bg-secondary/50 p-2.5 text-xs md:grid-cols-4">
                 <div>
                   <p className="text-muted-foreground">{t('sellerOrders.sale')}</p>
-                  <p className="font-bold">{formatUSD(f.subtotal_usd)}</p>
+                  <p className="font-bold">{formatUsdAmount(f.subtotal_usd)}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">{t('sellerOrders.myShare')}</p>
-                  <p className="font-bold text-emerald-600">{formatUSD(f.seller_payout_usd)}</p>
+                  <p className="font-bold text-emerald-600">{formatUsdAmount(f.seller_payout_usd)}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">{t('sellerOrders.delivery')}</p>

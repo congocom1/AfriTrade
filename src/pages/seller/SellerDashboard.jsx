@@ -1,3 +1,4 @@
+import { SELLER_LINKS } from '@/lib/navLinks';
 import PortalRefresh from '@/components/portal/PortalRefresh';
 import { usePortalData } from '@/hooks/usePortalData';
 import { loadRecordGroups } from '@/lib/portalData';
@@ -12,18 +13,10 @@ import { sellerInsights } from '@/lib/ai';
 import DashboardShell from '@/components/DashboardShell';
 import StatusBadge from '@/components/StatusBadge';
 import { Image } from '@/components/ui/image';
-import { formatUSD } from '@/lib/format';
+import { formatUsdAmount, formatUSD } from '@/lib/format';
 
 const HERO_IMAGE = 'https://media.base44.com/images/public/6ab43a1371d65d1a911b0fe7/5c6b76710_generated_016c1e6f.jpg';
 
-const LINKS = [
-  { to: '/seller', key: 'sellerNav.dashboard', end: true },
-  { to: '/seller/products', key: 'sellerNav.products' },
-  { to: '/seller/orders', key: 'sellerNav.orders' },
-  { to: '/seller/import', key: 'seller.import' },
-  { to: '/seller/wallet', key: 'sellerNav.wallet' },
-  { to: '/seller/settings', key: 'seller.shop' },
-];
 
 const TILES = [
   { to: '/seller/products', key: 'seller.tileProducts', icon: Package },
@@ -94,11 +87,11 @@ export default function SellerDashboard() {
     { icon: Package, key: 'seller.publishedProducts', value: `${published}/${products.length}` },
     { icon: TrendingUp, key: 'seller.revenue', value: formatUSD(revenue) },
     { icon: ShoppingBag, key: 'seller.toProcess', value: pending.length },
-    { icon: WalletIcon, key: 'wallet.available', value: formatUSD(wallet?.balance_usd || 0) },
+    { icon: WalletIcon, key: 'wallet.available', value: formatUsdAmount(wallet?.balance_usd || 0) },
   ];
 
   return (
-    <DashboardShell nav={LINKS} title={t('seller.title')} variant="paper" className="paper-console">
+    <DashboardShell nav={SELLER_LINKS} title={t('seller.title')} variant="paper" className="paper-console">
       <PortalRefresh onRefresh={reload} updatedAt={updatedAt} />
       <div className="paper-hero">
         <Image src={HERO_IMAGE} alt="" />
@@ -176,7 +169,7 @@ export default function SellerDashboard() {
                       </div>
                       <div className="paper-details">
                         <StatusBadge status={f.status} variant="paper" />
-                        <span className="paper-money">{formatUSD(f.subtotal_usd)}</span>
+                        <span className="paper-money">{formatUsdAmount(f.subtotal_usd)}</span>
                       </div>
                     </div>
                   ))}

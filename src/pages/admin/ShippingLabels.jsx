@@ -6,7 +6,7 @@ import { DashboardNav } from '@/components/DashboardNav';
 import { ADMIN_LINKS } from '@/lib/navLinks';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { formatUSD, formatDate } from '@/lib/format';
+import { formatUsdAmount, formatDate } from '@/lib/format';
 
 const STATUS_STYLES = {
   pending: 'bg-amber-100 text-amber-800',
@@ -108,7 +108,7 @@ export default function ShippingLabelsPage() {
 
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <span>{CARRIER_ICONS[label.carrier] || '📦'} {label.carrier?.replace('_', ' ')}</span>
-              {label.shipping_cost_usd > 0 && <span>· {formatUSD(label.shipping_cost_usd)}</span>}
+              {label.shipping_cost_usd > 0 && <span>· {formatUsdAmount(label.shipping_cost_usd)}</span>}
             </div>
 
             {label.recipient && (

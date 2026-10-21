@@ -6,7 +6,7 @@ import { base44 } from '@/api/base44Client';
 import { useActiveSeller } from '@/lib/seller';
 import OpsHeader from '@/components/ops/OpsHeader';
 import StatCard from '@/components/ops/StatCard';
-import { formatUSD } from '@/lib/format';
+import { formatUsdAmount, } from '@/lib/format';
 
 const DAYS = 14;
 const dayKey = (date) => new Date(date).toISOString().slice(0, 10);
@@ -152,7 +152,7 @@ export default function MarketTrends() {
                   </p>
                 </div>
                 <span className="text-xs font-bold">{t('marketTrends.soldLabel', { count: Number(p.sold_count) || 0 })}</span>
-                <span className="hidden text-xs text-muted-foreground md:block">{formatUSD(p.price_usd)}</span>
+                <span className="hidden text-xs text-muted-foreground md:block">{formatUsdAmount(p.price_usd)}</span>
               </div>
             )) : (
               <p className="px-4 py-6 text-center text-xs text-muted-foreground">{t('marketTrends.noSales')}</p>

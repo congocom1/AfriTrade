@@ -6,7 +6,7 @@ import { base44 } from '@/api/base44Client';
 import InfoPage, { InfoSection } from '@/components/InfoPage';
 import { getProfile } from '@/lib/session';
 import { listCouriers } from '@/lib/logistics';
-import { formatUSD, round2Cents } from '@/lib/format';
+import { formatUsdAmount, formatUSD, round2Cents } from '@/lib/format';
 
 export default function ShippingCalculator() {
   const { t } = useTranslation();
@@ -126,7 +126,7 @@ export default function ShippingCalculator() {
                 <p className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
                   <Store className="h-3.5 w-3.5 text-primary" /> {t('shippingCalculator.pickupTitle')}
                 </p>
-                <p className="mt-1.5 text-lg font-bold text-primary">{result.pickup ? formatUSD(result.pickup.fee_usd || 0) : t('shippingCalculator.unavailable')}</p>
+                <p className="mt-1.5 text-lg font-bold text-primary">{result.pickup ? formatUsdAmount(result.pickup.fee_usd || 0) : t('shippingCalculator.unavailable')}</p>
                 <p className="mt-1 text-[11px]">
                   {result.pickup
                     ? `${result.pickup.name} · ${[result.pickup.commune, result.pickup.address].filter(Boolean).join(' · ')}`

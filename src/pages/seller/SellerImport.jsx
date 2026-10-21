@@ -1,3 +1,4 @@
+import { SELLER_LINKS } from '@/lib/navLinks';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Search, Upload, Info, CheckCircle2 } from 'lucide-react';
@@ -9,7 +10,7 @@ import { generateProductDescription, suggestProductTags } from '@/lib/ai';
 import { loadPlatformConfig } from '@/lib/config';
 import DashboardNav from '@/components/DashboardNav';
 import { Image } from '@/components/ui/image';
-import { formatUSD } from '@/lib/format';
+import { formatUsdAmount, formatUSD } from '@/lib/format';
 import { notifyLoadError } from '@/lib/safeList';
 
 
@@ -127,7 +128,7 @@ export default function SellerImport() {
         products_count: (supplier.products_count || 0) + 1,
         last_sync_at: new Date().toISOString(),
       }).catch(() => {});
-      setDone(t('sellerImport.publishedMsg', { title: product.title, price: formatUSD(product.price_usd) }));
+      setDone(t('sellerImport.publishedMsg', { title: product.title, price: formatUsdAmount(product.price_usd) }));
       setSelected(null);
     } finally {
       setPublishing(false);
@@ -138,14 +139,7 @@ export default function SellerImport() {
 
   return (
     <div className="space-y-5 pb-8">
-      <DashboardNav title={t('sellerImport.title')} links={[
-        { to: '/seller', label: t('sellerImport.navDashboard'), end: true },
-        { to: '/seller/products', label: t('sellerImport.navProducts') },
-        { to: '/seller/orders', label: t('sellerImport.navOrders') },
-        { to: '/seller/import', label: t('sellerImport.navImport') },
-        { to: '/seller/wallet', label: t('sellerImport.navWallet') },
-        { to: '/seller/settings', label: t('sellerImport.navShop') },
-      ]} />
+      <DashboardNav title={t('sellerImport.title')} links={SELLER_LINKS} />
 
       <div className="flex items-start gap-2 rounded-xl border border-sky-200 bg-sky-50 p-3 text-xs text-sky-900">
         <Info className="mt-0.5 h-4 w-4 shrink-0" />

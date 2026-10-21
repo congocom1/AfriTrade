@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import DashboardNav from '@/components/DashboardNav';
 import { Image } from '@/components/ui/image';
 import { ADMIN_LINKS } from '@/lib/navLinks';
-import { formatUSD, formatDate } from '@/lib/format';
+import { formatUsdAmount, formatUSD, formatDate } from '@/lib/format';
 import { useTranslation } from 'react-i18next';
 import { notifyLoadError } from '@/lib/safeList';
 
@@ -110,7 +110,7 @@ export default function AdminPromotions() {
               <p className="text-sm font-bold">{c.code}</p>
               <p className="text-[11px] text-muted-foreground">
                 {c.type === 'percent' ? `${c.value}%` : c.type === 'fixed' ? formatUSD(c.value) : t('adminPromotions.freeShipping')}
-                {c.min_order_usd ? t('adminPromotions.minSuffix', { amount: formatUSD(c.min_order_usd) }) : ''} · {t('adminPromotions.used', { count: c.usage_count || 0 })}
+                {c.min_order_usd ? t('adminPromotions.minSuffix', { amount: formatUsdAmount(c.min_order_usd) }) : ''} · {t('adminPromotions.used', { count: c.usage_count || 0 })}
                 {c.expires_at ? t('adminPromotions.expires', { date: formatDate(c.expires_at) }) : ''}
               </p>
             </div>
@@ -146,7 +146,7 @@ export default function AdminPromotions() {
               </div>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">{p.title}</p>
-                <p className="text-[11px] text-muted-foreground">{formatUSD(p.price_usd)} · {p.seller_name || p.supplier_name}</p>
+                <p className="text-[11px] text-muted-foreground">{formatUsdAmount(p.price_usd)} · {p.seller_name || p.supplier_name}</p>
               </div>
               <button
                 type="button"

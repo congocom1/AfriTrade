@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Wallet as WalletIcon } from 'lucide-react';
-import { formatUSD, formatDate } from '@/lib/format';
+import { formatUsdAmount, formatDate } from '@/lib/format';
 
 export default memo(function CourierEarnings({ wallet, transactions }) {
   const { t } = useTranslation();
@@ -15,11 +15,11 @@ export default memo(function CourierEarnings({ wallet, transactions }) {
       <div className="mt-3 grid gap-3 md:grid-cols-3">
         <div className="rounded-xl bg-secondary p-3">
           <p className="text-[11px] text-muted-foreground">{t('courierEarnings.balance')}</p>
-          <p className="text-lg font-bold">{formatUSD(wallet?.balance_usd || 0)}</p>
+          <p className="text-lg font-bold">{formatUsdAmount(wallet?.balance_usd || 0)}</p>
         </div>
         <div className="rounded-xl bg-secondary p-3">
           <p className="text-[11px] text-muted-foreground">{t('courierEarnings.total')}</p>
-          <p className="text-lg font-bold">{formatUSD(wallet?.lifetime_credit_usd || 0)}</p>
+          <p className="text-lg font-bold">{formatUsdAmount(wallet?.lifetime_credit_usd || 0)}</p>
         </div>
         <div className="rounded-xl bg-secondary p-3">
           <p className="text-[11px] text-muted-foreground">{t('courierEarnings.paidTrips')}</p>
@@ -35,7 +35,7 @@ export default memo(function CourierEarnings({ wallet, transactions }) {
                 <p className="text-xs font-medium">{t.description}</p>
                 <p className="text-[10px] text-muted-foreground">{formatDate(t.created_date)}</p>
               </div>
-              <span className="text-xs font-semibold text-primary">+{formatUSD(t.amount_usd)}</span>
+              <span className="text-xs font-semibold text-primary">+{formatUsdAmount(t.amount_usd)}</span>
             </div>
           ))}
         </div>

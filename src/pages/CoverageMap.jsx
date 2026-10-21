@@ -5,7 +5,7 @@ import 'leaflet/dist/leaflet.css';
 import { base44 } from '@/api/base44Client';
 import OpsHeader from '@/components/ops/OpsHeader';
 import StatCard from '@/components/ops/StatCard';
-import { formatUSD } from '@/lib/format';
+import { formatUsdAmount, } from '@/lib/format';
 
 /**
  * The pickup points and delivery zones only carry a city (no coordinates are
@@ -173,7 +173,7 @@ export default function CoverageMap() {
                   <p className="text-xs font-bold">{t('coverageMap.zonesTip', { city: city.name })}</p>
                   {rows.map((z) => (
                     <p key={z.id} className="text-[11px]">
-                      {z.name} · {formatUSD(z.fee_usd)} · {t('coverageMap.etaDays', { days: z.eta_days })} {z.supports_pickup ? t('coverageMap.pickupSuffix') : ''}
+                      {z.name} · {formatUsdAmount(z.fee_usd)} · {t('coverageMap.etaDays', { days: z.eta_days })} {z.supports_pickup ? t('coverageMap.pickupSuffix') : ''}
                     </p>
                   ))}
                 </Popup>
@@ -195,7 +195,7 @@ export default function CoverageMap() {
                   <p className="text-xs font-bold">{t('coverageMap.pointsTip', { city: city.name, count: rows.length })}</p>
                   {rows.map((p) => (
                     <p key={p.id} className="text-[11px]">
-                      {p.name}{p.commune ? ` · ${p.commune}` : ''} · {p.hours || '—'} · {formatUSD(p.fee_usd)}
+                      {p.name}{p.commune ? ` · ${p.commune}` : ''} · {p.hours || '—'} · {formatUsdAmount(p.fee_usd)}
                     </p>
                   ))}
                 </Popup>

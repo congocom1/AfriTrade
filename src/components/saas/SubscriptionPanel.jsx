@@ -2,7 +2,7 @@ import React, { memo, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { formatDate, formatUSD } from '@/lib/format';
+import { formatDate, } from '@/lib/format';
 import { cancelSubscription, changePlan, renewSubscription, settleInvoice, subscriptionLabel } from '@/lib/saas';
 import { planByCode } from '@/lib/plans';
 import { useTranslation } from 'react-i18next';
@@ -53,7 +53,7 @@ export default memo(function SubscriptionPanel({ subscriptions, plans, onChange 
                     {row.cancel_at_period_end ? t('subscriptionPanel.cancelScheduled') : ''}
                   </p>
                 </div>
-                <p className="text-sm font-semibold">{formatUSD(row.amount_usd)}</p>
+                <p className="text-sm font-semibold">{formatUsdAmount(row.amount_usd)}</p>
                 <div className="flex flex-wrap items-center gap-2">
                   <select
                     value={row.plan_code}

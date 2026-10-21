@@ -1,3 +1,4 @@
+import { SELLER_LINKS } from '@/lib/navLinks';
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -161,14 +162,7 @@ export default function SellerProducts() {
 
   return (
     <div className="space-y-5 pb-8 paper-console">
-      <DashboardNav title={t('sellerProducts.title')} variant="paper" links={[
-        { to: '/seller', label: t('sellerProducts.navDashboard'), end: true },
-        { to: '/seller/products', label: t('sellerProducts.navProducts') },
-        { to: '/seller/orders', label: t('sellerProducts.navOrders') },
-        { to: '/seller/import', label: t('sellerProducts.navImport') },
-        { to: '/seller/wallet', label: t('sellerProducts.navWallet') },
-        { to: '/seller/settings', label: t('sellerProducts.navShop') },
-      ]} />
+      <DashboardNav title={t('sellerProducts.title')} variant="paper" links={SELLER_LINKS} />
 
       <div className="flex items-center justify-between">
         <p className="text-xs text-muted-foreground">{t('sellerProducts.count', { count: products.length, name: seller?.name || '—' })}</p>

@@ -5,7 +5,7 @@ import { useActiveSeller } from '@/lib/seller';
 import OpsHeader from '@/components/ops/OpsHeader';
 import StatCard from '@/components/ops/StatCard';
 import { downloadCsv, downloadPdf } from '@/lib/export';
-import { formatUSD } from '@/lib/format';
+import { formatUsdAmount, } from '@/lib/format';
 
 const TYPES = ['CREDIT', 'DEBIT', 'COMMISSION', 'PAYOUT', 'REFUND', 'ADJUSTMENT'];
 const STATUSES = ['posted', 'pending', 'reversed'];
@@ -115,10 +115,10 @@ export default function PayoutLedger() {
       </OpsHeader>
 
       <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
-        <StatCard label="Solde disponible" value={formatUSD(wallet.balance_usd)} tone="good" />
-        <StatCard label="En attente" value={formatUSD(wallet.pending_usd)} hint="versements en cours" tone={Number(wallet.pending_usd) ? 'warn' : 'default'} />
-        <StatCard label="Total crédité" value={formatUSD(wallet.lifetime_credit_usd)} />
-        <StatCard label="Total débité" value={formatUSD(wallet.lifetime_debit_usd)} />
+        <StatCard label="Solde disponible" value={formatUsdAmount(wallet.balance_usd)} tone="good" />
+        <StatCard label="En attente" value={formatUsdAmount(wallet.pending_usd)} hint="versements en cours" tone={Number(wallet.pending_usd) ? 'warn' : 'default'} />
+        <StatCard label="Total crédité" value={formatUsdAmount(wallet.lifetime_credit_usd)} />
+        <StatCard label="Total débité" value={formatUsdAmount(wallet.lifetime_debit_usd)} />
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
@@ -172,9 +172,9 @@ export default function PayoutLedger() {
                   {r.description || r.reference || r.order_number || '—'}
                 </span>
                 <span className={`text-right font-bold md:col-span-2 ${debit ? 'text-red-600' : 'text-emerald-600'}`}>
-                  {debit ? '−' : '+'}{formatUSD(r.amount_usd)}
+                  {debit ? '−' : '+'}{formatUsdAmount(r.amount_usd)}
                 </span>
-                <span className="text-right text-muted-foreground md:col-span-2">{formatUSD(r.balance_after_usd)}</span>
+                <span className="text-right text-muted-foreground md:col-span-2">{formatUsdAmount(r.balance_after_usd)}</span>
                 <span className="col-span-2 text-right md:col-span-1">
                   <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${STATUS_TONE[r.status || 'posted'] || STATUS_TONE.posted}`}>
                     {r.status || 'posted'}

@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import DashboardNav from '@/components/DashboardNav';
 import StatusBadge from '@/components/StatusBadge';
 import { ADMIN_LINKS } from '@/lib/navLinks';
-import { formatUSD } from '@/lib/format';
+import { formatUsdAmount, formatUSD } from '@/lib/format';
 import { getCities } from '@/lib/config';
 import TenantEmailField from '@/components/admin/TenantEmailField';
 import { useTranslation } from 'react-i18next';
@@ -237,7 +237,7 @@ export default function AdminUsers() {
                   {k.name} {k.is_mock && <span className="ml-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-900">{t('adminUsers.demo')}</span>}
                 </p>
                 <p className="text-[11px] text-muted-foreground">
-                  {t('adminUsers.courierMeta', { code: k.code, base: formatUSD(k.base_rate_usd), perKg: formatUSD(k.per_kg_usd), days: k.avg_days, zones: (k.service_areas || []).join(', ') })}
+                  {t('adminUsers.courierMeta', { code: k.code, base: formatUsdAmount(k.base_rate_usd), perKg: formatUsdAmount(k.per_kg_usd), days: k.avg_days, zones: (k.service_areas || []).join(', ') })}
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">

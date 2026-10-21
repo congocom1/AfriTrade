@@ -5,7 +5,7 @@ import { Image } from '@/components/ui/image';
 import DashboardNav from '@/components/DashboardNav';
 import { ADMIN_LINKS } from '@/lib/navLinks';
 import { getCities } from '@/lib/config';
-import { formatUSD } from '@/lib/format';
+import { formatUsdAmount, } from '@/lib/format';
 import { useTranslation } from 'react-i18next';
 
 const TAB_IDS = ['couriers', 'zones', 'pickups'];
@@ -177,7 +177,7 @@ export default function AdminLogistics() {
               <div key={z.id} className="flex items-center justify-between rounded-xl border border-border bg-card p-3.5">
                 <div>
                   <p className="flex items-center gap-2 text-sm font-semibold"><MapPin className="h-4 w-4 text-primary" /> {z.name}</p>
-                  <p className="text-[11px] text-muted-foreground">{t('adminLogistics.zoneMeta', { city: z.city, country: z.country, fee: formatUSD(z.fee_usd), eta: z.eta_days })}</p>
+                  <p className="text-[11px] text-muted-foreground">{t('adminLogistics.zoneMeta', { city: z.city, country: z.country, fee: formatUsdAmount(z.fee_usd), eta: z.eta_days })}</p>
                 </div>
                 <button type="button" onClick={() => removeZone(z)} className="rounded-lg p-2 text-destructive hover:bg-secondary" aria-label={t('adminLogistics.delete')}>
                   <Trash2 className="h-4 w-4" />
@@ -209,7 +209,7 @@ export default function AdminLogistics() {
               <div key={p.id} className="flex items-center justify-between rounded-xl border border-border bg-card p-3.5">
                 <div>
                   <p className="flex items-center gap-2 text-sm font-semibold"><Store className="h-4 w-4 text-primary" /> {p.name}</p>
-                  <p className="text-[11px] text-muted-foreground">{p.address}, {p.commune} · {p.city} · {p.phone} · {formatUSD(p.fee_usd)}</p>
+                  <p className="text-[11px] text-muted-foreground">{p.address}, {p.commune} · {p.city} · {p.phone} · {formatUsdAmount(p.fee_usd)}</p>
                 </div>
                 <button type="button" onClick={() => removePickup(p)} className="rounded-lg p-2 text-destructive hover:bg-secondary" aria-label={t('adminLogistics.delete')}>
                   <Trash2 className="h-4 w-4" />

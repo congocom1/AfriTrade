@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AlertCircle, CheckCircle2, Upload } from 'lucide-react';
-import { formatUSD } from '@/lib/format';
+import { formatUsdAmount, } from '@/lib/format';
 
 /** Preview of what a CSV will create, before anything is written. */
 export default memo(function ImportPreview({ products = [], issues = [], totalRows = 0, publishDirect, onTogglePublish, onConfirm, importing }) {
@@ -33,7 +33,7 @@ export default memo(function ImportPreview({ products = [], issues = [], totalRo
               {products.slice(0, 10).map((product, index) => (
                 <tr key={`${product.slug}-${index}`} className="border-b border-border/60">
                   <td className="py-2 pr-3 font-medium">{product.title}</td>
-                  <td className="py-2 pr-3">{formatUSD(product.price_usd)}</td>
+                  <td className="py-2 pr-3">{formatUsdAmount(product.price_usd)}</td>
                   <td className="py-2 pr-3">{product.category_name || '—'}</td>
                   <td className="py-2 pr-3">{product.stock}</td>
                   <td className="py-2">{product.status === 'published' ? t('importPreview.published') : t('importPreview.draft')}</td>

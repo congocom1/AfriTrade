@@ -8,7 +8,7 @@ import { SHIPMENT_STATUS_FLOW, SHIPMENT_STATUS_LABELS } from '@/lib/logistics';
 import OpsHeader from '@/components/ops/OpsHeader';
 import StatCard from '@/components/ops/StatCard';
 import StatusBadge from '@/components/StatusBadge';
-import { formatUSD } from '@/lib/format';
+import { formatUsdAmount, formatUSD } from '@/lib/format';
 import { esc } from '@/lib/shippingLabels';
 
 const CLOSED = ['DELIVERED', 'CANCELLED', 'RETURNED'];
@@ -211,7 +211,7 @@ export default function BulkOrders() {
                     {order.delivery_method === 'pickup_point' ? t('bulkOrders.pickupSuffix') : ''} · {t('bulkOrders.itemCount', { count: (f.items || []).length })}
                   </p>
                 </div>
-                <span className="text-xs font-semibold">{formatUSD(f.subtotal_usd)}</span>
+                <span className="text-xs font-semibold">{formatUsdAmount(f.subtotal_usd)}</span>
                 <StatusBadge status={f.status} />
                 {!CLOSED.includes(String(f.status || '')) ? (
                   <span className="text-[11px] text-muted-foreground">

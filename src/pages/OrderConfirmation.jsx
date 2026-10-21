@@ -6,7 +6,7 @@ import { getProfile } from '@/lib/session';
 import { lookupOrder } from '@/lib/orderLookup';
 import { Image } from '@/components/ui/image';
 import StatusBadge from '@/components/StatusBadge';
-import { formatUSD, formatDateTime } from '@/lib/format';
+import { formatUsdAmount, formatDateTime } from '@/lib/format';
 import { SHIPMENT_STATUS_LABELS } from '@/lib/logistics';
 import BackButton from '@/components/BackButton';
 
@@ -145,33 +145,33 @@ export default function OrderConfirmation() {
                 {it.variant ? `${it.variant} · ` : ''}× {it.quantity} · {it.seller_name}
               </p>
             </div>
-            <span className="text-sm font-semibold">{formatUSD(it.line_total_usd)}</span>
+            <span className="text-sm font-semibold">{formatUsdAmount(it.line_total_usd)}</span>
           </div>
         ))}
         <div className="space-y-1 border-t border-border pt-2 text-sm">
           <div className="flex justify-between">
             <span className="text-muted-foreground">{t('orderConfirmation.subtotal')}</span>
-            <span>{formatUSD(order.subtotal_usd)}</span>
+            <span>{formatUsdAmount(order.subtotal_usd)}</span>
           </div>
           {order.discount_usd > 0 && (
             <div className="flex justify-between text-emerald-600">
               <span>{t('orderConfirmation.discountLabel', { code: order.coupon_code })}</span>
-              <span>-{formatUSD(order.discount_usd)}</span>
+              <span>-{formatUsdAmount(order.discount_usd)}</span>
             </div>
           )}
           <div className="flex justify-between">
             <span className="text-muted-foreground">{t('orderConfirmation.shipping')}</span>
-            <span>{order.shipping_usd === 0 ? t('orderConfirmation.free') : formatUSD(order.shipping_usd)}</span>
+            <span>{order.shipping_usd === 0 ? t('orderConfirmation.free') : formatUsdAmount(order.shipping_usd)}</span>
           </div>
           {Number(order.vat_usd) > 0 && (
             <div className="flex justify-between">
               <span className="text-muted-foreground">{t('orderConfirmation.vatLine', { rate: order.vat_rate })}</span>
-              <span>{formatUSD(order.vat_usd)}</span>
+              <span>{formatUsdAmount(order.vat_usd)}</span>
             </div>
           )}
           <div className="flex justify-between border-t border-border pt-2 text-base font-bold">
             <span>{t(paid ? 'orderConfirmation.totalPaid' : 'orderConfirmation.totalOrder')}</span>
-            <span className="text-primary">{formatUSD(order.total_usd)}</span>
+            <span className="text-primary">{formatUsdAmount(order.total_usd)}</span>
           </div>
           <p className="text-[11px] text-muted-foreground">
             {t('orderConfirmation.cdfApprox', { amount: Math.round(order.total_cdf || 0).toLocaleString('fr-FR') })}

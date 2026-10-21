@@ -344,10 +344,10 @@ const AuthenticatedApp = () => {
             <Route path="/admin/employees" element={<PageWrapper><EmployeeManagement /></PageWrapper>} />
             <Route path="/marketing-analytics" element={<PageWrapper><MarketingAnalytics /></PageWrapper>} />
             <Route path="/platform-analytics" element={<PageWrapper><PlatformAnalytics /></PageWrapper>} />
-            <Route path="/marketplace-promos" element={<PageWrapper><AdminPromotions /></PageWrapper>} />
-            <Route path="/fraud-rules" element={<PageWrapper><AdminFraud /></PageWrapper>} />
-            <Route path="/supplier-integration" element={<PageWrapper><AdminSuppliers /></PageWrapper>} />
-            <Route path="/compliance-center" element={<PageWrapper><AdminCompliance /></PageWrapper>} />
+            <Route path="/marketplace-promos" element={<Navigate to="/admin/promotions" replace />} />
+            <Route path="/fraud-rules" element={<Navigate to="/admin/fraud" replace />} />
+            <Route path="/supplier-integration" element={<Navigate to="/admin/suppliers" replace />} />
+            <Route path="/compliance-center" element={<Navigate to="/admin/compliance" replace />} />
             <Route path="/platform-health" element={<PageWrapper><PlatformHealth /></PageWrapper>} />
             <Route path="/service-level-monitor" element={<PageWrapper><ServiceLevelMonitor /></PageWrapper>} />
             <Route path="/logistics-rates" element={<PageWrapper><LogisticsRates /></PageWrapper>} />

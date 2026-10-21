@@ -123,7 +123,7 @@ export default function AdminTenants() {
                       </p>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      {sub ? t('adminTenants.subMeta', { cycle: sub.billing_cycle === 'yearly' ? t('adminTenants.yearly') : t('adminTenants.monthly'), amount: formatUSD(sub.amount_usd), end: formatDate(sub.current_period_end) }) : t('adminTenants.noSub')}
+                      {sub ? t('adminTenants.subMeta', { cycle: sub.billing_cycle === 'yearly' ? t('adminTenants.yearly') : t('adminTenants.monthly'), amount: formatUsdAmount(sub.amount_usd), end: formatDate(sub.current_period_end) }) : t('adminTenants.noSub')}
                     </p>
                     <div className="flex flex-wrap gap-2">
                       <Button size="sm" variant="outline" onClick={() => setEditing(tx)}>{t('adminTenants.edit')}</Button>
@@ -179,7 +179,7 @@ export default function AdminTenants() {
             <div key={inv.id} className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-2 text-sm last:border-0">
               <span className="font-mono text-xs">{inv.invoice_number}</span>
               <span className="text-muted-foreground">{inv.tenant_name} · {inv.plan_code} · {formatDate(inv.issued_at)}</span>
-              <span className="font-semibold">{formatUSD(inv.total_usd)}</span>
+              <span className="font-semibold">{formatUsdAmount(inv.total_usd)}</span>
               <span className="text-xs">{inv.status === 'paid' ? t('adminTenants.paid') : inv.status === 'past_due' ? t('adminTenants.pastDue') : inv.status}</span>
             </div>
           ))}
