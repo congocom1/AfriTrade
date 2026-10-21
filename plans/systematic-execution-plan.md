@@ -3,7 +3,7 @@
 ## Implementation plan
 # Systematic Execution Plan — Post-P0 Core Fixes
 
-**Status:** APPROVED 2026-10-21 (/autoplan run main-20261021-141036, gate_rev 3, `rec`) — T1–T4 verified already landed on origin/main; remaining execution scope is T5 Flutter parity only.
+**Status:** COMPLETE 2026-10-21 — all tasks T1–T5 landed. /autoplan run main-20261021-141036 approved the plan (gate_rev 3, `rec`); T1–T4 verified already on origin/main; T5 Flutter parity verified on branch docs/flutter-parity-verification (commit cda196c).
 
 ## Context & Scope
 Following successful completion of all three critical P0 security fixes (payment webhook signature verification, wallet concurrency prevention, and privilege escalation prevention), this plan addresses the systematic architecture and operational improvements identified in the audit. The code now has proper financial protection and access control enforcement.
@@ -543,12 +543,12 @@ Premise table (every factual claim in the plan, with receipt):
 |---------|-------|-------------------|---------|
 | No CI/CD | "No `.github/workflows/ci.yml` exists" (plan:19) | .github/workflows/ci.yml:1 exists on origin/main (commit 204ed67) with lint/typecheck/test/build jobs, Node 22/24 matrix | **stale — task already landed** |
 | Dev-only headers | "Production deployment lacks CSP, HSTS, X-Frame-Options" (plan:48-49) | vite.config.js:89 wires securityHeadersPlugin; scripts/security-headers-plugin.js:29-45 injects CSP + Referrer-Policy via `transformIndexHtml` on build only; X-Frame-Options DENY on dev/preview middleware; docs/audit/PRODUCTION_HARDENING.md is the host-header release gate | **stale — implemented as planned** |
-| No code-splitting | "No code-splitting strategy implemented" (plan:73) | vite.config.js:109-128 rolldownOptions codeSplitting groups (three.js splits, translations by language, charts, pdf) + route-level `lazy()` src/App.jsx:26-30 | **stale — implemented (rolldown equivalent of manualChunks)** |
+| No code-splitting | "No code-splitting strategy implemented" (plan:73) | vite.config.js:138-157 rolldownOptions codeSplitting groups (three.js splits, translations by language, charts, pdf) + route-level `lazy()` src/App.jsx:26-30 | **stale — implemented (rolldown equivalent of manualChunks)** |
 | ESLint React warning | "ESLint warning about React version mismatch" (plan:130-131) | eslint.config.js:30 `version: "detect"` present; `npm run lint` exits 0 with no output (measured 2026-10-21) | **stale — clean** |
-| Flutter unverified | "Flutter project exists but not verified" (plan:100-101) | docs/audit/REMEDIATION_LOG.md:85 "Flutter parity not verified"; flutter SDK present at /home/hermes/flutter/bin/flutter | **CONFIRMED — the one open task** |
+| Flutter unverified | "Flutter project exists but not verified" (plan:100-101) | pre-verification snapshot: docs/audit/REMEDIATION_LOG.md:85 held "Flutter parity not verified" at review time; verification section now at docs/audit/REMEDIATION_LOG.md:88; flutter SDK present at /home/hermes/flutter/bin/flutter | **CONFIRMED open at review time — CLOSED 2026-10-21 (T5 verified, branch docs/flutter-parity-verification)** |
 
 REALITY: premise-table finding 4 of 5 plan premises are stale — T1/T2/T3/T4 already landed on main; only Flutter parity (T5) confirmed open plans/systematic-execution-plan.md:19
-REALITY: already-done finding `git fetch origin main` + log shows ci.yml landed (204ed67), security headers middleware (cf88b9e, c72dffd), bundle optimization (d55640a, 25a5214), ESLint fixes (e8e39cb); T1-T4 tasks in this plan are already done .github/workflows/ci.yml:1
+REALITY: already-done finding `git fetch origin main` + log shows ci.yml landed (204ed67), security headers middleware (cf88b9e, c72dffd), bundle optimization (d55640a, 25a5214), ESLint fixes (e8edccc, 25bf867); T1-T4 tasks in this plan are already done .github/workflows/ci.yml:1
 REALITY: surface-check pass `npm run lint|typecheck|test|build` all defined at package.json:10-15 (lint exit 0, measured 2026-10-21); `flutter` on PATH at /home/hermes/flutter/bin/flutter; `codex` at /snap/bin/codex but not authenticated (outside voice stays unavailable) package.json:10-15
 REALITY: binding-decisions pass `gstack-decision-search --scope branch --recent 50` returned no records; plan has no `## Binding decisions` section; nothing overruled plans/systematic-execution-plan.md:7
 REALITY: numbers pass plan figures (>30% bundle reduction, 80% unit / 100% critical-path coverage, 4-week timeline, 500kB chunk threshold) are targets tagged [estimated]; no measured baselines cited, so none required re-derivation plans/systematic-execution-plan.md:190-197
