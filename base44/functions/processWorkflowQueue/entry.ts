@@ -24,23 +24,11 @@ export default async function (req) {
     const base44 = createClientFromRequest(req);
     await req.json().catch(() => ({}));
 
-    // Runs on the hourly schedule. Only the platform's own automation (or an
-    // administrator) may trigger a pass: otherwise anyone could force early
-    // retries and push tenants into dunning on demand. A refusal is recorded so
-    // a wrongly-assumed caller can never break this job silently.
+    // Scheduled automation and administrators must use an authenticated
+    // identity. In particular, rejected calls must NOT write audit rows with
+    // service-role privileges (that exposed a database-spam path).
     const auth = await requireAdmin(base44);
-    if (!auth.ok) {
-      await base44.asServiceRole.entities.AuditLog.create({
-        action: 'workflow.queue_refused',
-        actor: 'system',
-        entity: 'WorkflowExecution',
-        entity_id: 'queue_runner',
-        reference: 'queue_runner',
-        severity: 'warning',
-        details: { reason: 'appel non administrateur' },
-      }).catch(() => null);
-      return addSecurityHeaders(auth.response);
-    }
+    if (!auth.ok) return addSecurityHeaders(auth.response);
 
     const now = Date.now();
     const summary = { timed_out: [], retried: [], dunning: [] };

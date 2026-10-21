@@ -299,8 +299,6 @@ export default async function (req: Request): Promise<Response> {
         suppliers: (all || []).map((s: any) => ({
           id: s.id ?? "",
           name: s.name ?? "",
-          code: s.code ?? "",
-          adapter: s.adapter ?? "manual",
           type: s.type ?? "international",
           country: s.country ?? "CN",
           logo_url: s.logo_url ?? null,
@@ -308,7 +306,6 @@ export default async function (req: Request): Promise<Response> {
           enabled: s.enabled ?? true,
           avg_shipping_days: s.avg_shipping_days ?? 18,
           shipping_base_usd: s.shipping_base_usd ?? 9,
-          default_markup_percent: s.default_markup_percent ?? 45,
           products_count: s.products_count ?? 0,
           last_sync_at: s.last_sync_at ?? null,
         })),

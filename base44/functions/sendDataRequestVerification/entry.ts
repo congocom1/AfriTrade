@@ -17,23 +17,18 @@ const MAX_PER_ADDRESS_PER_HOUR = 3;
 export default async function (req) {
   try {
     const base44 = createClientFromRequest(req);
+    // The function uses service-role reads and writes. Reject unknown callers
+    // BEFORE looking up a private DataRequest or mutating its email status.
+    const auth = await requireAdmin(base44);
+    if (!auth.ok) return addSecurityHeaders(auth.response);
+
+    if (req.method !== 'POST') return addSecurityHeaders(Response.json({ error: 'Method not allowed' }, { status: 405 }));
     const body = await req.json().catch(() => ({}));
     const requestId = String(body.request_id || '').trim();
     if (!requestId) return Response.json({ error: 'request_id is required' }, { status: 400 });
 
     const request = await base44.asServiceRole.entities.DataRequest.get(requestId).catch(() => null);
     if (!request) return Response.json({ error: 'DataRequest not found' }, { status: 404 });
-
-    // Only the request lifecycle itself (a platform workflow) and an
-    // administrator may trigger an outgoing verification e-mail.
-    const auth = await requireAdmin(base44);
-    if (!auth.ok) {
-      await base44.asServiceRole.entities.DataRequest.update(requestId, {
-        email_status: 'skipped',
-        email_error: `Envoi refusé — appel non autorisé (${auth.status})`,
-      }).catch(() => null);
-      return auth.response;
-    }
 
     const email = String(request.email || '').trim();
     if (!email) {

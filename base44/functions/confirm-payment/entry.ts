@@ -64,6 +64,18 @@ export default async function (req: Request) {
         Response.json({ error: "Commande introuvable." }, { status: 404 })
       );
     }
+    // An administrator's manual action is NOT proof of a card/provider payment.
+    // Provider-backed payment state must be established by the signed webhook,
+    // not by caller-supplied references to this legacy endpoint.
+    if (String(order.payment_provider || order.payment_method || '').toLowerCase() !== 'cod') {
+      return addSecurityHeaders(Response.json(
+        { error: "Confirmation manuelle réservée au paiement à la livraison." },
+        { status: 409, headers: { "Cache-Control": "no-store" } },
+      ));
+    }
+    if (["CANCELLED", "REFUNDED", "FAILED"].includes(order.payment_status) || order.status === "CANCELLED") {
+      return addSecurityHeaders(Response.json({ error: "Commande clôturée." }, { status: 409 }));
+    }
     const already = order.payment_verified && order.payment_status === "PAID";
     const updated = already ? order : await db.entities.Order.update(order.id, {
       payment_status: "PAID",
