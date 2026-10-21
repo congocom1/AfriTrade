@@ -13,20 +13,24 @@ export default function Discover() {
   const { t } = useTranslation();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [reloadToken, setReloadToken] = useState(0);
   const [liked, setLiked] = useState([]);
   const [toast, setToast] = useState('');
   const { addItem } = useCart();
   const { format } = useCurrency();
 
   useEffect(() => {
+    let active = true;
     setLiked(getLikedContent());
+    setLoading(true);
+    setLoadFailed(false);
     base44.entities.Content.filter({ status: 'published' }, '-likes_count', 20)
-      .then((rows) => {
-        setItems(rows);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
+      .then((rows) => { if (active) setItems(rows); })
+      .catch(() => { if (active) setLoadFailed(true); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [reloadToken]);
 
   const flash = (msg) => {
     setToast(msg);
@@ -78,8 +82,12 @@ export default function Discover() {
   if (!items.length) {
     return (
       <div className="rounded-2xl border border-dashed border-border bg-card p-10 text-center">
-        <p className="font-semibold">{t('discover.emptyTitle')}</p>
-        <p className="mt-1 text-sm text-muted-foreground">{t('discover.emptyDesc')}</p>
+        <p className="font-semibold">{loadFailed ? t('home.loadFailed') : t('discover.emptyTitle')}</p>
+        {!loadFailed && <p className="mt-1 text-sm text-muted-foreground">{t('discover.emptyDesc')}</p>}
+        {loadFailed && <button type="button" onClick={() => setReloadToken(n => n + 1)}
+          className="mt-4 min-h-11 rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground">
+          {t('common.retry')}
+        </button>}
       </div>
     );
   }
