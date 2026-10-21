@@ -16,3 +16,15 @@ export function functionData(response) {
   }
   return data;
 }
+
+/** A replayed event must not inflate counters or leave deleted records visible. */
+export function mergeRealtimeRecord(records, event, limit = 150) {
+  const id = event?.data?.id || event?.id;
+  if (!id || !['create', 'update', 'delete'].includes(event.type)) return records;
+  const remaining = records.filter(row => row.id !== id);
+  if (event.type === 'delete') return remaining;
+  const existing = records.find(row => row.id === id);
+  return [{ ...existing, ...event.data, id }, ...remaining]
+    .sort((a, b) => String(b.created_date || '').localeCompare(String(a.created_date || '')))
+    .slice(0, limit);
+}
