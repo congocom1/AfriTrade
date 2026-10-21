@@ -16,8 +16,6 @@ import StructuredData from '@/components/StructuredData';
 if (typeof window !== 'undefined' && window.matchMedia) {
   const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
   document.documentElement.classList.toggle('dark', prefersDark);
-  // Set lang attribute for screen readers and SEO
-  document.documentElement.lang = 'en';
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(

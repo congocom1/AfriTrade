@@ -1,7 +1,7 @@
 {
-  "name": "CONGO COMMERCE",
-  "short_name": "CONGO",
-  "description": "One operating system for modern commerce.",
+  "name": "AfriTrade",
+  "short_name": "AfriTrade",
+  "description": "AfriTrade marketplace for buyers and sellers in DR Congo.",
   "lang": "fr",
   "dir": "ltr",
   "start_url": "/",
