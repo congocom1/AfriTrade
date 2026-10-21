@@ -34,12 +34,12 @@ export default function TicketAutomation() {
   const tickets = data?.tickets || [];
   const stats = data?.stats;
 
-  const autoRoute = async (ticket_id) => {
+  const autoRoute = async (ticket) => {
     if (saving) return;
     setErrors({});
     setSaving(true);
     try {
-      await base44.functions.invoke('ticketAutomation', { action: 'auto-route', ticket_id });
+      await base44.functions.invoke('ticketAutomation', { action: 'auto-route', ticket_id: ticket.id, category: ticket.category, order_number: ticket.order_number, tenant_id: ticket.tenant_id });
       await load();
     } catch (e) {
       setErrors((p) => ({ ...p, route: e?.message }));
@@ -115,7 +115,7 @@ export default function TicketAutomation() {
             </div>
             {ticket.status === 'open' && (
               <div className="mt-2 flex gap-2">
-                <Button size="sm" variant="outline" onClick={() => autoRoute(ticket.id)} disabled={saving} className="gap-1.5">
+                <Button size="sm" variant="outline" onClick={() => autoRoute(ticket)} disabled={saving} className="gap-1.5">
                   <Zap className="h-3 w-3" /> {t('common.autoRoute', 'Routage auto')}
                 </Button>
               </div>

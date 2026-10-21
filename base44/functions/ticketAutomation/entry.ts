@@ -69,11 +69,11 @@ export default async function(req: Request): Promise<Response> {
     const action = String(body.action || '');
 
     switch (action) {
-      case 'auto-route': return autoRoute(db, body, user);
-      case 'list': return listTickets(db, body);
-      case 'escalate': return escalate(db, body, user);
-      case 'sla-breach': return slaBreach(db);
-      case 'stats': return stats(db);
+      case 'auto-route': return await autoRoute(db, body, user);
+      case 'list': return await listTickets(db, body);
+      case 'escalate': return await escalate(db, body, user);
+      case 'sla-breach': return await slaBreach(db);
+      case 'stats': return await stats(db);
       default: return fail('Action invalide');
     }
   } catch(e) {
@@ -123,7 +123,7 @@ async function listTickets(db, body) {
   if (status) filters.status = status;
   if (assigned_team) filters.assigned_team = assigned_team;
   if (priority) filters.priority = priority;
-  const tickets = await db.entities.SupportTicket.filter(filters, '-created_date', 100).catch(() => []);
+  const tickets = await db.entities.SupportTicket.filter(filters, '-created_date', 100);
   return addSecurityHeaders(Response.json({ tickets }));
 }
 
@@ -143,7 +143,7 @@ async function escalate(db, body, user) {
 
 async function slaBreach(db) {
   const now = new Date().toISOString();
-  const tickets = await db.entities.SupportTicket.filter({ status: { $nin: ['resolved', 'closed'] } }, '', 500).catch(() => []);
+  const tickets = await db.entities.SupportTicket.filter({ status: { $nin: ['resolved', 'closed'] } }, '', 500);
   const breached = tickets.filter((t) => {
     if (!t.sla_deadline) return false;
     return new Date(t.sla_deadline) < new Date(now);
@@ -162,7 +162,7 @@ async function slaBreach(db) {
 }
 
 async function stats(db) {
-  const tickets = await db.entities.SupportTicket.list('-created_date', 500).catch(() => []);
+  const tickets = await db.entities.SupportTicket.list('-created_date', 500);
   const byStatus = {};
   const byPriority = {};
   const byTeam = {};

@@ -2,6 +2,7 @@ import base44 from "@base44/vite-plugin";
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import path from 'node:path';
+import fs from 'node:fs';
 import { securityHeadersPlugin } from './scripts/security-headers-plugin.js';
 
 // Use a CommonJS-style config so builders that parse vite.config.js with
@@ -14,8 +15,6 @@ const buildAnalyzerPlugin = () => {
     return {
       name: 'vite-bundle-analyzer',
       generateBundle(options, bundle) {
-        const fs = require('fs');
-        const path = require('path');
 
         const statsPath = path.join(process.cwd(), 'dist', 'stats.json');
         const stats = {
@@ -105,79 +104,18 @@ export default defineConfig({
   },
   build: {
     target: 'es2020',
-    legacy: {
-      target: 'es2015',
-      additionalChunks: 'legacy-chunks',
-    },
-    moduleNaming: '[hash].js',
     cssCodeSplit: true,
     chunkSizeWarningLimit: 500,
-    rollupOptions: {
-      manualChunks: {
-        'react-vendor': [
-          'react',
-          'react-dom',
-          'react-router-dom',
-          '@tanstack/react-query',
-          'react-i18next',
-          'i18next',
-          'next-themes',
-          'framer-motion'
-        ],
-        'base44-sdk': [
-          '@base44/sdk'
-        ],
-        'radix-ui': [
-          '@radix-ui/react-accordion',
-          '@radix-ui/react-alert-dialog',
-          '@radix-ui/react-avatar',
-          '@radix-ui/react-checkbox',
-          '@radix-ui/react-collapsible',
-          '@radix-ui/react-context-menu',
-          '@radix-ui/react-dialog',
-          '@radix-ui/react-dropdown-menu',
-          '@radix-ui/react-hover-card',
-          '@radix-ui/react-label',
-          '@radix-ui/react-menubar',
-          '@radix-ui/react-navigation-menu',
-          '@radix-ui/react-popover',
-          '@radix-ui/react-progress',
-          '@radix-ui/react-radio-group',
-          '@radix-ui/react-scroll-area',
-          '@radix-ui/react-select',
-          '@radix-ui/react-separator',
-          '@radix-ui/react-slider',
-          '@radix-ui/react-slot',
-          '@radix-ui/react-switch',
-          '@radix-ui/react-tabs',
-          '@radix-ui/react-toast',
-          '@radix-ui/react-toggle',
-          '@radix-ui/react-toggle-group',
-          '@radix-ui/react-tooltip'
-        ],
-        'date-utils': [
-          'date-fns',
-          'date-fns-tz'
-        ],
-        'form-utils': [
-          'react-hook-form',
-          '@hookform/resolvers',
-          'zod'
-        ],
-        'chart-utils': [
-          'recharts'
-        ],
-        'map-utils': [
-          'react-leaflet',
-          'leaflet'
-        ],
-        'lib-utils': [
-          'jspdf',
-          'sharp',
-          'three',
-          'cmdk'
-        ]
-      }
-    }
-  }
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          groups: [
+            { name: 'three', test: /node_modules\/three\// },
+            { name: 'charts', test: /node_modules\/(recharts|d3-[^/]+)\// },
+            { name: 'pdf', test: /node_modules\/(jspdf|html2canvas)\// },
+          ],
+        },
+      },
+    },
+  },
 });
