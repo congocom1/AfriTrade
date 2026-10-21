@@ -74,8 +74,6 @@ export default function MobileDrawer({ isOpen, onClose }) {
       // Enable swipe-to-close for iOS/Android (vaul Drawer supports this by default)
       // P0 M-03: Added swipe-to-close gesture support
     >
-      <DrawerPortal>
-        <DrawerOverlay className="bg-black/50" onClick={onClose} />
         <DrawerContent id="mobile-drawer" aria-describedby={undefined} className="mx-auto max-h-[85dvh] max-w-md w-full rounded-t-[16px] border-l-0 border-r-0 border-b-0 bg-card/95 backdrop-blur-xl shadow-xl">
           <DrawerHeader className="flex h-16 items-center justify-between border-b border-border px-4 sm:text-left">
             <DrawerTitle className="text-base font-semibold">{t('nav.menu')}</DrawerTitle>
