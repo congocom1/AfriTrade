@@ -19,11 +19,11 @@ export default function BottomNav() {
 
   return (
     // P0 M-04: Add safe-area inset for iOS home indicator
-    <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-card md:hidden pb-[env(safe-area-inset-bottom)]" aria-label="Navigation principale">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-card md:hidden pb-[env(safe-area-inset-bottom)]" aria-label={t('nav.primary')}>
       <div className="grid grid-cols-5">
         {ITEMS.map((item) => {
           const Icon = item.icon;
-          const active = item.path === '/' ? location.pathname === '/' : location.pathname.startsWith(item.path);
+          const active = item.path === '/' ? location.pathname === '/' : (location.pathname === item.path || location.pathname.startsWith(`${item.path}/`));
           return (
             <Link
               key={item.path}
@@ -40,7 +40,6 @@ export default function BottomNav() {
                   {count}
                 </span>
               )}
-              <span className="sr-only">{t(item.key)}</span>
               {t(item.key)}
             </Link>
           );
