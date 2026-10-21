@@ -16,23 +16,10 @@ import { round2Cents } from './format';
  *   getTracking(id)       -> TrackingInformation
  *
  * ─────────────────────────────────────────────────────────────────────────────
- * HYBRID ADAPTERS — real implementations when env vars are set, otherwise
- * clearly isolated mock adapters labelled `isMock: true`.
+ * DEMO ADAPTERS — explicitly mock-labelled. Live supplier API keys and calls
+ * must be implemented behind authenticated Base44 server functions.
  * ─────────────────────────────────────────────────────────────────────────────
  */
-
-/**
- * Helper to get environment variable with fallback.
- * In Vite, env vars are exposed via import.meta.env.
- */
-function getEnvVar(key, defaultValue) {
-  // @ts-ignore
-  const env = (typeof import.meta !== 'undefined' && import.meta.env) || {};
-  if (env[key]) {
-    return env[key];
-  }
-  return defaultValue;
-}
 
 // Mock catalog (unchanged)
 const MOCK_CATALOG = {
@@ -186,25 +173,11 @@ function createRealProvider(adapterCode, _config) {
  */
 export const SUPPLIER_REGISTRY = {};
 
-(() => {
-  // Supplier A
-  const supplierAUrl = getEnvVar('VITE_SUPPLIER_A_URL', '');
-  const supplierAKey = getEnvVar('VITE_SUPPLIER_A_KEY', '');
-  if (supplierAUrl && supplierAKey) {
-    SUPPLIER_REGISTRY.mock_supplier_a = createRealProvider('mock_supplier_a', { url: supplierAUrl, key: supplierAKey });
-  } else {
-    SUPPLIER_REGISTRY.mock_supplier_a = createMockProvider('mock_supplier_a');
-  }
-
-  // Supplier B
-  const supplierBUrl = getEnvVar('VITE_SUPPLIER_B_URL', '');
-  const supplierBKey = getEnvVar('VITE_SUPPLIER_B_KEY', '');
-  if (supplierBUrl && supplierBKey) {
-    SUPPLIER_REGISTRY.mock_supplier_b = createRealProvider('mock_supplier_b', { url: supplierBUrl, key: supplierBKey });
-  } else {
-    SUPPLIER_REGISTRY.mock_supplier_b = createMockProvider('mock_supplier_b');
-  }
-})();
+// Explicit demo-only adapters. Real integrations must be registered from a
+// verified server-backed implementation; frontend environment variables must
+// never contain provider API credentials.
+SUPPLIER_REGISTRY.mock_supplier_a = createMockProvider('mock_supplier_a');
+SUPPLIER_REGISTRY.mock_supplier_b = createMockProvider('mock_supplier_b');
 
 export function getSupplierAdapter(adapterCode) {
   const adapter = SUPPLIER_REGISTRY[adapterCode];
