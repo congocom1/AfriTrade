@@ -36,17 +36,17 @@ export default function TopBar() {
   };
   const iconButton = 'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring';
   return <header className="sticky top-0 z-50 border-b border-border bg-background pt-[env(safe-area-inset-top)]">
-    <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-2 px-3 py-3 md:flex-nowrap md:gap-3 md:px-6">
-      <Link to="/" aria-label={`AfriTrade — ${t('nav.home')}`} className="shrink-0 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring"><span className="text-xl font-bold tracking-tight text-foreground">Afri<span className="text-primary">Trade</span></span></Link>
+    <div className="mx-auto flex max-w-7xl flex-nowrap items-center gap-2 px-3 py-2 md:gap-3 md:px-6 md:py-3">
+      <Link to="/" aria-label={`AfriTrade — ${t('nav.home')}`} className="shrink-0 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring"><span className="text-lg font-bold tracking-tight text-foreground md:text-xl">Afri<span className="text-primary">Trade</span></span></Link>
       <nav aria-label={t('nav.primary')} className="hidden shrink-0 items-center gap-1 md:flex">
         {[['/discover', 'nav.discover'], ['/categories', 'nav.categories']].map(([to, key]) => <NavLink key={to} to={to} className={({ isActive }) => `rounded-lg px-3 py-2 text-sm font-medium ${isActive ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}>{t(key)}</NavLink>)}
       </nav>
-      <form onSubmit={submit} role="search" className="relative order-last mx-auto w-full max-w-[min(100%,17rem)] min-w-0 sm:max-w-[20rem] md:order-none md:mx-auto md:w-full md:max-w-[18rem] lg:max-w-[22rem] xl:max-w-[25rem]">
+      <form onSubmit={submit} role="search" className="relative min-w-0 flex-1 md:mx-auto md:w-full md:max-w-[18rem] md:flex-none lg:max-w-[22rem] xl:max-w-[25rem]">
         <label htmlFor="site-search" className="sr-only">{t('nav.searchPlaceholder')}</label>
         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-        <input id="site-search" type="search" value={term} onChange={event => setTerm(event.target.value)} placeholder={t('nav.searchPlaceholder')} enterKeyHint="search" className="h-11 w-full rounded-xl border border-border bg-secondary/30 pl-10 pr-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" />
+        <input id="site-search" type="search" value={term} onChange={event => setTerm(event.target.value)} placeholder={t('nav.searchPlaceholder')} enterKeyHint="search" className="h-9 w-full min-w-0 rounded-lg border border-border bg-secondary/30 pl-9 pr-2 text-sm md:h-11 md:rounded-xl md:pl-10 md:pr-3 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" />
       </form>
-      <button type="button" className={`${iconButton} ml-auto md:hidden`} onClick={() => setDrawerOpen(true)} aria-label={t('nav.menu')} aria-expanded={drawerOpen} aria-controls="mobile-drawer"><Menu className="h-5 w-5" /></button>
+      <button type="button" className="ml-0 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:bg-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring md:hidden" onClick={() => setDrawerOpen(true)} aria-label={t('nav.menu')} aria-expanded={drawerOpen} aria-controls="mobile-drawer"><Menu className="h-5 w-5" /></button>
       <div className="hidden shrink-0 items-center gap-1 md:flex">
         <Popover open={preferencesOpen} onOpenChange={setPreferencesOpen}>
           <PopoverTrigger asChild><button type="button" className={iconButton} aria-label={t('nav.utilities')}><SlidersHorizontal className="h-5 w-5" /></button></PopoverTrigger>
