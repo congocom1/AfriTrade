@@ -1,8 +1,9 @@
+<!-- /autoplan restore point: "/home/hermes/afritrade-production-repair/AfriTrade/.gstack/tmp/autoplan/main-autoplan-restore-20261021-141036.md" -->
 <!-- /autoplan restore point: "/home/hermes/congo-commerce/.gstack/tmp/autoplan/visual-redesign-autoplan-restore.md" -->
 ## Implementation plan
 # Systematic Execution Plan — Post-P0 Core Fixes
 
-**Status:** READY TO EXECUTE | P1 & P2 Implementation Roadmap
+**Status:** APPROVED 2026-10-21 (/autoplan run main-20261021-141036, gate_rev 3, `rec`) — T1–T4 verified already landed on origin/main; remaining execution scope is T5 Flutter parity only.
 
 ## Context & Scope
 Following successful completion of all three critical P0 security fixes (payment webhook signature verification, wallet concurrency prevention, and privilege escalation prevention), this plan addresses the systematic architecture and operational improvements identified in the audit. The code now has proper financial protection and access control enforcement.
@@ -211,6 +212,13 @@ This systematic approach ensures each improvement builds upon the secured founda
 - Tests: `npm run lint`, `npm run typecheck`, `npm test`, `npm run build` must pass in CI.
 - Manual checklist: security headers verified on live site post-deploy; build/CI regressions checked within first hour.
 <!-- /autoplan-accepted:eng -->
+<!-- AUTONOMOUS DECISION LOG -->
+## Decision Audit Trail
+
+| # | Phase | Decision | Classification | Principle | Rationale | Rejected |
+|---|-------|----------|----------------|-----------|-----------|----------|
+| 1 | Gate (d1) | Accept already-done finding; remaining scope = T5 Flutter parity only | Taste | P4 DRY | Re-executing T1–T4 would duplicate landed work (ci.yml 204ed67, headers plugin, codeSplitting groups, eslint detect) | Re-verify on staging first (d1b); execute as written (d1c) |
+
 ## Review record
 
 ## CEO Review — Step 0 (Scope & Mode)
@@ -527,15 +535,25 @@ Mode: HOLD_SCOPE. Findings: Section 1 none; Section 2 0 paths/0 GAPS; Section 3 
 
 Outside Voice: codex NOT installed → outside_status: unavailable, no completed external review. (Codex passes skipped per prior session; Claude adversarial review only — this review is the native/adversarial pass.)
 
-### Reality rows
-REALITY: premise-table n/a (no external premises) plans/systematic-execution-plan.md:5
-REALITY: already-done n/a (no origin/base fetch needed; base=main, branch=visual-redesign, 30 commits) plans/systematic-execution-plan.md:14
-REALITY: surface-check `base44 dev` (port 5174) verified vs CLAUDE.md; `npm run dev` prohibited CLAUDE.md plans/systematic-execution-plan.md:8
-REALITY: binding-decisions none on branch (gstack-decision-search empty) plans/systematic-execution-plan.md:7
-REALITY: numbers none cited in plan (all [estimated]) plans/systematic-execution-plan.md:180-185
-REALITY: deferred-asks none linked plans/systematic-execution-plan.md:7
-REALITY: pr-count default one PR per wave (no .gstack/ship-policy.json) plans/systematic-execution-plan.md:14
-PLAN_REALITY: verdict=complete (all tier-1 rows accounted; 0 unverified)
+### Reality rows (re-worked 2026-10-21 on branch main — prior rows cited branch visual-redesign and are superseded)
+
+Premise table (every factual claim in the plan, with receipt):
+
+| premise | claim | file:line receipt | verdict |
+|---------|-------|-------------------|---------|
+| No CI/CD | "No `.github/workflows/ci.yml` exists" (plan:19) | .github/workflows/ci.yml:1 exists on origin/main (commit 204ed67) with lint/typecheck/test/build jobs, Node 22/24 matrix | **stale — task already landed** |
+| Dev-only headers | "Production deployment lacks CSP, HSTS, X-Frame-Options" (plan:48-49) | vite.config.js:89 wires securityHeadersPlugin; scripts/security-headers-plugin.js:29-45 injects CSP + Referrer-Policy via `transformIndexHtml` on build only; X-Frame-Options DENY on dev/preview middleware; docs/audit/PRODUCTION_HARDENING.md is the host-header release gate | **stale — implemented as planned** |
+| No code-splitting | "No code-splitting strategy implemented" (plan:73) | vite.config.js:109-128 rolldownOptions codeSplitting groups (three.js splits, translations by language, charts, pdf) + route-level `lazy()` src/App.jsx:26-30 | **stale — implemented (rolldown equivalent of manualChunks)** |
+| ESLint React warning | "ESLint warning about React version mismatch" (plan:130-131) | eslint.config.js:30 `version: "detect"` present; `npm run lint` exits 0 with no output (measured 2026-10-21) | **stale — clean** |
+| Flutter unverified | "Flutter project exists but not verified" (plan:100-101) | docs/audit/REMEDIATION_LOG.md:85 "Flutter parity not verified"; flutter SDK present at /home/hermes/flutter/bin/flutter | **CONFIRMED — the one open task** |
+
+REALITY: premise-table finding 4 of 5 plan premises are stale — T1/T2/T3/T4 already landed on main; only Flutter parity (T5) confirmed open plans/systematic-execution-plan.md:19
+REALITY: already-done finding `git fetch origin main` + log shows ci.yml landed (204ed67), security headers middleware (cf88b9e, c72dffd), bundle optimization (d55640a, 25a5214), ESLint fixes (e8e39cb); T1-T4 tasks in this plan are already done .github/workflows/ci.yml:1
+REALITY: surface-check pass `npm run lint|typecheck|test|build` all defined at package.json:10-15 (lint exit 0, measured 2026-10-21); `flutter` on PATH at /home/hermes/flutter/bin/flutter; `codex` at /snap/bin/codex but not authenticated (outside voice stays unavailable) package.json:10-15
+REALITY: binding-decisions pass `gstack-decision-search --scope branch --recent 50` returned no records; plan has no `## Binding decisions` section; nothing overruled plans/systematic-execution-plan.md:7
+REALITY: numbers pass plan figures (>30% bundle reduction, 80% unit / 100% critical-path coverage, 4-week timeline, 500kB chunk threshold) are targets tagged [estimated]; no measured baselines cited, so none required re-derivation plans/systematic-execution-plan.md:190-197
+REALITY: deferred-asks pass no linked issue or external request; nothing deferred plans/systematic-execution-plan.md:7
+REALITY: pr-count pass no .gstack/ship-policy.json; default one PR per wave; this plan is a single wave plans/systematic-execution-plan.md:14
 
 ### NOT in scope section
 None deferred or rejected (HOLD SCOPE, no expansions proposed). Deferred work: none. Rejected work: none.
@@ -622,7 +640,7 @@ Synthesized from this review's findings. Each task derives from a specific findi
   - Files: `eslint.config.js`
   - Verify: `npm run lint` passes without React version warning
 
-- [ ] **T5 (P2, human: ~1h / CC: ~10min)** — Flutter parity — `flutter analyze`; compare `lib/` models with `src/api/` interfaces; update REMEDIATION_LOG.md
+- [x] **T5 (P2, human: ~1h / CC: ~10min)** — Flutter parity — VERIFIED 2026-10-21: `flutter analyze` clean (0 issues); auth/rest gateway contracts match; `productToFlutter` mapper matches ProductModel; no contract gaps; mobile checkout/wallet noted as feature gaps (placeholders), not parity gaps. Findings in docs/audit/REMEDIATION_LOG.md
   - Surfaced by: Section 1 — Flutter parity verification
   - Files: `docs/audit/REMEDIATION_LOG.md` (conditional on Flutter SDK)
   - Verify: `flutter analyze` clean; parity gaps documented
