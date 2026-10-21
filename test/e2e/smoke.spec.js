@@ -7,7 +7,7 @@ test.describe('AfriTrade — pages publiques', () => {
     await page.goto(BASE_URL + '/');
     await page.waitForLoadState('networkidle');
     await expect(page).toHaveTitle(/AfriTrade/i);
-    await expect(page.locator('div.brand-lockup')).toBeVisible();
+    await expect(page.getByRole('link', { name: /AfriTrade/i }).first()).toBeVisible();
     await expect(page.getByText(/AfriTrade/i).first()).toBeVisible();
   });
 

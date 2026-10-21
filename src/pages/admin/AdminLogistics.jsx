@@ -7,6 +7,7 @@ import { ADMIN_LINKS } from '@/lib/navLinks';
 import { getCities } from '@/lib/config';
 import { formatUsdAmount, } from '@/lib/format';
 import { useTranslation } from 'react-i18next';
+import AsyncState from '@/components/ui/async-state';
 
 const TAB_IDS = ['couriers', 'zones', 'pickups'];
 
@@ -17,7 +18,8 @@ export default function AdminLogistics() {
   const [couriers, setCouriers] = useState([]);
   const [zones, setZones] = useState([]);
   const [pickups, setPickups] = useState([]);
-  const [loading, _setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [drafts, setDrafts] = useState({
     zones: { name: '', city: getCities()[0], fee_usd: 2.5, eta_days: '2-4' },
     pickups: { name: '', city: getCities()[0], commune: '', address: '', phone: '', fee_usd: 0.5 },
@@ -26,21 +28,30 @@ export default function AdminLogistics() {
   const [savingPickup, setSavingPickup] = useState(false);
 
   const load = async () => {
-    const asArray = (r) => (Array.isArray(r) ? r : (r?.items || []));
-    const [cs, zs, ps] = await Promise.all([
-      base44.entities.Courier.list('name', 100),
-      base44.entities.DeliveryZone.list('name', 100),
-      base44.entities.PickupPoint.list('name', 100),
-    ]);
-    setCouriers(asArray(cs));
-    setZones(asArray(zs));
-    setPickups(asArray(ps));
-    _setLoading(false);
+    setLoading(true);
+    setLoadError(false);
+    try {
+      const asArray = (r) => {
+        const records = Array.isArray(r) ? r : r?.items;
+        if (!Array.isArray(records)) throw new Error('Invalid logistics response');
+        return records;
+      };
+      const [cs, zs, ps] = await Promise.all([
+        base44.entities.Courier.list('name', 100),
+        base44.entities.DeliveryZone.list('name', 100),
+        base44.entities.PickupPoint.list('name', 100),
+      ]);
+      setCouriers(asArray(cs));
+      setZones(asArray(zs));
+      setPickups(asArray(ps));
+    } catch {
+      setLoadError(true);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  useEffect(() => {
-    load();
-  }, []);
+  useEffect(() => { load(); }, []);
 
   const patchCourier = async (c, field, value) => {
     const updated = await base44.entities.Courier.update(c.id, { [field]: Number(value) || 0 });
@@ -88,7 +99,8 @@ export default function AdminLogistics() {
     setPickups((prev) => prev.filter((x) => x.id !== p.id));
   };
 
-  if (loading) return <div className="h-64 animate-pulse rounded-2xl bg-secondary" />;
+  if (loading) return <AsyncState loading />;
+  if (loadError) return <div className="space-y-4"><DashboardNav title={t('adminLogistics.title')} links={ADMIN_LINKS} /><AsyncState error onRetry={load} /></div>;
 
   return (
     <div className="space-y-5 pb-8">
