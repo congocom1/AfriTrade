@@ -1249,6 +1249,18 @@ export default async function (request) {
       return rateLimitErrorResponse(rateLimitResult);
     }
 
+    // An additional, tighter account quota protects the billable Wix API.
+    // This is defense in depth; also configure an atomic provider/edge quota
+    // because entity-based counters can race under concurrent requests.
+    if (intent.paymentMethodId === "card") {
+      const cardLimit = await checkRateLimit(db, `buyer:${user.id}`, {
+        keyPrefix: "verified_card_checkout",
+        limit: 6,
+        windowMs: RATE_WINDOW_MS,
+      });
+      if (!cardLimit.ok) return rateLimitErrorResponse(cardLimit);
+    }
+
     // Ensure anonymous requests cannot spend Wix credits or create card orders.
     // Authentication is checked before entering the privileged ordering engine.
     if (intent.paymentMethodId === "card" && (!user?.id || !user?.email)) {

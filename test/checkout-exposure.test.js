@@ -10,7 +10,7 @@ const dynamicImport = async (text) => import(`data:text/javascript;base64,${Buff
 
 const legacy = await dynamicImport(checkoutSource);
 const runtimeSource = orderSource
-  .replace(/import \{ createClientFromRequest \} from "npm:@base44\/sdk@[^\"]+";/, 'const { createClientFromRequest } = globalThis.__checkoutExposureDeps;')
+  .replace(/import \{ createClientFromRequest \} from "npm:@base44\/sdk@[^"]+";/, 'const { createClientFromRequest } = globalThis.__checkoutExposureDeps;')
   .replace(/import \{ postWalletEntry as postLedgerEntry \} from "\.\.\/\.\.\/shared\/walletLedger\.ts";/, 'const { postLedgerEntry } = globalThis.__checkoutExposureDeps;')
   .replace(/import \{ ClientInputError, errorStatus \} from "\.\.\/\.\.\/shared\/httpErrors\.ts";/, 'const { ClientInputError, errorStatus } = globalThis.__checkoutExposureDeps;')
   .replace(/import \{ addSecurityHeaders, getClientKey, checkRateLimit, rateLimitErrorResponse \} from "\.\.\/\.\.\/shared\/securityHeaders\.ts";/, 'const { addSecurityHeaders, getClientKey, checkRateLimit, rateLimitErrorResponse } = globalThis.__checkoutExposureDeps;');
