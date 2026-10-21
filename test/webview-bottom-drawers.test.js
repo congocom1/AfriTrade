@@ -14,10 +14,15 @@ describe('AfriTrade WebView presentation contract', () => {
     assert.doesNotMatch(css, /overflow:\s*hidden;\s*\/\*\s*mobile/i);
   });
   it('keeps content links and selectable text out of the user-select restriction', () => {
-    const blocks = [...css.matchAll(/([^{}]+)\{\s*(?:-[\w-]+:\s*[^;]+;\s*)*user-select:\s*none;/g)];
-    assert.ok(blocks.length > 0);
-    for (const block of blocks) {
-      const selector = block[1].replace(/\/\*[\s\S]*?\*\//g, '');
+    const selectors = [];
+    for (const match of css.matchAll(/user-select:\s*none;/g)) {
+      const opening = css.lastIndexOf('{', match.index);
+      const closing = css.lastIndexOf('}', match.index);
+      assert.ok(opening > closing, 'user-select must belong to a CSS rule');
+      selectors.push(css.slice(Math.max(css.lastIndexOf('}', opening), 0) + 1, opening).trim());
+    }
+    assert.ok(selectors.length > 0);
+    for (const selector of selectors) {
       assert.doesNotMatch(selector, /\.app-nav-item|\.bottom-nav-item|\barticle\b|\bmain\b|\bp\b|(^|[,\s])a(?=\W|$)/);
     }
     assert.match(css, /\[role="tab"\], \.header-icon-button/);
