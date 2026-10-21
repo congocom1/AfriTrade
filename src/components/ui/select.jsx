@@ -51,6 +51,7 @@ SelectScrollDownButton.displayName =
 
 const SelectContent = React.forwardRef(({ className, children, position = "popper", ...props }, ref) => (
   <SelectPrimitive.Portal>
+    <>
     <div aria-hidden="true" data-webview-select-backdrop className="fixed inset-0 hidden bg-black/45 max-md:block" />
     <SelectPrimitive.Content
       data-webview-select-content
@@ -72,6 +73,7 @@ const SelectContent = React.forwardRef(({ className, children, position = "poppe
       </SelectPrimitive.Viewport>
       <SelectScrollDownButton />
     </SelectPrimitive.Content>
+    </>
   </SelectPrimitive.Portal>
 ))
 SelectContent.displayName = SelectPrimitive.Content.displayName
