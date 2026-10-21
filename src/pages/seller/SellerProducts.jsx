@@ -10,6 +10,7 @@ import DashboardNav from '@/components/DashboardNav';
 import SellerProductCard from '@/components/SellerProductCard';
 import { readActiveTenantId } from '@/lib/tenancy';
 import { emitEvent } from '@/lib/events';
+import { notifyLoadError } from '@/lib/safeList';
 
 const productSchema = z.object({
   title: z.string().min(1, 'sellerProducts.errTitle').max(120, 'sellerProducts.errTitleLong'),
@@ -50,7 +51,7 @@ export default function SellerProducts() {
 
   useEffect(() => {
     (async () => {
-      const cats = await base44.entities.Category.list('sort_order', 40).catch(() => []);
+      const cats = await base44.entities.Category.list('sort_order', 40).catch(notifyLoadError);
       setCategories(cats);
       if (seller) await load(seller.id);
       setLoading(false);

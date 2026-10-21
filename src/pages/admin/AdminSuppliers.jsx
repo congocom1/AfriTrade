@@ -8,6 +8,7 @@ import { getSupplierAdapter, SUPPLIER_REGISTRY } from '@/lib/suppliers';
 import CategoryMappingPanel from '@/components/suppliers/CategoryMappingPanel';
 import { formatUSD, formatDateTime } from '@/lib/format';
 import { useTranslation } from 'react-i18next';
+import { notifyLoadError } from '@/lib/safeList';
 
 const ADAPTERS = Object.keys(SUPPLIER_REGISTRY);
 
@@ -24,8 +25,8 @@ export default function AdminSuppliers() {
 
   const load = async () => {
     const [rows, cats] = await Promise.all([
-      base44.entities.Supplier.list('name', 100).catch(() => []),
-      base44.entities.Category.list('sort_order', 200).catch(() => []),
+      base44.entities.Supplier.list('name', 100).catch(notifyLoadError),
+      base44.entities.Category.list('sort_order', 200).catch(notifyLoadError),
     ]);
     setSuppliers(rows);
     setCategories(cats);

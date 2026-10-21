@@ -6,6 +6,7 @@ import { Image } from '@/components/ui/image';
 import { ADMIN_LINKS } from '@/lib/navLinks';
 import { formatUSD, formatDate } from '@/lib/format';
 import { useTranslation } from 'react-i18next';
+import { notifyLoadError } from '@/lib/safeList';
 
 const EMPTY = { code: '', description: '', type: 'percent', value: 10, min_order_usd: 0, max_discount_usd: 0, usage_limit: 0, expires_at: '' };
 
@@ -21,8 +22,8 @@ export default function AdminPromotions() {
 
   const load = async () => {
     const [c, p] = await Promise.all([
-      base44.entities.Coupon.list('-created_date', 100).catch(() => []),
-      base44.entities.Product.filter({ status: 'published' }, '-created_date', 60).catch(() => []),
+      base44.entities.Coupon.list('-created_date', 100).catch(notifyLoadError),
+      base44.entities.Product.filter({ status: 'published' }, '-created_date', 60).catch(notifyLoadError),
     ]);
     setCoupons(c);
     setProducts(p);

@@ -5,6 +5,7 @@ import DashboardNav from '@/components/DashboardNav';
 import { ADMIN_LINKS } from '@/lib/navLinks';
 import { DEFAULT_PRICING_CONFIG, DEFAULT_COUNTRY_CONFIG, loadPlatformConfig } from '@/lib/config';
 import { useTranslation } from 'react-i18next';
+import { notifyLoadError } from '@/lib/safeList';
 
 const PRICING_KEYS = ['platform_margin_percent', 'payment_fee_percent', 'seller_commission_percent', 'creator_commission_percent', 'import_cost_percent', 'international_shipping_usd', 'local_logistics_usd', 'free_shipping_threshold_usd'];
 
@@ -30,7 +31,7 @@ export default function AdminSettings() {
 
   useEffect(() => {
     (async () => {
-      const rows = await base44.entities.PlatformSetting.list().catch(() => []);
+      const rows = await base44.entities.PlatformSetting.list().catch(notifyLoadError);
       const ids = {};
       rows.forEach((r) => {
         ids[r.key] = r.id;

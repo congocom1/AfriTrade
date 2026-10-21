@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ChevronDown, LayoutGrid, Search } from 'lucide-react';
+import { ChevronDown, ChevronRight, LayoutGrid, Search } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 export function DashboardNav({ title, links = [], variant }) {
@@ -22,9 +22,21 @@ export function DashboardNav({ title, links = [], variant }) {
 
   return (
     <header className={`trade-dashboard-nav workspace-header${variant === 'paper' ? ' paper-head' : ''}`}>
+      <nav aria-label="Breadcrumb" className="mb-1">
+        <ol className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
+          <li>
+            <Link to="/" className="hover:text-foreground hover:underline">{t('portalComponents.home')}</Link>
+          </li>
+          <li aria-hidden="true"><ChevronRight className="h-3 w-3" /></li>
+          <li>{t('portalComponents.workspace')}</li>
+          {active && <>
+            <li aria-hidden="true"><ChevronRight className="h-3 w-3" /></li>
+            <li aria-current="page" className="font-medium text-foreground">{label(active)}</li>
+          </>}
+        </ol>
+      </nav>
       <div className="workspace-heading">
         <div>
-          <p className="mb-1 text-xs font-medium text-muted-foreground">{t('portalComponents.workspace')}</p>
           <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">{title}</h1>
         </div>
         {grouped && <Popover open={open} onOpenChange={value => { setOpen(value); if (!value) setSearch(''); }}>

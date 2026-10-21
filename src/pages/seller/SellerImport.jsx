@@ -10,6 +10,7 @@ import { loadPlatformConfig } from '@/lib/config';
 import DashboardNav from '@/components/DashboardNav';
 import { Image } from '@/components/ui/image';
 import { formatUSD } from '@/lib/format';
+import { notifyLoadError } from '@/lib/safeList';
 
 
 
@@ -30,8 +31,8 @@ export default function SellerImport() {
     loadPlatformConfig();
     (async () => {
       const [s, c] = await Promise.all([
-        base44.entities.Supplier.filter({ enabled: true }).catch(() => []),
-        base44.entities.Category.list('sort_order', 40).catch(() => []),
+        base44.entities.Supplier.filter({ enabled: true }).catch(notifyLoadError),
+        base44.entities.Category.list('sort_order', 40).catch(notifyLoadError),
       ]);
       setSuppliers(s);
       setCategories(c);

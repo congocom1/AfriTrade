@@ -12,6 +12,7 @@ import { loadPlans } from '@/lib/plans';
 import { annualRunRate, monthlyRecurring } from '@/lib/saas';
 import { formatDate, formatUSD } from '@/lib/format';
 import { useTranslation } from 'react-i18next';
+import { notifyLoadError } from '@/lib/safeList';
 
 export default function AdminTenants() {
   const { t } = useTranslation();
@@ -33,11 +34,11 @@ export default function AdminTenants() {
 
   const load = useCallback(async () => {
     const [tx, s, p, i, d] = await Promise.all([
-      base44.entities.Tenant.list('-created_date', 200).catch(() => []),
-      base44.entities.Subscription.list('-created_date', 200).catch(() => []),
+      base44.entities.Tenant.list('-created_date', 200).catch(notifyLoadError),
+      base44.entities.Subscription.list('-created_date', 200).catch(notifyLoadError),
       loadPlans(),
-      base44.entities.TenantInvoice.list('-created_date', 50).catch(() => []),
-      base44.entities.TenantDomain.list('-created_date', 200).catch(() => []),
+      base44.entities.TenantInvoice.list('-created_date', 50).catch(notifyLoadError),
+      base44.entities.TenantDomain.list('-created_date', 200).catch(notifyLoadError),
     ]);
     setTenants(tx);
     setSubscriptions(s);

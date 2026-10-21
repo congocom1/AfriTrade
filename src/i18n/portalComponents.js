@@ -2,6 +2,9 @@ export default {
   "en": {
     "portalComponents": {
       "workspace": "Workspace",
+      "home": "Home",
+      "loadFailedToast": "Some data could not be loaded",
+      "loadFailedToastDesc": "Check your connection, then reload the page to retry.",
       "searchSections": "Find a section…",
       "noSections": "No matching sections",
       "overview": "Overview",
@@ -47,6 +50,9 @@ export default {
   "fr": {
     "portalComponents": {
       "workspace": "Espace de travail",
+      "home": "Accueil",
+      "loadFailedToast": "Certaines données n’ont pas pu être chargées",
+      "loadFailedToastDesc": "Vérifiez votre connexion, puis rechargez la page pour réessayer.",
       "searchSections": "Rechercher une rubrique…",
       "noSections": "Aucune rubrique correspondante",
       "overview": "Vue d’ensemble",

@@ -7,6 +7,7 @@ import { DEFAULT_COMPANY_CONFIG, DEFAULT_TAX_CONFIG, loadPlatformConfig } from '
 import LicenseRegister from '@/components/compliance/LicenseRegister';
 import { formatDateTime } from '@/lib/format';
 import { useTranslation } from 'react-i18next';
+import { notifyLoadError } from '@/lib/safeList';
 
 const COMPANY_KEYS = ['legal_name', 'trade_name', 'legal_form', 'rccm', 'nif', 'vat_number', 'capital', 'address', 'city', 'country', 'email', 'phone', 'publisher', 'data_contact', 'host_name', 'host_address', 'host_contact'];
 
@@ -31,11 +32,11 @@ export default function AdminCompliance() {
   const [saved, setSaved] = useState('');
 
   const loadRequests = () =>
-    base44.entities.DataRequest.list('-created_date', 50).then(setRequests).catch(() => []);
+    base44.entities.DataRequest.list('-created_date', 50).then(setRequests).catch(notifyLoadError);
 
   useEffect(() => {
     (async () => {
-      const rows = await base44.entities.PlatformSetting.list().catch(() => []);
+      const rows = await base44.entities.PlatformSetting.list().catch(notifyLoadError);
       const ids = {};
       rows.forEach((r) => {
         ids[r.key] = r.id;

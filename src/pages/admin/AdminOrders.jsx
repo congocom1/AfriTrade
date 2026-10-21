@@ -10,6 +10,7 @@ import { formatUSD, formatDateTime } from '@/lib/format';
 import { printShippingLabels } from '@/lib/shippingLabels';
 import BulkActionBar from '@/components/orders/BulkActionBar';
 import { useTranslation } from 'react-i18next';
+import { notifyLoadError } from '@/lib/safeList';
 
 const FLOW = ['PENDING', 'CONFIRMED', 'PROCESSING', 'READY_FOR_PICKUP', 'PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED'];
 
@@ -25,8 +26,8 @@ export default function AdminOrders() {
   useEffect(() => {
     (async () => {
       const [o, f] = await Promise.all([
-        base44.entities.Order.list('-created_date', 100).catch(() => []),
-        base44.entities.FulfillmentOrder.list('-created_date', 300).catch(() => []),
+        base44.entities.Order.list('-created_date', 100).catch(notifyLoadError),
+        base44.entities.FulfillmentOrder.list('-created_date', 300).catch(notifyLoadError),
       ]);
       setOrders(o);
       setFulfillments(f);

@@ -8,6 +8,7 @@ import { formatUSD } from '@/lib/format';
 import { getCities } from '@/lib/config';
 import TenantEmailField from '@/components/admin/TenantEmailField';
 import { useTranslation } from 'react-i18next';
+import { notifyLoadError } from '@/lib/safeList';
 
 const TAB_IDS = ['sellers', 'creators', 'couriers', 'team'];
 
@@ -29,10 +30,10 @@ export default function AdminUsers() {
 
   const load = async () => {
     const [s, c, k, cl] = await Promise.all([
-      base44.entities.Seller.list('name', 100).catch(() => []),
-      base44.entities.Creator.list('name', 100).catch(() => []),
-      base44.entities.Courier.list('name', 50).catch(() => []),
-      base44.entities.AffiliateClick.list('-created_date', 500).catch(() => []),
+      base44.entities.Seller.list('name', 100).catch(notifyLoadError),
+      base44.entities.Creator.list('name', 100).catch(notifyLoadError),
+      base44.entities.Courier.list('name', 50).catch(notifyLoadError),
+      base44.entities.AffiliateClick.list('-created_date', 500).catch(notifyLoadError),
     ]);
     setSellers(s);
     setCreators(c);
