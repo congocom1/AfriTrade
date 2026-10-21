@@ -36,7 +36,8 @@ public struct AfriTradeClient {
         decoder: JSONDecoder = JSONDecoder()
     ) async throws -> Response {
         guard path.hasPrefix("/"), !path.hasPrefix("//"),
-              !path.contains("?") && !path.contains("#") && !path.contains("\\") else {
+              !path.contains("?") && !path.contains("#") && !path.contains("\\"),
+              !path.split(separator: "/").contains("..") else {
             throw AfriTradeAPIError.invalidPath
         }
         let root = baseURL.appendingPathComponent("/")
