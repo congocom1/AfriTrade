@@ -248,6 +248,8 @@ export default {
     needAddress: 'Renseignez votre adresse de livraison.',
     needPickup: 'Choisissez un point de retrait.',
     needTerms: 'Vous devez accepter les conditions générales de vente et la politique de confidentialité.',
+    cardLoginRequired: 'Connectez-vous avant de payer par carte.',
+    signIn: 'Se connecter',
     couponInvalid: 'Code promo invalide ou expiré.',
     emptyTitle: 'Aucun article à payer',
     emptyDesc: 'Ajoutez des articles à votre panier pour passer commande.',

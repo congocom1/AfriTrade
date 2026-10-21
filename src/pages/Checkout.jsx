@@ -188,6 +188,15 @@ export default function Checkout() {
       }
     }
     setError('');
+    if (paymentMethod === 'card') {
+      try {
+        const buyer = await base44.auth.me();
+        if (!buyer?.id || !buyer?.email) throw new Error('Sign-in required');
+      } catch {
+        setError(t('checkout.cardLoginRequired'));
+        return;
+      }
+    }
     const chargePhone = isMobileMoney
       ? validateMobileMoneyNumber(paymentMethod, payPhone).phone
       : profile.phone;
@@ -285,7 +294,8 @@ export default function Checkout() {
 
       {error && (
         <div role="alert" className="flex items-start gap-2 rounded-xl border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
-          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" /> {error}
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+          <span>{error} {error === t('checkout.cardLoginRequired') && <Link to="/login" className="font-semibold underline">{t('checkout.signIn')}</Link>}</span>
         </div>
       )}
 
