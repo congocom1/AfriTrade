@@ -58,6 +58,7 @@ export default async function (req) {
       clientKey || "unidentified",
       {
         keyPrefix: "verify_data_request",
+        failClosed: true,
         limit: VERIFY_DATA_REQUEST_RATE_LIMIT_PER_HOUR,
         windowMs: RATE_WINDOW_MS,
       }
@@ -83,6 +84,7 @@ export default async function (req) {
       clientKey || "unidentified",
       {
         keyPrefix: "verify_data_request",
+        failClosed: true,
         limit: VERIFY_DATA_REQUEST_RATE_LIMIT_PER_HOUR,
         windowMs: RATE_WINDOW_MS,
       }

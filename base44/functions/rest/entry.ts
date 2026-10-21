@@ -127,6 +127,7 @@ export default async function (req: Request): Promise<Response> {
     const clientKey = getClientKey(req) || "unidentified";
     const limited = await checkRateLimit(db, clientKey, {
       keyPrefix: `rest_${parsed.resource}`,
+        failClosed: true,
       limit: RATE_LIMIT_PER_HOUR,
       windowMs: RATE_WINDOW_MS,
     });

@@ -154,6 +154,8 @@ async function printLabels(db, body, user) {
     const label = await db.entities.ShippingLabel.get(id).catch(() => null);
     if (!label) continue;
     if (!(await mayManageLabel(db, user, label))) return fail('Accès refusé', 403);
+    if (label.status === 'printed') { results.push(label); continue; }
+    if (label.status !== 'generated') return fail('Étiquette non imprimable à cette étape', 409);
     const updated = await db.entities.ShippingLabel.update(id, { status: 'printed', printed_at: now });
     results.push(updated);
   }

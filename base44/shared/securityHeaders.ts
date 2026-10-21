@@ -150,12 +150,15 @@ export interface RateLimitConfig {
   limit: number;
   windowMs: number;
   unidentifiedLimit?: number;
+  /** For sensitive operations, deny when counter storage is unavailable. */
+  failClosed?: boolean;
 }
 
 export interface RateLimitResult {
   ok: boolean;
   used: number;
   limit: number;
+  unavailable?: boolean;
 }
 
 export async function checkRateLimit(
@@ -173,31 +176,36 @@ export async function checkRateLimit(
     Math.floor(Date.now() / config.windowMs) * config.windowMs,
   ).toISOString();
 
-  const rows = await db.entities.ApiRateLimit
-    .filter({ key_prefix, window_start })
-    .catch(() => []);
-  const row = rows?.[0] ?? null;
-  const used = Number(row?.request_count ?? 0);
+  try {
+    const rows = await db.entities.ApiRateLimit.filter({ key_prefix, window_start });
+    const row = rows?.[0] ?? null;
+    const used = Number(row?.request_count ?? 0);
+    if (!Number.isFinite(used) || used < 0) throw new Error('Invalid rate limit count');
+    if (used >= config.limit) {
+      return { ok: false, used, limit: config.limit };
+    }
 
-  if (used >= config.limit) {
-    return { ok: false, used, limit: config.limit };
+    const next = used + 1;
+    const payload = {
+      request_count: next,
+      last_reset_at: new Date().toISOString(),
+    };
+    if (row) {
+      await db.entities.ApiRateLimit.update(row.id, payload);
+    } else {
+      await db.entities.ApiRateLimit.create({ key_prefix, window_start, ...payload });
+    }
+    return { ok: true, used: next, limit: config.limit };
+  } catch (error) {
+    // A missing counter table or failed write MUST NOT authorize financial
+    // and paid API operations. Other (legacy) paths retain their previous
+    // availability behavior until their infrastructure can be validated.
+    console.error('Rate limit storage unavailable', { keyPrefix: config.keyPrefix, error: String(error) });
+    if (config.failClosed) {
+      return { ok: false, used: 0, limit: config.limit, unavailable: true };
+    }
+    return { ok: true, used: 0, limit: config.limit };
   }
-
-  const next = used + 1;
-  const payload = {
-    request_count: next,
-    last_reset_at: new Date().toISOString(),
-  };
-
-  if (row) {
-    await db.entities.ApiRateLimit.update(row.id, payload).catch(() => {});
-  } else {
-    await db.entities.ApiRateLimit
-      .create({ key_prefix, window_start, ...payload })
-      .catch(() => {});
-  }
-
-  return { ok: true, used: next, limit: config.limit };
 }
 
 /**
@@ -217,12 +225,15 @@ export function rateLimitErrorResponse(
   message: string = "Trop de requêtes. Réessayez plus tard.",
   options?: SecurityHeadersOptions
 ): Response {
+  if (result.unavailable) {
+    return secureJsonResponse(
+      { error: "Service temporairement indisponible.", status: "unavailable" },
+      { status: 503, headers: { "Cache-Control": "no-store" } },
+      options
+    );
+  }
   return secureJsonResponse(
-    {
-      error: message,
-      status: "rate_limited",
-      limit: result.limit,
-    },
+    { error: message, status: "rate_limited", limit: result.limit },
     { status: 429 },
     options
   );

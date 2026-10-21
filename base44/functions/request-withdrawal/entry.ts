@@ -49,6 +49,7 @@ export default async function (req: Request) {
       clientKey || "unidentified",
       {
         keyPrefix: "request_withdrawal",
+        failClosed: true,
         limit: REQUEST_WITHDRAWAL_RATE_LIMIT_PER_HOUR,
         windowMs: RATE_WINDOW_MS,
       }
@@ -69,6 +70,7 @@ export default async function (req: Request) {
       clientKey || "unidentified",
       {
         keyPrefix: "request_withdrawal",
+        failClosed: true,
         limit: REQUEST_WITHDRAWAL_RATE_LIMIT_PER_HOUR,
         windowMs: RATE_WINDOW_MS,
       }

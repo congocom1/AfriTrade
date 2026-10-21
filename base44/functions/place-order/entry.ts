@@ -1241,6 +1241,7 @@ export default async function (request) {
       clientKey || "unidentified",
       {
         keyPrefix: "place_order",
+        failClosed: true,
         limit: clientKey ? ORDER_RATE_LIMIT_PER_HOUR : ORDER_RATE_LIMIT_UNIDENTIFIED_PER_HOUR,
         windowMs: RATE_WINDOW_MS,
       }
@@ -1263,6 +1264,7 @@ export default async function (request) {
     if (intent.paymentMethodId === "card") {
       const cardLimit = await checkRateLimit(db, `buyer:${user.id}`, {
         keyPrefix: "verified_card_checkout",
+        failClosed: true,
         limit: 6,
         windowMs: RATE_WINDOW_MS,
       });
