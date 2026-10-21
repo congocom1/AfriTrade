@@ -46,6 +46,7 @@ describe('WebView UI safety gates', () => {
     assert.match(html, /viewport-fit=cover/);
     assert.match(css, /overscroll-behavior-y:\s*none/);
     assert.match(css, /main, \.brand-app-shell main/);
+    assert.match(css, /\(pointer: coarse\)/);
     assert.match(readFileSync('src/components/layout/TopBar.jsx', 'utf8'), /env\(safe-area-inset-top\)/);
     assert.match(readFileSync('src/components/layout/BottomNav.jsx', 'utf8'), /env\(safe-area-inset-bottom\)/);
     assert.match(readFileSync('src/components/QuantityStepper.jsx', 'utf8'), /min-h-11 min-w-11/);

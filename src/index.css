@@ -1111,6 +1111,15 @@ main, .brand-app-shell main, [data-webview-scroll] {
 }
 
 
+/* Coarse-pointer WebViews need >= 44px hit areas. Keep desktop densities
+   unchanged and leave ordinary inline links fully selectable. */
+@media (max-width: 767px) and (pointer: coarse) {
+  button, [role="button"], .bottom-nav-item, .app-nav-item {
+    min-inline-size: 44px;
+    min-block-size: 44px;
+  }
+}
+
 /* Prevent text selection on interactive elements (but not links - M-08) */
 button, [role="button"], .bottom-nav-item, .app-nav-item {
   user-select: none;
