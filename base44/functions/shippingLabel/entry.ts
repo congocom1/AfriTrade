@@ -147,16 +147,25 @@ async function getLabel(db, body, user) {
 
 async function printLabels(db, body, user) {
   const { label_ids } = body;
-  if (!label_ids?.length) return fail('label_ids requis');
+  if (!Array.isArray(label_ids) || label_ids.length < 1 || label_ids.length > 100 ||
+      label_ids.some(id => typeof id !== 'string' || !id || id.length > 128)) {
+    return fail('Liste des étiquettes invalide', 400);
+  }
+  // Preflight the ENTIRE batch before changing any row. A late unauthorized
+  // or terminal label must not leave earlier labels silently printed.
+  const toPrint = [];
+  for (const id of new Set(label_ids)) {
+    const label = await db.entities.ShippingLabel.get(id).catch(() => null);
+    if (!label) return fail('Étiquette introuvable', 404);
+    if (!(await mayManageLabel(db, user, label))) return fail('Accès refusé', 403);
+    if (label.status !== 'generated' && label.status !== 'printed') return fail('Étiquette non imprimable à cette étape', 409);
+    toPrint.push(label);
+  }
   const now = new Date().toISOString();
   const results = [];
-  for (const id of label_ids) {
-    const label = await db.entities.ShippingLabel.get(id).catch(() => null);
-    if (!label) continue;
-    if (!(await mayManageLabel(db, user, label))) return fail('Accès refusé', 403);
-    if (label.status === 'printed') { results.push(label); continue; }
-    if (label.status !== 'generated') return fail('Étiquette non imprimable à cette étape', 409);
-    const updated = await db.entities.ShippingLabel.update(id, { status: 'printed', printed_at: now });
+  for (const label of toPrint) {
+    const updated = label.status === 'printed' ? label :
+      await db.entities.ShippingLabel.update(label.id, { status: 'printed', printed_at: now });
     results.push(updated);
   }
   return Response.json({ labels: results, count: results.length });

@@ -103,4 +103,21 @@ describe('shipping label status controls', () => {
     assert.equal((await label(post('shippingLabel', { action: 'print', label_ids: ['label-1'] }))).status, 409);
     assert.equal(entry.status, 'in_transit');
   });
+
+  it('prevalidates every label in a batch to avoid partial printing', async () => {
+    const generated = { id: 'label-a', order_number: 'CMD-A', status: 'generated' };
+    const delivered = { id: 'label-b', order_number: 'CMD-B', status: 'delivered' };
+    let writeCount = 0;
+    securityDeps.currentClient = {
+      auth: { me: async () => ({ role: 'admin', email: 'admin@example.test' }) },
+      asServiceRole: { entities: { ShippingLabel: {
+        get: async id => ({ 'label-a': generated, 'label-b': delivered })[id],
+        update: async () => { writeCount++; return {}; },
+      } } },
+    };
+    const response = await label(post('shippingLabel', { action: 'print', label_ids: ['label-a', 'label-b'] }));
+    assert.equal(response.status, 409);
+    assert.equal(writeCount, 0);
+    assert.equal(generated.status, 'generated');
+  });
 });
