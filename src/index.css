@@ -1114,16 +1114,12 @@ main, .brand-app-shell main, [data-webview-scroll] {
 /* WebView: hide native scrollbar chrome without disabling touch or keyboard
    scrolling. Keep visible desktop scrollbars for discoverability/accessibility. */
 @media (max-width: 767px) {
-  html, body, main, [data-webview-scroll], .overflow-x-auto, .overflow-y-auto,
-  [data-radix-scroll-area-viewport], [data-radix-select-viewport] {
+  html, body, body * {
     scrollbar-width: none;
     -ms-overflow-style: none;
   }
-  html::-webkit-scrollbar, body::-webkit-scrollbar, main::-webkit-scrollbar,
-  [data-webview-scroll]::-webkit-scrollbar, .overflow-x-auto::-webkit-scrollbar,
-  .overflow-y-auto::-webkit-scrollbar,
-  [data-radix-scroll-area-viewport]::-webkit-scrollbar,
-  [data-radix-select-viewport]::-webkit-scrollbar { display: none; }
+  html::-webkit-scrollbar, body::-webkit-scrollbar,
+  body *::-webkit-scrollbar { display: none; width: 0; height: 0; }
 }
 
 /* Coarse-pointer WebViews need >= 44px hit areas. Keep desktop densities
