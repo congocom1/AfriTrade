@@ -91,7 +91,7 @@ export default function TopBar() {
             </> : <><DropdownMenuItem asChild><Link to="/login">{t('nav.login')}</Link></DropdownMenuItem><DropdownMenuItem asChild><Link to="/register">{t('nav.register')}</Link></DropdownMenuItem></>}
           </DropdownMenuContent>
         </DropdownMenu>
-        <Link to="/cart" className={`${iconButton} relative`} aria-label={`${t('nav.cart')} (${count})`}><ShoppingBag className="h-5 w-5" />{count > 0 && <span className="absolute -right-1 -top-1 rounded-full bg-primary px-1.5 text-[10px] font-bold leading-5 text-primary-foreground">{count > 99 ? '99+' : count}</span>}</Link>
+        <Link to="/cart" className={`${iconButton} header-icon-button relative`} aria-label={`${t('nav.cart')} (${count})`}><ShoppingBag className="h-5 w-5" />{count > 0 && <span className="absolute -right-1 -top-1 rounded-full bg-primary px-1.5 text-[10px] font-bold leading-5 text-primary-foreground">{count > 99 ? '99+' : count}</span>}</Link>
       </div>
     </div>
     <MobileDrawer isOpen={drawerOpen} onClose={() => setDrawerOpen(false)} />

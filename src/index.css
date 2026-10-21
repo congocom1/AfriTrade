@@ -269,7 +269,7 @@
     color: hsl(var(--muted-foreground));
   }
 
-  button, [role="button"], .bottom-nav-item, .app-nav-item {
+  button, [role="button"], [role="tab"], .header-icon-button {
     -webkit-user-select: none;
     user-select: none;
   }
@@ -1099,7 +1099,7 @@ header[role='banner'] {
 
 /* Mobile optimizations */
 html, body {
-  overscroll-behavior-y: none;
+  overscroll-behavior: none;
   height: 100%;
 }
 
@@ -1111,6 +1111,21 @@ main, .brand-app-shell main, [data-webview-scroll] {
 }
 
 
+/* WebView: hide native scrollbar chrome without disabling touch or keyboard
+   scrolling. Keep visible desktop scrollbars for discoverability/accessibility. */
+@media (max-width: 767px) {
+  html, body, main, [data-webview-scroll], .overflow-x-auto, .overflow-y-auto,
+  [data-radix-scroll-area-viewport], [data-radix-select-viewport] {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  html::-webkit-scrollbar, body::-webkit-scrollbar, main::-webkit-scrollbar,
+  [data-webview-scroll]::-webkit-scrollbar, .overflow-x-auto::-webkit-scrollbar,
+  .overflow-y-auto::-webkit-scrollbar,
+  [data-radix-scroll-area-viewport]::-webkit-scrollbar,
+  [data-radix-select-viewport]::-webkit-scrollbar { display: none; }
+}
+
 /* Coarse-pointer WebViews need >= 44px hit areas. Keep desktop densities
    unchanged and leave ordinary inline links fully selectable. */
 @media (max-width: 767px) and (pointer: coarse) {
@@ -1121,7 +1136,7 @@ main, .brand-app-shell main, [data-webview-scroll] {
 }
 
 /* Prevent text selection on interactive elements (but not links - M-08) */
-button, [role="button"], .bottom-nav-item, .app-nav-item {
+button, [role="button"], [role="tab"], .header-icon-button {
   user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;
