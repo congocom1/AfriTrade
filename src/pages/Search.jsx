@@ -5,6 +5,7 @@ import { Search as SearchIcon, SlidersHorizontal, X } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import ProductGrid from '@/components/ProductGrid';
 import EmptyState from '@/components/EmptyState';
+import AsyncState from '@/components/ui/async-state';
 import { resolveStorefrontScope, scopeRecords } from '@/lib/tenancy';
 import {
   scoreProductRelevance,
@@ -25,6 +26,8 @@ export default function Search() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [reloadToken, setReloadToken] = useState(0);
   const [visible, setVisible] = useState(24);
   const [showFilters, setShowFilters] = useState(false);
 
@@ -37,17 +40,28 @@ export default function Search() {
   const [inStock, setInStock] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
     (async () => {
-      const scope = await resolveStorefrontScope();
-      const [p, c] = await Promise.all([
-        base44.entities.Product.filter({ status: 'published' }, '-created_date', 200),
-        base44.entities.Category.list('sort_order', 40),
-      ]);
-      setProducts(scopeRecords(p, scope));
-      setCategories(c);
-      setLoading(false);
+      setLoading(true);
+      setLoadError(false);
+      try {
+        const scope = await resolveStorefrontScope();
+        const [p, c] = await Promise.all([
+          base44.entities.Product.filter({ status: 'published' }, '-created_date', 200),
+          base44.entities.Category.list('sort_order', 40),
+        ]);
+        if (!cancelled) {
+          setProducts(scopeRecords(p, scope));
+          setCategories(c);
+        }
+      } catch {
+        if (!cancelled) setLoadError(true);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
     })();
-  }, []);
+    return () => { cancelled = true; };
+  }, [reloadToken]);
 
   useEffect(() => {
     setTerm(params.get('q') || '');
@@ -122,9 +136,9 @@ export default function Search() {
           e.preventDefault();
           applyTerm(term.trim());
         }}
-        className="flex gap-2"
+        className="flex min-w-0 gap-2"
       >
-        <div className="relative flex-1">
+        <div className="relative min-w-0 flex-1">
           <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
             value={term}
@@ -136,6 +150,8 @@ export default function Search() {
         <button
           type="button"
           onClick={() => setShowFilters((s) => !s)}
+          aria-expanded={showFilters}
+          aria-controls="catalog-filters"
           className="relative flex h-11 w-11 items-center justify-center rounded-full border border-border bg-card"
           aria-label={t('search.filters')}
         >
@@ -149,7 +165,7 @@ export default function Search() {
       </form>
 
       {showFilters && (
-        <div className="space-y-3 rounded-xl border border-border bg-card p-3">
+        <div id="catalog-filters" className="space-y-3 rounded-xl border border-border bg-card p-3">
           <div>
             <p className="mb-1.5 text-xs font-semibold text-muted-foreground">{t('search.category')}</p>
             <select
@@ -236,7 +252,8 @@ export default function Search() {
         </select>
       </div>
 
-      <ProductGrid
+      {loadError && <AsyncState error onRetry={() => setReloadToken(v => v + 1)} errorTitle={t('portalStatus.actionFailed')} errorDescription={t('search.emptyDesc')} />}
+      {!loadError && <ProductGrid
         products={results.slice(0, visible)}
         loading={loading}
         skeletonCount={8}
@@ -249,9 +266,9 @@ export default function Search() {
             actionLabel={t('search.emptyAction')}
           />
         }
-      />
+      /> }
 
-      {!loading && results.length > visible && (
+      {!loading && !loadError && results.length > visible && (
         <button
           type="button"
           onClick={() => setVisible((v) => v + 24)}
