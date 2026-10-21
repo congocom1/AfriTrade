@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { Search, Menu, ShoppingBag, User, Heart, MessageCircle, Bell, Store, ShieldCheck, BriefcaseBusiness, LogOut, SlidersHorizontal, ChevronDown } from 'lucide-react';
 import { useCart } from '@/lib/cart';
 import { useAuth } from '@/lib/AuthContext';
-import BrandLogo from '@/components/BrandLogo';
 import MobileDrawer from '@/components/MobileDrawer';
 import CurrencyToggle from '@/components/CurrencyToggle';
 import LanguageToggle from '@/components/LanguageToggle';
@@ -38,7 +37,7 @@ export default function TopBar() {
   const iconButton = 'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring';
   return <header className="sticky top-0 z-50 border-b border-border bg-background pt-[env(safe-area-inset-top)]">
     <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-3 px-4 py-3 md:flex-nowrap md:px-6">
-      <Link to="/" aria-label={`AfriTrade — ${t('nav.home')}`} className="shrink-0 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring"><BrandLogo className="h-8 w-auto" /></Link>
+      <Link to="/" aria-label={`AfriTrade — ${t('nav.home')}`} className="shrink-0 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring"><span className="text-xl font-bold tracking-tight text-foreground">Afri<span className="text-primary">Trade</span></span></Link>
       <nav aria-label={t('nav.primary')} className="hidden shrink-0 items-center gap-1 md:flex">
         {[['/discover', 'nav.discover'], ['/categories', 'nav.categories']].map(([to, key]) => <NavLink key={to} to={to} className={({ isActive }) => `rounded-lg px-3 py-2 text-sm font-medium ${isActive ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}>{t(key)}</NavLink>)}
       </nav>
