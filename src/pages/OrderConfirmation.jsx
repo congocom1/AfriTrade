@@ -19,17 +19,28 @@ export default function OrderConfirmation() {
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
+    let active = true;
+    setLoading(true);
+    setNotFound(false);
+    setOrder(null);
+    setFulfillments([]);
     (async () => {
       try {
         const data = await lookupOrder(number, getProfile().phone);
+        if (!active) return;
+        if (!data?.order) {
+          setNotFound(true);
+          return;
+        }
         setOrder(data.order);
         setFulfillments(data.fulfillments || []);
       } catch {
-        setNotFound(true);
+        if (active) setNotFound(true);
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     })();
+    return () => { active = false; };
   }, [number]);
 
   if (loading) {
@@ -37,8 +48,7 @@ export default function OrderConfirmation() {
   }
 
   if (notFound || !order) {
-    const StateIcon = canceled ? XCircle : paid ? CheckCircle2 : Clock;
-  return (
+    return (
       <div className="rounded-2xl border border-dashed border-border bg-card p-10 text-center">
         <p className="font-semibold">{t('orderConfirmation.notFound')}</p>
         <Link to="/" className="mt-4 inline-block rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground">
