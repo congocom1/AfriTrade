@@ -42,7 +42,7 @@ export default function TopBar() {
       <nav aria-label={t('nav.primary')} className="hidden shrink-0 items-center gap-1 md:flex">
         {[['/discover', 'nav.discover'], ['/categories', 'nav.categories']].map(([to, key]) => <NavLink key={to} to={to} className={({ isActive }) => `rounded-lg px-3 py-2 text-sm font-medium ${isActive ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}>{t(key)}</NavLink>)}
       </nav>
-      <form onSubmit={submit} role="search" className="relative order-last mx-auto w-[min(100%,20rem)] min-w-0 sm:w-[min(100%,24rem)] md:order-none md:mx-0 md:w-auto md:max-w-none md:flex-1">
+      <form onSubmit={submit} role="search" className="relative order-last mx-auto w-full max-w-[17rem] min-w-0 sm:max-w-[20rem] md:order-none md:mx-auto md:w-full md:max-w-[22rem] lg:max-w-[25rem]">
         <label htmlFor="site-search" className="sr-only">{t('nav.searchPlaceholder')}</label>
         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
         <input id="site-search" type="search" value={term} onChange={event => setTerm(event.target.value)} placeholder={t('nav.searchPlaceholder')} enterKeyHint="search" className="h-11 w-full rounded-xl border border-border bg-secondary/30 pl-10 pr-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" />
