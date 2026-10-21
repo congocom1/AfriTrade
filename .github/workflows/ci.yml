@@ -81,3 +81,4 @@ jobs:
         run: npx playwright test test/e2e/smoke.spec.js
         env:
           BASE_URL: ${{ vars.STAGING_BASE_URL }}
+          CI: 'true' 

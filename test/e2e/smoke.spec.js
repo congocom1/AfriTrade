@@ -1,42 +1,53 @@
 import { test, expect } from '@playwright/test';
 
-const BASE_URL = process.env.BASE_URL || 'http://localhost:5174';
+// These tests are READ ONLY. Never use credentials, place orders or mutate
+// production records. They should run against a separate staging deployment.
+const baseURL = (process.env.BASE_URL || 'http://localhost:5174').replace(/\/$/, '');
+const isLocal = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(baseURL);
+const isProduction = /^https:\/\/afritrade-1\.base44\.app$/i.test(baseURL);
 
-test.describe('AfriTrade — pages publiques', () => {
-  test('charge la page d\'accueil', async ({ page }) => {
-    await page.goto(BASE_URL + '/');
-    await page.waitForLoadState('networkidle');
-    await expect(page).toHaveTitle(/AfriTrade/i);
-    await expect(page.getByRole('link', { name: /AfriTrade/i }).first()).toBeVisible();
-    await expect(page.getByText(/AfriTrade/i).first()).toBeVisible();
+if (!isLocal && (!/^https:\/\//.test(baseURL) || isProduction)) {
+  throw new Error('Staging smoke requires an HTTPS staging URL (never the AfriTrade production domain).');
+}
+
+async function visit(page, path) {
+  // Check the actual document response: a Base44 503 page often contains a
+  // visible body and title, so body-only assertions can give false passes.
+  const response = await page.goto(`${baseURL}${path}`, { waitUntil: 'domcontentloaded' });
+  expect(response, `${path} returned no document response`).not.toBeNull();
+  expect(response.status(), `${path} returned HTTP ${response.status()}`).toBe(200);
+  await expect(page.locator('#root')).not.toBeEmpty({ timeout: 15000 });
+  await expect(page).toHaveTitle(/AfriTrade/i);
+  await expect(page.locator('main')).toBeVisible({ timeout: 15000 });
+  return response;
+}
+
+test.describe('AfriTrade staging — public read-only smoke', () => {
+  test('serves the real storefront, not the provider error page', async ({ page }) => {
+    await visit(page, '/');
+    await expect(page.locator('header a[href="/"]').first()).toBeVisible();
+    await expect(page.locator('.brand-home')).toBeVisible();
   });
 
-  test('navigue vers la page de découverte', async ({ page }) => {
-    await page.goto(BASE_URL + '/discover');
-    await page.waitForLoadState('networkidle');
-    await expect(page).toHaveTitle(/AfriTrade/i);
-    // h1 may require backend data; ensure page loads without error
-    await expect(page.locator('body')).toBeVisible();
+  test('renders the discovery feed or its legitimate empty/retry state', async ({ page }) => {
+    await visit(page, '/discover');
+    await expect(page.locator('main .animate-pulse')).toHaveCount(0, { timeout: 15000 });
+    await expect(page.locator('main')).toContainText(/./);
   });
 
-  test('affiche la page Panier', async ({ page }) => {
-    await page.goto(BASE_URL + '/cart');
-    await page.waitForLoadState('networkidle');
-    await expect(page).toHaveTitle(/AfriTrade/i);
-    await expect(page.locator('body')).toBeVisible();
+  test('renders the cart with a real empty-state or cart content', async ({ page }) => {
+    await visit(page, '/cart');
+    await expect(page.locator('main')).toContainText(/./);
+    await expect(page.locator('main .animate-pulse')).toHaveCount(0, { timeout: 15000 });
   });
 
-  test('affiche les mentions légales', async ({ page }) => {
-    await page.goto(BASE_URL + '/mentions-legales');
-    await page.waitForLoadState('networkidle');
-    await expect(page).toHaveTitle(/AfriTrade/i);
-    await expect(page.locator('h1').first()).toBeVisible({ timeout: 5000 });
+  test('renders the legal notice', async ({ page }) => {
+    await visit(page, '/mentions-legales');
+    await expect(page.locator('main h1').first()).toBeVisible();
   });
 
-  test('affiche la page À propos', async ({ page }) => {
-    await page.goto(BASE_URL + '/about');
-    await page.waitForLoadState('networkidle');
-    await expect(page).toHaveTitle(/AfriTrade/i);
-    await expect(page.locator('h1').first()).toBeVisible({ timeout: 5000 });
+  test('renders the about page', async ({ page }) => {
+    await visit(page, '/about');
+    await expect(page.locator('main h1').first()).toBeVisible();
   });
 });
