@@ -1,5 +1,6 @@
 import { WORKFLOWS, definitionSummary, workflowByCode, workflowForEvent } from './workflowDefinitions.ts';
 import { executionNumber, newEventId, notify, recordAudit } from './workflowSupport.ts';
+import { stuckDecision } from './workflowRecovery.ts';
 import { assertWorkflowAdmin, validateWorkflowDecision } from './workflowGuards.ts';
 
 /**
@@ -540,8 +541,8 @@ export async function cancelExecution(base44, executionId, options = {}) {
 
 export async function listStuckExecutions(base44, olderThanMs = STUCK_AFTER_MS) {
   const rows = await base44.asServiceRole.entities.WorkflowExecution
-    .filter({ status: 'RUNNING' }, '-started_at', 100)
-    .catch(() => []);
-  const cutoff = Date.now() - olderThanMs;
-  return rows.filter((row) => new Date(row.started_at || 0).getTime() < cutoff);
+    .filter({ status: 'RUNNING' }, '-started_at', 100);
+  const retrying = await base44.asServiceRole.entities.WorkflowExecution
+    .filter({ status: 'RETRYING' }, '-started_at', 100);
+  return [...rows, ...retrying].filter((row) => stuckDecision(row, Date.now(), olderThanMs));
 }
