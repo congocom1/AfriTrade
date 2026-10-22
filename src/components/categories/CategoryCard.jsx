@@ -9,7 +9,7 @@ export default function CategoryCard({ image, title, text }) {
       className="group overflow-hidden rounded-xl border border-border bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
     >
       <Image
-        src={`/images/${image}.svg`}
+        src={`/assets/marketplace/categories/${image}.svg`}
         alt={title}
         width={1000}
         height={1000}
