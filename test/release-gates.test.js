@@ -38,6 +38,9 @@ describe('release security architecture gates', () => {
     assert.match(ci, /STAGING_BASE_URL/);
     assert.match(ci, /playwright test/);
     assert.match(ci, /route-guards\.spec\.js/);
+    assert.match(ci, /deployment-parity\.spec\.js/);
+    assert.match(ci, /assets:check/);
+    assert.match(ci, /security:check/);
     assert.match(read("test/e2e/route-guards.spec.js"), /127\.0\.0\.1:5174/);
     assert.doesNotMatch(ci, /npm run deploy|base44 deploy/);
   });

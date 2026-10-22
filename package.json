@@ -24,7 +24,8 @@
     "seed-fraud": "node scripts/seed-fraud-rules.js",
     "seed-fraud:mock": "node scripts/seed-fraud-rules.js --mock",
     "security:check": "node scripts/check-npm-security.mjs",
-    "assets:check": "node scripts/check-visual-assets.mjs"
+    "assets:check": "node scripts/check-visual-assets.mjs",
+    "release:remote": "node scripts/check-live-release.mjs"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.56",
