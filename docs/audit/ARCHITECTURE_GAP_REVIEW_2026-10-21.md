@@ -1,7 +1,7 @@
 # AfriTrade architecture and missing component review — 2026-10-21
 
 ## Confirmed architecture
-React/Vite SPA, Base44 server functions and entities, shared portal components, multi-tenant access model, Flutter companion application. Follow `Stage2_Architecture_Plan.md`, `docs/audit/WALLET_PROTOCOL.md`, and `docs/PORTAL_READINESS.md` before changing the implementation. Do not mix the archived Base44 singleton wallet implementation into the active receipt-based wallet protocol.
+React/Vite SPA, Base44 server functions and entities, shared portal components, multi-tenant access model, Flutter companion application. Follow `docs/archive/root-reports/Stage2_Architecture_Plan.md`, `docs/audit/WALLET_PROTOCOL.md`, and `docs/PORTAL_READINESS.md` before changing the implementation. Do not mix the archived Base44 singleton wallet implementation into the active receipt-based wallet protocol.
 
 ## Confirmed local checks
 - Full lint, TS/JS typecheck, and production build: passed.
