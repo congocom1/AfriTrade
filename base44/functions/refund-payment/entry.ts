@@ -52,7 +52,18 @@ export default async function (req: Request) {
     const base44 = createClientFromRequest(req);
     const db = base44.asServiceRole;
 
-    // Rate limiting for admin endpoints
+    if (req.method !== "POST") {
+      return addSecurityHeaders(
+        Response.json({ error: "Method not allowed" }, { status: 405 })
+      );
+    }
+
+    const auth = await requireAdmin(base44);
+    if (!auth.ok) {
+      return addSecurityHeaders(auth.response);
+    }
+
+    // Authenticate before counter reads, and fail closed on storage failure.
     const clientKey = getClientKey(req);
     if (!clientKey) {
       console.warn(
@@ -67,22 +78,12 @@ export default async function (req: Request) {
         keyPrefix: "refund_payment",
         limit: ADMIN_RATE_LIMIT_PER_HOUR,
         windowMs: RATE_WINDOW_MS,
+        failClosed: true,
       }
     );
 
     if (!rateLimitResult.ok) {
       return rateLimitErrorResponse(rateLimitResult);
-    }
-
-    if (req.method !== "POST") {
-      return addSecurityHeaders(
-        Response.json({ error: "Method not allowed" }, { status: 405 })
-      );
-    }
-
-    const auth = await requireAdmin(base44);
-    if (!auth.ok) {
-      return addSecurityHeaders(auth.response);
     }
 
     if (!REFUNDS_ENABLED) {
