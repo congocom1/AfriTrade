@@ -35,3 +35,13 @@ This is a **manual production recovery protocol**, not proof that Base44's manag
 - Confirm a managed workflow failed-step can be resumed, and document actual Base44 retry/dead-letter support; this repository cannot certify managed workflow execution semantics by unit testing JSON definitions alone.
 
 **Release gate:** no automatic replay of possibly accepted outgoing messages. No live load test without coordinated authorization and a staging test plan. Production behavior remains unverified until staging exercise and explicit operational signoff.
+
+## Custom workflow engine queue — October 22, 2026 hardening
+
+`base44/functions/processWorkflowQueue` belongs to the **custom** `WorkflowExecution` engine. It is not the same as Base44's nine managed `base44/workflows/*.jsonc` automations. This distinction matters when choosing which failure to resume.
+
+The custom queue now uses `base44/shared/workflowRecovery.ts` to make eligibility explicit. Exhausted/dead-letter, not-due, invalid retry schedules and completed/waiting executions cannot be replayed. The auto-retry allowlist is deliberately **empty** until each custom workflow's external writes, email delivery and financial side effects have been proved idempotent in staging. Eligible failures are listed in `held_for_review` and require a privileged operator to reconcile. This is an intentional safety hold, not an end-to-end automated retry implementation.
+
+An overdue `RUNNING` or `RETRYING` execution (15 minutes) is marked dead-lettered by the queue. An execution that is legitimately `WAITING` must not be mistaken for hung work. Queue failures now surface as `503` instead of silently returning empty results. The scheduled queue function currently uses `requireAdmin`, and **whether the Base44 scheduler supplies this identity has not been verified**; verify authentication and invocation rights in isolated staging before claiming unattended execution. Do not weaken authentication to make a scheduled run pass.
+
+**Known limitations requiring engineering work before autonomous recovery:** transactional/atomic job claiming, concurrency leases, a vetted safe auto-retry allowlist, notifications and monitoring for review holds, and verified platform-level retry/dead-letter semantics. Stuck detection currently considers the execution's `started_at` rather than a heartbeat, so long legitimate work must be tested against the timeout. Admin-triggered `runWorkflow.retry` is an explicit privileged action and must only occur after ledger inspection. Retain a review trail and never retry uncertain external payments or outgoing emails without provider reconciliation.
