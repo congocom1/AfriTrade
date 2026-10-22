@@ -1,0 +1,9 @@
+# Default repository maintainership. Required reviews are controlled in GitHub
+# branch rules, not by this file alone.
+* @congocom1
+
+# Sensitive parts of the system should receive explicit review.
+/base44/functions/ @congocom1
+/base44/entities/ @congocom1
+/base44/workflows/ @congocom1
+/.github/workflows/ @congocom1
