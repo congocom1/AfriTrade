@@ -40,6 +40,15 @@ describe('Wix checkout abuse boundary', () => {
     assert.doesNotMatch(checkoutSource, /asServiceRole|Deno\.env|fetch\(/);
   });
 
+  it('the card callback origin comes only from server config, never a request header', () => {
+    // Regression: the checkout callback origin used to fall back to the
+    // client-controlled "x-base44-app-url" header, letting a caller point the
+    // post-payment redirect at an attacker origin.
+    assert.doesNotMatch(orderSource, /x-base44-app-url/i);
+    assert.doesNotMatch(orderSource, /request\.headers/);
+    assert.match(orderSource, /trustedCheckoutAppUrl: Deno\.env\.get\("WIX_CHECKOUT_APP_URL"\) \|\| ""/);
+  });
+
   it('a guest card order is rejected before reading inventory or writing an order', async () => {
     const fakeDb = { entities: new Proxy({}, { get: (_target, property) => assert.fail(`Database touched: ${String(property)}`) }) };
     await assert.rejects(placeOrderModule.placeOrder(fakeDb, {

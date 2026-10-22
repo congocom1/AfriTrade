@@ -1280,7 +1280,11 @@ export default async function (request) {
         : intent.profile,
       authenticatedUserId: user?.id ?? "",
       authenticatedUserEmail: user?.email ?? "",
-      trustedCheckoutAppUrl: Deno.env.get("WIX_CHECKOUT_APP_URL") || request.headers.get("x-base44-app-url") || "",
+      // The card-checkout callback origin is trusted configuration only: it is
+      // read from the server-side environment variable, never from a
+      // client-controlled request header. When it is unset the checkout fails
+      // closed (see startVerifiedCardCheckout) instead of trusting the caller.
+      trustedCheckoutAppUrl: Deno.env.get("WIX_CHECKOUT_APP_URL") || "",
     });
 
     return addSecurityHeaders(
