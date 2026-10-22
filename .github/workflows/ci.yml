@@ -45,6 +45,9 @@ jobs:
       - name: Run frontend typecheck
         run: npm run typecheck
 
+      - name: Check maintained documentation links
+        run: npm run docs:check
+
       - name: Check visual asset registry
         run: npm run assets:check
 
