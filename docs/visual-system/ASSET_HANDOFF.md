@@ -15,3 +15,7 @@ Not yet produced: photography for all 15 marketplace categories, desktop/mobile 
 ## Approval required
 
 New illustrations are marked `ready-for-review`, not approved. Stock photography depicts generic facilities, not the owner's actual logistics footprint; clear photo usage and attribution decisions before campaigns. No deployment performed by this change.
+
+## Marketplace category expansion (2026-10-22)
+
+Added fourteen new original SVG category-navigation illustrations: smartphones, computers, fashion, beauty, furniture, home appliances, industrial equipment, automotive parts, construction materials, agricultural equipment, packaging supplies, manufacturing machinery, solar energy, and medical equipment. Alongside the existing electronics and home-decor artwork, the library now contains sixteen category SVGs. These are stylized illustrations, not photorealistic product photography or seller inventory. All fourteen were added to `public/assets/registry.json`, increasing tracked assets from 5 to 19. **No new supplier product images or live customer records were changed.** Illustrations remain `ready-for-review`, not approved. New categories are reusable in UI but not injected into live database-driven category mappings without matching source category slugs.
