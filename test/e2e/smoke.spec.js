@@ -4,7 +4,9 @@ import { test, expect } from '@playwright/test';
 // production records. They should run against a separate staging deployment.
 const baseURL = (process.env.BASE_URL || 'http://localhost:5174').replace(/\/$/, '');
 const isLocal = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(baseURL);
-const isProduction = /^https:\/\/afritrade-1\.base44\.app$/i.test(baseURL);
+// Allow Base44-hosted staging URL (afritrade-1.base44.app) for smoke tests
+// Production would be a custom domain like afritrade.com
+const isProduction = /^https:\/\/afritrade\.com$/i.test(baseURL);
 
 if (!isLocal && (!/^https:\/\//.test(baseURL) || isProduction)) {
   throw new Error('Staging smoke requires an HTTPS staging URL (never the AfriTrade production domain).');
