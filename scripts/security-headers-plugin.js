@@ -8,7 +8,7 @@ const localHeaders = {
 
 // Preserve the existing allowlist pending staging compatibility testing.
 // frame-ancestors is response-header-only and must be set by the host.
-const contentSecurityPolicy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https: blob:; connect-src 'self' https://*.base44.app https://api.base44.com wss://*.base44.app; base-uri 'self'; form-action 'self';";
+const contentSecurityPolicy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https: blob:; connect-src 'self' https://base44.app https://*.base44.app https://api.base44.com wss://*.base44.app; base-uri 'self'; form-action 'self';";
 
 function configureLocalHeaders(server) {
   server.middlewares.use((_req, res, next) => {

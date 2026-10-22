@@ -37,7 +37,7 @@ export const DEFAULT_CSP = [
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com data:",
   "img-src 'self' data: https: blob:",
-  "connect-src 'self' https://*.base44.app https://api.base44.com wss://*.base44.app",
+  "connect-src 'self' https://base44.app https://*.base44.app https://api.base44.com wss://*.base44.app",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",

@@ -17,6 +17,9 @@ test('production HTML places supported metadata in head', async () => {
     const html = result.output.find(file => file.fileName === 'index.html').source;
     const head = html.slice(html.indexOf('<head>'), html.indexOf('</head>'));
     assert.match(head, /http-equiv="Content-Security-Policy"/);
+    // *.base44.app does NOT match the apex host used by the Base44 SDK.
+    // Without this explicit origin, every public entity request fails with CSP.
+    assert.match(head, /connect-src[^";]*https:\/\/base44\.app https:\/\/\*\.base44\.app/);
     assert.match(head, /name="referrer" content="strict-origin-when-cross-origin"/);
     assert.ok(head.indexOf('Content-Security-Policy') < head.indexOf('<title>'));
     assert.doesNotMatch(html, /frame-ancestors|http-equiv="(?:X-Frame-Options|Strict-Transport-Security|X-Content-Type-Options|Permissions-Policy|X-XSS-Protection)"/);
