@@ -39,11 +39,15 @@ export default defineConfig({
     },
     {
       name: 'mobile-chrome',
-      use: { ...devices['iPhone 12'] },
+      use: { ...devices['Desktop Chrome'], viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 },
     },
     {
       name: 'tablet-chrome',
-      use: { ...devices['iPad'] },
+      use: { ...devices['Desktop Chrome'], viewport: { width: 768, height: 1024 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 },
+    },
+    {
+      name: 'mobile-webkit',
+      use: { ...devices['iPhone 12'] },
     },
   ],
 });
