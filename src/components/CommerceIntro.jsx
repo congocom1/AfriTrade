@@ -14,6 +14,10 @@ export default function CommerceIntro() {
           <Link className="commerce-intro__primary" to="/search">{t('commerceIntro.start')}<ArrowRight size={16} aria-hidden="true" /></Link>
           <Link className="commerce-intro__secondary" to="/seller-application">{t('commerceIntro.sell')}</Link>
         </div>
+        <div className="commerce-intro__photography" aria-hidden="true">
+          <img src="/photography/fulfillment-floor.jpg" alt="" loading="lazy" decoding="async" width="1200" height="720" />
+          <img src="/photography/parcel-delivery.jpg" alt="" loading="lazy" decoding="async" width="800" height="720" />
+        </div>
       </section>
 
       <section className="commerce-intro__workspace" id="trade-workspace" aria-labelledby="workspace-title">
