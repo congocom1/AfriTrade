@@ -166,9 +166,11 @@ export async function checkRateLimit(
   clientKey: string,
   config: RateLimitConfig
 ): Promise<RateLimitResult> {
-  // If db is not available (e.g., pre-auth check), skip rate limiting gracefully
+  // Sensitive endpoints must never bypass enforcement if the counter is unavailable.
   if (!db) {
-    return { ok: true, used: 0, limit: config.limit };
+    return config.failClosed
+      ? { ok: false, used: 0, limit: config.limit, unavailable: true }
+      : { ok: true, used: 0, limit: config.limit };
   }
 
   const key_prefix = `${config.keyPrefix}:${clientKey}`;

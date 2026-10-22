@@ -30,6 +30,14 @@ describe('authenticated fail-closed rate-limit recovery contract (mocked storage
     assert.equal(response.status, 429);
     assert.equal(response.headers.get('Retry-After'), '3600');
   });
+  it('fails closed if the counter database was not provided', async () => {
+    const cfg = { keyPrefix:'synthetic', limit: 2, windowMs: 3600000, failClosed:true };
+    const denied = await checkRateLimit(null, 'client', cfg);
+    assert.equal(denied.ok, false);
+    assert.equal(denied.unavailable, true);
+    assert.equal(rateLimitErrorResponse(denied).status, 503);
+    assert.equal((await checkRateLimit(null, 'client', { ...cfg, failClosed:false })).ok, true);
+  });
   it('returns 503 and a retry hint on counter storage failure', async () => {
     const db = { entities: { ApiRateLimit: { filter: async () => { throw new Error('offline'); } } } };
     const original = console.error;
