@@ -19,7 +19,7 @@ Use this index to find maintained guidance. **Historic reports are preserved for
 | Design system / accessibility | [Design system](design-system/DESIGN_SYSTEM.md), [Accessibility](design-system/ACCESSIBILITY_REPORT.md) |
 | Brand and user experience | [Brand](design-system/BRAND_IDENTITY.md), [Design handoff](design/AFRITRADE_FIGMA_HANDOFF_2026-10-20.md) |
 | Wallet, payments and security | [Wallet protocol](audit/WALLET_PROTOCOL.md), [Open risks](audit/OPEN_RISKS.md) |
-| Operations and recovery | [Workflow 429/503 runbook](operations/WORKFLOW_RECOVERY_429_503.md), [Deployment and staging handoff](operations/DEPLOYMENT_PARITY_AND_STAGING_HANDOFF.md) |
+| Operations and recovery | [Workflow 429/503 runbook](operations/WORKFLOW_RECOVERY_429_503.md), [Deployment and staging handoff](operations/DEPLOYMENT_PARITY_AND_STAGING_HANDOFF.md), [Base44 hosting](operations/BASE44_HOSTING.md) |
 | API integrations | [Developer portal](developer-portal/index.md) |
 | Mobile / Flutter | [Mobile guides](mobile/), [Mobile deployment](mobile/MOBILE_DEPLOY.md) |
 | Base44 synchronization | [Base44 sync notes](base44-sync/) |

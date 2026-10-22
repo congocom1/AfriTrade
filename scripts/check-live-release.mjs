@@ -22,8 +22,8 @@ const scenarios = [
 ];
 let failures = 0;
 for (const site of [base, secondaryURL].filter(Boolean)) {
-console.log(`Verifying ${site.origin}`);
-for (const scenario of scenarios) {
+  console.log(`Verifying ${site.origin}`);
+  for (const scenario of scenarios) {
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 12000);
