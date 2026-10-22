@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+/* global document, window, location */
 
 // Read-only launch gate. Use dedicated staging in CI; no payments, no logins,
 // no writes to business records. A public Base44 URL may be used for audit.

@@ -31,8 +31,11 @@ describe('rate-limit storage failures', () => {
     assert.equal(result.unavailable, undefined);
     assert.equal(rateLimitErrorResponse(result).status, 429);
   });
-  it('retains pre-auth no-storage behavior and can operate with a working counter', async () => {
-    assert.equal((await checkRateLimit(null, 'anonymous', config)).ok, true);
+  it('fails closed without storage, permits explicit non-sensitive bypass, and uses a working counter', async () => {
+    const missing = await checkRateLimit(null, 'anonymous', config);
+    assert.equal(missing.ok, false);
+    assert.equal(missing.unavailable, true);
+    assert.equal((await checkRateLimit(null, 'anonymous', { ...config, failClosed: false })).ok, true);
     let created;
     const client = { entities: { ApiRateLimit: { filter: async () => [], create: async (row) => { created = row; return { id: 'counter', ...row }; } } } };
     assert.equal((await checkRateLimit(client, 'account', config)).ok, true);
