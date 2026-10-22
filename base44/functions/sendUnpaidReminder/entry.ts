@@ -51,10 +51,18 @@ export default async function (req) {
     const { fulfillment, order } = await resolveFulfillment(base44, fulfillmentId);
     if (!fulfillment) return Response.json({ error: 'FulfillmentOrder not found' }, { status: 404 });
 
+    // Missing parent state is not evidence of an unpaid order. Never send a
+    // customer reminder or issue a discount while payment status is unknown.
+    if (!order?.id || !order.payment_status) {
+      return addSecurityHeaders(Response.json({ error: 'Authoritative payment state unavailable' }, { status: 503, headers: { 'Retry-After': '120' } }));
+    }
     const state = paymentState(fulfillment, order);
     if (state.paid) return Response.json({ skipped: true, reason: 'already paid', payment_status: state.payment_status });
     if (state.closed) return Response.json({ skipped: true, reason: `order is ${state.payment_status || state.fulfillment_status}` });
 
+    if (!fulfillment.created_date || hoursSince(fulfillment.created_date) < 1) {
+      return addSecurityHeaders(Response.json({ skipped: true, reason: '1-hour waiting period not reached' }));
+    }
     const reference = orderNumber(fulfillment, order);
     const title = `Rappel : votre commande ${reference} n'est pas encore réglée`;
     const existing = await base44.asServiceRole.entities.Notification

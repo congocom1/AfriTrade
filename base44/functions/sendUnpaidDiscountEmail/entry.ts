@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.49';
 import {
+  hoursSince,
   addDays,
   discountCode,
   frenchDate,
@@ -60,10 +61,18 @@ export default async function (req) {
     const { fulfillment, order } = await resolveFulfillment(base44, fulfillmentId);
     if (!fulfillment) return Response.json({ error: 'FulfillmentOrder not found' }, { status: 404 });
 
+    // Missing parent state is not evidence of an unpaid order. Never send a
+    // customer reminder or issue a discount while payment status is unknown.
+    if (!order?.id || !order.payment_status) {
+      return addSecurityHeaders(Response.json({ error: 'Authoritative payment state unavailable' }, { status: 503, headers: { 'Retry-After': '120' } }));
+    }
     const state = paymentState(fulfillment, order);
     if (state.paid) return Response.json({ skipped: true, reason: 'already paid', payment_status: state.payment_status });
     if (state.closed) return Response.json({ skipped: true, reason: `order is ${state.payment_status || state.fulfillment_status}` });
 
+    if (!fulfillment.created_date || hoursSince(fulfillment.created_date) < 24) {
+      return addSecurityHeaders(Response.json({ skipped: true, reason: '24-hour waiting period not reached' }));
+    }
     const reference = orderNumber(fulfillment, order);
     const tenant = tenantOf(fulfillment, order);
     const email = String(order?.customer_email || '').trim();

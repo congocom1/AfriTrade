@@ -11,12 +11,11 @@ const CLOSED_FULFILLMENT = ['CANCELLED', 'RETURNED', 'FAILED'];
 
 export async function resolveFulfillment(base44, fulfillmentId) {
   const fulfillment = await base44.asServiceRole.entities.FulfillmentOrder
-    .get(fulfillmentId)
-    .catch(() => null);
+    .get(fulfillmentId);
   if (!fulfillment) return { fulfillment: null, order: null };
 
   const order = fulfillment.order_id
-    ? await base44.asServiceRole.entities.Order.get(fulfillment.order_id).catch(() => null)
+    ? await base44.asServiceRole.entities.Order.get(fulfillment.order_id)
     : null;
 
   return { fulfillment, order };

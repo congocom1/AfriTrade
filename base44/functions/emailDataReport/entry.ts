@@ -68,6 +68,7 @@ export default async function (req) {
     const request = await service.entities.DataRequest.get(requestId);
     if (!request) return Response.json({ error: 'DataRequest not found' }, { status: 404 });
     if (request.report_sent_at) return Response.json({ skipped: true, reason: 'report already sent' });
+    if (request.status !== 'ready') return addSecurityHeaders(Response.json({ error: 'Data request is not ready for export' }, { status: 409 }));
     // A send interrupted after the provider accepts it must not be repeated blindly.
     if (['sending', 'delivery_unknown'].includes(String(request.email_status || ''))) {
       return addSecurityHeaders(Response.json({ error: 'Delivery outcome requires compliance review' }, { status: 409 }));
