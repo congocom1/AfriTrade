@@ -1,5 +1,5 @@
 # TASK COMPLETION SUMMARY
-## Congo Commerce Full-Stack Audit Remediation
+## AfriTrade Full-Stack Audit Remediation
 
 ### Completed Actions:
 1. **Added rate limiting and security headers to payments-webhook/entry.ts**

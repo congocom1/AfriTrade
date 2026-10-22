@@ -1,4 +1,4 @@
-# Congo Commerce SaaS Modernization Status
+# AfriTrade SaaS Modernization Status
 
 Updated: 2026-10-16
 
@@ -8,7 +8,7 @@ Updated: 2026-10-16
 - Backend behavior is implemented as Base44 server functions; entity contracts live in `base44/entities/*.jsonc`.
 - The repository also contains a Flutter application under `lib/` with Android and iOS projects.
 - The current backend is a modular Base44 application, not a separate microservice fleet. Existing modules cover commerce, tenants, China sourcing/warehousing, fulfillment, payments, finance, support, workflows, and analytics.
-- The current Base44 app was linked as Congo Commerce. The last deployment inventory was 69 entities and 43 functions; no deployment was performed during this modernization pass.
+- The current Base44 app was linked as AfriTrade. The last deployment inventory was 69 entities and 43 functions; no deployment was performed during this modernization pass.
 
 ## Implemented In This Pass
 

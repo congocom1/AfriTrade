@@ -1,7 +1,7 @@
 # Design System
 
 ## Overview
-The CongoCommerce/AfriTrade marketplace visual design system provides a comprehensive foundation for the user interface, ensuring consistency, accessibility, and scalability across all marketplace pages and components.
+The AfriTrade marketplace visual design system provides a comprehensive foundation for the user interface, ensuring consistency, accessibility, and scalability across all marketplace pages and components.
 
 ## Design Tokens
 
@@ -186,4 +186,4 @@ All design system changes tracked in git with proper commit messages and co-auth
 
 ---
 
-*This design system serves as the foundation for the CongoCommerce/AfriTrade marketplace visual redesign, ensuring consistency across all user interfaces while maintaining brand integrity and accessibility standards.*
+*This design system serves as the foundation for the AfriTrade marketplace visual redesign, ensuring consistency across all user interfaces while maintaining brand integrity and accessibility standards.*

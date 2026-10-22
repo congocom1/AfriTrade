@@ -1,8 +1,8 @@
-# BASELINE REPORT — CongoCommerce / AfriTrade
+# BASELINE REPORT — AfriTrade (formerly Congo Commerce)
 
 **Generated:** 2026-10-17
-**Repository:** congocom1/congo-commerce
-**Working directory:** /home/hermes/congo-commerce
+**Repository:** afritrade/afritrade
+**Working directory:** /home/hermes/.cline/worktrees/89023/AfriTrade
 
 ## Repository identity
 
@@ -57,7 +57,7 @@
 - Entities defined in `base44/.types/types.d.ts` — Wallet, WalletTransaction, Order, Product, Seller, Shipment, IdempotencyKey, etc.
 
 ### Mobile
-- Flutter project under `lib/` with Android/iOS. Package `com.congocommerce.congo_commerce_flutter`.
+- Flutter project under `lib/` with Android/iOS. Package `com.afritrade.afritrade_flutter`.
 
 ### Tests
 - Node tests: `test/**/*.test.js` — passing.
@@ -68,7 +68,7 @@
 
 ## Naming discrepancy investigation
 
-- Repository history contains legacy “Congo Commerce” documentation, audit notes, and a live Base44 URL `https://congocommerce.base44.app` with App ID `6ab43a1371d65d1a911b0fe7`.
+- Repository history contains legacy "Congo Commerce" documentation, audit notes, and a live Base44 URL `https://congocommerce.base44.app` with App ID `6ab43a1371d65d1a911b0fe7`.
 - Recent commits `aacfa19`, `9662ce1` rebrand to **AfriTrade** — pan-African B2B/B2C marketplace.
 - `README.md`, `base44/config.jsonc`, UI components now reference AfriTrade.
 - Conclusion: intentional rebrand from Congo Commerce to AfriTrade. Legacy docs remain in repo and require cleanup; no automatic overwrite performed.

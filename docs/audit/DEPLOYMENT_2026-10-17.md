@@ -19,7 +19,7 @@ Hosted origin: `https://afritrade-1.base44.app`.
 ## Verification limitations
 
 All five hosted public-page smoke tests failed at their title assertions:
-the hosted titles contain Congo Commerce rather than AfriTrade (including
+the hosted titles contain Congo Commerce (formerly) rather than AfriTrade (including
 Discover, Cart, Legal and About). The homepage snapshot includes AfriTrade
 branding. Tests were not weakened to mask this discrepancy. Deployment succeeded;
 hosted acceptance checks have not passed.

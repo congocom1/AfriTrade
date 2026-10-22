@@ -21,6 +21,7 @@ import Backoffice from '@/pages/Backoffice';
 import SalesIntelligence from '@/pages/admin/SalesIntelligence';
 import { Suspense, lazy, useEffect } from 'react';
 import LoadingFallback from '@/components/LoadingFallback';
+import { ThemeProvider } from 'next-themes';
 
 // Customer - lazy load all page components for code splitting
 const EmployeeWorkspace = lazy(() => import('@/pages/EmployeeWorkspace'));
@@ -382,20 +383,22 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <AuthProvider>
-        <QueryClientProvider client={queryClientInstance}>
-          <Router>
-            <ScrollToTop />
-            <PageMetadata />
-            <CartProvider>
-              <CurrencyProvider>
-                <AuthenticatedApp />
-              </CurrencyProvider>
-            </CartProvider>
-          </Router>
-          <Toaster />
-        </QueryClientProvider>
-      </AuthProvider>
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <AuthProvider>
+          <QueryClientProvider client={queryClientInstance}>
+            <Router>
+              <ScrollToTop />
+              <PageMetadata />
+              <CartProvider>
+                <CurrencyProvider>
+                  <AuthenticatedApp />
+                </CurrencyProvider>
+              </CartProvider>
+            </Router>
+            <Toaster />
+          </QueryClientProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   )
 }

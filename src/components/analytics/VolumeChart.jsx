@@ -13,11 +13,11 @@ export default function VolumeChart({ data }) {
       <div className="mt-3 h-56">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5" />
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
             <XAxis dataKey="day" fontSize={11} />
             <YAxis fontSize={11} />
             <Tooltip formatter={(value) => formatUSD(value)} />
-            <Bar dataKey="volume" fill="#111111" radius={[6, 6, 0, 0]} />
+            <Bar dataKey="volume" fill="hsl(var(--foreground))" radius={[6, 6, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>

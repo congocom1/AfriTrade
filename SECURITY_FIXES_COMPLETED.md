@@ -1,4 +1,4 @@
-# Security Fixes Completed - Congo Commerce
+# Security Fixes Completed - AfriTrade
 
 ## Summary
 Completed implementation of security fixes identified in full-stack audit:

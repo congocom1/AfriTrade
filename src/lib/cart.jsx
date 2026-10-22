@@ -2,16 +2,7 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useS
 import { trackEvent } from '@/lib/tracking';
 
 const CartContext = createContext(null);
-import { CART_STORAGE_KEY as KEY, MAX_CART_QUANTITY, normalizeCartQuantity, parseStoredCart } from './cartStorage';
-
-function readCart() {
-  try {
-    const raw = localStorage.getItem(KEY);
-    return parseStoredCart(raw);
-  } catch {
-    return [];
-  }
-}
+import { CART_STORAGE_KEY as KEY, MAX_CART_QUANTITY, normalizeCartQuantity, readCart } from './cartStorage';
 
 function lineKey(productId, variant) {
   return `${productId}::${variant || ''}`;

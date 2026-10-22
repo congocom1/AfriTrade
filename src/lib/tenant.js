@@ -2,11 +2,23 @@ import { usePortalData } from '@/hooks/usePortalData';
 import { useCallback, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 
-const KEY_PREFIX = 'congo_commerce:active_tenant:';
+const KEY_PREFIX = 'afritrade:active_tenant:';
+const LEGACY_KEY_PREFIX = 'congo_commerce:active_tenant:';
 
 function readStored(key) {
   try {
-    return localStorage.getItem(KEY_PREFIX + key) || '';
+    // Try new prefix first
+    let value = localStorage.getItem(KEY_PREFIX + key);
+    if (value) return value;
+
+    // Fallback to legacy prefix for migration
+    value = localStorage.getItem(LEGACY_KEY_PREFIX + key);
+    if (value) {
+      writeStored(key, value);
+      try { localStorage.removeItem(LEGACY_KEY_PREFIX + key); } catch { /* ignore migration cleanup error */ }
+      return value;
+    }
+    return '';
   } catch {
     return '';
   }

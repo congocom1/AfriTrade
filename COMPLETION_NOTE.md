@@ -1,4 +1,4 @@
-Security fixes completed for Congo Commerce project:
+Security fixes completed for AfriTrade project:
 
 1. Added rate limiting and security headers to payments-webhook/entry.ts
 2. Implemented frontend HTTP security headers via vite.config.js plugin

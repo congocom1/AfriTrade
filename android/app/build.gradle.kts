@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.congocommerce.congo_commerce_flutter"
+    namespace = "com.afritrade"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -15,7 +15,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.congocommerce.congo_commerce_flutter"
+        applicationId = "com.afritrade"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

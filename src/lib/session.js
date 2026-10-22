@@ -2,18 +2,32 @@
  * Lightweight local session: identity, wishlist, follows and order history for
  * this device. Keeps the storefront usable on low bandwidth / intermittent data.
  */
-const PREFIX = 'congo_commerce:';
+const PREFIX = 'afritrade:';
+const LEGACY_PREFIX = 'congo_commerce:';
 
 /**
- * Read a value from localStorage with fallback
+ * Read a value from localStorage with fallback, migrating from legacy keys
  * @param {string} key - Storage key
  * @param {*} fallback - Default value if key not found or parse fails
  * @returns {*} Parsed value or fallback
  */
 function read(key, fallback) {
   try {
-    const raw = localStorage.getItem(PREFIX + key);
-    return raw ? JSON.parse(raw) : fallback;
+    // Try new prefix first
+    let raw = localStorage.getItem(PREFIX + key);
+    if (raw) return JSON.parse(raw);
+
+    // Fallback to legacy prefix for migration
+    raw = localStorage.getItem(LEGACY_PREFIX + key);
+    if (raw) {
+      const value = JSON.parse(raw);
+      // Migrate to new prefix
+      write(key, value);
+      // Remove legacy key
+      try { localStorage.removeItem(LEGACY_PREFIX + key); } catch { /* ignore migration cleanup error */ }
+      return value;
+    }
+    return fallback;
   } catch {
     return fallback;
   }
@@ -239,6 +253,7 @@ export function clearLocalSession() {
   ['wishlist', 'liked_content', 'follows', 'order_ids', 'profile', 'privacy'].forEach((k) => {
     try {
       localStorage.removeItem(PREFIX + k);
+      localStorage.removeItem(LEGACY_PREFIX + k);
     } catch {
       /* ignore */
     }

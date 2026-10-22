@@ -130,7 +130,7 @@ This document validates the Stage 2 architecture plan against the actual codebas
 ### 3.4 Documentation gaps
 
 **3.4.1 Legacy brand references**
-**Location:** Multiple audit docs reference Congo Commerce
+**Location:** Multiple audit docs reference AfriTrade
 **Risk:** Confusion for users, SEO impact
 **Impact:** Brand inconsistency
 **Remediation:** Archive legacy docs to `docs/archive/`

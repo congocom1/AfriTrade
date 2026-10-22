@@ -1,4 +1,4 @@
-# Congo Commerce — UX Audit Report
+# AfriTrade — UX Audit Report
 
 **Date:** 2026-10-03  
 **Scope:** Full UX audit across 10 dimensions  
@@ -9,7 +9,7 @@
 
 ## Executive Summary
 
-The Congo Commerce application is a functional, full-stack marketplace with a solid Apple Design foundation already applied (material surfaces, responsive typography, reduced-motion support, press feedback on interactive elements). The audit identified **28 findings** across 10 dimensions, of which **8 are high-severity** and require immediate attention before the next release.
+The AfriTrade application is a functional, full-stack marketplace with a solid Apple Design foundation already applied (material surfaces, responsive typography, reduced-motion support, press feedback on interactive elements). The audit identified **28 findings** across 10 dimensions, of which **8 are high-severity** and require immediate attention before the next release.
 
 The most impactful gaps cluster around three themes:
 1. **Touch interaction fidelity** — missing press feedback, shrunken targets, no swipe gestures

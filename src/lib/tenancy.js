@@ -2,7 +2,8 @@ import { usePortalData } from '@/hooks/usePortalData';
 import { useCallback, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 
-const ACTIVE_TENANT_KEY = 'congo_commerce:saas:active_tenant';
+const ACTIVE_TENANT_KEY = 'afritrade:saas:active_tenant';
+const LEGACY_ACTIVE_TENANT_KEY = 'congo_commerce:saas:active_tenant';
 
 /**
  * Multitenancy for the SaaS layer.
@@ -50,7 +51,18 @@ export async function resolveTenantByHost(host = currentHostname()) {
 
 export function readActiveTenantId() {
   try {
-    return localStorage.getItem(ACTIVE_TENANT_KEY) || '';
+    // Try new key first
+    let value = localStorage.getItem(ACTIVE_TENANT_KEY);
+    if (value) return value;
+
+    // Fallback to legacy key for migration
+    value = localStorage.getItem(LEGACY_ACTIVE_TENANT_KEY);
+    if (value) {
+      writeActiveTenantId(value);
+      try { localStorage.removeItem(LEGACY_ACTIVE_TENANT_KEY); } catch { /* ignore migration cleanup error */ }
+      return value;
+    }
+    return '';
   } catch {
     return '';
   }

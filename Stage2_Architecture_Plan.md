@@ -6,7 +6,7 @@
 
 ## 1. Executive summary
 
-The CongoCommerce project is a Base44-powered pan-African B2B/B2C marketplace (branded as AfriTrade) with React frontend, Flutter mobile, and extensive admin capabilities. The 16-stage directive requires staged implementation, beginning with Phase 1 (Discovery) and continuing through Stage 2 (Architecture) incrementally.
+The AfriTrade project is a Base44-powered pan-African B2B/B2C marketplace with React frontend, Flutter mobile, and extensive admin capabilities. The 16-stage directive requires staged implementation, beginning with Phase 1 (Discovery) and continuing through Stage 2 (Architecture) incrementally.
 
 This document captures the architecture approach for Stage 2: designing the commerce platform architecture, data layer, and integration patterns while remaining in discovery to inform implementation phases.
 
@@ -218,7 +218,7 @@ This document captures the architecture approach for Stage 2: designing the comm
 
 ### 9.2 High (P1)
 
-1. **Brand standardization** - archive legacy Congo Commerce docs
+1. **Brand standardization** - archive legacy AfriTrade docs
 2. **Security headers production** - deploy CSP/HSTS/X-Frame-Options
 3. **CI/CD pipeline** - automated testing and deployment
 4. **Secrets inventory** - document and rotate credentials
@@ -238,7 +238,7 @@ This document captures the architecture approach for Stage 2: designing the comm
 
 **Immediate tasks:**
 1. Archive legacy docs to `docs/archive/`
-2. Update all Congo Commerce references to AfriTrade
+2. Update all AfriTrade references to AfriTrade
 3. Document production header configuration requirements
 4. Create CI/CD pipeline skeleton
 5. Verify Flutter parity with `flutter analyze`

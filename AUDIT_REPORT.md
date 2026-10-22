@@ -1,4 +1,4 @@
-# CONGO COMMERCE — AUDIT DU DÉPÔT
+# AFRITRADE — AUDIT DU DÉPÔT
 
 Date : 2026-09-27
 Périmètre : application Base44 (Vite + React 18 + Tailwind + shadcn/ui, JavaScript, routage `react-router-dom`)
@@ -28,7 +28,7 @@ aucun serveur applicatif. Toutes les contraintes listées en §27 découlent de 
 | Données | Entités Base44 (schémas JSON), pas de SQL direct, pas de migrations manuelles |
 | Auth | Gérée par la plateforme (e-mail/mot de passe, Google, OTP, réinitialisation) |
 | Backend | **Aucun** — les fonctions serveur exigent une offre Builder+ ; le compte est en **Starter** |
-| Hébergement | Plateforme Base44 (`congo-commerce.base44.app`) |
+| Hébergement | Plateforme Base44 (`afritrade.base44.app`) |
 
 Il n'y a ni Docker, ni Redis, ni file d'attente, ni OpenSearch, ni Prisma, ni workers : ces briques
 ne font pas partie de la plateforme et ne peuvent pas être ajoutées ici.

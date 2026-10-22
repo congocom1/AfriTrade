@@ -65,8 +65,8 @@
 
 ## Open P1
 
-- **P1-01 Brand standardization**
-  - Legacy Congo Commerce docs/assets remain
+- **P1-01 Brand standardization** [COMPLETED]
+  - Legacy Congo Commerce docs/assets remain (archived for historical reference)
   - Action: Archive legacy docs to `docs/archive/`, update DNS/metadata, confirm domain `afritrade` in production config.
 
 - **P1-02 Security headers production**

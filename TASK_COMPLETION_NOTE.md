@@ -1,6 +1,6 @@
 # Task Completion Notice
 
-## Base44 Congo Commerce Security Audit - All Requested Work Completed
+## Base44 AfriTrade Security Audit - All Requested Work Completed
 
 All requested security enhancements from the full-stack audit have been implemented:
 

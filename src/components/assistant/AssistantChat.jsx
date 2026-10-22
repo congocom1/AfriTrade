@@ -6,11 +6,25 @@ import AssistantComposer from '@/components/assistant/AssistantComposer';
 import { buildCustomerBrief } from '@/lib/assistantContext';
 
 const AGENT_NAME = 'shopping_assistant';
-const STORAGE_KEY = 'congo_commerce:assistant_conversation';
+const STORAGE_KEY = 'afritrade:assistant_conversation';
+const LEGACY_STORAGE_KEY = 'congo_commerce:assistant_conversation';
 
 const readConversationId = () => {
   try {
-    return localStorage.getItem(STORAGE_KEY);
+    // Try new key first
+    let id = localStorage.getItem(STORAGE_KEY);
+    if (id) return id;
+
+    // Fallback to legacy key for migration
+    id = localStorage.getItem(LEGACY_STORAGE_KEY);
+    if (id) {
+      // Migrate to new key
+      try { localStorage.setItem(STORAGE_KEY, id); } catch { /* ignore migration write error */ }
+      // Remove legacy key
+      try { localStorage.removeItem(LEGACY_STORAGE_KEY); } catch { /* ignore migration cleanup error */ }
+      return id;
+    }
+    return null;
   } catch {
     return null;
   }

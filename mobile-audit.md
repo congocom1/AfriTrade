@@ -1,4 +1,4 @@
-# Mobile UX Audit — Congo Commerce
+# Mobile UX Audit — AfriTrade
 
 **Dimension:** Mobile (Touch targets, safe areas, drawer behavior, bottom nav, viewport handling, pull-to-refresh, swipe gestures, iOS/Android conventions, Apple §2 Direct Manipulation, §8 Hint Direction)
 

@@ -1,7 +1,7 @@
-# Base44 Congo Commerce Security Audit
+# Base44 AfriTrade Security Audit
 
 ## Overview
-This repository contains the security audit implementation for the Base44 Congo Commerce application. All security enhancements have been successfully implemented and deployed to the live production application.
+This repository contains the security audit implementation for the Base44 AfriTrade application. All security enhancements have been successfully implemented and deployed to the live production application.
 
 ## Security Enhancements Implemented
 
@@ -41,7 +41,7 @@ This repository contains the security audit implementation for the Base44 Congo 
 - Fixed anonymous user handling
 
 ## Deployment Information
-- **Live URL**: https://congocommerce.base44.app
+- **Live URL**: https://afritrade.base44.app
 - **App ID**: 6ab43a1371d65d1a911b0fe7
 - **Deployment Date**: 2026-10-10
 - **Deployment Command**: `npx base44 deploy --build --yes`
@@ -65,4 +65,4 @@ This repository contains the security audit implementation for the Base44 Congo 
 ✅ Audit readiness (rate limit visibility)
 
 ## Conclusion
-The Base44 Congo Commerce application is now secured according to industry best practices and the specific requirements of the requested full-stack audit. All requested work has been completed and verified in production.
+The Base44 AfriTrade application is now secured according to industry best practices and the specific requirements of the requested full-stack audit. All requested work has been completed and verified in production.

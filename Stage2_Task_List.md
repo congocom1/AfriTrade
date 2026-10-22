@@ -6,7 +6,7 @@
 
 ## 1. Executive summary
 
-This document tracks all tasks for Stage 2 (Architecture) of the CongoCommerce 16-stage implementation directive. Tasks are prioritized by risk and impact.
+This document tracks all tasks for Stage 2 (Architecture) of the AfriTrade 16-stage implementation directive. Tasks are prioritized by risk and impact.
 
 ## 2. Task categorization
 
@@ -58,7 +58,7 @@ This document tracks all tasks for Stage 2 (Architecture) of the CongoCommerce 1
 - **Owner:** Product team
 - **Dependencies:** Legacy docs identification
 - **Acceptance criteria:**
-  - Archive all Congo Commerce references to `docs/archive/`
+  - Archive all AfriTrade references to `docs/archive/`
   - Update domain and metadata to AfriTrade
   - Confirm domain `afritrade` in production config
 

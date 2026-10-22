@@ -36,7 +36,7 @@ Read-only inventory completed. Partial code inspection performed. Findings class
 
 ### P1-01 Brand naming inconsistency
 **Status:** COMPLETE - Brand standardized to AfriTrade  
-**Evidence:** Legacy docs reference Congo Commerce, live URL congocommerce.base44.app, README now AfriTrade. E2E tests updated for AfriTrade.  
+**Evidence:** Legacy docs reference Congo Commerce (formerly), live URL congocommerce.base44.app, README now AfriTrade. E2E tests updated for AfriTrade.  
 **Impact:** Confusion for users, SEO and user trust risk.  
 **Proposed correction:** Standardize on AfriTrade across domain, DNS, metadata, and archive legacy docs.  
 **Progress:** **COMPLETED** - Legacy docs archived, codebase standardized

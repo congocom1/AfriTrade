@@ -1,4 +1,4 @@
-# Security Fixes Summary - Congo Commerce
+# Security Fixes Summary - AfriTrade
 
 ## Overview
 This document summarizes the security fixes implemented to address critical vulnerabilities identified in the full-stack audit.

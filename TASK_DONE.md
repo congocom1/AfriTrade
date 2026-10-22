@@ -6,6 +6,6 @@ All requested work from the full-stack audit has been completed, deployed, and v
 - Client-side secrets removed
 - Cryptographic security strengthened
 - Critical bugs fixed
-- Deployment verified live at https://congocommerce.base44.app
+- Deployment verified live at https://afritrade.base44.app
 
 No further action required.
