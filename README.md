@@ -1,57 +1,70 @@
 # AfriTrade
 
-AfriTrade is Shopify × Alibaba for Africa — a pan-African B2B & B2C marketplace with a React/Vite frontend and a separate Flutter mobile project.
+**Commerce, supplier operations and logistics for the Democratic Republic of the Congo.**
 
-## Development prerequisites
+AfriTrade is a multi-workspace marketplace and logistics application. This monorepo contains a React/Vite web app, Base44 backend functions and schemas, and a Flutter mobile application. It is an actively developed product; a passing build is **not** evidence that every payment, shipping, or compliance flow is ready for production.
 
-Install Node.js, npm, and the Base44 CLI. Access to the appropriate Base44 application is required to run backend functions.
+## Project layout
 
-## Local setup
+| Directory | Responsibility |
+| --- | --- |
+| `src/` | React web application, customer and operator workspaces, design system |
+| `base44/` | Backend functions, entities, workflows, agents, permissions and configuration |
+| `lib/`, `android/`, `ios/`, `web/`, `windows/` | Flutter application and platform projects |
+| `test/` | Node regression tests, Playwright E2E and security coverage |
+| `public/`, `assets/` | Web and Flutter media; tracked source assets only |
+| `scripts/` | Maintenance, security and release verification utilities |
+| `docs/` | Architecture, developer guides, audits, design and operational runbooks |
+| `.github/` | GitHub Actions, issue templates, PR review checklist and code ownership |
 
-1. Install dependencies with `npm ci` (or `npm install` when intentionally updating the lockfile).
-2. Authenticate with `base44 login`.
-3. Link the application with `base44 link`.
-4. Start the frontend and local Base44 backend together using `base44 dev`.
+Read [the documentation index](docs/README.md) to find more detailed material.
 
-Use `base44 dev --remote` only when you intentionally want to connect to the hosted backend. Standalone `npm run dev` starts Vite only and does not start the Base44 backend.
+## Quick start — web and backend
 
-Store local credentials in `.env.local`, which is gitignored. Never commit secrets or production credentials.
+**Prerequisites:** Node.js 22 or 24, npm and authenticated Base44 CLI access to the AfriTrade application.
 
-## Checks
+```bash
+npm ci
+npx base44 login
+npx base44 link
+npx base44 dev
+```
 
-- `npm run lint` — ESLint
-- `npm run typecheck` — JavaScript/TypeScript static checking
-- `npm test` — Node test suite
-- `npm run build` — Vite production build
-- `npm run test:e2e` — Playwright tests (requires configured test environment)
-- `flutter analyze` and `flutter test` — Flutter project checks (requires Flutter SDK)
+`base44 dev` is the supported local full-stack workflow. `npm run dev` runs Vite only and **does not** start the Base44 backend. Keep secrets in local untracked environment files or the Base44 secret store; `.env.example` is a placeholder template only.
 
-## Deployment
+## Quality gates
 
-Review `base44/config.jsonc` and the Base44 environment settings before deployment. A successful frontend build does not verify backend functions, credentials, payment integrations, or authorization rules. Run tests and verify production configuration in a nonproduction environment first. Do not publish or deploy without explicit approval.
+```bash
+npm run verify:launch  # lint, types, assets, dependency policy, unit tests, build
+```
 
-## Project locations
+For browser tests, first install the browsers and use an isolated local or staging environment:
 
-- `src/` — React frontend
-- `src/api/base44Client.js` — Base44 SDK client
-- `base44/` — Base44 configuration and backend assets
-- `test/` — JavaScript tests
-- `android/`, `ios/`, `lib/` — Flutter mobile application
+```bash
+npx playwright install --with-deps chromium webkit
+BASE_URL=https://YOUR-STAGING-URL npx playwright test \
+  test/e2e/smoke.spec.js test/e2e/route-guards.spec.js \
+  test/e2e/public-responsive.spec.js --project=chromium
+```
 
-Follow `AGENTS.md` for Base44-specific development instructions.
+For Flutter, use its separately installed SDK and run `flutter pub get --enforce-lockfile`, `flutter analyze` and `flutter test`. The GitHub workflows also run Flutter checks. See [CI details](docs/guides/CONTRIBUTING.md).
 
-## Release readiness
+## Deployment and release status
 
-**Wallet release remains blocked.** The legacy `refund-payment` endpoint now
-returns HTTP 503 before financial operations because refund recovery/clawback
-is unsafe. Admin returns and dispute refunds still call it and are unavailable
-with this guard. Do not enable refunds or release wallet changes until the gates
-in `docs/audit/WALLET_PROTOCOL.md` are satisfied, including hosted CAS validation.
+Deployment is a separate, approval-gated operation. Do **not** merge a green build directly into a commercial launch: provider payments, refunds, payouts, webhook signatures, authenticated roles and operational workflows require staged verification. The wallet/refund release remains restricted under the [wallet protocol](docs/audit/WALLET_PROTOCOL.md).
 
-Web CI runs lint, frontend typecheck, unit tests and build without deploying.
-An optional manual staging smoke job requires the `STAGING_BASE_URL` repository
-variable. See `docs/audit/PRODUCTION_HARDENING.md` and
-`docs/audit/SECRETS_INVENTORY.md` for outstanding release gates.
+**Current source of truth:** [Launch readiness and outstanding blockers (October 22, 2026)](docs/audit/LAUNCH_READINESS_2026-10-22.md). Older claims that a release was “100% complete” have been archived as historical reports, not treated as approvals.
 
-Older root-level completion and deployment reports are historical evidence,
-not current release approval. Use `docs/audit/REMEDIATION_LOG.md` for open risks.
+Read-only release probe after publishing an approved staging revision:
+
+```bash
+BASE_URL=https://YOUR-STAGING-URL npm run release:remote
+```
+
+See the [workflow recovery runbook](docs/operations/WORKFLOW_RECOVERY_429_503.md) and [security reporting policy](SECURITY.md) before operational changes.
+
+## Contributing
+
+All changes should be developed on a short-lived `feat/`, `fix/`, `chore/`, `docs/` or `test/` branch and proposed to `main` in a pull request. Keep commits focused, use the PR template, and record verification results. **Never force-push or rewrite shared history.**
+
+Start with [CONTRIBUTING.md](CONTRIBUTING.md) and [AGENTS.md](AGENTS.md) for repository and Base44-specific instructions. See [CHANGELOG.md](CHANGELOG.md) for curated changes.
