@@ -1,0 +1,25 @@
+{
+  "name": "CommerceControl",
+  "type": "object",
+  "properties": {
+    "key": { "type": "string" },
+    "state": {
+      "type": "string",
+      "enum": ["idle", "running", "review_required"],
+      "default": "idle"
+    },
+    "owner": { "type": "string", "default": "" },
+    "action": { "type": "string" },
+    "started_at": { "type": "string" },
+    "dirty": { "type": "boolean", "default": false },
+    "error": { "type": "string" },
+    "probe_counter": { "type": "number", "default": 0 }
+  },
+  "required": ["key"],
+  "rls": {
+    "create": { "user_condition": { "role": "admin" } },
+    "read": { "user_condition": { "role": "admin" } },
+    "update": { "user_condition": { "role": "admin" } },
+    "delete": { "user_condition": { "role": "admin" } }
+  }
+}

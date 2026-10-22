@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowDown, LoaderCircle } from 'lucide-react';
 import { REFRESH_THRESHOLD, pullDistance } from '@/lib/pullGesture';
@@ -7,11 +7,18 @@ import { REFRESH_THRESHOLD, pullDistance } from '@/lib/pullGesture';
 export default function usePullToRefresh(onRefresh, { disabled = false } = {}) {
   const start = useRef(null);
   const pulling = useRef(0);
+  const mounted = useRef(true);
   const [distance, setDistance] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const { i18n } = useTranslation();
   const french = i18n.language?.startsWith('fr');
   const reset = () => { start.current = null; pulling.current = 0; setDistance(0); };
+
+  // Track mounted state to prevent state updates after unmount
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
 
   const onTouchStart = event => {
     if (disabled || refreshing || event.touches.length !== 1 ||
@@ -27,15 +34,17 @@ export default function usePullToRefresh(onRefresh, { disabled = false } = {}) {
     const amount = pullDistance(start.current, { x: touch.clientX, y: touch.clientY });
     if (amount !== pulling.current) {
       pulling.current = amount;
-      setDistance(amount);
+      if (mounted.current) setDistance(amount);
     }
   };
   const onTouchEnd = () => {
     const ready = !!start.current && pulling.current >= REFRESH_THRESHOLD;
     reset();
     if (!ready || disabled || refreshing) return;
-    setRefreshing(true);
-    Promise.resolve().then(onRefresh).catch(() => {}).finally(() => setRefreshing(false));
+    if (mounted.current) setRefreshing(true);
+    Promise.resolve().then(onRefresh).catch(() => {}).finally(() => {
+      if (mounted.current) setRefreshing(false);
+    });
   };
   const handlers = { onTouchStart, onTouchMove, onTouchEnd, onTouchCancel: reset };
   const text = refreshing ? (french ? 'Actualisation…' : 'Refreshing…')
