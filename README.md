@@ -67,4 +67,4 @@ See the [workflow recovery runbook](docs/operations/WORKFLOW_RECOVERY_429_503.md
 
 All changes should be developed on a short-lived `feat/`, `fix/`, `chore/`, `docs/` or `test/` branch and proposed to `main` in a pull request. Keep commits focused, use the PR template, and record verification results. **Never force-push or rewrite shared history.**
 
-Start with [CONTRIBUTING.md](CONTRIBUTING.md) and [AGENTS.md](AGENTS.md) for repository and Base44-specific instructions. See [CHANGELOG.md](CHANGELOG.md) for curated changes.
+Start with [CONTRIBUTING.md](CONTRIBUTING.md) for repository practices and use the Base44 CLI documentation for backend development. See [CHANGELOG.md](CHANGELOG.md) for curated changes.
