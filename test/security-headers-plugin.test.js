@@ -54,3 +54,8 @@ for (const hook of ['configureServer', 'configurePreviewServer']) {
     }
   });
 }
+test('backend response CSP also allows the Base44 apex SDK origin', async () => {
+  const { readFile } = await import('node:fs/promises');
+  const source = await readFile(new URL('../base44/shared/securityHeaders.ts', import.meta.url), 'utf8');
+  assert.match(source, /connect-src[^"\n]*https:\/\/base44\.app https:\/\/\*\.base44\.app/);
+});
