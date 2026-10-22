@@ -29,5 +29,21 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
+    {
+      name: 'visual-regression',
+      use: { 
+        ...devices['Desktop Chrome'],
+        // Visual regression specific settings
+        viewport: { width: 1280, height: 800 },
+      },
+    },
+    {
+      name: 'mobile-chrome',
+      use: { ...devices['iPhone 12'] },
+    },
+    {
+      name: 'tablet-chrome',
+      use: { ...devices['iPad'] },
+    },
   ],
 });
