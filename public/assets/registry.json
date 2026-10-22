@@ -1,10 +1,307 @@
 {
   "version": "1.0.0",
   "assets": [
-    { "id": "category-electronics", "path": "/assets/marketplace/categories/electronics.svg", "category": "marketplace", "type": "illustration", "format": "svg", "theme": "dark", "usage": ["home", "category-navigation"], "alt": "Electronics and devices", "source": "original-programmatic-artwork", "license": "internal-project-artwork", "status": "ready-for-review" },
-    { "id": "category-home-decor", "path": "/assets/marketplace/categories/home-decor.svg", "category": "marketplace", "type": "illustration", "format": "svg", "theme": "dark", "usage": ["home", "category-navigation"], "alt": "Furniture and home decor", "source": "original-programmatic-artwork", "license": "internal-project-artwork", "status": "ready-for-review" },
-    { "id": "route-china-drc", "path": "/assets/logistics/corridor/africa-china-route.svg", "category": "logistics", "type": "diagram", "format": "svg", "theme": "dark", "usage": ["logistics", "supplier-onboarding"], "alt": "Six stages from supplier to delivery in DR Congo", "source": "original-programmatic-artwork", "license": "internal-project-artwork", "status": "ready-for-review" },
-    { "id": "logistics-warehouse-photo", "path": "/photography/fulfillment-floor.jpg", "category": "logistics", "type": "photo", "format": "jpg", "theme": "neutral", "usage": ["homepage"], "alt": "Illustrative fulfillment facility", "source": "unsplash:photo-1553413077-190dd305871c", "license": "unsplash-license-review", "status": "existing-in-use" },
-    { "id": "logistics-delivery-photo", "path": "/photography/parcel-delivery.jpg", "category": "logistics", "type": "photo", "format": "jpg", "theme": "neutral", "usage": ["homepage"], "alt": "Illustrative parcel delivery", "source": "unsplash:photo-1566576912321-d58ddd7a6088", "license": "unsplash-license-review", "status": "existing-in-use" }
+    {
+      "id": "category-electronics",
+      "path": "/assets/marketplace/categories/electronics.svg",
+      "category": "marketplace",
+      "type": "illustration",
+      "format": "svg",
+      "theme": "dark",
+      "usage": [
+        "home",
+        "category-navigation"
+      ],
+      "alt": "Electronics and devices",
+      "source": "original-programmatic-artwork",
+      "license": "internal-project-artwork",
+      "status": "ready-for-review"
+    },
+    {
+      "id": "category-home-decor",
+      "path": "/assets/marketplace/categories/home-decor.svg",
+      "category": "marketplace",
+      "type": "illustration",
+      "format": "svg",
+      "theme": "dark",
+      "usage": [
+        "home",
+        "category-navigation"
+      ],
+      "alt": "Furniture and home decor",
+      "source": "original-programmatic-artwork",
+      "license": "internal-project-artwork",
+      "status": "ready-for-review"
+    },
+    {
+      "id": "route-china-drc",
+      "path": "/assets/logistics/corridor/africa-china-route.svg",
+      "category": "logistics",
+      "type": "diagram",
+      "format": "svg",
+      "theme": "dark",
+      "usage": [
+        "logistics",
+        "supplier-onboarding"
+      ],
+      "alt": "Six stages from supplier to delivery in DR Congo",
+      "source": "original-programmatic-artwork",
+      "license": "internal-project-artwork",
+      "status": "ready-for-review"
+    },
+    {
+      "id": "logistics-warehouse-photo",
+      "path": "/photography/fulfillment-floor.jpg",
+      "category": "logistics",
+      "type": "photo",
+      "format": "jpg",
+      "theme": "neutral",
+      "usage": [
+        "homepage"
+      ],
+      "alt": "Illustrative fulfillment facility",
+      "source": "unsplash:photo-1553413077-190dd305871c",
+      "license": "unsplash-license-review",
+      "status": "existing-in-use"
+    },
+    {
+      "id": "logistics-delivery-photo",
+      "path": "/photography/parcel-delivery.jpg",
+      "category": "logistics",
+      "type": "photo",
+      "format": "jpg",
+      "theme": "neutral",
+      "usage": [
+        "homepage"
+      ],
+      "alt": "Illustrative parcel delivery",
+      "source": "unsplash:photo-1566576912321-d58ddd7a6088",
+      "license": "unsplash-license-review",
+      "status": "existing-in-use"
+    },
+    {
+      "id": "category-smartphones",
+      "path": "/assets/marketplace/categories/smartphones.svg",
+      "category": "marketplace",
+      "type": "illustration",
+      "format": "svg",
+      "theme": "dark",
+      "usage": [
+        "category-navigation",
+        "marketing-placeholder"
+      ],
+      "alt": "Smartphones category illustration",
+      "source": "original-programmatic-artwork",
+      "license": "internal-project-artwork",
+      "status": "ready-for-review"
+    },
+    {
+      "id": "category-computers",
+      "path": "/assets/marketplace/categories/computers.svg",
+      "category": "marketplace",
+      "type": "illustration",
+      "format": "svg",
+      "theme": "dark",
+      "usage": [
+        "category-navigation",
+        "marketing-placeholder"
+      ],
+      "alt": "Computers category illustration",
+      "source": "original-programmatic-artwork",
+      "license": "internal-project-artwork",
+      "status": "ready-for-review"
+    },
+    {
+      "id": "category-fashion",
+      "path": "/assets/marketplace/categories/fashion.svg",
+      "category": "marketplace",
+      "type": "illustration",
+      "format": "svg",
+      "theme": "dark",
+      "usage": [
+        "category-navigation",
+        "marketing-placeholder"
+      ],
+      "alt": "Fashion category illustration",
+      "source": "original-programmatic-artwork",
+      "license": "internal-project-artwork",
+      "status": "ready-for-review"
+    },
+    {
+      "id": "category-beauty",
+      "path": "/assets/marketplace/categories/beauty.svg",
+      "category": "marketplace",
+      "type": "illustration",
+      "format": "svg",
+      "theme": "dark",
+      "usage": [
+        "category-navigation",
+        "marketing-placeholder"
+      ],
+      "alt": "Beauty category illustration",
+      "source": "original-programmatic-artwork",
+      "license": "internal-project-artwork",
+      "status": "ready-for-review"
+    },
+    {
+      "id": "category-furniture",
+      "path": "/assets/marketplace/categories/furniture.svg",
+      "category": "marketplace",
+      "type": "illustration",
+      "format": "svg",
+      "theme": "dark",
+      "usage": [
+        "category-navigation",
+        "marketing-placeholder"
+      ],
+      "alt": "Furniture category illustration",
+      "source": "original-programmatic-artwork",
+      "license": "internal-project-artwork",
+      "status": "ready-for-review"
+    },
+    {
+      "id": "category-home-appliances",
+      "path": "/assets/marketplace/categories/home-appliances.svg",
+      "category": "marketplace",
+      "type": "illustration",
+      "format": "svg",
+      "theme": "dark",
+      "usage": [
+        "category-navigation",
+        "marketing-placeholder"
+      ],
+      "alt": "Home appliances category illustration",
+      "source": "original-programmatic-artwork",
+      "license": "internal-project-artwork",
+      "status": "ready-for-review"
+    },
+    {
+      "id": "category-industrial-equipment",
+      "path": "/assets/marketplace/categories/industrial-equipment.svg",
+      "category": "marketplace",
+      "type": "illustration",
+      "format": "svg",
+      "theme": "dark",
+      "usage": [
+        "category-navigation",
+        "marketing-placeholder"
+      ],
+      "alt": "Industrial equipment category illustration",
+      "source": "original-programmatic-artwork",
+      "license": "internal-project-artwork",
+      "status": "ready-for-review"
+    },
+    {
+      "id": "category-automotive-parts",
+      "path": "/assets/marketplace/categories/automotive-parts.svg",
+      "category": "marketplace",
+      "type": "illustration",
+      "format": "svg",
+      "theme": "dark",
+      "usage": [
+        "category-navigation",
+        "marketing-placeholder"
+      ],
+      "alt": "Automotive parts category illustration",
+      "source": "original-programmatic-artwork",
+      "license": "internal-project-artwork",
+      "status": "ready-for-review"
+    },
+    {
+      "id": "category-construction-materials",
+      "path": "/assets/marketplace/categories/construction-materials.svg",
+      "category": "marketplace",
+      "type": "illustration",
+      "format": "svg",
+      "theme": "dark",
+      "usage": [
+        "category-navigation",
+        "marketing-placeholder"
+      ],
+      "alt": "Construction materials category illustration",
+      "source": "original-programmatic-artwork",
+      "license": "internal-project-artwork",
+      "status": "ready-for-review"
+    },
+    {
+      "id": "category-agricultural-equipment",
+      "path": "/assets/marketplace/categories/agricultural-equipment.svg",
+      "category": "marketplace",
+      "type": "illustration",
+      "format": "svg",
+      "theme": "dark",
+      "usage": [
+        "category-navigation",
+        "marketing-placeholder"
+      ],
+      "alt": "Agricultural equipment category illustration",
+      "source": "original-programmatic-artwork",
+      "license": "internal-project-artwork",
+      "status": "ready-for-review"
+    },
+    {
+      "id": "category-packaging-supplies",
+      "path": "/assets/marketplace/categories/packaging-supplies.svg",
+      "category": "marketplace",
+      "type": "illustration",
+      "format": "svg",
+      "theme": "dark",
+      "usage": [
+        "category-navigation",
+        "marketing-placeholder"
+      ],
+      "alt": "Packaging supplies category illustration",
+      "source": "original-programmatic-artwork",
+      "license": "internal-project-artwork",
+      "status": "ready-for-review"
+    },
+    {
+      "id": "category-manufacturing-machinery",
+      "path": "/assets/marketplace/categories/manufacturing-machinery.svg",
+      "category": "marketplace",
+      "type": "illustration",
+      "format": "svg",
+      "theme": "dark",
+      "usage": [
+        "category-navigation",
+        "marketing-placeholder"
+      ],
+      "alt": "Manufacturing machinery category illustration",
+      "source": "original-programmatic-artwork",
+      "license": "internal-project-artwork",
+      "status": "ready-for-review"
+    },
+    {
+      "id": "category-solar-energy",
+      "path": "/assets/marketplace/categories/solar-energy.svg",
+      "category": "marketplace",
+      "type": "illustration",
+      "format": "svg",
+      "theme": "dark",
+      "usage": [
+        "category-navigation",
+        "marketing-placeholder"
+      ],
+      "alt": "Solar energy category illustration",
+      "source": "original-programmatic-artwork",
+      "license": "internal-project-artwork",
+      "status": "ready-for-review"
+    },
+    {
+      "id": "category-medical-equipment",
+      "path": "/assets/marketplace/categories/medical-equipment.svg",
+      "category": "marketplace",
+      "type": "illustration",
+      "format": "svg",
+      "theme": "dark",
+      "usage": [
+        "category-navigation",
+        "marketing-placeholder"
+      ],
+      "alt": "Medical equipment category illustration",
+      "source": "original-programmatic-artwork",
+      "license": "internal-project-artwork",
+      "status": "ready-for-review"
+    }
   ]
 }
