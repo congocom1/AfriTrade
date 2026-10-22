@@ -15,7 +15,7 @@ Use this index to find maintained guidance. **Historic reports are preserved for
 
 | Area | Start with |
 | --- | --- |
-| React and Base44 implementation | [README](../README.md), [AGENTS](../AGENTS.md), [Guides](guides/quickstart.md) |
+| React and Base44 implementation | [README](../README.md), [Guides](guides/quickstart.md) |
 | Design system / accessibility | [Design system](design-system/DESIGN_SYSTEM.md), [Accessibility](design-system/ACCESSIBILITY_REPORT.md) |
 | Brand and user experience | [Brand](design-system/BRAND_IDENTITY.md), [Design handoff](design/AFRITRADE_FIGMA_HANDOFF_2026-10-20.md) |
 | Wallet, payments and security | [Wallet protocol](audit/WALLET_PROTOCOL.md), [Open risks](audit/OPEN_RISKS.md) |
