@@ -44,6 +44,8 @@ export default function Checkout() {
   const [pickupPoints, setPickupPoints] = useState([]);
   const [quote, setQuote] = useState(null);
   const [loadingQuote, setLoadingQuote] = useState(true);
+  const [quoteError, setQuoteError] = useState(false);
+  const [quoteRetry, setQuoteRetry] = useState(0);
   const [consent, setConsent] = useState({ terms: false, marketing: false });
   const [vatRate, setVatRate] = useState(getVatRate());
   const [submitting, setSubmitting] = useState(false);
@@ -58,7 +60,9 @@ export default function Checkout() {
   const isMobileMoney = activeProvider?.kind === 'mobile_money';
 
   useEffect(() => {
-    loadPlatformConfig().then(() => setVatRate(getVatRate()));
+    loadPlatformConfig().then(() => setVatRate(getVatRate())).catch(() => {
+      // Fall back to the configured VAT rate; server pricing is authoritative.
+    });
     (async () => {
       const [z, p] = await Promise.all([
         base44.entities.DeliveryZone.filter({ active: true }).catch(() => []),
@@ -86,17 +90,20 @@ export default function Checkout() {
 
   useEffect(() => {
     if (!items.length) {
+      setQuote(null);
+      setQuoteError(false);
       setLoadingQuote(false);
       return;
     }
     let alive = true;
     setLoadingQuote(true);
+    setQuoteError(false);
     buildCheckoutQuote(base44, { items, deliveryFee, coupon, intlOption: selectedIntlOption })
       .then((q) => {
-        if (alive) setQuote(q);
+        if (alive) { setQuote(q); setQuoteError(false); }
       })
       .catch(() => {
-        if (alive) setQuote(null);
+        if (alive) { setQuote(null); setQuoteError(true); }
       })
       .finally(() => {
         if (alive) setLoadingQuote(false);
@@ -104,7 +111,7 @@ export default function Checkout() {
     return () => {
       alive = false;
     };
-  }, [items, deliveryFee, coupon, selectedIntlOption?.id]);
+  }, [items, deliveryFee, coupon, selectedIntlOption?.id, quoteRetry]);
 
   const groups = useMemo(() => {
     if (!quote?.lines?.length) return [];
@@ -181,7 +188,13 @@ export default function Checkout() {
 
   const applyCoupon = async () => {
     setCouponMessage('');
-    const found = await findCoupon(base44, couponInput);
+    let found;
+    try {
+      found = await findCoupon(base44, couponInput);
+    } catch {
+      setCouponMessage(t('checkout.couponUnavailable'));
+      return;
+    }
     if (!found) {
       setCoupon(null);
       setCouponMessage(t('checkout.couponInvalid'));
@@ -306,6 +319,15 @@ export default function Checkout() {
       </div>
 
       <CheckoutSteps steps={STEPS} current={step} />
+
+      {quoteError && (
+        <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-destructive/40 bg-destructive/10 p-4 text-sm">
+          <p>{t('checkout.quoteUnavailable')}</p>
+          <button type="button" className="min-h-11 rounded-full bg-primary px-4 font-semibold text-primary-foreground" onClick={() => setQuoteRetry((n) => n + 1)}>
+            {t('common.retry')}
+          </button>
+        </div>
+      )}
 
       {error && (
         <div role="alert" className="flex items-start gap-2 rounded-xl border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
