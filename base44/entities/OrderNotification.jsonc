@@ -53,6 +53,8 @@
       "enum": [
         "queued",
         "sent",
+        "sending",
+        "delivery_unknown",
         "failed",
         "skipped"
       ],
