@@ -2,6 +2,8 @@
 
 **Commerce, supplier operations and logistics for the Democratic Republic of the Congo.**
 
+**Canonical deployment:** https://afritrade-2.base44.app · **GitHub:** https://github.com/congocom1/AfriTrade
+
 AfriTrade is a multi-workspace marketplace and logistics application. This monorepo contains a React/Vite web app, Base44 backend functions and schemas, and a Flutter mobile application. It is an actively developed product; a passing build is **not** evidence that every payment, shipping, or compliance flow is ready for production.
 
 ## Project layout
