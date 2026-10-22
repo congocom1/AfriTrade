@@ -1,6 +1,7 @@
 import { usePortalData } from '@/hooks/usePortalData';
 import { useCallback, useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import { isAdmin as hasAdminRole } from '@/lib/roles';
 
 const KEY_PREFIX = 'afritrade:active_tenant:';
 const LEGACY_KEY_PREFIX = 'congo_commerce:active_tenant:';
@@ -41,7 +42,7 @@ export function useTenantScope(entityName) {
   const [selectedId, setSelectedId] = useState(() => readStored(entityName));
   const { data, loading, error, reload } = usePortalData(['account-scope', entityName], async () => {
     const me = await base44.auth.me();
-    const admin = me?.role === 'admin';
+    const admin = hasAdminRole(me);
     const tenantId = String(me?.tenant_id || '').trim();
     const all = await base44.entities[entityName].list('name', 100);
     if (!Array.isArray(all)) throw new Error('Invalid account scope');

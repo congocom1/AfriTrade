@@ -257,7 +257,6 @@ const AuthenticatedApp = () => {
         <Route path="/platform-guidelines" element={<PageWrapper><PlatformGuidelines /></PageWrapper>} />
         <Route path="/checkout-success" element={<PageWrapper><CheckoutSuccess /></PageWrapper>} />
         <Route path="/pricing" element={<PageWrapper><Pricing /></PageWrapper>} />
-        <Route path="/developers" element={<PageWrapper><DeveloperPortal /></PageWrapper>} />
         <Route path="/mentions-legales" element={<PageWrapper><MentionsLegales /></PageWrapper>} />
         <Route path="/cgv" element={<PageWrapper><CGV /></PageWrapper>} />
         <Route path="/confidentialite" element={<PageWrapper><Confidentialite /></PageWrapper>} />
@@ -360,6 +359,7 @@ const AuthenticatedApp = () => {
             <Route path="/admin/disputes" element={<PageWrapper><AdminDisputes /></PageWrapper>} />
             <Route path="/logistics-hub" element={<PageWrapper><LogisticsHub /></PageWrapper>} />
             <Route path="/workflow-monitor" element={<PageWrapper><WorkflowMonitor /></PageWrapper>} />
+            <Route path="/developers" element={<PageWrapper><DeveloperPortal /></PageWrapper>} />
           </Route>
         </Route>
       </Route>

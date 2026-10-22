@@ -25,6 +25,10 @@ const DISCOUNT_PERCENT = 10;
 const VALID_DAYS = 7;
 const EVENT = 'payment_discount';
 
+// Rate limiting configuration for sendUnpaidDiscountEmail
+const DISCOUNT_EMAIL_RATE_LIMIT_PER_HOUR = 120;
+const RATE_WINDOW_MS = 3600 * 1000;
+
 export default async function (req) {
   try {
     const base44 = createClientFromRequest(req);
@@ -37,6 +41,22 @@ export default async function (req) {
     // handed back to the caller, only to the customer's inbox.
     const auth = await requireAdmin(base44);
     if (!auth.ok) return auth.response;
+
+    // The workflow runs on schedule; cap raw calls per IP as outbound traffic.
+    const clientKey = getClientKey(req);
+    const rateLimitResult = await checkRateLimit(
+      base44.asServiceRole,
+      clientKey || 'unidentified',
+      {
+        keyPrefix: 'send_unpaid_discount_email',
+        limit: DISCOUNT_EMAIL_RATE_LIMIT_PER_HOUR,
+        windowMs: RATE_WINDOW_MS,
+        failClosed: true,
+      }
+    );
+    if (!rateLimitResult.ok) {
+      return rateLimitErrorResponse(rateLimitResult);
+    }
 
     const { fulfillment, order } = await resolveFulfillment(base44, fulfillmentId);
     if (!fulfillment) return Response.json({ error: 'FulfillmentOrder not found' }, { status: 404 });

@@ -1,6 +1,7 @@
 import { usePortalData } from '@/hooks/usePortalData';
 import { useCallback, useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import { isAdmin as hasAdminRole } from '@/lib/roles';
 
 const ACTIVE_TENANT_KEY = 'afritrade:saas:active_tenant';
 const LEGACY_ACTIVE_TENANT_KEY = 'congo_commerce:saas:active_tenant';
@@ -129,7 +130,7 @@ export function useActiveTenant() {
   const [selectedId, setSelectedId] = useState(() => readActiveTenantId());
   const { data, loading, error, reload } = usePortalData(['saas-account-scope'], async () => {
     const me = await base44.auth.me();
-    const isAdmin = me?.role === 'admin';
+    const isAdmin = hasAdminRole(me);
     const email = String(me?.email || '').trim().toLowerCase();
     const [all, memberships, hostTenant] = await Promise.all([
       base44.entities.Tenant.list('name', 200),
@@ -153,7 +154,7 @@ export function useActiveTenant() {
 
 export function isTenantOwner(tenant, me) {
   if (!tenant || !me) return false;
-  if (me.role === 'admin') return true;
+  if (hasAdminRole(me)) return true;
   return String(tenant.owner_email || '').trim().toLowerCase() === String(me.email || '').trim().toLowerCase();
 }
 

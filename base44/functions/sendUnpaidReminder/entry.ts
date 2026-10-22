@@ -32,6 +32,22 @@ export default async function (req) {
     const auth = await requireAdmin(base44);
     if (!auth.ok) return auth.response;
 
+    // The workflow runs on schedule; cap raw calls per IP as outbound traffic.
+    const clientKey = getClientKey(req);
+    const rateLimitResult = await checkRateLimit(
+      base44.asServiceRole,
+      clientKey || 'unidentified',
+      {
+        keyPrefix: 'send_unpaid_reminder',
+        limit: SEND_UNPAID_REMINDER_RATE_LIMIT_PER_HOUR,
+        windowMs: RATE_WINDOW_MS,
+        failClosed: true,
+      }
+    );
+    if (!rateLimitResult.ok) {
+      return rateLimitErrorResponse(rateLimitResult);
+    }
+
     const { fulfillment, order } = await resolveFulfillment(base44, fulfillmentId);
     if (!fulfillment) return Response.json({ error: 'FulfillmentOrder not found' }, { status: 404 });
 

@@ -2452,7 +2452,10 @@ export default {
     categories: 'Catégories',
     clearSearch: 'Effacer la recherche',
     close: 'Fermer',
+    courierSpace: 'Espace livreur',
+    creatorSpace: 'Espace créateur',
     discover: 'Découvrir',
+    employeeSpace: 'Équipe',
     guest: 'Visiteur',
     guestDesc: 'Connectez-vous pour suivre vos commandes.',
     home: 'Accueil',
@@ -2470,6 +2473,7 @@ export default {
     sellerSpace: 'Espace vendeur',
     utilities: 'Préférences',
     wishlist: 'Favoris',
+    workspaces: 'Espaces de travail',
   },
 
   newsletterSignup: {

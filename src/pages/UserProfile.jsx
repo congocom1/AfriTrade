@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { base44 } from '@/api/base44Client';
+import { isAdmin } from '@/lib/roles';
 import StatusBadge from '@/components/StatusBadge';
 import StatCard from '@/components/ops/StatCard';
 import ContactForm from '@/components/profile/ContactForm';
@@ -30,7 +31,7 @@ export default function UserProfile() {
         <p className="text-xs text-muted-foreground">{t('userProfile.memberSince', { date: new Date(user.created_date).toLocaleDateString('fr-FR') })}</p>
       </div>
       <div className="grid grid-cols-3 gap-3">
-        <StatCard label={t('userProfile.accountStatus')} value={t('userProfile.active')} tone="good" hint={user.role === 'admin' ? t('userProfile.adminRole') : t('userProfile.clientRole')} />
+        <StatCard label={t('userProfile.accountStatus')} value={t('userProfile.active')} tone="good" hint={isAdmin(user) ? t('userProfile.adminRole') : t('userProfile.clientRole')} />
         <StatCard label={t('userProfile.orders')} value={orders?.length ?? '–'} />
         <StatCard label={t('userProfile.totalPaid')} value={`${spent.toFixed(2)} $`} />
       </div>

@@ -1,10 +1,12 @@
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
-import { X, User, Heart, MessageCircle, Bell, Store, ShieldCheck, LogOut, BriefcaseBusiness } from 'lucide-react';
+import { X, User, Heart, MessageCircle, Bell, ShieldCheck, LogOut } from 'lucide-react';
 import CurrencyToggle from '@/components/CurrencyToggle';
 import LanguageToggle from '@/components/LanguageToggle';
 import ThemeToggle from '@/components/ThemeToggle';
 import { useAuth } from '@/lib/AuthContext';
+import { isAdmin } from '@/lib/roles';
+import { WORKSPACE_ITEMS } from '@/components/layout/workspaces';
 import {
   Drawer,
   DrawerContent,
@@ -13,14 +15,9 @@ import {
 } from '@/components/ui/drawer';
 
 const USER_ITEMS = [
-  { key: 'workforce.title', path: '/employee', icon: BriefcaseBusiness },
   { key: 'nav.wishlist', path: '/wishlist', icon: Heart },
   { key: 'nav.messages', path: '/messages', icon: MessageCircle },
   { key: 'nav.notifications', path: '/notifications', icon: Bell },
-];
-
-const SELLER_ITEMS = [
-  { key: 'nav.sellerSpace', path: '/seller', icon: Store },
 ];
 
 const ADMIN_ITEMS = [
@@ -99,8 +96,6 @@ export default function MobileDrawer({ isOpen, onClose }) {
                 {user ? (
                   <>
                     {renderItems(USER_ITEMS)}
-                    {user.role === 'seller' && renderItems(SELLER_ITEMS)}
-                    {user.role === 'admin' && renderItems(ADMIN_ITEMS)}
                     <button
                       type="button"
                       onClick={() => { logout(); onClose(); }}
@@ -115,6 +110,17 @@ export default function MobileDrawer({ isOpen, onClose }) {
                 )}
               </div>
             </section>
+            {user && (
+              <section aria-label={t('nav.workspaces')}>
+                <h3 className="px-4 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  {t('nav.workspaces')}
+                </h3>
+                <div className="space-y-3">
+                  {renderItems(WORKSPACE_ITEMS)}
+                  {isAdmin(user) && renderItems(ADMIN_ITEMS)}
+                </div>
+              </section>
+            )}
             <section aria-label={t('nav.utilities')} className="border-t border-border pt-4">
               <h3 className="px-4 pb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t('nav.utilities')}</h3>
               <div className="flex flex-wrap items-center gap-3 px-4"><ThemeToggle /><CurrencyToggle /><LanguageToggle /></div>

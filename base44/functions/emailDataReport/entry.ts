@@ -29,26 +29,13 @@ export default async function (req) {
   try {
     const base44 = createClientFromRequest(req);
 
-    // Rate limiting for emailDataReport - check before auth
+    // The client address keys the rate limit counter. It is only read once the
+    // administrator check below has passed, so a rejected caller never burns a slot.
     const clientKey = getClientKey(req);
     if (!clientKey) {
       console.warn(
         "[emailDataReport] no client address on the request — applying shared rate limit",
       );
-    }
-
-    const rateLimitResult = await checkRateLimit(
-      null, // We'll check this later after we have db
-      clientKey || "unidentified",
-      {
-        keyPrefix: "email_data_report",
-        limit: EMAIL_DATA_REPORT_RATE_LIMIT_PER_HOUR,
-        windowMs: RATE_WINDOW_MS,
-      }
-    );
-
-    if (!rateLimitResult.ok) {
-      return rateLimitErrorResponse(rateLimitResult);
     }
 
     const body = await req.json().catch(() => ({}));
@@ -63,6 +50,23 @@ export default async function (req) {
     // marked it ready.
     const auth = await requireAdmin(base44);
     if (!auth.ok) return auth.response;
+
+    // The cap is applied against the service-role client, so every call is counted
+    // — a check without a database would silently count nothing.
+    const rateLimitResultDb = await checkRateLimit(
+      base44.asServiceRole,
+      clientKey || "unidentified",
+      {
+        keyPrefix: "email_data_report",
+        limit: EMAIL_DATA_REPORT_RATE_LIMIT_PER_HOUR,
+        windowMs: RATE_WINDOW_MS,
+        failClosed: true,
+      }
+    );
+
+    if (!rateLimitResultDb.ok) {
+      return rateLimitErrorResponse(rateLimitResultDb);
+    }
 
     const service = base44.asServiceRole;
     const request = await service.entities.DataRequest.get(requestId).catch(() => null);

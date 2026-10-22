@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Search, Menu, ShoppingBag, User, Heart, MessageCircle, Bell, Store, ShieldCheck, BriefcaseBusiness, LogOut, SlidersHorizontal, ChevronDown } from 'lucide-react';
+import { Search, Menu, ShoppingBag, User, Heart, MessageCircle, Bell, ShieldCheck, LogOut, SlidersHorizontal, ChevronDown } from 'lucide-react';
 import { useCart } from '@/lib/cart';
 import { useAuth } from '@/lib/AuthContext';
+import { isAdmin } from '@/lib/roles';
+import { WORKSPACE_ITEMS } from '@/components/layout/workspaces';
 import MobileDrawer from '@/components/MobileDrawer';
 import CurrencyToggle from '@/components/CurrencyToggle';
 import LanguageToggle from '@/components/LanguageToggle';
@@ -16,7 +18,6 @@ const ACCOUNT_LINKS = [
   ['/wishlist', 'nav.wishlist', Heart],
   ['/messages', 'nav.messages', MessageCircle],
   ['/notifications', 'nav.notifications', Bell],
-  ['/employee', 'workforce.title', BriefcaseBusiness],
 ];
 
 export default function TopBar() {
@@ -86,7 +87,10 @@ export default function TopBar() {
             {user ? <>
               <DropdownMenuLabel className="truncate">{user.full_name || user.name || user.email}</DropdownMenuLabel><DropdownMenuSeparator />
               {ACCOUNT_LINKS.map(([to, key, Icon]) => <DropdownMenuItem key={to} asChild><Link to={to}><Icon className="mr-2 h-4 w-4" />{t(key)}</Link></DropdownMenuItem>)}
-              {['seller', 'admin'].includes(user.role) && <DropdownMenuItem asChild><Link to={user.role === 'admin' ? '/admin' : '/seller'}>{user.role === 'admin' ? <ShieldCheck className="mr-2 h-4 w-4" /> : <Store className="mr-2 h-4 w-4" />}{t(user.role === 'admin' ? 'nav.admin' : 'nav.sellerSpace')}</Link></DropdownMenuItem>}
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel className="font-normal">{t('nav.workspaces')}</DropdownMenuLabel>
+              {WORKSPACE_ITEMS.map(({ path, key, icon: Icon }) => <DropdownMenuItem key={path} asChild><Link to={path}><Icon className="mr-2 h-4 w-4" />{t(key)}</Link></DropdownMenuItem>)}
+              {isAdmin(user) && <DropdownMenuItem asChild><Link to="/admin"><ShieldCheck className="mr-2 h-4 w-4" />{t('nav.admin')}</Link></DropdownMenuItem>}
               <DropdownMenuSeparator /><DropdownMenuItem onSelect={() => logout()} className="text-destructive"><LogOut className="mr-2 h-4 w-4" />{t('nav.logout')}</DropdownMenuItem>
             </> : <><DropdownMenuItem asChild><Link to="/login">{t('nav.login')}</Link></DropdownMenuItem><DropdownMenuItem asChild><Link to="/register">{t('nav.register')}</Link></DropdownMenuItem></>}
           </DropdownMenuContent>

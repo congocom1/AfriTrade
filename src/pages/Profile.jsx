@@ -9,12 +9,15 @@ import {
 import { fetchMyOrders } from '@/lib/customerAccount';
 import { getProfile, saveProfile } from '@/lib/session';
 import { getCities } from '@/lib/config';
+import { useAuth } from '@/lib/AuthContext';
+import { isAdmin } from '@/lib/roles';
 import StatusBadge from '@/components/StatusBadge';
 import { formatUsdAmount, formatDate } from '@/lib/format';
 import BackButton from '@/components/BackButton';
 
 export default function Profile() {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const LINKS = [
     { to: '/wallet', label: t('profile.linkWallet'), icon: Wallet },
     { to: '/coupons', label: t('profile.linkCoupons'), icon: Ticket },
@@ -162,13 +165,15 @@ export default function Profile() {
             <p className="text-[11px] text-muted-foreground">{t('profile.courierSub')}</p>
           </div>
         </Link>
-        <Link to="/admin" className="flex items-center gap-3 rounded-xl border border-border bg-card p-3.5">
-          <ShieldCheck className="h-4 w-4 text-primary" />
-          <div>
-            <p className="text-sm font-semibold">{t('profile.adminSpace')}</p>
-            <p className="text-[11px] text-muted-foreground">{t('profile.adminSub')}</p>
-          </div>
-        </Link>
+        {isAdmin(user) && (
+          <Link to="/admin" className="flex items-center gap-3 rounded-xl border border-border bg-card p-3.5">
+            <ShieldCheck className="h-4 w-4 text-primary" />
+            <div>
+              <p className="text-sm font-semibold">{t('profile.adminSpace')}</p>
+              <p className="text-[11px] text-muted-foreground">{t('profile.adminSub')}</p>
+            </div>
+          </Link>
+        )}
         <AccountDeletionRequest />
       </section>
     </div>

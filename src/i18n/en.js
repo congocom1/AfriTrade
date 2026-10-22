@@ -2453,7 +2453,10 @@ export default {
     categories: 'Categories',
     clearSearch: 'Clear search',
     close: 'Close',
+    courierSpace: 'Courier space',
+    creatorSpace: 'Creator space',
     discover: 'Discover',
+    employeeSpace: 'Workforce',
     guest: 'Guest',
     guestDesc: 'Log in to track your orders.',
     home: 'Home',
@@ -2471,6 +2474,7 @@ export default {
     sellerSpace: 'Seller space',
     utilities: 'Preferences',
     wishlist: 'Wishlist',
+    workspaces: 'Workspaces',
   },
 
   newsletterSignup: {
