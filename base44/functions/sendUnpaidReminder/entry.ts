@@ -23,14 +23,14 @@ const RATE_WINDOW_MS = 3600 * 1000;
 export default async function (req) {
   try {
     const base44 = createClientFromRequest(req);
+    // Fail closed: reject anonymous callers before consuming a rate-limit slot
+    // or touching the request. They get 401 rather than 400, and no slot burns.
+    const auth = await requireAdmin(base44);
+    if (!auth.ok) return addSecurityHeaders(auth.response);
+
     const body = await req.json().catch(() => ({}));
     const fulfillmentId = String(body.fulfillment_id || '').trim();
-    if (!fulfillmentId) return Response.json({ error: 'fulfillment_id is required' }, { status: 400 });
-
-    // Posts a payment reminder to a customer, so only the follow-up workflow
-    // (or an administrator) may trigger it.
-    const auth = await requireAdmin(base44);
-    if (!auth.ok) return auth.response;
+    if (!fulfillmentId) return addSecurityHeaders(Response.json({ error: 'fulfillment_id is required' }, { status: 400 }));
 
     // The workflow runs on schedule; cap raw calls per IP as outbound traffic.
     const clientKey = getClientKey(req);
