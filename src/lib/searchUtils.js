@@ -7,14 +7,46 @@
  * - Better typo tolerance with edit distance
  * - Field-weighted scoring (title, brand, category, etc.)
  * - Faceted filtering helpers
- * - Performance optimizations
+ * - Performance optimizations with memoization
  */
+
+// Simple LRU cache implementation for memoization
+const CACHE_MAX_SIZE = 500;
+const editDistanceCache = new Map();
+const similarityScoreCache = new Map();
+const scoreProductRelevanceCache = new Map();
+
+function getCached(cache, key) {
+  if (cache.has(key)) {
+    // Move to end (most recently used)
+    const value = cache.get(key);
+    cache.delete(key);
+    cache.set(key, value);
+    return value;
+  }
+  return undefined;
+}
+
+function setCached(cache, key, value) {
+  if (cache.size >= CACHE_MAX_SIZE) {
+    // Remove least recently used (first entry)
+    const firstKey = cache.keys().next().value;
+    cache.delete(firstKey);
+  }
+  cache.set(key, value);
+}
 
 /**
  * Calculate edit distance (Levenshtein distance) between two strings
  * Used for typo tolerance in search
+ * Memoized for performance
  */
 export function editDistance(a, b) {
+  // Normalize: lowercase for cache key (since similarityScore lowercases anyway)
+  const key = `${a.toLowerCase()}|${b.toLowerCase()}`;
+  const cached = getCached(editDistanceCache, key);
+  if (cached !== undefined) return cached;
+
   if (a.length === 0) return b.length;
   if (b.length === 0) return a.length;
 
@@ -44,29 +76,64 @@ export function editDistance(a, b) {
     }
   }
 
-  return matrix[b.length][a.length];
+  const result = matrix[b.length][a.length];
+  setCached(editDistanceCache, key, result);
+  return result;
 }
 
 /**
  * Calculate similarity score based on edit distance
  * Returns a score between 0 and 1, where 1 is identical
+ * Memoized for performance
  */
 export function similarityScore(a, b) {
+  const key = `${a.toLowerCase()}|${b.toLowerCase()}`;
+  const cached = getCached(similarityScoreCache, key);
+  if (cached !== undefined) return cached;
+
   const maxLen = Math.max(a.length, b.length);
   if (maxLen === 0) return 1;
 
   const distance = editDistance(a.toLowerCase(), b.toLowerCase());
-  return 1 - (distance / maxLen);
+  const result = 1 - (distance / maxLen);
+  setCached(similarityScoreCache, key, result);
+  return result;
+}
+
+/**
+ * Clear all search utility caches (useful for testing or memory management)
+ */
+export function clearSearchCaches() {
+  editDistanceCache.clear();
+  similarityScoreCache.clear();
+  scoreProductRelevanceCache.clear();
 }
 
 /**
  * Enhanced product scoring function for search relevance
  * Uses field weighting and improved matching algorithms
+ * Memoized for performance
  */
 export function scoreProductRelevance(product, searchTerm) {
   if (!searchTerm || searchTerm.trim() === '') return 0;
 
   const term = searchTerm.trim().toLowerCase();
+  // Cache key based on product fields that affect scoring and search term
+  // Include ID if available, plus sold_count, rating, and field values
+  const productKey = [
+    product.id || product._id || '',
+    product.sold_count || 0,
+    product.rating || 0,
+    product.title || '',
+    product.brand || '',
+    product.category_name || '',
+    product.seller_name || '',
+    Array.isArray(product.tags) ? product.tags.join(',') : (product.tags || '')
+  ].join('|');
+  const cacheKey = `${productKey}|${term}`;
+  const cached = getCached(scoreProductRelevanceCache, cacheKey);
+  if (cached !== undefined) return cached;
+
   const words = term.split(/\s+/).filter(w => w.length > 0);
 
   if (words.length === 0) return 0;
@@ -136,6 +203,7 @@ export function scoreProductRelevance(product, searchTerm) {
     totalScore = Math.min(totalScore + popularityBoost + ratingBoost, 1.0);
   }
 
+  setCached(scoreProductRelevanceCache, cacheKey, totalScore);
   return totalScore;
 }
 

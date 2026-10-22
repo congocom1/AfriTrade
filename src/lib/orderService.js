@@ -118,6 +118,19 @@ export async function placeOrder(client, { items, profile, delivery, couponCode,
   const db = client || base44;
   const sessionId = getSessionId();
   const affiliateCode = getReferralCode();
+
+  // Client-side stock validation before server call (defensive: server is authoritative)
+  // Re-validate stock immediately before the server call to minimize race window
+  const lines = await loadCartLines(db, items);
+  const outOfStock = lines.filter((l) => !l.stock_ok);
+  if (outOfStock.length > 0) {
+    const names = outOfStock.map((l) => l.product.title).join(', ');
+    throw new Error(`Rupture de stock pour : ${names}. Veuillez mettre à jour votre panier.`);
+  }
+
+  // Build quote for validation but we use the server response for actual order
+  const _quote = await buildCheckoutQuote(db, { items, couponCode: couponCode || '' });
+
   let data;
   try {
     const res = await db.functions.invoke('place-order', {

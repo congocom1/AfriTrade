@@ -1,18 +1,35 @@
 import { clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 
+/**
+ * Merge class names with tailwind-merge for deduplication
+ * @param {...string} inputs - Class names to merge
+ * @returns {string} Merged class names
+ */
 export function cn(...inputs) {
   return twMerge(clsx(inputs))
-} 
+}
 
 
 // Form validation utilities
+
+/**
+ * Check if a value is a valid HSL color string
+ * @param {string} value - HSL color string (e.g., "120 50% 30%")
+ * @returns {boolean} True if valid HSL format
+ */
 export function isValidHSLColor(value) {
   if (!value) return false;
   const hslRegex = /^\d+\s+\d+%\s+\d+%$/;
   return hslRegex.test(value.trim());
 }
 
+/**
+ * Calculate contrast ratio between two HSL colors
+ * @param {string} _fg - Foreground HSL color
+ * @param {string} _bg - Background HSL color
+ * @returns {number} WCAG contrast ratio
+ */
 export function getContrastRatio(_fg, _bg) {
   // Simplified contrast ratio calculation
   // For production use, consider a more robust implementation
@@ -64,4 +81,8 @@ export function getContrastRatio(_fg, _bg) {
   }
 }
 
+/**
+ * Check if the current window is inside an iframe
+ * @returns {boolean} True if in iframe
+ */
 export const isIframe = window.self !== window.top;

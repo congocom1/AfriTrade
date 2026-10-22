@@ -126,9 +126,24 @@ export default function Checkout() {
 
   /** Blocks the buyer on the current step instead of showing every error at once. */
   const validateStep = (index) => {
+    // Phone validation for DRC format (+243XXXXXXXXX or 0XXXXXXXXX)
+    const validatePhone = (phone) => {
+      if (!phone?.trim()) return false;
+      const cleaned = phone.replace(/\s+/g, '');
+      // DRC phone: +243XXXXXXXXX (12 digits with country code) or 0XXXXXXXXX (10 digits local)
+      const drcPhoneRegex = /^(\+243|0)[0-9]{9}$/;
+      return drcPhoneRegex.test(cleaned);
+    };
+
     if (index === 0) {
       if (!profile.name?.trim() || !profile.phone?.trim()) {
         return t('checkout.needNamePhone');
+      }
+      if (!validatePhone(profile.phone)) {
+        return t('checkout.invalidPhone');
+      }
+      if (!profile.city) {
+        return t('checkout.cityRequired');
       }
       if (deliveryMethod === 'home_delivery' && !profile.address?.trim()) {
         return t('checkout.needAddress');

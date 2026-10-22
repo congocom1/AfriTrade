@@ -262,6 +262,8 @@ export default {
     needAddress: 'Enter your delivery address.',
     needPickup: 'Choose a pickup point.',
     needTerms: 'You must accept the terms of sale and the privacy policy.',
+    invalidPhone: 'Invalid phone number. Format: +243XXXXXXXXX or 0XXXXXXXXX.',
+    cityRequired: 'Please select your delivery city.',
     cardLoginRequired: 'Sign in before paying by card.',
     signIn: 'Sign in',
     couponInvalid: 'Invalid or expired promo code.',
