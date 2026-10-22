@@ -2018,7 +2018,7 @@ export default {
     intlNote: 'Intlnote',
     intlTitle: 'Intltitle',
     limitedTime: 'Limitedtime',
-    loadFailed: 'Loadfailed',
+    loadFailed: 'Some information could not be loaded. Please try again.',
     localSellers: 'Localsellers',
     localSellersSub: 'Localsellerssub',
     newArrivals: 'Newarrivals',

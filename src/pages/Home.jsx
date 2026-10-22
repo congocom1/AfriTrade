@@ -29,19 +29,34 @@ export default function Home() {
     setLoading(true);
     setLoadFailed(false);
     try {
-      await loadPlatformConfig();
-      const scope = await resolveStorefrontScope();
-      const [p, c, sellers, ct] = await Promise.all([
+      // Independent public collections should not take down the entire storefront.
+      // Keep successful results visible when an optional feed is unavailable.
+      const [config, scopeResult, productResult, categoryResult, sellerResult, contentResult] = await Promise.allSettled([
+        loadPlatformConfig(),
+        resolveStorefrontScope(),
         base44.entities.Product.filter({ status: 'published' }, '-created_date', 60),
         base44.entities.Category.list('sort_order', 20),
         base44.entities.Seller.filter({ status: 'active' }, '-rating', 8),
         base44.entities.Content.filter({ status: 'published' }, '-likes_count', 10),
       ]);
       if (!isActive()) return;
-      setProducts(scopeRecords(p, scope));
-      setCategories(c);
-      setSellers(scopeRecords(sellers, scope));
-      setContent(ct);
+      const resultRows = [config, scopeResult, productResult, categoryResult, sellerResult, contentResult];
+      const failed = resultRows.some((result) => result.status === 'rejected');
+      if (failed) {
+        console.warn('[Home] One or more storefront data sources could not be loaded',
+          resultRows.map((result, index) => result.status === 'rejected' ? index : null).filter((index) => index !== null));
+      }
+      const scope = scopeResult.status === 'fulfilled' ? scopeResult.value : null;
+      // If scope lookup fails, do not display unscoped records from another tenant.
+      if (scopeResult.status === 'fulfilled' && productResult.status === 'fulfilled') {
+        setProducts(scopeRecords(productResult.value, scope));
+      }
+      if (categoryResult.status === 'fulfilled') setCategories(categoryResult.value);
+      if (scopeResult.status === 'fulfilled' && sellerResult.status === 'fulfilled') {
+        setSellers(scopeRecords(sellerResult.value, scope));
+      }
+      if (contentResult.status === 'fulfilled') setContent(contentResult.value);
+      setLoadFailed(failed);
     } catch {
       if (isActive()) setLoadFailed(true);
     } finally {
