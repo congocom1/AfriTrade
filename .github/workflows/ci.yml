@@ -78,7 +78,7 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - name: Run staging smoke and anonymous route-guard tests
-        run: npx playwright test test/e2e/smoke.spec.js test/e2e/route-guards.spec.js
+        run: npx playwright test test/e2e/smoke.spec.js test/e2e/route-guards.spec.js --project=chromium
         env:
           BASE_URL: ${{ vars.STAGING_BASE_URL }}
           CI: 'true' 

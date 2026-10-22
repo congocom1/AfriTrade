@@ -157,7 +157,7 @@ export default async function (req) {
       // `sending` remains and the next run requires review instead of duplicating mail.
     } catch (error) {
       const status = Number(error?.status || error?.statusCode || error?.response?.status || 0);
-      const retryable = status === 429 || status === 503;
+      const retryable = status === 429; // 503 may have occurred after mail acceptance: require human review
       await service.entities.DataRequest.update(requestId, {
         email_status: retryable ? 'failed' : 'delivery_unknown',
         email_error: String(error?.message || error).slice(0, 500),

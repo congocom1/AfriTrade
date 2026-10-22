@@ -228,13 +228,13 @@ export function rateLimitErrorResponse(
   if (result.unavailable) {
     return secureJsonResponse(
       { error: "Service temporairement indisponible.", status: "unavailable" },
-      { status: 503, headers: { "Cache-Control": "no-store" } },
+      { status: 503, headers: { "Cache-Control": "no-store", "Retry-After": "120" } },
       options
     );
   }
   return secureJsonResponse(
     { error: message, status: "rate_limited", limit: result.limit },
-    { status: 429 },
+    { status: 429, headers: { "Cache-Control": "no-store", "Retry-After": "3600" } },
     options
   );
 }

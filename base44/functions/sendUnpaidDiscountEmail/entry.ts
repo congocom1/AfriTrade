@@ -147,7 +147,7 @@ export default async function (req) {
       });
     } catch (error) {
       const status = Number(error?.status || error?.statusCode || error?.response?.status || 0);
-      const retryable = status === 429 || status === 503;
+      const retryable = status === 429; // 503 may have occurred after mail acceptance: require human review
       await base44.asServiceRole.entities.OrderNotification.update(ledger.id, {
         status: retryable ? 'failed' : 'delivery_unknown',
         attempts: 1,
