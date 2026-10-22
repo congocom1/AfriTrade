@@ -7,13 +7,17 @@
  *   await compareScreenshot(page, 'my-test-name', { threshold: 0.1 });
  */
 
-const fs = require('fs');
-const path = require('path');
-const { PNG } = require('pngjs');
-const pixelmatch = require('pixelmatch');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { PNG } from 'pngjs';
+import pixelmatch from 'pixelmatch';
 
-const BASELINE_DIR = path.join(__dirname, 'baseline');
-const DIFF_DIR = path.join(__dirname, 'diff');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+export const BASELINE_DIR = path.join(__dirname, 'baseline');
+export const DIFF_DIR = path.join(__dirname, 'diff');
 
 /**
  * Ensure directories exist
@@ -37,7 +41,7 @@ function ensureDirs() {
  * @param {Object} options.screenshotOptions - Additional options passed to page.screenshot()
  * @returns {Promise<{passed: boolean, diffPixels: number, totalPixels: number, diffRatio: number}>}
  */
-async function compareScreenshot(page, testName, options = {}) {
+export async function compareScreenshot(page, testName, options = {}) {
   const {
     threshold = 0.1,
     updateBaseline = false,
@@ -110,7 +114,7 @@ async function compareScreenshot(page, testName, options = {}) {
  * @param {Array<{name: string, width: number, height: number}>} viewports - Viewport configs
  * @param {Object} options - Same as compareScreenshot options
  */
-async function compareResponsive(page, testName, viewports, options = {}) {
+export async function compareResponsive(page, testName, viewports, options = {}) {
   const results = [];
   
   for (const viewport of viewports) {
@@ -130,7 +134,7 @@ async function compareResponsive(page, testName, viewports, options = {}) {
  * @param {string} testName - Base test name
  * @param {Object} options - Same as compareScreenshot options
  */
-async function compareThemes(page, testName, options = {}) {
+export async function compareThemes(page, testName, options = {}) {
   const results = [];
   
   // Light theme
@@ -153,7 +157,7 @@ async function compareThemes(page, testName, options = {}) {
  * @param {string[]} locales - Locale codes (e.g., ['en', 'fr', 'ln', 'sw'])
  * @param {Object} options - Same as compareScreenshot options
  */
-async function compareLocales(page, testName, locales, options = {}) {
+export async function compareLocales(page, testName, locales, options = {}) {
   const results = [];
   const baseUrl = page.url().split('?')[0]; // Remove query params
   
@@ -167,12 +171,3 @@ async function compareLocales(page, testName, locales, options = {}) {
   
   return results;
 }
-
-module.exports = {
-  compareScreenshot,
-  compareResponsive,
-  compareThemes,
-  compareLocales,
-  BASELINE_DIR,
-  DIFF_DIR,
-};
