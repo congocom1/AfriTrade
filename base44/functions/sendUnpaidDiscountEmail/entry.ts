@@ -70,9 +70,11 @@ export default async function (req) {
     const code = discountCode(fulfillment.id);
 
     const alreadySent = await base44.asServiceRole.entities.OrderNotification
-      .filter({ order_number: reference, event: EVENT, status: 'sent' })
-      .catch(() => []);
-    if (alreadySent.length) return Response.json({ skipped: true, reason: 'discount already sent' });
+      .filter({ order_number: reference, event: EVENT });
+    if (alreadySent.some((row) => row.status === 'sent')) return Response.json({ skipped: true, reason: 'discount already sent' });
+    if (alreadySent.some((row) => ['queued', 'sending', 'delivery_unknown'].includes(row.status))) {
+      return addSecurityHeaders(Response.json({ error: 'Delivery outcome requires review' }, { status: 409 }));
+    }
 
     const expiresAt = addDays(VALID_DAYS);
     const subject = `Votre commande ${reference} vous attend — ${DISCOUNT_PERCENT} % de remise`;
@@ -107,7 +109,7 @@ export default async function (req) {
       return Response.json({ sent: false, skipped: true, reason: 'no customer email', order_number: reference });
     }
 
-    const coupons = await base44.asServiceRole.entities.Coupon.filter({ code }).catch(() => []);
+    const coupons = await base44.asServiceRole.entities.Coupon.filter({ code });
     const coupon = coupons[0] || await base44.asServiceRole.entities.Coupon.create({
       ...tenant,
       code,
@@ -135,6 +137,7 @@ export default async function (req) {
     `;
 
     try {
+      await base44.asServiceRole.entities.OrderNotification.update(ledger.id, { status: 'sending', attempts: 1 });
       await base44.asServiceRole.integrations.Core.SendEmail({
         to: email,
         subject,
@@ -142,17 +145,11 @@ export default async function (req) {
         text: message,
         from_name: 'AfriTrade',
       });
-      await base44.asServiceRole.entities.OrderNotification.update(ledger.id, {
-        status: 'sent',
-        channel: 'email',
-        provider: 'email',
-        sent_at: new Date().toISOString(),
-        attempts: 1,
-        error: '',
-      });
     } catch (error) {
+      const status = Number(error?.status || error?.statusCode || error?.response?.status || 0);
+      const retryable = status === 429 || status === 503;
       await base44.asServiceRole.entities.OrderNotification.update(ledger.id, {
-        status: 'failed',
+        status: retryable ? 'failed' : 'delivery_unknown',
         attempts: 1,
         error: String(error?.message || error).slice(0, 500),
       });
@@ -165,8 +162,12 @@ export default async function (req) {
         severity: 'warning',
         details: { code, error: String(error?.message || error).slice(0, 300) },
       });
-      return Response.json({ sent: false, reason: 'email refused', order_number: reference });
+      return addSecurityHeaders(Response.json({ sent: false, retryable, reason: 'email delivery failed; review notification ledger', order_number: reference }, { status: retryable ? status : 503, headers: { 'Retry-After': retryable ? '120' : '3600' } }));
     }
+
+    await base44.asServiceRole.entities.OrderNotification.update(ledger.id, {
+      status: 'sent', channel: 'email', provider: 'email', sent_at: new Date().toISOString(), attempts: 1, error: '',
+    });
 
     await base44.asServiceRole.entities.AuditLog.create({
       action: 'billing.unpaid_discount_sent',
@@ -185,6 +186,7 @@ export default async function (req) {
       order_number: reference,
     });
   } catch (error) {
-    return Response.json({ error: String(error?.message || error) }, { status: 500 });
+    console.error('[sendUnpaidDiscountEmail] failed', { error: String(error?.message || error).slice(0, 200) });
+    return addSecurityHeaders(Response.json({ error: 'Discount email unavailable; verify notification ledger before retry' }, { status: 503, headers: { 'Retry-After': '120' } }));
   }
 }

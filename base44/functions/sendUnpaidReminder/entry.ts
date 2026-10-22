@@ -58,8 +58,7 @@ export default async function (req) {
     const reference = orderNumber(fulfillment, order);
     const title = `Rappel : votre commande ${reference} n'est pas encore réglée`;
     const existing = await base44.asServiceRole.entities.Notification
-      .filter({ title, order_number: reference })
-      .catch(() => []);
+      .filter({ title, order_number: reference });
     if (existing.length) return Response.json({ skipped: true, reason: 'reminder already sent', notification_id: existing[0].id });
 
     const hours = hoursSince(fulfillment.created_date);
@@ -95,6 +94,7 @@ export default async function (req) {
       hours_since_creation: hours,
     });
   } catch (error) {
-    return Response.json({ error: String(error?.message || error) }, { status: 500 });
+    console.error('[sendUnpaidReminder] failed', { error: String(error?.message || error).slice(0, 200) });
+    return addSecurityHeaders(Response.json({ error: 'Reminder unavailable' }, { status: 503, headers: { 'Retry-After': '120' } }));
   }
 }
