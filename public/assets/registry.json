@@ -1,0 +1,10 @@
+{
+  "version": "1.0.0",
+  "assets": [
+    { "id": "category-electronics", "path": "/assets/marketplace/categories/electronics.svg", "category": "marketplace", "type": "illustration", "format": "svg", "theme": "dark", "usage": ["home", "category-navigation"], "alt": "Electronics and devices", "source": "original-programmatic-artwork", "license": "internal-project-artwork", "status": "ready-for-review" },
+    { "id": "category-home-decor", "path": "/assets/marketplace/categories/home-decor.svg", "category": "marketplace", "type": "illustration", "format": "svg", "theme": "dark", "usage": ["home", "category-navigation"], "alt": "Furniture and home decor", "source": "original-programmatic-artwork", "license": "internal-project-artwork", "status": "ready-for-review" },
+    { "id": "route-china-drc", "path": "/assets/logistics/corridor/africa-china-route.svg", "category": "logistics", "type": "diagram", "format": "svg", "theme": "dark", "usage": ["logistics", "supplier-onboarding"], "alt": "Six stages from supplier to delivery in DR Congo", "source": "original-programmatic-artwork", "license": "internal-project-artwork", "status": "ready-for-review" },
+    { "id": "logistics-warehouse-photo", "path": "/photography/fulfillment-floor.jpg", "category": "logistics", "type": "photo", "format": "jpg", "theme": "neutral", "usage": ["homepage"], "alt": "Illustrative fulfillment facility", "source": "unsplash:photo-1553413077-190dd305871c", "license": "unsplash-license-review", "status": "existing-in-use" },
+    { "id": "logistics-delivery-photo", "path": "/photography/parcel-delivery.jpg", "category": "logistics", "type": "photo", "format": "jpg", "theme": "neutral", "usage": ["homepage"], "alt": "Illustrative parcel delivery", "source": "unsplash:photo-1566576912321-d58ddd7a6088", "license": "unsplash-license-review", "status": "existing-in-use" }
+  ]
+}
