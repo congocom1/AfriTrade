@@ -16,7 +16,7 @@ if (secondaryURL && secondaryURL.protocol !== 'https:') {
 }
 const scenarios = [
   { label: 'HTML shell', path: '/', method: 'GET', content: /<html/i },
-  { label: 'CSP permits Base44 SDK API origin', path: '/', method: 'GET', content: /connect-src[^";]*https:\/\/base44\.app https:\/\/\*\.base44\.app/i },
+  { label: 'CSP permits Base44 SDK API origin', path: '/', method: 'GET', content: /connect-src[^"]*https:\/\/base44\.app https:\/\/\*\.base44\.app/i },
   { label: 'API health', path: '/functions/health', method: 'POST', content: /"status"\s*:\s*"ok"/i },
   { label: 'Deployed category artwork', path: '/assets/marketplace/categories/electronics.svg', method: 'GET', content: /<svg[\s>]/i },
   { label: 'Deployed home appliances artwork', path: '/assets/marketplace/categories/home-appliances.svg', method: 'GET', content: /<svg[\s>]/i },
