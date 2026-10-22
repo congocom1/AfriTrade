@@ -132,6 +132,28 @@ describe('sensitive functions enforce a real rate limit', () => {
       assert.deepEqual(serviceRoleAccesses, [], `${name} touched service-role data for a rejected caller`);
     });
 
+    for (const status of [401, 403]) {
+      for (const input of ['empty', 'malformed', 'GET']) {
+        it(`${name} returns ${status} before reading ${input} input`, async () => {
+          reset();
+          adminResult = { ok: false, response: Response.json({ error: 'Denied' }, { status }) };
+          const request = input === 'GET'
+            ? new Request(`https://example.test/functions/${name}`)
+            : new Request(`https://example.test/functions/${name}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: input === 'empty' ? '{}' : '{invalid',
+            });
+          const response = await handlers.get(name)(request);
+
+          assert.equal(response.status, status);
+          assert.equal(request.bodyUsed, false, 'Rejected input must not be parsed');
+          assert.equal(rateLimitCalls.length, 0);
+          assert.deepEqual(serviceRoleAccesses, []);
+        });
+      }
+    }
+
     it(`${name} rejects a non-administrator caller`, async () => {
       reset();
       adminResult = { ok: false, response: Response.json({ error: 'Denied' }, { status: 403 }) };

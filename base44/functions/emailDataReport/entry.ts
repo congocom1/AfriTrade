@@ -29,8 +29,13 @@ export default async function (req) {
   try {
     const base44 = createClientFromRequest(req);
 
+    // This report carries a person's whole purchase history. Require an
+    // administrator before parsing input, reading data, or consuming a slot.
+    const auth = await requireAdmin(base44);
+    if (!auth.ok) return addSecurityHeaders(auth.response);
+
     // The client address keys the rate limit counter. It is only read once the
-    // administrator check below has passed, so a rejected caller never burns a slot.
+    // administrator check above has passed, so a rejected caller never burns a slot.
     const clientKey = getClientKey(req);
     if (!clientKey) {
       console.warn(
@@ -41,15 +46,6 @@ export default async function (req) {
     const body = await req.json().catch(() => ({}));
     const requestId = String(body.request_id || '').trim();
     if (!requestId) return addSecurityHeaders(Response.json({ error: 'request_id is required' }, { status: 400 }));
-
-    // This report carries a person's whole purchase history, so an administrator
-    // must ask for it on every path. The platform's own lifecycle calls this
-    // function with the administrator session it runs under (as it does for the
-    // sibling steps of that same workflow), so an anonymous caller who merely
-    // knows a request id can no longer trigger the report once compliance has
-    // marked it ready.
-    const auth = await requireAdmin(base44);
-    if (!auth.ok) return auth.response;
 
     // The cap is applied against the service-role client, so every call is counted
     // — a check without a database would silently count nothing.
