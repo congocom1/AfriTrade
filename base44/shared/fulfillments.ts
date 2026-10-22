@@ -51,7 +51,7 @@ export function money(value) {
 export function hoursSince(date) {
   const start = new Date(date || Date.now()).getTime();
   if (!Number.isFinite(start)) return 0;
-  return Math.max(0, Math.round((Date.now() - start) / 3600000));
+  return Math.max(0, Math.floor((Date.now() - start) / 3600000));
 }
 
 /** Stable per-fulfillment code, so a repeated run reuses the same coupon. */
