@@ -5,8 +5,9 @@
 # Test generated files
 *.testmod.mjs
 
-# E2E regenerated baseline screenshot (changes on every run)
-test-results/baseline-seller-products.png
+# Generated Playwright output (screenshots, traces and reports)
+/test-results/
+/playwright-report/
 
 # Logs
 /logs

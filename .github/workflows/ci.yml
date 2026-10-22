@@ -45,6 +45,12 @@ jobs:
       - name: Run frontend typecheck
         run: npm run typecheck
 
+      - name: Check visual asset registry
+        run: npm run assets:check
+
+      - name: Check high/critical dependency vulnerabilities
+        run: npm run security:check
+
       - name: Run Node tests
         run: npm test
 

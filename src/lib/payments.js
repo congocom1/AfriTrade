@@ -44,9 +44,10 @@ export function getEnvVar(key, defaultValue) {
   return defaultValue;
 }
 
-// Mock transaction ID generator
-function mockTxn(prefix) {
-  return `${prefix}-${Date.now().toString(36).toUpperCase()}-${Math.floor(Math.random() * 9000 + 1000)}`;
+// UI descriptors must never be mistaken for working payment processors.
+// Successful charges and refunds must be established by server-side records.
+async function unsupportedClientPayment() {
+  throw new Error('Payments and refunds must be executed by verified server functions.');
 }
 
 // Base44 function endpoints for payment processing
@@ -148,14 +149,8 @@ export const PAYMENT_PROVIDERS = {
     instructions: 'Vous recevrez une demande de paiement sur votre téléphone. Entrez votre code secret M-Pesa.',
     instructionsKey: 'pay.mpesaInstructions',
     isMock: true, // Frontend always uses mock - backend handles real processing
-    async charge({ amountCents, orderNumber }) {
-      // Frontend only prepares data - actual charge processed by backend
-      return { status: 'PAID', provider_txn_id: mockTxn('MPESA'), amount: amountCents, message: `Paiement M-Pesa confirmé pour la commande ${orderNumber}.` };
-    },
-    async refund({ provider_txn_id, amountCents }) {
-      // Frontend only prepares data - actual refund processed by backend
-      return { status: 'REFUNDED', provider_txn_id: `RF-${provider_txn_id}`, amount: amountCents };
-    },
+    charge: unsupportedClientPayment,
+    refund: unsupportedClientPayment,
   },
   airtel: {
     id: 'airtel',
@@ -168,14 +163,8 @@ export const PAYMENT_PROVIDERS = {
     instructions: 'Validez la demande de paiement Airtel Money reçue sur votre téléphone.',
     instructionsKey: 'pay.airtelInstructions',
     isMock: true,
-    async charge({ amountCents, orderNumber }) {
-      // Frontend only prepares data - actual charge processed by backend
-      return { status: 'PAID', provider_txn_id: mockTxn('AIRTEL'), amount: amountCents, message: `Paiement Airtel Money confirmé pour la commande ${orderNumber}.` };
-    },
-    async refund({ provider_txn_id, amountCents }) {
-      // Frontend only prepares data - actual refund processed by backend
-      return { status: 'REFUNDED', provider_txn_id: `RF-${provider_txn_id}`, amount: amountCents };
-    },
+    charge: unsupportedClientPayment,
+    refund: unsupportedClientPayment,
   },
   orange: {
     id: 'orange',
@@ -188,14 +177,8 @@ export const PAYMENT_PROVIDERS = {
     instructions: 'Validez la demande de paiement Orange Money reçue sur votre téléphone.',
     instructionsKey: 'pay.orangeInstructions',
     isMock: true,
-    async charge({ amountCents, orderNumber }) {
-      // Frontend only prepares data - actual charge processed by backend
-      return { status: 'PAID', provider_txn_id: mockTxn('ORANGE'), amount: amountCents, message: `Paiement Orange Money confirmé pour la commande ${orderNumber}.` };
-    },
-    async refund({ provider_txn_id, amountCents }) {
-      // Frontend only prepares data - actual refund processed by backend
-      return { status: 'REFUNDED', provider_txn_id: `RF-${provider_txn_id}`, amount: amountCents };
-    },
+    charge: unsupportedClientPayment,
+    refund: unsupportedClientPayment,
   },
   card: {
     id: 'card',
@@ -208,14 +191,8 @@ export const PAYMENT_PROVIDERS = {
     instructions: 'Vous serez redirigé vers la page sécurisée de notre prestataire. Aucune donnée de carte ne transite par AfriTrade.',
     instructionsKey: 'pay.cardInstructions',
     isMock: true,
-    async charge({ amountCents, orderNumber }) {
-      // Frontend only prepares data - actual charge processed by backend
-      return { status: 'PENDING', provider_txn_id: '', amount: amountCents, message: `Redirection vers le paiement sécurisé pour ${orderNumber}.` };
-    },
-    async refund({ provider_txn_id, amountCents }) {
-      // Frontend only prepares data - actual refund processed by backend
-      return { status: 'REFUNDED', provider_txn_id: `RF-${provider_txn_id}`, amount: amountCents };
-    },
+    charge: unsupportedClientPayment,
+    refund: unsupportedClientPayment,
   },
   cod: {
     id: 'cod',
@@ -228,12 +205,8 @@ export const PAYMENT_PROVIDERS = {
     instructions: 'Vous payez en espèces au livreur ou au point de retrait, à la réception du colis.',
     instructionsKey: 'pay.codInstructions',
     isMock: true,
-    async charge({ amountCents, orderNumber }) {
-      return { status: 'PENDING', provider_txn_id: mockTxn('COD'), amount: amountCents, message: `Commande ${orderNumber} enregistrée. Paiement à la livraison.` };
-    },
-    async refund() {
-      return { status: 'CANCELLED', provider_txn_id: null };
-    },
+    charge: unsupportedClientPayment,
+    refund: unsupportedClientPayment,
   },
   wallet: {
     id: 'wallet',
@@ -246,12 +219,8 @@ export const PAYMENT_PROVIDERS = {
     instructions: 'Le montant est débité de votre solde portefeuille.',
     instructionsKey: 'pay.walletInstructions',
     isMock: true,
-    async charge({ amountCents, orderNumber }) {
-      return { status: 'PAID', provider_txn_id: mockTxn('WALLET'), amount: amountCents, message: `Payé avec le portefeuille pour ${orderNumber}.` };
-    },
-    async refund({ provider_txn_id, amountCents }) {
-      return { status: 'REFUNDED', provider_txn_id: `RF-${provider_txn_id}`, amount: amountCents };
-    },
+    charge: unsupportedClientPayment,
+    refund: unsupportedClientPayment,
   },
 };
 
