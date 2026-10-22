@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased] - 2026-10-22
+
+### Repository maintenance
+- Archived historical completion/audit documents without rewriting existing commit history.
+- Added current project README, canonical contribution/security policies, and repository branch/merge governance.
+- Added GitHub issue/PR templates, CODEOWNERS, `.editorconfig`, and `.gitattributes`.
+- Added maintained-document link checks and integrated them into CI and the launch verification command.
+- Preserved the eight remote legacy branches for owner review (two contain unmerged commits).
+
 ## [0.0.1.0] - 2026-10-18
 
 ### Added
