@@ -1,6 +1,9 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { PAYMENT_PROVIDERS } from '../src/lib/payments.js';
+import { readFileSync } from 'node:fs';
+
+const source = readFileSync('src/lib/payments.js', 'utf8').replace(/^export \{ formatMoney \} from ['"]\.\/format['"];?\s*/m, '');
+const { PAYMENT_PROVIDERS } = await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
 
 describe('legacy payment UI descriptors cannot simulate a successful payment', () => {
   for (const [name, provider] of Object.entries(PAYMENT_PROVIDERS)) {
