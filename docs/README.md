@@ -1,26 +1,29 @@
-# AfriTrade Documentation
+# AfriTrade documentation
 
-This directory contains all project documentation organized by category.
+Use this index to find maintained guidance. **Historic reports are preserved for audit history, not current release certification.**
 
-## Documentation Structure
+## Start here
 
-| Category | Description |
-|---|---|
-| **[design-system](/docs/design-system)** | Design system specifications, brand identity, color tokens, component library, motion guidelines, accessibility reports, dashboard & mobile design specs, visual QA reports, and asset manifests |
-| **[audit](/docs/audit)** | Audit reports, phase completions, repair checkpoints, baseline reports, deployment logs, risk assessments, remediation logs, security headers, secrets inventory, and wallet protocol documentation |
-| **[guides](/docs/guides)** | Getting started guide, contribution guidelines, and upgrade/migration documentation |
-| **[developer-portal](/docs/developer-portal)** | Developer portal documentation and API references |
-| **[dx](/docs/dx)** | Developer experience metrics and tooling documentation |
-| **[errors](/docs/errors)** | Error contracts and troubleshooting guides |
-| **[base44-sync](/docs/base44-sync)** | Base44 synchronization and deployment scripts |
-| **[archive](/docs/archive)** | Archived and deprecated documentation |
+- [Project README](../README.md) — overview, stack, local commands and release status
+- [Contributing](../CONTRIBUTING.md) — branch, commit and PR policies
+- [Security policy](../SECURITY.md) — confidential vulnerability reports and data handling
+- [Git and GitHub workflow](engineering/GIT_WORKFLOW.md) — branches, pull requests, safe merges and branch inventory
+- [Local developer quickstart](guides/quickstart.md)
+- [Current launch-readiness evidence](audit/LAUNCH_READINESS_2026-10-22.md)
 
-## Quick Navigation
+## Product and engineering reference
 
-- [Design System](/docs/design-system/DESIGN_SYSTEM.md) — Core design system documentation
-- [Brand Identity](/docs/design-system/BRAND_IDENTITY.md) — AfriTrade branding guidelines
-- [Color Tokens](/docs/design-system/COLOR_TOKENS.md) — CSS color token system
-- [Component Library](/docs/design-system/COMPONENT_LIBRARY.md) — UI component specifications
-- [Audit Index](/docs/audit/FULL_AUDIT.md) — Comprehensive audit report
-- [Contributing](/docs/guides/CONTRIBUTING.md) — How to contribute
-- [Quickstart](/docs/guides/quickstart.md) — Get started quickly
+| Area | Start with |
+| --- | --- |
+| React and Base44 implementation | [README](../README.md), [AGENTS](../AGENTS.md), [Guides](guides/quickstart.md) |
+| Design system / accessibility | [Design system](design-system/DESIGN_SYSTEM.md), [Accessibility](design-system/ACCESSIBILITY_REPORT.md) |
+| Brand and user experience | [Brand](design-system/BRAND_IDENTITY.md), [Design handoff](design/AFRITRADE_FIGMA_HANDOFF_2026-10-20.md) |
+| Wallet, payments and security | [Wallet protocol](audit/WALLET_PROTOCOL.md), [Open risks](audit/OPEN_RISKS.md) |
+| Operations and recovery | [Workflow 429/503 runbook](operations/WORKFLOW_RECOVERY_429_503.md) |
+| API integrations | [Developer portal](developer-portal/index.md) |
+| Mobile / Flutter | [Mobile guides](mobile/), [Mobile deployment](mobile/MOBILE_DEPLOY.md) |
+| Base44 synchronization | [Base44 sync notes](base44-sync/) |
+| Architecture and planning | [Engineering](engineering/), [Product plans](../plans/) |
+| Historical audits and task completion claims | [Archive](archive/README.md), [Legacy root reports](archive/root-reports/README.md) |
+
+Keep release decisions grounded in current test evidence, deployment revisions and operational approvals rather than older `AUDIT_COMPLETE` or `TASK_DONE` artifacts.

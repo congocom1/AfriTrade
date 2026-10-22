@@ -28,4 +28,4 @@ Add before/after images for visual changes, describe keyboard/accessibility beha
 - [ ] Staging QA required
 - [ ] Production approval needed — include the signed-off release/incident ticket
 
-**Do not mark P0 financial or operational risks complete based solely on unit tests.** Check [current launch readiness](../docs/audit/LAUNCH_READINESS_2026-10-22.md).
+**Do not mark P0 financial or operational risks complete based solely on unit tests.** Check [current launch readiness](https://github.com/congocom1/AfriTrade/blob/main/docs/audit/LAUNCH_READINESS_2026-10-22.md).
