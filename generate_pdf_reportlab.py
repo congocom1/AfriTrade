@@ -8,11 +8,12 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, 
 from reportlab.platypus.flowables import HRFlowable
 import datetime
 
-output_path = os.path.join(os.getcwd(), 'Congo_Commerce_Product_Overview.pdf')
+output_path = os.path.join(os.getcwd(), 'AfriTrade_Product_Overview.pdf')
 
 # Colors
 CONGO_GREEN = HexColor('#07110D')
-CONGO_GREEN_LIGHT = HexColor('#1a3a1a')
+AFRITRADE_GREEN = HexColor('#07110D')
+AFRITRADE_GREEN_LIGHT = HexColor('#1a3a1a')
 DARK_GRAY = HexColor('#1e1e1e')
 MEDIUM_GRAY = HexColor('#323232')
 LIGHT_GRAY = HexColor('#646464')
@@ -108,8 +109,8 @@ story = []
 
 # ---- TITLE PAGE ----
 story.append(Spacer(1, 80))
-story.append(Paragraph('Congo Commerce', title_style))
-story.append(Paragraph('The DRC Marketplace for Local & Global Trade', subtitle_style))
+story.append(Paragraph('AfriTrade', title_style))
+story.append(Paragraph('Pan-African B2B and B2C Marketplace', subtitle_style))
 story.append(Spacer(1, 30))
 story.append(HRFlowable(width="60%", thickness=2, color=CONGO_GREEN, spaceAfter=20))
 story.append(Paragraph('Product Overview Document', ParagraphStyle('MetaCenter', parent=meta_style, alignment=TA_CENTER)))
@@ -385,8 +386,8 @@ for item in [
 # ---- 8. CONCLUSION ----
 h1('8. Conclusion')
 body(
-    'Congo Commerce is a production-ready, multi-tenant marketplace MVP tailored for the DRC '
-    'market. It delivers a complete shopping experience -- catalog, cart, mobile money checkout, '
+    'AfriTrade is a production-ready, multi-tenant marketplace MVP tailored for the DRC '
+    'and pan-African markets. It delivers a complete shopping experience -- catalog, cart, mobile money checkout, '
     'tracked logistics, buyer protection, seller tools, and a white-label SaaS layer -- on a '
     'modern, accessible, and maintainable codebase. The platform is architected for incremental '
     'hardening: payment and supplier adapters are environment-gated, tenant isolation is enforced '

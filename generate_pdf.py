@@ -6,7 +6,7 @@ class PDF(FPDF):
     def header(self):
         self.set_font('Helvetica', 'B', 12)
         self.set_text_color(7, 17, 13)
-        self.cell(0, 10, 'Congo Commerce - Product Overview', 0, 1, 'C')
+        self.cell(0, 10, 'AfriTrade - Product Overview', 0, 1, 'C')
         self.line(10, self.get_y(), 200, self.get_y())
         self.ln(5)
     
@@ -49,10 +49,10 @@ pdf.add_page()
 pdf.set_font('Helvetica', 'B', 28)
 pdf.set_text_color(7, 17, 13)
 pdf.ln(30)
-pdf.cell(0, 15, 'Congo Commerce', 0, 1, 'C')
+pdf.cell(0, 15, 'AfriTrade', 0, 1, 'C')
 pdf.set_font('Helvetica', '', 16)
 pdf.set_text_color(80, 80, 80)
-pdf.cell(0, 10, 'The DRC Marketplace for Local & Global Trade', 0, 1, 'C')
+pdf.cell(0, 10, 'Pan-African B2B and B2C Marketplace', 0, 1, 'C')
 pdf.ln(20)
 pdf.set_font('Helvetica', 'I', 11)
 pdf.set_text_color(100, 100, 100)
@@ -63,7 +63,7 @@ pdf.add_page()
 
 # 1. Executive Summary
 pdf.chapter_title('1. Executive Summary')
-pdf.body_text('Congo Commerce is a full-stack, multi-tenant e-commerce platform built specifically for the Democratic Republic of Congo (DRC). It connects local sellers, regional warehouses, and international suppliers in a single marketplace where Congolese shoppers can browse, compare, and purchase products with confidence.')
+pdf.body_text('AfriTrade is a full-stack, multi-tenant e-commerce platform built specifically for the Democratic Republic of Congo (DRC) and pan-African markets. It connects local sellers, regional warehouses, and international suppliers in a single marketplace where African shoppers can browse, compare, and purchase products with confidence.')
 pdf.body_text('The platform handles the complete commerce lifecycle: from product discovery and cart management through multi-vendor checkout, mobile money payment, logistics tracking, buyer protection, returns, and seller payouts. It is built on the Base44 platform using React 18, Vite, Tailwind CSS, and shadcn/ui components, with a serverless backend via Base44 Functions (Deno).')
 
 # 2. Core Value Proposition
@@ -258,9 +258,9 @@ for item in [
 
 # 8. Conclusion
 pdf.chapter_title('8. Conclusion')
-pdf.body_text('Congo Commerce is a production-ready, multi-tenant marketplace MVP tailored for the DRC market. It delivers a complete shopping experience -- catalog, cart, mobile money checkout, tracked logistics, buyer protection, seller tools, and a white-label SaaS layer -- on a modern, accessible, and maintainable codebase. The platform is architected for incremental hardening: payment and supplier adapters are environment-gated, tenant isolation is enforced at the entity level, and the UI meets WCAG AA standards. With a Base44 Builder+ subscription, the remaining server-side gaps (real payments, real suppliers, automated billing, strict data isolation) can be closed without rewriting the frontend. The product is ready for beta launch, merchant onboarding, and iterative feature development.')
+pdf.body_text('AfriTrade is a production-ready, multi-tenant marketplace MVP tailored for the DRC and pan-African markets. It delivers a complete shopping experience -- catalog, cart, mobile money checkout, tracked logistics, buyer protection, seller tools, and a white-label SaaS layer -- on a modern, accessible, and maintainable codebase. The platform is architected for incremental hardening: payment and supplier adapters are environment-gated, tenant isolation is enforced at the entity level, and the UI meets WCAG AA standards. With a Base44 Builder+ subscription, the remaining server-side gaps (real payments, real suppliers, automated billing, strict data isolation) can be closed without rewriting the frontend. The product is ready for beta launch, merchant onboarding, and iterative feature development.')
 
 # Save
-output_path = os.path.join(os.getcwd(), 'Congo_Commerce_Product_Overview.pdf')
+output_path = os.path.join(os.getcwd(), 'AfriTrade_Product_Overview.pdf')
 pdf.output(output_path)
 print(f'PDF saved to: {output_path}')
