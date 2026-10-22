@@ -37,6 +37,8 @@ describe('release security architecture gates', () => {
     const ci = read('.github/workflows/ci.yml');
     assert.match(ci, /STAGING_BASE_URL/);
     assert.match(ci, /playwright test/);
+    assert.match(ci, /route-guards\.spec\.js/);
+    assert.match(read("test/e2e/route-guards.spec.js"), /127\.0\.0\.1:5174/);
     assert.doesNotMatch(ci, /npm run deploy|base44 deploy/);
   });
 });

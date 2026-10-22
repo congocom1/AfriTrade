@@ -77,8 +77,8 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
-      - name: Run public staging smoke tests
-        run: npx playwright test test/e2e/smoke.spec.js
+      - name: Run staging smoke and anonymous route-guard tests
+        run: npx playwright test test/e2e/smoke.spec.js test/e2e/route-guards.spec.js
         env:
           BASE_URL: ${{ vars.STAGING_BASE_URL }}
           CI: 'true' 
