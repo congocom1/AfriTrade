@@ -192,7 +192,8 @@ async function handleOrderApproved(db: any, eventData: any): Promise<Response> {
   // Wix may retry ORDER_APPROVED; a second run must not double-grant.
   const idemKey = `payments-webhook:${checkoutId}`
   const existing = await db.entities.IdempotencyKey.filter({ key: idemKey }).catch(() => [])
-  if (existing.length && existing[0].used_at) {
+  // `status` is the schema-defined marker field (IdempotencyKey has no used_at field).
+  if (existing.length && existing[0].status === "completed") {
     console.log('payments-webhook: idempotent skip', { checkoutId, key: idemKey })
     return new Response('Already processed', { status: 200 })
   }
@@ -289,8 +290,10 @@ async function handleOrderApproved(db: any, eventData: any): Promise<Response> {
   try {
     await db.entities.IdempotencyKey.create({
       key: idemKey,
-      used_at: new Date().toISOString(),
-      context: `checkout:${checkoutId}|order:${orderId}`,
+      scope: "payments_webhook",
+      status: "completed",
+      attempts: 1,
+      result: { used_at: new Date().toISOString(), checkout_id: checkoutId, order_id: orderId ?? null },
     });
   } catch (err) {
     // Duplicate key = replay attempt; log metric for monitoring.
