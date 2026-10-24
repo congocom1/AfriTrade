@@ -35,6 +35,7 @@ export const ADMIN_LINKS = [
   { to: '/workflow-monitor', group: 'operations', label: 'Supervision' },
   { to: '/admin/fraud', group: 'administration', label: 'Fraude & risques' },
   { to: '/admin/billing', group: 'finance', label: 'Facturation' },
+  { to: '/admin/mobile-money', group: 'finance', label: 'Paiements Mobile Money' },
   { to: '/admin/promotions', group: 'insights', label: 'Promotions' },
   { to: '/marketing-analytics', group: 'insights', label: 'Marketing' },
   { to: '/platform-analytics', group: 'insights', label: 'Analytique plateforme' },

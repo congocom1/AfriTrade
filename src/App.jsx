@@ -142,6 +142,7 @@ const AdminWorkflows = lazy(() => import('@/pages/admin/AdminWorkflows'));
 const AdminFraud = lazy(() => import('@/pages/admin/AdminFraud'));
 const AdminDisputes = lazy(() => import('@/pages/admin/AdminDisputes'));
 const AdminBilling = lazy(() => import('@/pages/admin/AdminBilling'));
+const AdminMobileMoney = lazy(() => import('@/pages/admin/AdminMobileMoney'));
 const PayoutHistory = lazy(() => import('@/pages/PayoutHistory'));
 const PayoutSettings = lazy(() => import('@/pages/PayoutSettings'));
 const DataExport = lazy(() => import('@/pages/DataExport'));
@@ -364,6 +365,7 @@ const AuthenticatedApp = () => {
             <Route path="/admin/workflows" element={<PageWrapper><AdminWorkflows /></PageWrapper>} />
             <Route path="/admin/fraud" element={<PageWrapper><AdminFraud /></PageWrapper>} />
             <Route path="/admin/billing" element={<PageWrapper><AdminBilling /></PageWrapper>} />
+            <Route path="/admin/mobile-money" element={<PageWrapper><AdminMobileMoney /></PageWrapper>} />
             <Route path="/admin/disputes" element={<PageWrapper><AdminDisputes /></PageWrapper>} />
             <Route path="/logistics-hub" element={<PageWrapper><LogisticsHub /></PageWrapper>} />
             <Route path="/workflow-monitor" element={<PageWrapper><WorkflowMonitor /></PageWrapper>} />
