@@ -63,6 +63,7 @@ export const ROUTE_ACCESS = {
   '/admin/settings': { admin: true },
   '/admin/tenants': { admin: true },
   '/admin/compliance': { admin: true },
+  '/admin/access-matrix': { admin: true },
   '/developers': { admin: true },
 
   // Administration

@@ -150,6 +150,7 @@ const DataExport = lazy(() => import('@/pages/DataExport'));
 const LogisticsHub = lazy(() => import('@/pages/LogisticsHub'));
 const WorkflowMonitor = lazy(() => import('@/pages/WorkflowMonitor'));
 const SecurityActivity = lazy(() => import('@/pages/SecurityActivity'));
+const AccessMatrix = lazy(() => import('@/pages/admin/AccessMatrix'));
 const CoverageMap = lazy(() => import('@/pages/CoverageMap'));
 const MerchantDisputes = lazy(() => import('@/pages/MerchantDisputes'));
 const PayoutLedger = lazy(() => import('@/pages/PayoutLedger'));
@@ -306,6 +307,7 @@ const AuthenticatedApp = () => {
           <Route path="/inventory-management" element={<PageWrapper><InventoryManagement /></PageWrapper>} />
           <Route path="/partner-ai-settings" element={<PageWrapper><PartnerAiSettings /></PageWrapper>} />
           <Route path="/security-activity" element={<PageWrapper><SecurityActivity /></PageWrapper>} />
+          <Route path="/admin/access-matrix" element={<PageWrapper><AccessMatrix /></PageWrapper>} />
           <Route path="/merchant-disputes" element={<PageWrapper><MerchantDisputes /></PageWrapper>} />
           <Route path="/payout-ledger" element={<PageWrapper><PayoutLedger /></PageWrapper>} />
           <Route path="/coverage-map" element={<PageWrapper><CoverageMap /></PageWrapper>} />
