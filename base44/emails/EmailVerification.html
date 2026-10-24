@@ -4,18 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="x-apple-disable-message-reformatting">
+    <meta name="color-scheme" content="light">
+    <meta name="supported-color-schemes" content="light">
     <title>Email verification</title>
     <style>
         * { box-sizing: border-box; }
         body { margin: 0; padding: 0; }
         table { border-collapse: collapse; }
+        :root { color-scheme: light; }
         @media only screen and (max-width: 600px) {
             .outer-cell { padding: 16px 12px !important; }
             .email-shell { width: 100% !important; }
             .brand-header { padding: 28px 24px !important; }
             .content-wrap { padding: 28px 24px 32px !important; }
             .code-cell { padding: 24px 16px !important; }
-            .code-value { font-size: 30px !important; letter-spacing: 6px !important; }
+            .code-value { font-size: 30px !important; letter-spacing: 6px !important; padding-left: 6px !important; }
             .footer-band { padding: 22px 24px !important; }
             .mobile-text { font-size: 16px !important; line-height: 24px !important; }
             .mobile-headline { font-size: 24px !important; line-height: 31px !important; }
@@ -24,7 +27,7 @@
 </head>
 <body style="margin:0;padding:0;background-color:#faf8f5;font-family:'Manrope',Arial,sans-serif;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
     <span style="display:none;font-size:1px;color:#faf8f5;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">
-        Your verification code
+        Your verification code&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;
     </span>
 
     <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color:#faf8f5;">
@@ -47,22 +50,22 @@
                     <tr>
                         <td class="content-wrap" style="padding:40px;background-color:#fdfdfc;">
 
-                            <h1 class="mobile-headline" style="font-family:'Manrope',Arial,sans-serif;font-size:26px;font-weight:700;color:#0f241d;margin:0 0 14px;line-height:1.25;letter-spacing:-0.4px;">
+                            <h1 class="mobile-headline" style="font-family:'Manrope',Arial,sans-serif;font-size:26px;font-weight:700;color:#0f241d;margin:0 0 16px;line-height:1.25;letter-spacing:-0.4px;">
                                 Hey {{first_name}},
                             </h1>
 
-                            <p class="mobile-text" style="font-family:'Manrope',Arial,sans-serif;color:#0f241d;font-size:16px;margin:0 0 30px;line-height:24px;">
+                            <p class="mobile-text" style="font-family:'Manrope',Arial,sans-serif;color:#0f241d;font-size:16px;margin:0 0 32px;line-height:24px;">
                                 Use this verification code to finish setting up your AfriTrade account.
                             </p>
 
-                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin:0 0 28px;">
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin:0 0 32px;">
                                 <tr>
-                                    <td class="code-cell" style="background-color:#f4f7f5;border:1px solid #e5e7eb;border-radius:4px;padding:26px 20px;text-align:center;">
+                                    <td class="code-cell" style="background-color:#f4f7f5;border:1px solid #e5e7eb;border-radius:4px;padding:28px 20px;text-align:center;">
                                         <p style="font-family:'Manrope',Arial,sans-serif;font-size:11px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:#0f7b53;margin:0 0 12px;line-height:1.4;">
                                             Your verification code
                                         </p>
                                         <!-- The code renders in body text color, which is the foreground already paired with this muted surface for contrast. -->
-                                        <div class="code-value" style="font-family:'Manrope',Arial,sans-serif;font-size:36px;font-weight:700;letter-spacing:8px;line-height:1.2;color:#0f241d;">
+                                        <div class="code-value" style="font-family:'Manrope',Arial,sans-serif;font-size:36px;font-weight:700;letter-spacing:8px;padding-left:8px;line-height:1.2;color:#0f241d;">
                                             {{otp_code}}
                                         </div>
                                     </td>
@@ -73,13 +76,13 @@
                                 This code expires in <strong>10 minutes</strong>.
                             </p>
 
-                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin:0 0 30px;">
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin:0 0 32px;">
                                 <tr>
                                     <td height="1" style="background-color:#e5e7eb;font-size:0;line-height:0;">&nbsp;</td>
                                 </tr>
                             </table>
 
-                            <p style="font-family:'Manrope',Arial,sans-serif;color:#0f7b53;font-size:14px;margin:0 0 30px;line-height:21px;">
+                            <p style="font-family:'Manrope',Arial,sans-serif;color:#0f7b53;font-size:14px;margin:0 0 32px;line-height:21px;">
                                 If you didn’t request this code, you can safely ignore this email.
                             </p>
 
