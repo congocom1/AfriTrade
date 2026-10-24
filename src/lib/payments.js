@@ -208,6 +208,20 @@ export const PAYMENT_PROVIDERS = {
     charge: unsupportedClientPayment,
     refund: unsupportedClientPayment,
   },
+  mainmoney: {
+    id: 'mainmoney',
+    name: 'Mobile Money (MainMoney)',
+    nameKey: 'pay.mainmoneyName',
+    kind: 'mobile_money',
+    currencies: ['USD', 'CDF'],
+    feePercent: 0,
+    requiresPhone: true,
+    instructions: 'Choisissez votre opérateur (M-Pesa, Airtel, Orange), puis validez le paiement sur votre téléphone.',
+    instructionsKey: 'pay.mainmoneyInstructions',
+    isMock: false, // Real aggregator: the deposit is created and verified server-side.
+    charge: unsupportedClientPayment,
+    refund: unsupportedClientPayment,
+  },
   wallet: {
     id: 'wallet',
     name: 'Portefeuille AfriTrade',

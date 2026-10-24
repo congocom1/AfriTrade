@@ -19,6 +19,7 @@ import CheckoutSteps from '@/components/checkout/CheckoutSteps';
 import StepDelivery from '@/components/checkout/StepDelivery';
 import StepPayment from '@/components/checkout/StepPayment';
 import StepReview from '@/components/checkout/StepReview';
+import MainMoneyCheckout from '@/components/checkout/MainMoneyCheckout';
 
 const STEP_KEYS = ['checkout.stepDelivery', 'checkout.stepPayment', 'checkout.stepReview'];
 const STEP_COMPONENTS = [StepDelivery, StepPayment, StepReview];
@@ -51,13 +52,16 @@ export default function Checkout() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [step, setStep] = useState(0);
+  const [mainMoneyOrder, setMainMoneyOrder] = useState(null);
 
   const providers = useMemo(
-    () => listPaymentProviders().filter((provider) => ['card', 'cod'].includes(provider.id)),
+    () => listPaymentProviders().filter((provider) => ['card', 'cod', 'mainmoney'].includes(provider.id)),
     [],
   );
   const activeProvider = providers.find((p) => p.id === paymentMethod) || providers[0];
-  const isMobileMoney = activeProvider?.kind === 'mobile_money';
+  // The MainMoney wizard collects the payer's phone number itself.
+  const isMainMoney = paymentMethod === 'mainmoney';
+  const isMobileMoney = activeProvider?.kind === 'mobile_money' && !isMainMoney;
 
   useEffect(() => {
     loadPlatformConfig().then(() => setVatRate(getVatRate())).catch(() => {
@@ -216,12 +220,12 @@ export default function Checkout() {
       }
     }
     setError('');
-    if (paymentMethod === 'card') {
+    if (paymentMethod === 'card' || isMainMoney) {
       try {
         const buyer = await base44.auth.me();
         if (!buyer?.id || !buyer?.email) throw new Error('Sign-in required');
       } catch {
-        setError(t('checkout.cardLoginRequired'));
+        setError(isMainMoney ? t('pay.mainmoneyLoginRequired') : t('checkout.cardLoginRequired'));
         return;
       }
     }
@@ -255,6 +259,12 @@ export default function Checkout() {
       if (result.redirectUrl) {
         clear();
         window.location.href = result.redirectUrl;
+        return;
+      }
+      // Mobile money is approved on the phone: keep the buyer on the wizard
+      // until the deposit is confirmed server-side.
+      if (isMainMoney) {
+        setMainMoneyOrder(result.order);
         return;
       }
       clear();
@@ -402,6 +412,18 @@ export default function Checkout() {
           </button>
         )}
       </MobileActionBar>
+
+      {mainMoneyOrder && (
+        <MainMoneyCheckout
+          order={mainMoneyOrder}
+          onPaid={(paidOrder) => {
+            clear();
+            setMainMoneyOrder(null);
+            navigate(`/order/${paidOrder.order_number}`);
+          }}
+          onClose={() => setMainMoneyOrder(null)}
+        />
+      )}
     </form>
   );
 }

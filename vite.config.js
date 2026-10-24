@@ -128,6 +128,7 @@ export default defineConfig({
       '@radix-ui/react-switch', '@radix-ui/react-tabs',
       '@radix-ui/react-toast', '@radix-ui/react-toggle',
       '@radix-ui/react-toggle-group', '@radix-ui/react-tooltip',
+      '@mainmoneyapp/js-core', '@mainmoneyapp/js-http', '@mainmoneyapp/js-checkout',
     ],
     exclude: ['@base44/sdk'],
   },

@@ -12,6 +12,7 @@ import workforce from './workforce.js';
 import loyalty from './loyalty.js';
 import home from './home.js';
 import categories from './categories.js';
+import mobileMoney from './mobileMoney.js';
 
 export const mergeNamespaces = (base, extra) =>
   Object.entries(extra).reduce((out, [ns, values]) => ({ ...out, [ns]: { ...(out[ns] || {}), ...values } }), { ...base });
@@ -30,10 +31,10 @@ const frWithExtensions = mergeNamespaces(fr, frExtended);
  * namespaces.
  */
 const baseTranslations = {
-  fr: mergeNamespaces(mergeNamespaces(frWithExtensions, intlShipment.fr), homeCollections.fr),
-  en: mergeNamespaces(mergeNamespaces(en, intlShipment.en), homeCollections.en),
-  ln: mergeNamespaces(mergeNamespaces(mergeNamespaces(ln, frExtended), intlShipment.fr), homeCollections.fr),
-  sw: mergeNamespaces(mergeNamespaces(mergeNamespaces(sw, frExtended), intlShipment.fr), homeCollections.fr),
+  fr: mergeNamespaces(mergeNamespaces(mergeNamespaces(frWithExtensions, intlShipment.fr), homeCollections.fr), mobileMoney.fr),
+  en: mergeNamespaces(mergeNamespaces(mergeNamespaces(en, intlShipment.en), homeCollections.en), mobileMoney.en),
+  ln: mergeNamespaces(mergeNamespaces(mergeNamespaces(mergeNamespaces(ln, frExtended), intlShipment.fr), homeCollections.fr), mobileMoney.fr),
+  sw: mergeNamespaces(mergeNamespaces(mergeNamespaces(mergeNamespaces(sw, frExtended), intlShipment.fr), homeCollections.fr), mobileMoney.fr),
 };
 
 export const translations = Object.fromEntries(
