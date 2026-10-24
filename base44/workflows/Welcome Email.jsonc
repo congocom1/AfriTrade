@@ -1,0 +1,40 @@
+{
+  "name": "Welcome Email",
+  "description": "Envoie un email de bienvenue a chaque nouvelle inscription.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "app_user_auth",
+      "events": [
+        "signup"
+      ]
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "welcome_email",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "send_welcome_email": {
+          "call": "send_email",
+          "with": {
+            "template_name": "Welcome",
+            "to": "${ .trigger.email }",
+            "description": "Accueille le nouvel inscrit et l'invite a explorer la marketplace",
+            "variables": {
+              "full_name": "${ .trigger.full_name }"
+            }
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Envoyer l'email de bienvenue"
+          }
+        }
+      }
+    ]
+  }
+}
