@@ -52,13 +52,32 @@ export default function Store() {
 
   const toggleFollow = async () => {
     if (!seller) return;
+    const previousSeller = seller;
+    const previousFollowing = following;
     const next = toggleFollowId(seller.id);
     const nowFollowing = next.includes(seller.id);
+
+    // Optimistic: the button and the follower count move on the tap, before the
+    // profile call answers.
     setFollowing(nowFollowing);
+    setSeller((current) => ({
+      ...current,
+      followers_count: Math.max(0, (current.followers_count || 0) + (nowFollowing ? 1 : -1)),
+    }));
+
     const user = await base44.auth.me().catch(() => null);
-    if (user) {
-      const response = await base44.functions.invoke('sellerProfile', { action: 'follow', seller_id: seller.id, follow: nowFollowing }).catch(() => null);
+    // Visitors have no account to store a follow against, so the local list is
+    // the whole state and there is nothing to confirm.
+    if (!user) return;
+
+    try {
+      const response = await base44.functions.invoke('sellerProfile', { action: 'follow', seller_id: seller.id, follow: nowFollowing });
       if (response?.data?.seller) setSeller(response.data.seller);
+    } catch {
+      // The server refused the change: put the previous state back.
+      toggleFollowId(seller.id);
+      setFollowing(previousFollowing);
+      setSeller(previousSeller);
     }
   };
 

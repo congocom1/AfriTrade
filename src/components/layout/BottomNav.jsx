@@ -1,8 +1,9 @@
-import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Home, Compass, LayoutGrid, ShoppingBag, User } from 'lucide-react';
 import { useCart } from '@/lib/cart';
+import { activateTab, currentTabRoot, rememberTabPath, resetTabPath, tabTargetPath } from '@/lib/tabHistory';
 
 const ITEMS = [
   { key: 'nav.home', path: '/', icon: Home },
@@ -15,7 +16,30 @@ const ITEMS = [
 export default function BottomNav() {
   const { t } = useTranslation();
   const location = useLocation();
+  const navigate = useNavigate();
   const { count } = useCart();
+
+  // Keep each tab's remembered position current as the user moves around.
+  useEffect(() => {
+    rememberTabPath(location.pathname);
+  }, [location.pathname]);
+
+  // The tab the user is inside, which owns the current page even when that page
+  // belongs to no tab (a product, checkout, ...).
+  const currentRoot = currentTabRoot(location.pathname);
+
+  // Tapping the tab you are already on drops its remembered position and
+  // returns to the root. Opening another tab hands the history to it, so the
+  // page it restores belongs to that tab from then on.
+  const handleTabClick = (event, path, active) => {
+    if (!active) {
+      activateTab(path);
+      return;
+    }
+    event.preventDefault();
+    resetTabPath(path);
+    if (location.pathname !== path) navigate(path);
+  };
 
   return (
     // P0 M-04: Add safe-area inset for iOS home indicator
@@ -23,11 +47,13 @@ export default function BottomNav() {
       <div className="mx-auto grid max-w-lg grid-cols-5">
         {ITEMS.map((item) => {
           const Icon = item.icon;
-          const active = item.path === '/' ? location.pathname === '/' : (location.pathname === item.path || location.pathname.startsWith(`${item.path}/`));
+          const active = item.path === currentRoot;
+          const to = active ? item.path : tabTargetPath(item.path);
           return (
             <Link
               key={item.path}
-              to={item.path}
+              to={to}
+              onClick={(event) => handleTabClick(event, item.path, active)}
               aria-current={active ? 'page' : undefined}
               aria-label={t(item.key)}
               className={`bottom-nav-item relative flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-lg px-1 text-[10px] font-medium transition-colors duration-150 active:bg-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring ${

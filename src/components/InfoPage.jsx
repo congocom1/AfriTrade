@@ -1,7 +1,6 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import BackButton from '@/components/BackButton';
 
 /**
  * Shared shell for the informational pages (help, policies, shipping, seller
@@ -11,9 +10,9 @@ export default function InfoPage({ icon: Icon, title, subtitle, children }) {
   const { t } = useTranslation();
   return (
     <div className="mx-auto max-w-3xl space-y-4 pb-10">
-      <Link to="/" className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
-        <ArrowLeft className="h-3.5 w-3.5" /> {t('infoPage.backToShop')}
-      </Link>
+      <BackButton fallback="/" className="-ml-3">
+        {t('infoPage.backToShop')}
+      </BackButton>
       <header className="rounded-2xl border border-border bg-card p-5">
         <h1 className="flex items-center gap-2 text-lg font-bold md:text-xl">
           {Icon && <Icon className="h-5 w-5 shrink-0 text-primary" />} {title}
