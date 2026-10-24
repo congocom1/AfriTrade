@@ -19,6 +19,7 @@ import { CurrencyProvider } from '@/lib/currency';
 import AppLayout from '@/components/layout/AppLayout';
 import Backoffice from '@/pages/Backoffice';
 import SalesIntelligence from '@/pages/admin/SalesIntelligence';
+import MobileMoneyTransactions from '@/pages/backoffice/MobileMoneyTransactions';
 import { Suspense, lazy, useEffect } from 'react';
 import LoadingFallback from '@/components/LoadingFallback';
 import { ThemeProvider } from 'next-themes';
@@ -377,6 +378,7 @@ const AuthenticatedApp = () => {
         <Route element={<RequireAccess />}>
           <Route path="/backoffice" element={<PageWrapper><Backoffice /></PageWrapper>} />
           <Route path="/backoffice/sales" element={<PageWrapper><SalesIntelligence /></PageWrapper>} />
+          <Route path="/backoffice/mobile-money" element={<PageWrapper><MobileMoneyTransactions /></PageWrapper>} />
         </Route>
       </Route>
       <Route path="/login" element={<Login />} />

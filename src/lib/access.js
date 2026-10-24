@@ -59,6 +59,7 @@ export const ROUTE_ACCESS = {
   // Platform administration — no department owns these.
   '/backoffice': { admin: true },
   '/backoffice/sales': { admin: true },
+  '/backoffice/mobile-money': { admin: true },
   '/admin/users': { admin: true },
   '/admin/settings': { admin: true },
   '/admin/tenants': { admin: true },

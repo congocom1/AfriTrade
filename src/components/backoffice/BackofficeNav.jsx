@@ -7,7 +7,7 @@ export default function BackofficeNav() {
   const groups = [
     [t('backoffice.groupGeneral'), [[t('backoffice.dashboard'), '/backoffice']]],
     [t('backoffice.groupClients'), [[t('backoffice.users'), '/admin/users'], [t('backoffice.tenants'), '/admin/tenants']]],
-    [t('backoffice.groupCommerce'), [[t('backoffice.orders'), '/admin/orders'], [t('backoffice.products'), '/admin/products']]],
+    [t('backoffice.groupCommerce'), [[t('backoffice.orders'), '/admin/orders'], [t('backoffice.products'), '/admin/products'], ['Transactions Mobile Money', '/backoffice/mobile-money']]],
     [t('backoffice.groupOps'), [[t('backoffice.support'), '/support-inbox'], [t('backoffice.workflows'), '/admin/workflows']]],
     [t('backoffice.groupInsights'), [[t('backoffice.sales'), '/backoffice/sales'], [t('backoffice.analytics'), '/platform-analytics'], [t('backoffice.log'), '/admin/events'], [t('backoffice.settings'), '/admin/settings']]],
   ];
