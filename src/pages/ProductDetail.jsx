@@ -16,6 +16,7 @@ import MobileActionBar from '@/components/MobileActionBar';
 import ProductRow from '@/components/ProductRow';
 import ProductReviews from '@/components/ProductReviews';
 import Product3DViewer from '@/components/Product3DViewer';
+import { resolveProduct3D } from '@/lib/product3d/registry';
 import SectionHeader from '@/components/SectionHeader';
 import { compactNumber } from '@/lib/format';
 import { inTenantScope, resolveStorefrontScope, scopeRecords } from '@/lib/tenancy';
@@ -184,6 +185,7 @@ export default function ProductDetail() {
 
   const isIntl = product.source_type === 'international_supplier';
   const outOfStock = Number(product.stock) <= 0;
+  const model3d = resolveProduct3D(product);
 
   return (
     <div className="space-y-6 pb-28 md:pb-6">
@@ -196,7 +198,7 @@ export default function ProductDetail() {
 
       <div className="grid gap-5 md:grid-cols-2 md:gap-8">
         <div className="space-y-2">
-          {product.model_3d_url && (
+          {model3d && (
             <div className="flex gap-2">
               <button
                 type="button"
@@ -215,8 +217,8 @@ export default function ProductDetail() {
             </div>
           )}
           <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-secondary">
-            {view3d && product.model_3d_url ? (
-              <Product3DViewer modelUrl={product.model_3d_url} fallbackImage={product.images?.[activeImage]} title={product.title} />
+            {view3d && model3d ? (
+              <Product3DViewer modelKey={model3d} fallbackImage={product.images?.[activeImage]} title={product.title} />
             ) : (
               <Image src={product.images?.[activeImage]} alt={`${product.title} - image principale`} className="h-full w-full object-cover" />
             )}

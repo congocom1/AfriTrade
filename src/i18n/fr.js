@@ -3033,7 +3033,7 @@ export default {
     similar: 'similar',
     supplier: 'supplier',
     supplierRef: 'supplierref',
-    view3d: 'view3d',
+    view3d: 'Vue 3D',
     viewStore: 'viewstore',
     zoneEta: 'zoneeta',
   },

@@ -1,80 +1,135 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Box } from 'lucide-react';
 import { Image } from '@/components/ui/image';
+import { getProduct3DBuilder } from '@/lib/product3d/registry';
 
 /**
  * 3D product viewer (experience layer, never mandatory).
- * - No model URL -> renders the standard photo (caller should skip mounting).
+ * - modelKey -> geometry built in the browser by the product 3D library.
+ * - modelUrl -> a GLTF/GLB file, kept for products that ship one.
  * - Load or WebGL failure -> falls back to the photo, never a blank canvas.
  * - prefers-reduced-motion -> static first frame, no auto-rotate.
  * three.js is lazy-imported so the main bundle stays untouched.
  */
-export default function Product3DViewer({ modelUrl, fallbackImage, title }) {
+export default function Product3DViewer({ modelKey, modelUrl, fallbackImage, title }) {
   const mountRef = useRef(null);
   const [failed, setFailed] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!modelUrl) return;
+    if (!modelKey && !modelUrl) return;
     let cancelled = false;
     let renderer = null;
+    let resizeObserver = null;
     let raf = 0;
     const disposables = [];
 
     (async () => {
       try {
         const THREE = await import('three');
-        const { GLTFLoader } = await import('three/addons/loaders/GLTFLoader.js');
         const { OrbitControls } = await import('three/addons/controls/OrbitControls.js');
         if (cancelled || !mountRef.current) return;
 
         const mount = mountRef.current;
         const w = mount.clientWidth || 400;
         const h = mount.clientHeight || 400;
+
         renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         renderer.setSize(w, h);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        renderer.outputColorSpace = THREE.SRGBColorSpace;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.05;
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         mount.appendChild(renderer.domElement);
 
         const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(40, w / h, 0.1, 100);
-        camera.position.set(0, 0.6, 3.2);
-        scene.add(new THREE.AmbientLight(0xffffff, 1.1));
-        const key = new THREE.DirectionalLight(0xffffff, 1.4);
-        key.position.set(2, 3, 4);
+        const camera = new THREE.PerspectiveCamera(38, w / h, 0.05, 100);
+
+        const fitToMount = () => {
+          const nextWidth = mount.clientWidth || 400;
+          const nextHeight = mount.clientHeight || 400;
+          renderer.setSize(nextWidth, nextHeight);
+          camera.aspect = nextWidth / nextHeight;
+          camera.updateProjectionMatrix();
+        };
+        resizeObserver = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(fitToMount);
+        resizeObserver?.observe(mount);
+
+        scene.add(new THREE.HemisphereLight(0xffffff, 0x9aa3ab, 1.4));
+        const key = new THREE.DirectionalLight(0xffffff, 2.2);
+        key.position.set(3, 5, 4);
+        key.castShadow = true;
+        key.shadow.mapSize.set(1024, 1024);
+        key.shadow.camera.near = 0.5;
+        key.shadow.camera.far = 24;
+        key.shadow.camera.left = -5;
+        key.shadow.camera.right = 5;
+        key.shadow.camera.top = 5;
+        key.shadow.camera.bottom = -5;
+        key.shadow.bias = -0.0009;
         scene.add(key);
+        const fill = new THREE.DirectionalLight(0xffffff, 0.5);
+        fill.position.set(-4, 2, -3);
+        scene.add(fill);
+        const rim = new THREE.DirectionalLight(0xffffff, 0.75);
+        rim.position.set(-2, 3, -5);
+        scene.add(rim);
+
+        const ground = new THREE.Mesh(new THREE.PlaneGeometry(30, 30), new THREE.ShadowMaterial({ opacity: 0.16 }));
+        ground.rotation.x = -Math.PI / 2;
+        ground.receiveShadow = true;
+        scene.add(ground);
+        disposables.push(ground.geometry, ground.material);
 
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
         controls.enablePan = false;
-        controls.minDistance = 1.2;
-        controls.maxDistance = 8;
+        controls.minPolarAngle = 0.15;
+        controls.maxPolarAngle = Math.PI / 2.04;
         const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
         controls.autoRotate = !reduced;
-        controls.autoRotateSpeed = 1.2;
+        controls.autoRotateSpeed = 1.4;
 
-        await new Promise((resolve, reject) => {
-          new GLTFLoader().load(
-            modelUrl,
-            (gltf) => {
-              if (cancelled) return;
-              scene.add(gltf.scene);
-              const box = new THREE.Box3().setFromObject(gltf.scene);
-              const center = box.getCenter(new THREE.Vector3());
-              const size = box.getSize(new THREE.Vector3()).length() || 1;
-              gltf.scene.position.sub(center);
-              camera.position.set(0, size * 0.25, size * 1.4);
-              gltf.scene.traverse((o) => {
-                if (o.geometry) disposables.push(o.geometry);
-                if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach((m) => disposables.push(m));
-              });
-              resolve();
-            },
-            undefined,
-            reject,
-          );
-        });
+        let object = null;
+        if (modelUrl) {
+          const { GLTFLoader } = await import('three/addons/loaders/GLTFLoader.js');
+          object = await new Promise((resolve, reject) => {
+            new GLTFLoader().load(modelUrl, (gltf) => resolve(gltf.scene), undefined, reject);
+          });
+        } else {
+          const build = getProduct3DBuilder(modelKey);
+          if (!build) throw new Error(`Unknown 3D model: ${modelKey}`);
+          object = build(THREE);
+        }
         if (cancelled) return;
+
+        object.traverse((o) => {
+          if (!o.isMesh) return;
+          o.castShadow = true;
+          o.receiveShadow = true;
+          if (o.geometry) disposables.push(o.geometry);
+          if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach((m) => disposables.push(m));
+        });
+
+        const bounds = new THREE.Box3().setFromObject(object);
+        const size = bounds.getSize(new THREE.Vector3());
+        const center = bounds.getCenter(new THREE.Vector3());
+        const maxDim = Math.max(size.x, size.y, size.z) || 1;
+        const scale = 2.4 / maxDim;
+        object.position.sub(center);
+        object.scale.setScalar(scale);
+        scene.add(object);
+
+        const halfHeight = (size.y * scale) / 2;
+        ground.position.y = -halfHeight - 0.002;
+        camera.position.set(0, halfHeight * 0.85 + 0.25, 3.3);
+        controls.target.set(0, 0, 0);
+        controls.minDistance = 1.4;
+        controls.maxDistance = 9;
+        controls.update();
+
         setLoading(false);
 
         const loop = () => {
@@ -95,6 +150,7 @@ export default function Product3DViewer({ modelUrl, fallbackImage, title }) {
     return () => {
       cancelled = true;
       cancelAnimationFrame(raf);
+      resizeObserver?.disconnect();
       disposables.forEach((d) => d?.dispose?.());
       if (renderer) {
         renderer.dispose();
@@ -102,9 +158,9 @@ export default function Product3DViewer({ modelUrl, fallbackImage, title }) {
         renderer = null;
       }
     };
-  }, [modelUrl]);
+  }, [modelKey, modelUrl]);
 
-  if (!modelUrl || failed) {
+  if ((!modelKey && !modelUrl) || failed) {
     return <Image src={fallbackImage} alt={title} className="h-full w-full object-cover" />;
   }
 

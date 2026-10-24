@@ -3037,7 +3037,7 @@ export default {
     similar: 'Similar',
     supplier: 'Supplier',
     supplierRef: 'Supplierref',
-    view3d: 'View3D',
+    view3d: '3D view',
     viewStore: 'Viewstore',
     zoneEta: 'Zoneeta',
   },
