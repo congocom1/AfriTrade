@@ -89,6 +89,7 @@
   --accent-foreground: 168 100% 20%;
   --destructive: 5 84% 45%;
   --destructive-foreground: 0 0% 100%;
+  --destructive-text: 5 84% 45%;
   --border: 220 9% 89%;
   --input: 220 9% 89%;
   --ring: 168 100% 25%;
@@ -98,6 +99,10 @@
   --chart-4: 32 90% 52%;
   --chart-5: 190 70% 40%;
   --radius: 0.5rem;
+
+  /* Interactive states — a control's hover is a token, not a brightness filter. */
+  --primary-hover: 168 100% 19%;
+  --destructive-hover: 5 84% 38%;
 }
 
 .dark {
@@ -115,12 +120,25 @@
   --muted-foreground: 0 0% 65%;
   --accent: 0 0% 15%;
   --accent-foreground: 0 0% 98%;
-  --destructive: 5 84% 55%;
+  /* White on the 55% fill measured 3.99:1, under the 4.5 minimum for button
+     text. Matching the light-mode 45% clears it at 5.23:1, and red-as-error-text
+     on the dark canvas stays at 4.66:1. */
+  --destructive: 5 84% 45%;
   --destructive-foreground: 0 0% 100%;
+  --destructive-text: 5 84% 62%;
   --border: 0 0% 18%;
   --input: 0 0% 18%;
   --ring: 168 100% 40%;
+  --primary-hover: 168 100% 40%;
+  --destructive-hover: 5 84% 52%;
 }
+
+/* One fill cannot serve both roles in dark mode: it must stay dark enough for
+   white button text (5.23:1) yet light enough to read as error text on the
+   canvas. `bg-destructive` keeps the fill; `text-destructive` picks up the
+   lighter ink, which measures 5.82:1. Light mode needs no split — 45% clears
+   both at 5.23:1. */
+.dark .text-destructive { color: hsl(var(--destructive-text)); }
 
 /* Flat canvas: the previous dot texture read as noise behind data screens. */
 body { background-image: none; }
