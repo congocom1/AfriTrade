@@ -12,6 +12,7 @@ import { loadPlatformConfig } from '@/lib/config';
 import DashboardNav from '@/components/DashboardNav';
 import { Image } from '@/components/ui/image';
 import { formatUsdAmount } from '@/lib/format';
+import { productImage } from '@/lib/productImages';
 import { notifyLoadError } from '@/lib/safeList';
 
 
@@ -191,7 +192,7 @@ export default function SellerImport() {
               }`}
             >
               <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-secondary">
-                <Image src={r.images?.[0]} alt={r.title} className="h-full w-full object-cover" />
+                <Image src={productImage(r)} alt={r.title} className="h-full w-full object-cover" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">{r.title}</p>

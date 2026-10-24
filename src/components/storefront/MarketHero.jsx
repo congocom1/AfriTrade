@@ -8,7 +8,7 @@ import './storefront.css';
 // A trade platform's first screen has to answer three questions at once:
 // what can I buy, who is selling it, and how does it reach me. The hero states
 // all three and hands off to the two journeys that matter (buy, sell).
-const HERO_IMAGE = 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=1600&q=70';
+const HERO_IMAGE = 'https://media.base44.com/images/public/6ad35f967cfc0088309e830b/974fc7139_generated_image.png';
 
 export default function MarketHero({ productCount = 0, categoryCount = 0, sellerCount = 0 }) {
   const { t } = useTranslation();

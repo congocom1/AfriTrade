@@ -5,6 +5,7 @@ import { Heart, ShoppingBag } from 'lucide-react';
 import { Image } from '@/components/ui/image';
 import { useCart } from '@/lib/cart';
 import { useCurrency } from '@/lib/currency';
+import { productImage } from '@/lib/productImages';
 
 /**
  * Read-only view of a wishlist someone shared. Nothing here edits the
@@ -37,7 +38,7 @@ export default memo(function SharedWishlist({ products, loading }) {
           {products.map((p) => (
             <div key={p.id} className="flex items-center gap-3 rounded-xl border border-border bg-card p-3">
               <Link to={`/product/${p.slug || p.id}`} className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-secondary">
-                <Image src={p.images?.[0]} alt={p.title} className="h-full w-full object-cover" />
+                <Image src={productImage(p)} alt={p.title} className="h-full w-full object-cover" />
               </Link>
               <div className="min-w-0 flex-1">
                 <Link to={`/product/${p.slug || p.id}`} className="line-clamp-2 text-xs font-semibold hover:underline">

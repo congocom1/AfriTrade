@@ -5,6 +5,7 @@ import { Heart, Truck, Zap } from 'lucide-react';
 import { Image } from '@/components/ui/image';
 import { useCurrency } from '@/lib/currency';
 import { isWishlisted, toggleWishlist } from '@/lib/session';
+import { productImage } from '@/lib/productImages';
 import RatingStars from './RatingStars';
 import { compactNumber } from '@/lib/format';
 
@@ -25,7 +26,7 @@ function ProductCard({ product }) {
       <Link to={`/product/${product.slug || product.id}`} className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 rounded-xl" aria-label={`${product.title}, ${format(product.price_usd)}`}>
         <div className="relative aspect-square w-full overflow-hidden bg-secondary">
           <Image
-            src={product.images?.[0]}
+            src={productImage(product)}
             alt={product.title}
             loading="lazy"
             className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"

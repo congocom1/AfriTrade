@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { trackEvent } from '@/lib/tracking';
+import { productImage } from '@/lib/productImages';
 
 const CartContext = createContext(null);
 import { CART_STORAGE_KEY as KEY, MAX_CART_QUANTITY, normalizeCartQuantity, readCart } from './cartStorage';
@@ -37,7 +38,7 @@ export function CartProvider({ children }) {
           product_id: product.id,
           slug: product.slug || null,
           title: product.title,
-          image: product.images?.[0] || '',
+          image: productImage(product),
           price_usd: Number(product.price_usd) || 0,
           source_type: product.source_type,
           seller_id: product.seller_id || null,

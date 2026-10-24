@@ -12,6 +12,7 @@ import StatusBadge from '@/components/StatusBadge';
 import { Image } from '@/components/ui/image';
 import { ADMIN_LINKS } from '@/lib/navLinks';
 import { formatUsdAmount, } from '@/lib/format';
+import { productImage } from '@/lib/productImages';
 import { useTranslation } from 'react-i18next';
 
 export default function AdminProducts() {
@@ -93,7 +94,7 @@ export default function AdminProducts() {
           {visible.map((p) => (
             <div key={p.id} className="flex items-center gap-3 rounded-xl border border-border bg-card p-2.5">
               <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-secondary">
-                <Image src={p.images?.[0]} alt={p.title} className="h-full w-full object-cover" />
+                <Image src={productImage(p)} alt={p.title} className="h-full w-full object-cover" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">{p.title}</p>

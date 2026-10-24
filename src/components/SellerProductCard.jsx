@@ -1,6 +1,7 @@
 import React from 'react';
 import { Pencil, Trash2, Eye, EyeOff } from 'lucide-react';
 import { Image } from '@/components/ui/image';
+import { productImage } from '@/lib/productImages';
 import StatusBadge from '@/components/StatusBadge';
 
 export default function SellerProductCard({ product, onEdit, onToggle, onRemove, ariaEdit, ariaToggle, ariaDelete }) {
@@ -14,7 +15,7 @@ export default function SellerProductCard({ product, onEdit, onToggle, onRemove,
         </div>
       ) : (
         <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-secondary">
-          <Image src={product.images?.[0]} alt={product.title} className="h-full w-full object-cover" />
+          <Image src={productImage(product)} alt={product.title} className="h-full w-full object-cover" />
         </div>
       )}
       <div className="min-w-0 flex-1">
