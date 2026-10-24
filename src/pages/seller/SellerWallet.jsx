@@ -1,4 +1,5 @@
 import { SELLER_LINKS } from '@/lib/navLinks';
+import { Link } from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
 import { Wallet as WalletIcon, ArrowDownLeft, ArrowUpRight, Banknote } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
@@ -66,6 +67,22 @@ export default function SellerWallet() {
   };
 
   if (loadingSeller || loading) return <div className="h-40 animate-pulse rounded-2xl bg-secondary" />;
+
+  if (!seller) {
+    return (
+      <div className="space-y-5 pb-8">
+        <DashboardNav title={t('sellerWallet.title')} links={SELLER_LINKS} />
+        <div className="rounded-2xl border border-dashed border-border bg-card p-10 text-center">
+          <WalletIcon className="mx-auto h-8 w-8 text-muted-foreground" />
+          <p className="mt-2 font-semibold">{t('sellerPortal.noShop')}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{t('sellerPortal.noShopDesc')}</p>
+          <Link to="/seller-application" className="mt-4 inline-block rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground">
+            {t('sellerPortal.becomeSeller')}
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5 pb-8">

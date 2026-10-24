@@ -115,10 +115,16 @@ export function regionalSurchargeFor(config, destination) {
   return round2Cents((Number(row?.surcharge_usd_cents) || Number(row?.surcharge_usd) || 0) * (row?.surcharge_usd_cents ? 1 : 100));
 }
 
+/** Accepts integer cents, or a legacy dollar amount when cents are absent. */
+function goodsCentsOf(goodsUsdCents, goodsUsd = 0) {
+  if (goodsUsdCents != null) return round2Cents(goodsUsdCents);
+  return round2Cents(Math.round((Number(goodsUsd) || 0) * 100));
+}
+
 /** Import duty + VAT estimate. `included` says whether the retail price already carries it. */
-export function dutyEstimate({ goodsUsdCents = 0, config, originCountry = 'CD' } = {}) {
+export function dutyEstimate({ goodsUsdCents, goodsUsd = 0, config, originCountry = 'CD' } = {}) {
   const cfg = { ...DEFAULT_SHIPPING_CONFIG, ...(config || {}) };
-  const goods = round2Cents(goodsUsdCents);
+  const goods = goodsCentsOf(goodsUsdCents, goodsUsd);
   const international = String(originCountry || 'CD').toUpperCase() !== 'CD';
   const dutiable = international ? goods : 0;
   const duty = round2Cents(dutiable * ((cfg.import_duty_percent || 0) / 100));
@@ -133,7 +139,8 @@ export function quoteShipping({
   courierId,
   weightKg = 0,
   dims = null,
-  goodsUsdCents = 0,
+  goodsUsdCents,
+  goodsUsd = 0,
   originCountry = 'CD',
   paymentMethod = 'mobile_money',
 } = {}) {
@@ -154,7 +161,8 @@ export function quoteShipping({
   const cod = paymentMethod === 'cash_on_delivery' ? round2Cents(Number(cfg.cod_fee_usd_cents) || Number(cfg.cod_fee_usd) * 100 || 0) : 0;
   const subtotal = round2Cents(freight + rateSurcharge + fuel + regional + handling + cod);
 
-  const duty = dutyEstimate({ goodsUsdCents, config: cfg, originCountry });
+  const goodsCents = goodsCentsOf(goodsUsdCents, goodsUsd);
+  const duty = dutyEstimate({ goodsUsdCents: goodsCents, config: cfg, originCountry });
   const dutyCharged = duty.included ? 0 : duty.total;
 
   return {
@@ -172,7 +180,7 @@ export function quoteShipping({
     dutyCharged,
     total: round2Cents(subtotal + dutyCharged),
     etaDays: rate?.eta_days || '',
-    freeShipping: goodsUsdCents >= (Number(cfg.free_shipping_threshold_usd_cents) || Number(cfg.free_shipping_threshold_usd) * 100 || 0),
+    freeShipping: goodsCents >= (Number(cfg.free_shipping_threshold_usd_cents) || Number(cfg.free_shipping_threshold_usd) * 100 || 0),
   };
 }
 

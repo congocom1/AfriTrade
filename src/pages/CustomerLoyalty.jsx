@@ -12,6 +12,12 @@ import { formatDate } from '@/lib/format';
 import { base44 } from '@/api/base44Client';
 import BackButton from '@/components/BackButton';
 
+/** Perk lists are arrays in the dictionaries; a missing key resolves to a string. */
+function perksOf(t, key) {
+  const value = t(key, { returnObjects: true });
+  return Array.isArray(value) ? value : [];
+}
+
 export default function CustomerLoyalty() {
   const { t } = useTranslation();
   const sessionId = getSessionId();
@@ -42,6 +48,7 @@ export default function CustomerLoyalty() {
       return;
     }
     setRedeeming(reward.code);
+    const label = t(reward.labelKey) || reward.label || reward.code;
     try {
       const record = await redeemReward({ reward, customer: profile, sessionId });
       setRedemptions((prev) => [record, ...prev]);
@@ -52,12 +59,12 @@ export default function CustomerLoyalty() {
         reference: record.coupon_code,
         actorName: profile.name || '',
         actorEmail: profile.email || '',
-        description: `Échange de ${reward.points} points contre « ${reward.label} »`,
+        description: `Échange de ${reward.points} points contre « ${label} »`,
         payload: { reward_code: reward.code, points_spent: reward.points, coupon_code: record.coupon_code },
       });
       await base44.entities.Notification.create({
         title: 'Récompense fidélité échangée',
-        message: `${profile.name || 'Un client'} a échangé ${reward.points} points contre « ${reward.label} » (code ${record.coupon_code}).`,
+        message: `${profile.name || 'Un client'} a échangé ${reward.points} points contre « ${label} » (code ${record.coupon_code}).`,
         type: 'promo',
         audience: 'customer',
       }).catch(() => {});
@@ -135,7 +142,7 @@ export default function CustomerLoyalty() {
                 <p className="text-xs font-bold">{t(tier.nameKey)}</p>
                 <span className="text-[11px] text-muted-foreground">{t('customerLoyalty.fromPoints', { count: tier.min_points.toLocaleString('fr-FR') })}</span>
               </div>
-              <p className="mt-0.5 text-[11px] text-muted-foreground">{t(tier.perksKey, { returnObjects: true }).join(' · ')}</p>
+              <p className="mt-0.5 text-[11px] text-muted-foreground">{perksOf(t, tier.perksKey).join(' · ')}</p>
             </div>
           ))}
         </div>

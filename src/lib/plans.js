@@ -105,7 +105,11 @@ export function hasFeature(plan, featureKey) {
 }
 
 export function planAmount(plan, cycle) {
-  return round2Cents(cycle === 'yearly' ? plan?.price_yearly_usd_cents : plan?.price_monthly_usd_cents);
+  const cents = cycle === 'yearly' ? plan?.price_yearly_usd_cents : plan?.price_monthly_usd_cents;
+  if (cents != null && Number.isFinite(Number(cents))) return round2Cents(cents);
+  // Rows written before the cents convention stored plain dollars.
+  const dollars = cycle === 'yearly' ? plan?.price_yearly_usd : plan?.price_monthly_usd;
+  return round2Cents(Math.round((Number(dollars) || 0) * 100));
 }
 
 export function planAmountLabel(plan, cycle) {

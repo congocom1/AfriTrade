@@ -97,6 +97,8 @@ export function loyaltySummary({ orders = [], redemptions = [] } = {}) {
     spent,
     balance,
     lifetimeUsdCents,
+    // Dollar view of the same figure, so no caller has to divide cents itself.
+    lifetimeUsd: lifetimeUsdCents / 100,
     tier,
     next,
     progress,
@@ -132,7 +134,7 @@ export async function redeemReward({ reward, customer, sessionId }) {
     customer_name: customer?.name || '',
     customer_phone: customer?.phone || '',
     reward_code: reward.code,
-    reward_label: reward.label,
+    reward_label: reward.label || reward.labelKey || reward.code,
     points_spent: reward.points,
     value_usd_cents: reward.value_usd_cents || 0,
     coupon_code: generateRewardCode(reward.code.slice(0, 3)),

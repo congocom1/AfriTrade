@@ -156,7 +156,7 @@ export default function BulkOrders() {
             onClick={() => setFilter(tx.id)}
             className={`rounded-full px-3.5 py-1.5 text-xs font-semibold ${filter === tx.id ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}
           >
-            {t.label}
+            {tx.label}
           </button>
         ))}
         <button

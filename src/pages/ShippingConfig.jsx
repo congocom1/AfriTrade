@@ -7,9 +7,17 @@ import { ADMIN_LINKS } from '@/lib/navLinks';
 import StatCard from '@/components/ops/StatCard';
 import { DEFAULT_SHIPPING_CONFIG, dutyEstimate, loadShippingConfig, saveShippingConfig } from '@/lib/shippingRates';
 import { getCities, loadPlatformConfig } from '@/lib/config';
-import { formatUsdAmount, formatUSD } from '@/lib/format';
+import { formatUSD } from '@/lib/format';
 
 const GLOBAL_FIELD_IDS = ['volumetric_divisor', 'handling_fee_usd', 'cod_fee_usd', 'fuel_surcharge_percent', 'remote_area_surcharge_usd', 'free_shipping_threshold_usd', 'import_duty_percent', 'import_vat_percent'];
+
+// Money settings are stored as integer cents; the form shows and edits dollars.
+const MONEY_FIELD_CENTS = {
+  handling_fee_usd: 'handling_fee_usd_cents',
+  cod_fee_usd: 'cod_fee_usd_cents',
+  remote_area_surcharge_usd: 'remote_area_surcharge_usd_cents',
+  free_shipping_threshold_usd: 'free_shipping_threshold_usd_cents',
+};
 
 export default function ShippingConfig() {
   const { t } = useTranslation();
@@ -44,7 +52,7 @@ export default function ShippingConfig() {
   const addSurcharge = (event) => {
     event.preventDefault();
     if (!draft.destination.trim()) return;
-    set({ regional_surcharges: [...(config.regional_surcharges || []), { ...draft, surcharge_usd: Number(draft.surcharge_usd) || 0 }] });
+    set({ regional_surcharges: [...(config.regional_surcharges || []), { destination: draft.destination.trim(), surcharge_usd_cents: Math.round((Number(draft.surcharge_usd) || 0) * 100) }] });
     setDraft({ destination: '', surcharge_usd: 0 });
   };
 
@@ -54,14 +62,14 @@ export default function ShippingConfig() {
 
   if (loading) return <div className="h-64 animate-pulse rounded-2xl bg-secondary" />;
 
-  const duty = dutyEstimate({ goodsUsd: Number(estimate.goodsUsd) || 0, config, originCountry: estimate.originCountry });
+  const duty = dutyEstimate({ goodsUsdCents: Math.round((Number(estimate.goodsUsd) || 0) * 100), config, originCountry: estimate.originCountry });
 
   return (
     <div className="space-y-5 pb-8">
       <DashboardNav title={t('shippingConfig.title')} links={ADMIN_LINKS} />
 
       <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
-        <StatCard label={t('shippingConfig.statHandling')} value={formatUsdAmount(config.handling_fee_usd)} hint={t('shippingConfig.statHandlingHint')} />
+        <StatCard label={t('shippingConfig.statHandling')} value={formatUSD(config.handling_fee_usd_cents)} hint={t('shippingConfig.statHandlingHint')} />
         <StatCard label={t('shippingConfig.statFuel')} value={`${config.fuel_surcharge_percent} %`} hint={t('shippingConfig.statFuelHint')} />
         <StatCard label={t('shippingConfig.statDuty')} value={`${config.import_duty_percent} %`} hint={t('shippingConfig.statDutyHint', { rate: config.import_vat_percent })} />
         <StatCard label={t('shippingConfig.statZones')} value={(config.regional_surcharges || []).length} hint={t('shippingConfig.statZonesHint')} />
@@ -87,9 +95,16 @@ export default function ShippingConfig() {
               {f.label}
               <input
                 type="number"
-                step="0.1"
-                value={config[f.field] ?? 0}
-                onChange={(e) => set({ [f.field]: Number(e.target.value) })}
+                step={MONEY_FIELD_CENTS[f.field] ? '0.01' : '0.1'}
+                value={MONEY_FIELD_CENTS[f.field]
+                  ? (Number(config[MONEY_FIELD_CENTS[f.field]]) || 0) / 100
+                  : config[f.field] ?? 0}
+                onChange={(e) => {
+                  const raw = e.target.value;
+                  const centsKey = MONEY_FIELD_CENTS[f.field];
+                  if (centsKey) set({ [centsKey]: Math.round((Number(raw) || 0) * 100) });
+                  else set({ [f.field]: Number(raw) });
+                }}
                 className="mt-1 h-11 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground"
               />
               <span className="mt-0.5 block text-[10px]">{f.hint}</span>
@@ -146,7 +161,7 @@ export default function ShippingConfig() {
             config.regional_surcharges.map((row, index) => (
               <div key={`${row.destination}-${index}`} className="flex items-center justify-between rounded-xl border border-border px-3 py-2.5">
                 <p className="text-xs font-semibold">
-                  {row.destination} <span className="font-normal text-muted-foreground">· +{formatUsdAmount(row.surcharge_usd)}</span>
+                  {row.destination} <span className="font-normal text-muted-foreground">· +{formatUSD(row.surcharge_usd_cents ?? Math.round((Number(row.surcharge_usd) || 0) * 100))}</span>
                 </p>
                 <button type="button" onClick={() => removeSurcharge(index)} className="rounded-lg p-2 text-destructive hover:bg-secondary" aria-label={t('shippingConfig.removeAria')}>
                   <Trash2 className="h-4 w-4" />

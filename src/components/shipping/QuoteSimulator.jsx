@@ -30,7 +30,7 @@ export default function QuoteSimulator({ rates = [], config, couriers = [], dest
         courierId: form.courierId,
         weightKg: Number(form.weightKg) || 0,
         dims: { length: Number(form.length) || 0, width: Number(form.width) || 0, height: Number(form.height) || 0 },
-        goodsUsd: Number(form.goodsUsd) || 0,
+        goodsUsdCents: Math.round((Number(form.goodsUsd) || 0) * 100),
         originCountry: form.originCountry,
         paymentMethod: form.paymentMethod,
       }),

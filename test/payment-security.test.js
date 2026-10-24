@@ -82,7 +82,7 @@ describe('payment security boundaries', () => {
       }),
       walletLedger: { postWalletEntry: async () => assert.fail('should not move money'), releasePending: async () => assert.fail('should not release funds') },
     };
-    const handler = await loadFunction(refundPath, 'refund-payment.auth-first', { includeWalletLedger: true });
+    const handler = await loadFunction(refundPath, 'payment-security.refund-payment.auth-first', { includeWalletLedger: true });
     const response = await handler.default(new Request('https://local.test', { method: 'POST', body: '{}' }));
     assert.equal(response.status, 401);
     assert.equal(counterReads, 0);
@@ -106,7 +106,7 @@ describe('payment security boundaries', () => {
         releasePending: async () => assert.fail('Disabled refund released funds'),
       },
     };
-    const handler = await loadFunction(refundPath, 'refund-payment.disabled', { includeWalletLedger: true });
+    const handler = await loadFunction(refundPath, 'payment-security.refund-payment.disabled', { includeWalletLedger: true });
     const response = await handler.default(new Request('https://local.test', {
       method: 'POST', body: JSON.stringify({ order_number: 'CMD-1', amount: 10 }),
     }));
@@ -143,7 +143,7 @@ describe('payment security boundaries', () => {
       ...dependencies,
       createClientFromRequest: () => base44,
     };
-    const handler = await loadFunction(confirmPath, 'confirm-payment.security');
+    const handler = await loadFunction(confirmPath, 'payment-security.confirm-payment.security');
     const response = await handler.default(new Request('https://local.test', {
       method: 'POST',
       headers: { 'content-type': 'application/json', 'cf-connecting-ip': '192.0.2.1' },
@@ -162,7 +162,7 @@ describe('payment security boundaries', () => {
       createClientFromRequest: () => ({}),
       walletLedger: { postWalletEntry: async () => ({}), releasePending: async () => ({}) },
     };
-    const handler = await loadFunction(refundPath, 'refund-payment.security', { includeWalletLedger: true });
+    const handler = await loadFunction(refundPath, 'payment-security.refund-payment.security', { includeWalletLedger: true });
     const unverifiedDb = { entities: { User: { get: async () => null } } };
     const unverifiedOrder = {
       id: 'order-guest',

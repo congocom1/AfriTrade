@@ -12,7 +12,7 @@
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc -p ./jsconfig.json",
     "preview": "vite preview",
-    "test": "node --test --import ./test/setup.mjs test/**/*.test.js",
+    "test": "node --test --import ./test/setup.mjs test/**/*.test.js base44/shared/*.test.js",
     "test:e2e": "npx playwright test",
     "test:e2e:report": "npx playwright show-report",
     "test:watch": "node --test --watch --import ./test/setup.mjs test/**/*.test.js",

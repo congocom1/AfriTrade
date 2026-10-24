@@ -25,9 +25,18 @@ export default function DisputePanel() {
     { id: 'closed', label: t('disputePanel.stageClosed') },
   ];
   const profile = getProfile();
+  // A return escalated from /returns arrives with ?order=…&phone=…&reason=…,
+  // so the dispute form opens already filled in.
+  const params = new URLSearchParams(window.location.search);
+  const requestedType = params.get('reason') || '';
   const [disputes, setDisputes] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [form, setForm] = useState({ order_number: '', type: 'not_received', description: '', phone: profile.phone || '' });
+  const [form, setForm] = useState({
+    order_number: (params.get('order') || '').toUpperCase(),
+    type: TYPES.some((x) => x.id === requestedType) ? requestedType : 'not_received',
+    description: '',
+    phone: params.get('phone') || profile.phone || '',
+  });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
