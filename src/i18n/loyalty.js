@@ -7,6 +7,10 @@
  * `LOYALTY_TIERS[].perksKey` points at these arrays: i18next returns them with
  * `{ returnObjects: true }`, so each tier must resolve to a list, not a string.
  * Without them the tier card rendered an empty perk list.
+ *
+ * `rewardsCatalog` and the truncated French `customerLoyalty` strings are
+ * overridden here too — the dictionaries shipped placeholder values
+ * ('title' / 'desc' / 'redeem') and apostrophe-truncated French copy.
  */
 const loyalty = {
   fr: {
@@ -28,6 +32,17 @@ const loyalty = {
       status: 'Statut {{tier}}',
       totalSpent: 'Total dépensé',
     },
+    rewardsCatalog: {
+      desc: 'Échangez vos points contre des bons, la livraison offerte ou des coffrets cadeaux.',
+      points: '{{count}} points',
+      redeem: 'Échanger',
+      title: 'Catalogue de récompenses',
+    },
+    customerLoyalty: {
+      goodToKnowText: 'Les points suivent votre numéro de téléphone et cet appareil : renseignez le même numéro au paiement pour ne rien perdre. Les commandes annulées ou remboursées ne rapportent pas de points, et les points échangés sont déduits définitivement. Besoin d’aide avec un code ?',
+      noMovements: 'Aucun mouvement pour l’instant. Vos points apparaissent dès qu’une commande est livrée.',
+      redeemFailed: 'L’échange n’a pas pu être enregistré. Réessayez.',
+    },
   },
   en: {
     loyalty: {
@@ -47,6 +62,12 @@ const loyalty = {
       starter: 'Entry level',
       status: '{{tier}} status',
       totalSpent: 'Total spent',
+    },
+    rewardsCatalog: {
+      desc: 'Redeem your points for vouchers, free shipping or gift boxes.',
+      points: '{{count}} points',
+      redeem: 'Redeem',
+      title: 'Rewards catalogue',
     },
   },
 };
