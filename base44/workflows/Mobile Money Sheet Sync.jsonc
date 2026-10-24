@@ -1,0 +1,42 @@
+{
+  "name": "Mobile Money Sheet Sync",
+  "description": "Quand une commande Mobile Money passe en pay\u00e9, ajoute automatiquement la transaction \u00e0 la feuille de calcul comptable.",
+  "trigger": {
+    "condition": "${ .trigger.data.payment_method == \"mainmoney\" and .trigger.data.payment_status == \"PAID\" }",
+    "config": {
+      "trigger_type": "entity",
+      "entity_name": "Order",
+      "events": [
+        "create",
+        "update"
+      ]
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "mobile_money_sheet_sync",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "append_transaction": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "syncMobileMoneySheet",
+            "args": {
+              "action": "syncOrder",
+              "order_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Ajouter la transaction \u00e0 la feuille",
+            "description": "Google Sheets \u00b7 une ligne par paiement"
+          }
+        }
+      }
+    ]
+  }
+}

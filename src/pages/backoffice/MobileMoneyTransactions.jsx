@@ -1,6 +1,7 @@
 import React from 'react';
 import BackofficeNav from '@/components/backoffice/BackofficeNav';
 import MobileMoneyLedger from '@/components/payments/MobileMoneyLedger';
+import SheetSyncSettings from '@/components/payments/SheetSyncSettings';
 
 /** Back-office view: every MainMoney transaction with its live payment status. */
 export default function MobileMoneyTransactions() {
@@ -14,6 +15,7 @@ export default function MobileMoneyTransactions() {
           <p className="mt-1 text-sm text-muted-foreground">Suivi en direct des encaissements MainMoney.</p>
         </header>
         <MobileMoneyLedger />
+        <SheetSyncSettings />
       </div>
     </main>
   </div>;
