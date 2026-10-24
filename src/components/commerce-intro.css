@@ -4,13 +4,13 @@
 .commerce-intro h2 { font-size: clamp(22px, 2.6vw, 30px); line-height: 1.2; }
 .commerce-intro h3 { font-size: 15px; letter-spacing: -.02em; }
 .commerce-intro__description { max-width: 590px; margin: 20px 0 24px; font-size: 15px; line-height: 1.8; color: hsl(var(--muted-foreground)); }
-.commerce-intro__hero { padding: 12px 0 28px; }
+.commerce-intro__hero { padding: 20px 0 32px; }
 .commerce-intro__photography { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); gap: 12px; margin-top: 26px; }
-.commerce-intro__photography img { display: block; width: 100%; height: clamp(180px, 31vw, 390px); object-fit: cover; border-radius: 12px; background: hsl(var(--muted)); }
+.commerce-intro__photography img { display: block; width: 100%; height: clamp(180px, 31vw, 390px); object-fit: cover; border: 1px solid hsl(var(--border) / .7); border-radius: 12px; background: hsl(var(--muted)); box-shadow: 0 1px 2px hsl(var(--foreground) / .04), 0 18px 40px -26px hsl(var(--foreground) / .4); }
 .commerce-intro__photography img:first-child { object-position: center; }
 .commerce-intro__actions { display: flex; flex-wrap: wrap; gap: 12px; }
-.commerce-intro__actions a { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; gap: 12px; padding: 12px 18px; border-radius: 4px; font-size: 12px; font-weight: 700; }
-.commerce-intro__primary { background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); }
+.commerce-intro__actions a { display: inline-flex; min-height: 46px; align-items: center; justify-content: center; gap: 12px; padding: 13px 20px; border-radius: 4px; font-size: 13px; font-weight: 700; }
+.commerce-intro__primary { background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); box-shadow: 0 10px 24px -14px hsl(var(--primary) / .9); }
 .commerce-intro__secondary { border: 1px solid hsl(var(--border)); background: hsl(var(--card)); }
 .commerce-intro a { transition: background-color .15s, border-color .15s; }
 .commerce-intro a:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 4px; }

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Zap, Truck, Play, Store as StoreIcon } from 'lucide-react';
 import CommerceIntro from '@/components/CommerceIntro';
+import AssuranceStrip from '@/components/home/AssuranceStrip';
 import { base44 } from '@/api/base44Client';
 import { loadPlatformConfig } from '@/lib/config';
 import { Image } from '@/components/ui/image';
@@ -100,6 +101,7 @@ export default function Home() {
       )}
 
       <CommerceIntro />
+      <AssuranceStrip />
       <section aria-label={t("homeCollections.title")} className="grid gap-4 sm:grid-cols-2">
         {[          { image: "electronics", title: t("homeCollections.electronics"), text: t("homeCollections.electronicsText") },          { image: "home-decor", title: t("homeCollections.home"), text: t("homeCollections.homeText") },        ].map((collection) => (          <CategoryCard            key={collection.image}            image={collection.image}            title={collection.title}            text={collection.text}          />        ))}
       </section>
@@ -122,10 +124,10 @@ export default function Home() {
 
       {/* Show promotions only when there is an active offer. */}
       {!!sections.flash.length && <section>
-        <div className="mb-3 flex items-center gap-2">
-          <Zap className="h-5 w-5 text-primary" />
-          <h2 className="text-base font-bold md:text-lg">{t('home.flashSale')}</h2>
-          <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">{t('home.limitedTime')}</span>
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <Zap className="h-5 w-5 text-primary" aria-hidden="true" />
+          <h2 className="text-lg font-semibold tracking-tight md:text-xl">{t('home.flashSale')}</h2>
+          <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary">{t('home.limitedTime')}</span>
         </div>
         <ProductRow products={sections.flash} loading={loading} />
       </section>}
@@ -199,18 +201,18 @@ export default function Home() {
       {/* International */}
       {!!sections.intl.length && (
         <section>
-          <div className="mb-3 flex items-center gap-2">
-            <Truck className="h-5 w-5 text-primary" />
-            <h2 className="text-base font-bold md:text-lg">{t('home.intlTitle')}</h2>
+          <div className="mb-4 flex items-center gap-2">
+            <Truck className="h-5 w-5 text-primary" aria-hidden="true" />
+            <h2 className="text-lg font-semibold tracking-tight md:text-xl">{t('home.intlTitle')}</h2>
           </div>
-          <p className="mb-3 text-xs text-muted-foreground">
+          <p className="mb-4 text-sm text-muted-foreground">
             {t('home.intlNote')}
           </p>
           <ProductRow products={sections.intl} />
         </section>
       )}
 
-      <section className="flex flex-wrap items-center justify-between gap-4 border-t border-border pt-6">
+      <section className="flex flex-wrap items-center justify-between gap-6 rounded-2xl border border-border bg-card p-6 md:p-8">
         <div>
           <h2 className="text-lg font-semibold">{t('common.sellCtaTitle')}</h2>
           <p className="mt-1 text-sm text-muted-foreground">{t('common.sellCtaText')}</p>
