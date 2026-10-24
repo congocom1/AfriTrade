@@ -6,6 +6,7 @@
 .market-hero {
   overflow: hidden;
   border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
   background: linear-gradient(180deg, hsl(var(--card)), hsl(var(--background)));
 }
 
@@ -57,10 +58,10 @@
   justify-content: center;
   gap: 0.5rem;
   min-height: 48px;
-  padding: 0 20px;
-  border-radius: 0.3rem;
+  padding: 0 24px;
+  border-radius: 999px;
   font-size: 0.9rem;
-  font-weight: 700;
+  font-weight: 600;
   transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease, color 160ms ease;
 }
 
@@ -151,6 +152,7 @@
   right: 16px;
   bottom: 16px;
   border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
   background: hsl(var(--card) / 0.95);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -192,6 +194,7 @@
   min-height: 106px;
   padding: 14px 8px;
   border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
   background: hsl(var(--card));
   text-align: center;
   transition: border-color 160ms ease, transform 160ms ease, background-color 160ms ease;
@@ -226,10 +229,11 @@
 }
 
 .market-band {
-  border: 1px solid hsl(157 29% 17%);
-  background: #071b16;
+  border: 1px solid #000000;
+  border-radius: var(--radius);
+  background: #000000;
   padding: 26px 20px;
-  color: #edf2ee;
+  color: #ffffff;
 }
 
 .market-band__title {
@@ -243,7 +247,7 @@
   margin-top: 8px;
   font-size: 0.88rem;
   line-height: 1.65;
-  color: rgb(237 242 238 / 0.78);
+  color: rgb(255 255 255 / 0.72);
 }
 
 .market-band__list {
@@ -264,7 +268,7 @@
 .market-band__list svg {
   flex: none;
   margin-top: 2px;
-  color: #19c48d;
+  color: #ffffff;
 }
 
 .market-band__actions {
@@ -275,23 +279,24 @@
 }
 
 .market-band .market-cta--primary {
-  background: #19c48d;
-  color: #071b16;
+  background: #ffffff;
+  color: #000000;
 }
 
 .market-band .market-cta--ghost {
-  border-color: rgb(237 242 238 / 0.45);
+  border-color: rgb(255 255 255 / 0.45);
   background: transparent;
-  color: #edf2ee;
+  color: #ffffff;
 }
 
 .market-band .market-cta--ghost:hover {
-  border-color: #19c48d;
+  border-color: #ffffff;
+  background: rgb(255 255 255 / 0.1);
   color: #ffffff;
 }
 
 .market-tag {
-  border: 1px solid rgb(237 242 238 / 0.4);
+  border: 1px solid rgb(255 255 255 / 0.4);
   padding: 4px 8px;
   font-family: var(--font-mono);
   font-size: 0.62rem;
