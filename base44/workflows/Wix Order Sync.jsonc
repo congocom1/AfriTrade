@@ -1,0 +1,45 @@
+{
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 */6 * * *",
+      "one_time_date": null,
+      "timezone": "America/Detroit",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "description": "Rattrape toutes les ventes Wix non importees, toutes les 6 heures.",
+  "name": "Wix Order Sync",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "wix_order_sync",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "sync_orders": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "importWixOrders",
+            "args": {}
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Synchroniser les ventes Wix",
+            "description": "Complete le registre de commandes"
+          }
+        }
+      }
+    ]
+  }
+}
