@@ -64,27 +64,32 @@ export default function TopBar() {
     event.preventDefault();
     if (term.trim()) { navigate(`/search?q=${encodeURIComponent(term.trim())}`); setTerm(''); }
   };
-  const iconButton = 'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring';
-  return <header className="sticky top-0 z-50 border-b border-border bg-background pt-[env(safe-area-inset-top)]">
-    <div className="mx-auto flex max-w-7xl flex-nowrap items-center gap-2 px-3 py-2 md:gap-3 md:px-6 md:py-3">
-      <Link to="/" aria-label={`AfriTrade — ${t('nav.home')}`} className="flex min-h-11 shrink-0 items-center rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring"><span className="text-lg font-bold tracking-tight text-foreground md:text-xl">Afri<span className="text-primary">Trade</span></span></Link>
-      <nav aria-label={t('nav.primary')} className="hidden shrink-0 items-center gap-1 md:flex">
-        {[['/discover', 'nav.discover'], ['/categories', 'nav.categories']].map(([to, key]) => <NavLink key={to} to={to} className={({ isActive }) => `app-nav-item inline-flex min-h-11 items-center rounded-lg px-3 py-2 text-sm font-medium ${isActive ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}>{t(key)}</NavLink>)}
+  const iconButton = 'flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring';
+  const initials = (user?.full_name || user?.name || user?.email || '').trim().split(/\s+/).map(part => part[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
+  return <header className="sticky top-0 z-50 border-b border-border/60 bg-background/90 pt-[env(safe-area-inset-top)] shadow-[0_1px_3px_rgba(15,36,29,0.06)] backdrop-blur-md">
+    <div className="mx-auto flex max-w-7xl flex-nowrap items-center gap-2 px-3 py-2 md:gap-4 md:px-6 md:py-2.5">
+      <Link to="/" aria-label={`AfriTrade — ${t('nav.home')}`} className="flex min-h-11 shrink-0 items-center rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"><span className="font-heading text-lg font-extrabold tracking-[-0.03em] text-foreground md:text-xl">Afri<span className="text-primary">Trade</span></span></Link>
+      <nav aria-label={t('nav.primary')} className="hidden shrink-0 items-center gap-0.5 md:flex">
+        {[['/discover', 'nav.discover'], ['/categories', 'nav.categories']].map(([to, key]) => <NavLink key={to} to={to} className={({ isActive }) => `app-nav-item inline-flex min-h-11 items-center rounded-lg px-3 text-sm transition-colors ${isActive ? 'bg-primary/10 font-semibold text-primary ring-1 ring-inset ring-primary/15' : 'font-medium text-muted-foreground hover:bg-accent/70 hover:text-foreground'}`}>{t(key)}</NavLink>)}
       </nav>
       <form onSubmit={submit} role="search" className="relative min-w-0 flex-1 md:mx-auto md:w-full md:max-w-[18rem] md:flex-none lg:max-w-[22rem] xl:max-w-[25rem]">
         <label htmlFor="site-search" className="sr-only">{t('nav.searchPlaceholder')}</label>
         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-        <input id="site-search" type="search" value={term} onChange={event => setTerm(event.target.value)} placeholder={t('nav.searchPlaceholder')} enterKeyHint="search" className="h-11 w-full min-w-0 rounded-lg border border-border bg-secondary/30 pl-9 pr-2 text-sm md:h-11 md:rounded-xl md:pl-10 md:pr-3 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" />
+        <input id="site-search" type="search" value={term} onChange={event => setTerm(event.target.value)} placeholder={t('nav.searchPlaceholder')} enterKeyHint="search" className="h-11 w-full min-w-0 rounded-lg border border-border/70 bg-secondary/40 pl-9 pr-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/75 hover:border-border focus:border-primary/60 focus:bg-card focus:ring-2 focus:ring-primary/15 md:pl-10" />
       </form>
-      <button type="button" className="ml-0 flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:bg-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring md:hidden" onClick={() => setDrawerOpen(true)} aria-label={t('nav.menu')} aria-expanded={drawerOpen} aria-controls="mobile-drawer"><Menu className="h-5 w-5" /></button>
-      <div className="hidden shrink-0 items-center gap-1 md:flex">
+      <button type="button" className="ml-0 flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring md:hidden" onClick={() => setDrawerOpen(true)} aria-label={t('nav.menu')} aria-expanded={drawerOpen} aria-controls="mobile-drawer"><Menu className="h-5 w-5" /></button>
+      <div className="hidden shrink-0 items-center gap-1.5 md:flex md:border-l md:border-border/60 md:pl-2.5">
         <WorkspaceSwitcher />
         <Popover open={preferencesOpen} onOpenChange={setPreferencesOpen}>
           <PopoverTrigger asChild><button type="button" className={iconButton} aria-label={t('nav.utilities')}><SlidersHorizontal className="h-5 w-5" /></button></PopoverTrigger>
           <PopoverContent align="end" className="w-64 space-y-3"><p className="text-sm font-semibold">{t('nav.utilities')}</p><div className="flex flex-wrap items-center gap-2"><ThemeToggle /><CurrencyToggle /><LanguageToggle /></div></PopoverContent>
         </Popover>
         <DropdownMenu open={accountOpen} onOpenChange={setAccountOpen}>
-          <DropdownMenuTrigger asChild><button type="button" className="flex h-11 items-center gap-2 rounded-xl px-3 text-sm font-medium hover:bg-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring" aria-label={t('nav.account')}><User className="h-5 w-5" /><span className="hidden xl:inline">{t(user ? 'nav.account' : 'nav.login')}</span><ChevronDown className="h-3 w-3" /></button></DropdownMenuTrigger>
+          <DropdownMenuTrigger asChild><button type="button" className="flex h-11 items-center gap-2 rounded-lg pl-1.5 pr-2.5 text-sm font-medium transition-colors hover:bg-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring" aria-label={t('nav.account')}>
+            {user ? <span aria-hidden="true" className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-primary/10 text-xs font-semibold text-primary">{initials || <User className="h-4 w-4" />}</span> : <span aria-hidden="true" className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-secondary text-muted-foreground"><User className="h-4 w-4" /></span>}
+            <span className="hidden xl:inline">{t(user ? 'nav.account' : 'nav.login')}</span>
+            <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
+          </button></DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-64">
             {user ? <>
               <DropdownMenuLabel className="truncate">{user.full_name || user.name || user.email}</DropdownMenuLabel><DropdownMenuSeparator />
@@ -97,7 +102,7 @@ export default function TopBar() {
             </> : <><DropdownMenuItem asChild><Link to="/login">{t('nav.login')}</Link></DropdownMenuItem><DropdownMenuItem asChild><Link to="/register">{t('nav.register')}</Link></DropdownMenuItem></>}
           </DropdownMenuContent>
         </DropdownMenu>
-        <Link to="/cart" className={`${iconButton} header-icon-button relative`} aria-label={`${t('nav.cart')} (${count})`}><ShoppingBag className="h-5 w-5" />{count > 0 && <span className="absolute -right-1 -top-1 rounded-full bg-primary px-1.5 text-[10px] font-bold leading-5 text-primary-foreground">{count > 99 ? '99+' : count}</span>}</Link>
+        <Link to="/cart" className={`${iconButton} header-icon-button relative`} aria-label={`${t('nav.cart')} (${count})`}><ShoppingBag className="h-5 w-5" />{count > 0 && <span className="absolute -right-0.5 -top-0.5 rounded-full bg-primary px-1.5 text-[10px] font-bold leading-5 text-primary-foreground ring-2 ring-background">{count > 99 ? '99+' : count}</span>}</Link>
       </div>
     </div>
     <MobileDrawer isOpen={drawerOpen} onClose={() => setDrawerOpen(false)} />
