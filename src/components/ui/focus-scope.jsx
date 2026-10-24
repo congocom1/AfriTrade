@@ -7,19 +7,22 @@ import { cn } from '@/lib/utils';
  * Ensures focus is trapped within the modal when open
  * This addresses P0 A-02: Focus trap for modals
  */
-export function FocusScope({
-  className,
-  children,
-  ...props
-}) {
+// Radix clones this element through SlotClone and passes a ref, so it has to
+// forward it: a plain function component drops the ref and the focus trap
+// never attaches to the modal container.
+export const FocusScope = React.forwardRef(function FocusScope(
+  { className, children, ...props },
+  ref
+) {
   return (
     <FocusScopePrimitive.Root
+      ref={ref}
       className={cn(className)}
       {...props}
     >
       {children}
     </FocusScopePrimitive.Root>
   );
-}
+});
 
 FocusScope.displayName = FocusScopePrimitive.Root.displayName;
