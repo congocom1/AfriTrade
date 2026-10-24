@@ -111,6 +111,53 @@ export default async function (req: Request) {
       return (await myOrders(limit)).map((o: any) => o.order_number).filter(Boolean);
     }
 
+    /**
+     * The shops the signed-in account actually operates: the Seller records held
+     * under the caller's verified account email, plus the tenant each of those
+     * records points at. A shop is never identified by the free-text
+     * `seller_name` a case carries — display names are not unique, so a name
+     * match would hand one shop another shop's cases, buyer name, email and
+     * phone included.
+     */
+    async function ownedShopScope() {
+      const emails = new Set<string>();
+      const tenantIds = new Set<string>();
+      if (email) emails.add(email);
+      const sellers = email
+        ? await db.entities.Seller.filter({ email: user.email }, "name", 10).catch(() => [])
+        : [];
+      for (const seller of sellers || []) {
+        for (const candidate of [seller.tenant_owner_email, seller.email]) {
+          const value = lower(candidate);
+          if (value) emails.add(value);
+        }
+        if (seller.tenant_id) tenantIds.add(String(seller.tenant_id));
+      }
+      return { emails: [...emails], tenantIds: [...tenantIds] };
+    }
+
+    /** Cases belonging to the shops the caller operates. */
+    async function disputesForOwnedShops(limit: number) {
+      const scope = await ownedShopScope();
+      const [byOwner, byTenant] = await Promise.all([
+        scope.emails.length
+          ? db.entities.Dispute.filter({ tenant_owner_email: { $in: scope.emails } }, "-created_date", limit).catch(() => [])
+          : [],
+        scope.tenantIds.length
+          ? db.entities.Dispute.filter({ tenant_id: { $in: scope.tenantIds } }, "-created_date", limit).catch(() => [])
+          : [],
+      ]);
+      return dedupe([...(byOwner || []), ...(byTenant || [])]);
+    }
+
+    /** Does the caller operate the shop this case belongs to? */
+    async function ownsCase(dispute: any) {
+      if (isAdmin) return true;
+      const scope = await ownedShopScope();
+      if (scope.emails.includes(lower(dispute?.tenant_owner_email))) return true;
+      return !!dispute?.tenant_id && scope.tenantIds.includes(String(dispute.tenant_id));
+    }
+
     if (action === "orders") {
       const limit = Math.min(Number(body.limit) || 50, 100);
       return addSecurityHeaders(Response.json({ orders: await myOrders(limit) }));
@@ -223,15 +270,7 @@ export default async function (req: Request) {
 
     if (action === "seller_disputes") {
       if (!email) return Response.json({ disputes: [] });
-      const sellers = await db.entities.Seller.filter({ email: user.email }, "name", 5).catch(() => []);
-      const names = (sellers || []).map((s: any) => s.name).filter(Boolean);
-      const [byTenant, byName] = await Promise.all([
-        db.entities.Dispute.filter({ tenant_owner_email: user.email }, "-created_date", 100).catch(() => []),
-        names.length
-          ? db.entities.Dispute.filter({ seller_name: { $in: names } }, "-created_date", 100).catch(() => [])
-          : [],
-      ]);
-      return Response.json({ disputes: dedupe([...(byTenant || []), ...(byName || [])]) });
+      return Response.json({ disputes: await disputesForOwnedShops(100) });
     }
 
     if (action === "seller_threads") {
@@ -240,15 +279,8 @@ export default async function (req: Request) {
         return Response.json({ tickets: all || [] });
       }
       if (!email) return Response.json({ tickets: [] });
-      const sellers = await db.entities.Seller.filter({ email: user.email }, "name", 5).catch(() => []);
-      const names = (sellers || []).map((s: any) => s.name).filter(Boolean);
-      const [byTenant, byName] = await Promise.all([
-        db.entities.Dispute.filter({ tenant_owner_email: user.email }, "-created_date", 100).catch(() => []),
-        names.length
-          ? db.entities.Dispute.filter({ seller_name: { $in: names } }, "-created_date", 100).catch(() => [])
-          : [],
-      ]);
-      const orderNumbers = [...new Set([...(byTenant || []), ...(byName || [])].map((d: any) => d.order_number).filter(Boolean))];
+      const cases = await disputesForOwnedShops(100);
+      const orderNumbers = [...new Set(cases.map((d: any) => d.order_number).filter(Boolean))];
       if (!orderNumbers.length) return Response.json({ tickets: [] });
       const tickets = await db.entities.SupportTicket
         .filter({ order_number: { $in: orderNumbers } }, "-created_date", 100)
@@ -398,12 +430,7 @@ export default async function (req: Request) {
       const dispute = rows?.[0];
       if (!dispute) return err("Litige introuvable.", 404);
 
-      let allowed = isAdmin || (!!email && lower(dispute.tenant_owner_email) === email);
-      if (!allowed && email) {
-        const sellers = await db.entities.Seller.filter({ email: user.email }, "name", 5).catch(() => []);
-        allowed = (sellers || []).some((s: any) => s.name && s.name === dispute.seller_name);
-      }
-      if (!allowed) return err("Accès refusé.", 403);
+      if (!(await ownsCase(dispute))) return err("Accès refusé.", 403);
 
       if (action === "set_dispute_status") {
         // Ruling on a case decides money and blame, and the app only offers
