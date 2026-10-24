@@ -1,0 +1,317 @@
+/* ===== Marketplace storefront — regional commerce surface =====
+   The front page of a trade platform, not a generic shop: one hero that
+   states what the marketplace is, a department rail built from the real
+   catalogue, a deals band, verified local shops and the wholesale entry. */
+
+.market-hero {
+  overflow: hidden;
+  border: 1px solid hsl(var(--border));
+  background: linear-gradient(180deg, hsl(var(--card)), hsl(var(--background)));
+}
+
+.market-hero__grid {
+  display: grid;
+}
+
+.market-hero__copy {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 26px 20px 28px;
+}
+
+.market-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  line-height: 1.4;
+  text-transform: uppercase;
+  color: hsl(var(--primary));
+}
+
+.market-hero__title {
+  margin: 0;
+  font-size: clamp(1.9rem, 5.2vw, 3.2rem);
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 1.04;
+}
+
+.market-hero__sub {
+  max-width: 48ch;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: hsl(var(--muted-foreground));
+}
+
+.market-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.market-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 48px;
+  padding: 0 20px;
+  border-radius: 0.3rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+.market-cta--primary {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
+.market-cta--primary:hover {
+  transform: translateY(-2px);
+}
+
+.market-cta--ghost {
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--card));
+  color: hsl(var(--foreground));
+}
+
+.market-cta--ghost:hover {
+  border-color: hsl(var(--primary));
+  color: hsl(var(--primary));
+}
+
+.market-hero__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.market-hero__chips li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+}
+
+.market-hero__chips svg {
+  color: hsl(var(--primary));
+}
+
+.market-hero__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 26px;
+  margin: 0;
+  border-top: 1px solid hsl(var(--border));
+  padding-top: 16px;
+}
+
+.market-hero__stats dt {
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+}
+
+.market-hero__stats dd {
+  margin: 4px 0 0;
+  font-size: 1.45rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.market-hero__media {
+  position: relative;
+  min-height: 280px;
+  border-top: 1px solid hsl(var(--border));
+}
+
+.market-hero__image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.market-hero__card {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--card) / 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 14px 16px;
+}
+
+.market-hero__card-label {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: hsl(var(--primary));
+}
+
+.market-hero__card-value {
+  margin-top: 5px;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.market-hero__card-note {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 8px;
+  font-size: 0.76rem;
+  line-height: 1.5;
+  color: hsl(var(--muted-foreground));
+}
+
+.market-dept {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  min-height: 106px;
+  padding: 14px 8px;
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--card));
+  text-align: center;
+  transition: border-color 160ms ease, transform 160ms ease, background-color 160ms ease;
+}
+
+.market-dept:hover {
+  border-color: hsl(var(--primary));
+  transform: translateY(-2px);
+}
+
+.market-dept__thumb {
+  width: 46px;
+  height: 46px;
+  border-radius: 999px;
+  object-fit: cover;
+}
+
+.market-dept__icon {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 999px;
+  background: hsl(var(--accent));
+  color: hsl(var(--primary));
+}
+
+.market-dept__name {
+  font-size: 0.78rem;
+  font-weight: 650;
+  line-height: 1.3;
+}
+
+.market-band {
+  border: 1px solid hsl(157 29% 17%);
+  background: #071b16;
+  padding: 26px 20px;
+  color: #edf2ee;
+}
+
+.market-band__title {
+  font-size: clamp(1.2rem, 2.4vw, 1.65rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.market-band__text {
+  max-width: 54ch;
+  margin-top: 8px;
+  font-size: 0.88rem;
+  line-height: 1.65;
+  color: rgb(237 242 238 / 0.78);
+}
+
+.market-band__list {
+  display: grid;
+  gap: 10px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.market-band__list li {
+  display: flex;
+  gap: 0.55rem;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.market-band__list svg {
+  flex: none;
+  margin-top: 2px;
+  color: #19c48d;
+}
+
+.market-band__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.market-band .market-cta--primary {
+  background: #19c48d;
+  color: #071b16;
+}
+
+.market-band .market-cta--ghost {
+  border-color: rgb(237 242 238 / 0.45);
+  background: transparent;
+  color: #edf2ee;
+}
+
+.market-band .market-cta--ghost:hover {
+  border-color: #19c48d;
+  color: #ffffff;
+}
+
+.market-tag {
+  border: 1px solid rgb(237 242 238 / 0.4);
+  padding: 4px 8px;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+@media (min-width: 900px) {
+  .market-hero__grid {
+    grid-template-columns: 1.06fr 0.94fr;
+  }
+
+  .market-hero__copy {
+    padding: 44px 40px 44px 0;
+  }
+
+  .market-hero__media {
+    min-height: 430px;
+    border-top: 0;
+    border-left: 1px solid hsl(var(--border));
+  }
+}

@@ -7,6 +7,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { isAdmin } from '@/lib/roles';
 import { WORKSPACE_ITEMS } from '@/components/layout/workspaces';
 import MobileDrawer from '@/components/MobileDrawer';
+import WorkspaceSwitcher from '@/components/layout/WorkspaceSwitcher';
 import CurrencyToggle from '@/components/CurrencyToggle';
 import LanguageToggle from '@/components/LanguageToggle';
 import ThemeToggle from '@/components/ThemeToggle';
@@ -77,6 +78,7 @@ export default function TopBar() {
       </form>
       <button type="button" className="ml-0 flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:bg-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring md:hidden" onClick={() => setDrawerOpen(true)} aria-label={t('nav.menu')} aria-expanded={drawerOpen} aria-controls="mobile-drawer"><Menu className="h-5 w-5" /></button>
       <div className="hidden shrink-0 items-center gap-1 md:flex">
+        <WorkspaceSwitcher />
         <Popover open={preferencesOpen} onOpenChange={setPreferencesOpen}>
           <PopoverTrigger asChild><button type="button" className={iconButton} aria-label={t('nav.utilities')}><SlidersHorizontal className="h-5 w-5" /></button></PopoverTrigger>
           <PopoverContent align="end" className="w-64 space-y-3"><p className="text-sm font-semibold">{t('nav.utilities')}</p><div className="flex flex-wrap items-center gap-2"><ThemeToggle /><CurrencyToggle /><LanguageToggle /></div></PopoverContent>

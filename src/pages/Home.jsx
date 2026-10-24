@@ -1,8 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Zap, Truck, Play, Store as StoreIcon } from 'lucide-react';
-import CommerceIntro from '@/components/CommerceIntro';
+import { Play, Truck } from 'lucide-react';
+import MarketHero from '@/components/storefront/MarketHero';
+import DepartmentRail from '@/components/storefront/DepartmentRail';
+import DealStrip from '@/components/storefront/DealStrip';
+import SellerSpotlight from '@/components/storefront/SellerSpotlight';
+import WholesaleBand from '@/components/storefront/WholesaleBand';
 import AssuranceStrip from '@/components/home/AssuranceStrip';
 import { base44 } from '@/api/base44Client';
 import { loadPlatformConfig } from '@/lib/config';
@@ -10,9 +14,6 @@ import { Image } from '@/components/ui/image';
 import SectionHeader from '@/components/SectionHeader';
 import ProductRow from '@/components/ProductRow';
 import ProductGrid from '@/components/ProductGrid';
-import SellerCard from '@/components/SellerCard';
-import CategoryCard from '@/components/categories/CategoryCard';
-import EmptyState from '@/components/EmptyState';
 import { resolveStorefrontScope, scopeRecords } from '@/lib/tenancy';
 import usePullToRefresh from '@/hooks/usePullToRefresh';
 
@@ -83,7 +84,7 @@ export default function Home() {
   }, [products]);
 
   return (
-    <div className="brand-home space-y-10 pb-6 md:space-y-14" {...pullHandlers}>
+    <div className="brand-home space-y-8 pb-6 md:space-y-12" {...pullHandlers}>
       {pullIndicator}
       {loadFailed && (
         <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-border bg-card p-4">
@@ -100,37 +101,17 @@ export default function Home() {
         </div>
       )}
 
-      <CommerceIntro />
-      <AssuranceStrip />
-      <section aria-label={t("homeCollections.title")} className="grid gap-4 sm:grid-cols-2">
-        {[          { image: "electronics", title: t("homeCollections.electronics"), text: t("homeCollections.electronicsText") },          { image: "home-decor", title: t("homeCollections.home"), text: t("homeCollections.homeText") },        ].map((collection) => (          <CategoryCard            key={collection.image}            image={collection.image}            title={collection.title}            text={collection.text}          />        ))}
-      </section>
-      {/* Category chips */}
-      {!!categories.length && (
-        <section>
-          <div className="-mx-3 flex gap-2 overflow-x-auto px-3 pb-1 md:mx-0 md:px-0">
-            {categories.map((c) => (
-              <Link
-                key={c.id}
-                to={`/search?category=${c.slug}`}
-                className="inline-flex min-h-11 shrink-0 items-center rounded-full border border-border bg-card px-4 py-2 text-sm font-medium hover:border-primary hover:text-primary"
-              >
-                {c.name}
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
+      <MarketHero
+        productCount={products.length}
+        categoryCount={categories.length}
+        sellerCount={sellers.length}
+      />
 
-      {/* Show promotions only when there is an active offer. */}
-      {!!sections.flash.length && <section>
-        <div className="mb-4 flex flex-wrap items-center gap-2">
-          <Zap className="h-5 w-5 text-primary" aria-hidden="true" />
-          <h2 className="text-lg font-semibold tracking-tight md:text-xl">{t('home.flashSale')}</h2>
-          <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary">{t('home.limitedTime')}</span>
-        </div>
-        <ProductRow products={sections.flash} loading={loading} />
-      </section>}
+      <DepartmentRail categories={categories} loading={loading} />
+
+      <AssuranceStrip />
+
+      {!!sections.flash.length && <DealStrip products={sections.flash} />}
 
       {/* Discovery feed */}
       {(loading || content.length > 0) && <section>
@@ -164,31 +145,7 @@ export default function Home() {
         <ProductGrid products={sections.trending} loading={loading} skeletonCount={4} />
       </section>
 
-      {/* Local sellers */}
-      <section>
-        <SectionHeader title={t('home.localSellers')} subtitle={t('home.localSellersSub')} />
-        {loading ? (
-          <div className="grid gap-2.5 md:grid-cols-2">
-            {[0, 1, 2, 3].map((i) => (
-              <div key={i} className="h-20 animate-pulse rounded-xl bg-secondary" />
-            ))}
-          </div>
-        ) : sellers.length ? (
-          <div className="grid gap-2.5 md:grid-cols-2">
-            {sellers.slice(0, 6).map((s) => (
-              <SellerCard key={s.id} seller={s} />
-            ))}
-          </div>
-        ) : (
-          <EmptyState
-            icon={StoreIcon}
-            title={t('home.noSellers')}
-            description={t('home.noSellersDesc')}
-            actionTo="/seller"
-            actionLabel={t('home.openShop')}
-          />
-        )}
-      </section>
+      <SellerSpotlight sellers={sellers} loading={loading} />
 
       {/* New arrivals */}
       {!!sections.fresh.length && (
@@ -211,6 +168,8 @@ export default function Home() {
           <ProductRow products={sections.intl} />
         </section>
       )}
+
+      <WholesaleBand />
 
       <section className="flex flex-wrap items-center justify-between gap-6 rounded-2xl border border-border bg-card p-6 md:p-8">
         <div>

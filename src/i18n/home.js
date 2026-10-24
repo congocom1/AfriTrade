@@ -5,6 +5,9 @@
  * resources.js. The values that used to live in the main dictionaries were
  * placeholders ("Trendingsub", "localsellers"), so every string the storefront
  * renders is defined here in full.
+ *
+ * `market` carries the rebuilt storefront (hero, departments, deals, local
+ * shops, wholesale) and `workspace` the surface switcher in the header.
  */
 export default {
   en: {
@@ -26,6 +29,41 @@ export default {
       trending: 'Trending now',
       trendingSub: 'What buyers are picking up this week.',
     },
+    market: {
+      allDepartments: 'All departments',
+      buyCta: 'Explore the marketplace',
+      cardEta: '2 to 4 days in Kinshasa',
+      cardEtaLabel: 'Local delivery',
+      cardPickup: 'Pickup points in Kinshasa and Lubumbashi',
+      chipCurrency: 'Prices in USD and CDF',
+      chipDelivery: 'Delivery or pickup',
+      chipVerified: 'Verified sellers',
+      deals: 'Today’s deals',
+      dealsSub: 'Reduced stock from local shops and importers.',
+      dealsTag: 'Ends soon',
+      departments: 'Departments',
+      eyebrow: 'DR Congo marketplace',
+      sellCta: 'Start selling',
+      sellersAll: 'Browse the directory',
+      sellersSub: 'Verified shops shipping across the country.',
+      sellersTitle: 'Local sellers',
+      statCategories: 'Departments',
+      statProducts: 'Products listed',
+      statSellers: 'Verified shops',
+      subtitle: 'Verified local shops, imported goods and wholesale suppliers, with delivery or pickup you can track.',
+      title: 'Buy and sell across DR Congo',
+      wholesaleCta: 'Open the wholesale marketplace',
+      wholesaleCta2: 'Request a quote',
+      wholesalePoint1: 'Wholesale prices from local importers',
+      wholesalePoint2: 'Bulk quotes answered by real suppliers',
+      wholesalePoint3: 'Consolidated shipping and customs clearance',
+      wholesaleText: 'Source in bulk from verified suppliers and importers, with duties and consolidation handled for you.',
+      wholesaleTitle: 'Buying for a business?',
+    },
+    workspace: {
+      buyer: 'Marketplace',
+      switch: 'Switch workspace',
+    },
   },
   fr: {
     home: {
@@ -45,6 +83,41 @@ export default {
       openShop: 'Ouvrir ma boutique',
       trending: 'Tendances',
       trendingSub: 'Ce que les acheteurs choisissent cette semaine.',
+    },
+    market: {
+      allDepartments: 'Tous les rayons',
+      buyCta: 'Explorer la place de marché',
+      cardEta: '2 à 4 jours à Kinshasa',
+      cardEtaLabel: 'Livraison locale',
+      cardPickup: 'Points de retrait à Kinshasa et Lubumbashi',
+      chipCurrency: 'Prix en USD et CDF',
+      chipDelivery: 'Livraison ou retrait',
+      chipVerified: 'Vendeurs vérifiés',
+      deals: 'Offres du jour',
+      dealsSub: 'Stocks réduits des boutiques locales et des importateurs.',
+      dealsTag: 'Bientôt terminé',
+      departments: 'Rayons',
+      eyebrow: 'Place de marché RDC',
+      sellCta: 'Commencer à vendre',
+      sellersAll: 'Voir l’annuaire',
+      sellersSub: 'Boutiques vérifiées livrant partout au pays.',
+      sellersTitle: 'Vendeurs locaux',
+      statCategories: 'Rayons',
+      statProducts: 'Produits en ligne',
+      statSellers: 'Boutiques vérifiées',
+      subtitle: 'Boutiques locales vérifiées, produits importés et fournisseurs de gros, avec livraison ou retrait suivis.',
+      title: 'Achetez et vendez partout en RDC',
+      wholesaleCta: 'Ouvrir la place de gros',
+      wholesaleCta2: 'Demander un devis',
+      wholesalePoint1: 'Prix de gros chez les importateurs locaux',
+      wholesalePoint2: 'Devis en gros traités par de vrais fournisseurs',
+      wholesalePoint3: 'Transport groupé et dédouanement pris en charge',
+      wholesaleText: 'Approvisionnez-vous en gros auprès de fournisseurs et importateurs vérifiés, douanes et groupage gérés pour vous.',
+      wholesaleTitle: 'Vous achetez pour une entreprise ?',
+    },
+    workspace: {
+      buyer: 'Place de marché',
+      switch: 'Changer d’espace',
     },
   },
 };
