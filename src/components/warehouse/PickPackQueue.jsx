@@ -29,7 +29,7 @@ export default function PickPackQueue() {
     await base44.entities.Order.update(o.id, { status: next });
     setOrders((prev) => (next === 'SHIPPED' ? prev.filter((x) => x.id !== o.id) : prev.map((x) => (x.id === o.id ? { ...x, status: next } : x))));
     if (next === 'SHIPPED') {
-      try { await printShippingLabels([o]); } catch (err) { toast({ title: t('pickPackQueue.labelFailed'), description: err.message }); }
+      try { await printShippingLabels([o]); } catch (err) { const apiError = err?.response?.data?.error || err?.response?.data?.message; toast({ title: t('pickPackQueue.labelFailed'), description: apiError || err.message }); }
     }
     } catch { setActionError(true); } finally { setBusy(''); }
   };

@@ -45,7 +45,8 @@ export default function AdminBilling() {
       );
       await load();
     } catch (err) {
-      setMessage(t('adminBilling.generateError', { error: err?.message || 'Erreur inconnue' }));
+      const apiError = err?.response?.data?.error || err?.response?.data?.message;
+      setMessage(t('adminBilling.generateError', { error: apiError || err?.message || 'Erreur inconnue' }));
     } finally {
       setGenerating(false);
     }
@@ -63,7 +64,8 @@ export default function AdminBilling() {
       );
       await load();
     } catch (err) {
-      setMessage(t('adminBilling.dunningError', { error: err?.message || 'Erreur inconnue' }));
+      const apiError = err?.response?.data?.error || err?.response?.data?.message;
+      setMessage(t('adminBilling.dunningError', { error: apiError || err?.message || 'Erreur inconnue' }));
     } finally {
       setDunning(false);
     }

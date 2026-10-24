@@ -83,7 +83,8 @@ export default function AdminFraud() {
       const ruleRows = await loadFraudRules(base44);
       setRules(ruleRows);
     } catch (err) {
-      setSeedError(err?.message || String(err));
+      const apiError = err?.response?.data?.error || err?.response?.data?.message;
+      setSeedError(apiError || err?.message || String(err));
     } finally {
       setSeeding(false);
     }

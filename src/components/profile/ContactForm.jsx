@@ -18,7 +18,8 @@ export default function ContactForm({ user, onSaved }) {
       setState('saved');
       onSaved?.();
     } catch (err) {
-      setState(err.message || t('contactForm.errorFallback'));
+      const apiError = err?.response?.data?.error || err?.response?.data?.message;
+      setState(apiError || err.message || t('contactForm.errorFallback'));
     }
   };
 

@@ -58,7 +58,8 @@ export default function SellerWallet() {
       setMessage(t('sellerWallet.sent', { amount: formatUsdAmount(value), method }));
       await load();
     } catch (err) {
-      setMessage(err?.message || t('sellerWallet.failed'));
+      const apiError = err?.response?.data?.error || err?.response?.data?.message;
+      setMessage(apiError || err?.message || t('sellerWallet.failed'));
     } finally {
       setSaving(false);
     }

@@ -88,7 +88,8 @@ export default function Disputes() {
       setForm({ ...form, order_number: '', description: '' });
       await load(form.phone || profile.phone);
     } catch (err) {
-      setError(err.message || t('disputes.openFailed'));
+      const apiError = err?.response?.data?.error || err?.response?.data?.message;
+      setError(apiError || err.message || t('disputes.openFailed'));
     } finally {
       setSubmitting(false);
     }

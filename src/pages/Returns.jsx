@@ -101,7 +101,8 @@ export default function Returns() {
       setForm({ ...form, order_number: '', product_title: '', description: '', refund_amount_usd: '' });
       await load();
       } catch (err) {
-        setError(err.message || t('returns.submitFailed'));
+        const apiError = err?.response?.data?.error || err?.response?.data?.message;
+        setError(apiError || err.message || t('returns.submitFailed'));
     } finally {
       setSubmitting(false);
     }

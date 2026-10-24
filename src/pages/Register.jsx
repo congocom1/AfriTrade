@@ -95,7 +95,8 @@ export default function Register() {
       await base44.auth.register({ email, password });
       setShowOtp(true);
     } catch (err) {
-      setError(err.message || t('auth.registerError'));
+      const apiError = err?.response?.data?.error || err?.response?.data?.message;
+      setError(apiError || err.message || t('auth.registerError'));
     } finally {
       setLoading(false);
     }
@@ -111,7 +112,8 @@ export default function Register() {
       }
       window.location.href = safeReturnTo();
     } catch (err) {
-      setError(err.message || t('auth.codeInvalid'));
+      const apiError = err?.response?.data?.error || err?.response?.data?.message;
+      setError(apiError || err.message || t('auth.codeInvalid'));
     } finally {
       setLoading(false);
     }
@@ -126,7 +128,8 @@ export default function Register() {
         description: t('auth.codeSentDesc'),
       });
     } catch (err) {
-      setError(err.message || t('auth.resendFailed'));
+      const apiError = err?.response?.data?.error || err?.response?.data?.message;
+      setError(apiError || err.message || t('auth.resendFailed'));
     }
   };
 
