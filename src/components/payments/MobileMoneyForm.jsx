@@ -71,7 +71,7 @@ export default function MobileMoneyForm({ onAdd }) {
           aria-describedby="phone-hint"
         />
         <p id="phone-hint" className="text-[11px] text-muted-foreground">{hint || t('payout.momoHint', 'Enter your mobile wallet number.')}</p>
-        {errors.phone && <p className="text-[11px] text-destructive">{errors.phone.message}</p>}
+        {errors.phone && <p className="text-[11px] text-destructive">{t(errors.phone.message)}</p>}
       </div>
       <div className="flex flex-col gap-1">
         <label className="text-xs font-semibold text-muted-foreground" htmlFor="holder">
