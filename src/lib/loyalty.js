@@ -23,7 +23,7 @@ export const LOYALTY_TIERS = [
     nameKey: 'loyalty.tierSilver',
     min_points: 1500,
     multiplier: 1.25,
-    badge: 'bg-slate-200 text-slate-800',
+    badge: 'bg-muted text-foreground',
     perksKey: 'loyalty.tierSilverPerks',
   },
   {

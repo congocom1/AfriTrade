@@ -14,7 +14,7 @@ const STYLES = {
   queued: 'bg-amber-100 text-amber-900',
   sent: 'bg-emerald-100 text-emerald-900',
   failed: 'bg-red-100 text-red-900',
-  skipped: 'bg-slate-200 text-slate-700',
+  skipped: 'bg-muted text-muted-foreground',
 };
 
 export default function AdminNotifications() {

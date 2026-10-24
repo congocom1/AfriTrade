@@ -3,17 +3,17 @@ import { useTranslation } from 'react-i18next';
 import { HEALTH_LABELS } from '@/lib/platformHealth';
 
 const DOT = {
-  ok: 'bg-emerald-500',
-  degraded: 'bg-amber-500',
-  down: 'bg-red-500',
-  unknown: 'bg-slate-300',
+  ok: 'bg-success-500',
+  degraded: 'bg-warning-500',
+  down: 'bg-destructive-500',
+  unknown: 'bg-muted-foreground/40',
 };
 
 const PILL = {
-  ok: 'bg-emerald-100 text-emerald-900',
-  degraded: 'bg-amber-100 text-amber-900',
-  down: 'bg-red-100 text-red-900',
-  unknown: 'bg-slate-200 text-slate-700',
+  ok: 'bg-success-100 text-success-900',
+  degraded: 'bg-warning-100 text-warning-900',
+  down: 'bg-destructive-100 text-destructive-900',
+  unknown: 'bg-muted text-muted-foreground',
 };
 
 /** One monitored service, gateway or logistics partner. */

@@ -34,7 +34,7 @@ export default function LicenseRegister({ entries, onSave }) {
     valid: { label: t('licenseRegister.statusValid'), className: 'bg-emerald-100 text-emerald-900' },
     expiring: { label: t('licenseRegister.statusExpiring'), className: 'bg-amber-100 text-amber-900' },
     expired: { label: t('licenseRegister.statusExpired'), className: 'bg-red-100 text-red-900' },
-    draft: { label: t('licenseRegister.statusDraft'), className: 'bg-slate-200 text-slate-700' },
+    draft: { label: t('licenseRegister.statusDraft'), className: 'bg-muted text-muted-foreground' },
   };
   const [draft, setDraft] = useState(EMPTY);
   const [adding, setAdding] = useState(false);

@@ -4,7 +4,7 @@ import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 
 export function feedHealth(s) {
-  if (!s.enabled) return ['healthDisabled', 'bg-slate-200 text-slate-700'];
+  if (!s.enabled) return ['healthDisabled', 'bg-muted text-muted-foreground'];
   if (!s.last_sync_at) return ['healthNever', 'bg-amber-100 text-amber-900'];
   const h = (Date.now() - new Date(s.last_sync_at)) / 36e5;
   if (h < 24) return ['healthOk', 'bg-emerald-100 text-emerald-900'];

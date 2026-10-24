@@ -193,7 +193,7 @@ const AuthenticatedApp = () => {
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
       <div className="fixed inset-0 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-4 border-muted border-t-primary rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -380,7 +380,7 @@ const AuthenticatedApp = () => {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/oauth/consent" element={<OAuthConsent />} />
-      <Route path="*" element={<div className="min-h-screen flex items-center justify-center p-6 bg-slate-50"><div className="max-w-md w-full text-center space-y-6"><h1 className="text-7xl font-black tracking-tight text-slate-900">404</h1><p className="text-lg text-slate-600">Page not found</p></div></div>} />
+      <Route path="*" element={<div className="min-h-screen flex items-center justify-center p-6 bg-background"><div className="max-w-md w-full text-center space-y-6"><h1 className="text-7xl font-black tracking-tight text-foreground">404</h1><p className="text-lg text-muted-foreground">Page not found</p></div></div>} />
     </Routes>
   );
 };

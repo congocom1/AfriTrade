@@ -150,7 +150,7 @@ export default function Discover() {
 
               {/* Product bar */}
               {c.product_id && (
-                <div className="absolute bottom-3 left-3 right-3 z-20 flex items-center gap-2 rounded-xl bg-white/95 p-2 backdrop-blur">
+                <div className="absolute bottom-3 left-3 right-3 z-20 flex items-center gap-2 rounded-xl bg-card/95 p-2 backdrop-blur">
                   <Link to={`/product/${c.product_id}`} className="flex min-w-0 flex-1 items-center gap-2 rounded-lg" aria-label={c.product_title || c.title}>
                     <span className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-secondary">
                       <Image src={c.product_image} alt={c.product_title} className="h-full w-full object-cover" />

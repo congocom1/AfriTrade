@@ -130,11 +130,11 @@ export default function B2BMarketplace() {
 
   if (productsError) {
     return (
-      <div className="min-h-screen bg-slate-50 px-6 py-16">
-        <div className="mx-auto max-w-lg rounded-2xl border border-destructive/30 bg-white p-6 text-center shadow-sm">
+      <div className="min-h-screen bg-background px-6 py-16">
+        <div className="mx-auto max-w-lg rounded-2xl border border-destructive/30 bg-card p-6 text-center shadow-sm">
           <Building2 className="mx-auto h-10 w-10 text-destructive" />
-          <h1 className="mt-4 text-xl font-bold text-slate-900">Wholesale marketplace unavailable</h1>
-          <p className="mt-2 text-sm text-slate-600">{productsLoadError?.message || "We could not load wholesale products. Please try again."}</p>
+          <h1 className="mt-4 text-xl font-bold text-foreground">Wholesale marketplace unavailable</h1>
+          <p className="mt-2 text-sm text-muted-foreground">{productsLoadError?.message || "We could not load wholesale products. Please try again."}</p>
           <Button className="mt-5" onClick={() => window.location.reload()}>Try again</Button>
         </div>
       </div>
@@ -142,20 +142,20 @@ export default function B2BMarketplace() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <header className="bg-slate-900 text-white px-6 py-8">
+    <div className="min-h-screen bg-background">
+      <header className="bg-foreground text-background px-6 py-8">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <h1 className="text-3xl font-black tracking-tight">Wholesale Marketplace</h1>
-              <p className="text-slate-400 mt-1">B2B bulk buying for African businesses — factory-direct pricing, MOQ from 1 unit</p>
+              <p className="text-background/70 mt-1">B2B bulk buying for African businesses — factory-direct pricing, MOQ from 1 unit</p>
             </div>
             <div className="flex items-center gap-3">
               <Badge variant="secondary" className="flex items-center gap-2">
                 <Factory className="w-4 h-4" />
                 {suppliersResponse?.total || 0}+ Verified Suppliers
               </Badge>
-              <Badge variant="default" className="flex items-center gap-2 bg-slate-700 text-white">
+              <Badge variant="default" className="flex items-center gap-2 bg-background/15 text-background">
                 <Coins className="w-4 h-4" />
                 Wholesale Pricing
               </Badge>
@@ -208,8 +208,8 @@ export default function B2BMarketplace() {
 
         <div className="mb-6 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <Users className="w-5 h-5 text-slate-500" />
-            <span className="text-sm font-medium text-slate-600">{products.length} wholesale products</span>
+            <Users className="w-5 h-5 text-muted-foreground" />
+            <span className="text-sm font-medium text-muted-foreground">{products.length} wholesale products</span>
           </div>
           {(search || minOrder || maxPrice || originFilter !== "all") && <Button variant="ghost" size="sm" onClick={clearFilters}>Clear filters</Button>}
         </div>
@@ -217,9 +217,9 @@ export default function B2BMarketplace() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {products.length === 0 ? (
             <div className="col-span-full flex flex-col items-center justify-center py-20 text-center">
-              <Building2 className="w-16 h-16 text-slate-300 mb-4" />
-              <h3 className="text-lg font-medium text-slate-900">No wholesale products found</h3>
-              <p className="text-slate-500 mt-2">Try adjusting your filters to find more wholesale inventory.</p>
+              <Building2 className="w-16 h-16 text-muted-foreground/50 mb-4" />
+              <h3 className="text-lg font-medium text-foreground">No wholesale products found</h3>
+              <p className="text-muted-foreground mt-2">Try adjusting your filters to find more wholesale inventory.</p>
               {(search || minOrder || maxPrice || originFilter !== "all") && <Button variant="outline" size="sm" className="mt-4" onClick={clearFilters}>Clear filters</Button>}
             </div>
           ) : (
@@ -231,16 +231,16 @@ export default function B2BMarketplace() {
                       MOQ {p.moq || 1}
                     </Badge>
                     {p.b2b_only && (
-                      <Badge variant="outline" className="text-xs uppercase tracking-wider font-semibold border-slate-200">
+                      <Badge variant="outline" className="text-xs uppercase tracking-wider font-semibold border-border">
                         B2B Only
                       </Badge>
                     )}
                   </div>
-                  <div className="aspect-video bg-slate-200 relative overflow-hidden">
+                  <div className="aspect-video bg-muted relative overflow-hidden">
                     {(p.images?.[0] ? (
                       <img src={p.images[0]} alt={p.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                     ) : (
-                      <div className="flex h-full items-center justify-center text-slate-400">
+                      <div className="flex h-full items-center justify-center text-muted-foreground">
                         <Factory className="w-8 h-8" />
                       </div>
                     ))}
@@ -248,16 +248,16 @@ export default function B2BMarketplace() {
                 </CardContent>
                 <CardHeader className="px-5 pb-3">
                   <CardTitle className="line-clamp-1 text-base font-semibold">{p.title}</CardTitle>
-                  <p className="text-xs text-slate-500">{p.brand || p.supplier_name || "Verified Supplier"} · {p.origin_country}</p>
+                  <p className="text-xs text-muted-foreground">{p.brand || p.supplier_name || "Verified Supplier"} · {p.origin_country}</p>
                 </CardHeader>
                 <CardContent className="px-5 pb-4">
                   <div className="flex items-baseline gap-2 mb-3">
-                    <span className="text-xl font-bold text-slate-900">
+                    <span className="text-xl font-bold text-foreground">
                       {formatUsdAmount(p.wholesale_price_usd || p.price_usd || 0)}
                     </span>
-                    <span className="text-xs text-slate-500">per unit</span>
+                    <span className="text-xs text-muted-foreground">per unit</span>
                   </div>
-                  <div className="flex items-center justify-between text-xs text-slate-500 mb-4">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground mb-4">
                     <span className="flex items-center gap-1">
                       <Truck className="w-3 h-3" />
                       {p.origin_country} origin
@@ -276,7 +276,7 @@ export default function B2BMarketplace() {
                     >
                       <ShoppingCart className="w-3 h-3 mr-1" /> Request Quote
                     </Button>
-                    <Button asChild size="sm" className="w-full text-xs font-medium bg-primary text-white">
+                    <Button asChild size="sm" className="w-full text-xs font-medium bg-primary text-primary-foreground">
                       <Link to={`/product/${p.slug || p.id}`}>
                       View Details
                       </Link>
@@ -292,20 +292,20 @@ export default function B2BMarketplace() {
       <div className="max-w-7xl mx-auto px-6 py-12">
         <h2 className="text-2xl font-black text-center mb-10">Why buy wholesale on AfriTrade?</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="p-6 bg-white rounded-xl border border-slate-200 text-center">
+          <div className="p-6 bg-card rounded-xl border border-border text-center">
             <Coins className="w-10 h-10 text-primary mx-auto mb-4" />
             <h3 className="font-bold text-lg mb-2">Factory-Direct Pricing</h3>
-            <p className="text-slate-600 text-sm">Wholesale prices direct from manufacturers across Africa and Asia — no middleman markup.</p>
+            <p className="text-muted-foreground text-sm">Wholesale prices direct from manufacturers across Africa and Asia — no middleman markup.</p>
           </div>
-          <div className="p-6 bg-white rounded-xl border border-slate-200 text-center">
+          <div className="p-6 bg-card rounded-xl border border-border text-center">
             <TagIcon className="w-10 h-10 text-primary mx-auto mb-4" />
             <h3 className="font-bold text-lg mb-2">Flexible MOQ</h3>
-            <p className="text-slate-600 text-sm">Minimum order quantities starting from 1 unit. Scale up as your business grows.</p>
+            <p className="text-muted-foreground text-sm">Minimum order quantities starting from 1 unit. Scale up as your business grows.</p>
           </div>
-          <div className="p-6 bg-white rounded-xl border border-slate-200 text-center">
+          <div className="p-6 bg-card rounded-xl border border-border text-center">
             <Truck className="w-10 h-10 text-primary mx-auto mb-4" />
             <h3 className="font-bold text-lg mb-2">Pan-African Delivery</h3>
-            <p className="text-slate-600 text-sm">Cross-border shipping to 10+ African countries with local last-mile partners.</p>
+            <p className="text-muted-foreground text-sm">Cross-border shipping to 10+ African countries with local last-mile partners.</p>
           </div>
         </div>
       </div>

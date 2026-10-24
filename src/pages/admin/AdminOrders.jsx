@@ -183,7 +183,7 @@ export default function AdminOrders() {
                       type="button"
                       disabled={busy === o.id}
                       onClick={() => confirmPayment(o)}
-                      className="rounded-full bg-emerald-600 px-3.5 py-1.5 text-xs font-semibold text-white disabled:opacity-50"
+                      className="rounded-full bg-success-600 px-3.5 py-1.5 text-xs font-semibold text-success-50 disabled:opacity-50"
                     >
                       {t('adminOrders.confirmPayment', { method: o.payment_method })}
                     </button>

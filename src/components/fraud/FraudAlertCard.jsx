@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useTranslation } from 'react-i18next';
 
-const LEVEL = { critical: 'bg-red-600 text-white', high: 'bg-red-100 text-red-900', medium: 'bg-amber-100 text-amber-900', low: 'bg-secondary' };
+const LEVEL = { critical: 'bg-destructive-600 text-destructive-50', high: 'bg-destructive-100 text-destructive-900', medium: 'bg-warning-100 text-warning-900', low: 'bg-secondary' };
 
 export default memo(function FraudAlertCard({ event: e, onDecide }) {
   const { t } = useTranslation();

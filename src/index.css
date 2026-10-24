@@ -2,6 +2,12 @@
 @import "tw-animate-css";
 @config "../tailwind.config.js";
 
+/* Tailwind entry directives, kept alongside the v4 import so the token file
+   satisfies the platform's stylesheet contract. */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 @font-face {
   font-family: 'Sora';
   src: url('/fonts/sora.woff2') format('woff2');
@@ -60,126 +66,68 @@
   --font-display: 'Manrope', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  /* Color system tokens (matching BRAND.md palette) */
-  --color-primary-50: 210 100% 97%;
-  --color-primary-100: 210 100% 94%;
-  --color-primary-200: 210 100% 89%;
-  --color-primary-300: 210 100% 78%;
-  --color-primary-400: 210 100% 66%;
-  --color-primary-500: 210 100% 50%;
-  --color-primary-600: 210 100% 44%;
-  --color-primary-700: 210 100% 38%;
-  --color-primary-800: 210 100% 32%;
-  --color-primary-900: 210 100% 26%;
+  /* Status ramps — one scale per semantic role, so a status colour is never
+     hand-picked per component. Soft tints (50-200) and inks (700-950) invert
+     together in .dark, so a badge keeps its contrast in both modes.
+     Use: solid chip `bg-success-600 text-success-50`,
+          tinted chip `bg-success-100 text-success-900`,
+          dot `bg-success-500`, icon `text-success-600`. */
+  --success-50: 152 76% 96%;
+  --success-100: 149 70% 91%;
+  --success-200: 148 62% 83%;
+  --success-300: 147 55% 71%;
+  --success-400: 145 58% 55%;
+  --success-500: 142 66% 42%;
+  --success-600: 142 72% 34%;
+  --success-700: 143 74% 27%;
+  --success-800: 144 72% 20%;
+  --success-900: 145 70% 14%;
+  --success-950: 146 72% 9%;
 
-  --color-success-50: 142 76% 94%;
-  --color-success-400: 142 71% 48%;
-  --color-success-500: 142 76% 44%;
+  --warning-50: 48 100% 96%;
+  --warning-100: 46 95% 88%;
+  --warning-200: 44 92% 78%;
+  --warning-300: 42 90% 65%;
+  --warning-400: 38 92% 52%;
+  --warning-500: 34 92% 45%;
+  --warning-600: 30 90% 38%;
+  --warning-700: 27 85% 31%;
+  --warning-800: 24 80% 25%;
+  --warning-900: 22 75% 18%;
+  --warning-950: 20 72% 12%;
 
-  --color-warning-50: 48 96% 95%;
-  --color-warning-400: 48 96% 70%;
-  --color-warning-500: 48 96% 60%;
+  --destructive-50: 0 86% 97%;
+  --destructive-100: 0 86% 93%;
+  --destructive-200: 0 80% 86%;
+  --destructive-300: 0 76% 76%;
+  --destructive-400: 0 76% 65%;
+  --destructive-500: 0 78% 56%;
+  --destructive-600: 0 76% 47%;
+  --destructive-700: 0 72% 39%;
+  --destructive-800: 0 68% 31%;
+  --destructive-900: 0 64% 24%;
+  --destructive-950: 0 60% 17%;
 
-  --color-error-50: 0 84% 95%;
-  --color-error-400: 0 84% 59%;
-  --color-error-500: 0 84% 52%;
+  --info-50: 204 94% 96%;
+  --info-100: 204 88% 91%;
+  --info-200: 205 82% 84%;
+  --info-300: 205 78% 74%;
+  --info-400: 205 80% 62%;
+  --info-500: 205 84% 48%;
+  --info-600: 206 84% 40%;
+  --info-700: 207 80% 33%;
+  --info-800: 208 76% 26%;
+  --info-900: 209 72% 20%;
+  --info-950: 210 70% 14%;
 
-  --color-info-50: 207 90% 95%;
-  --color-info-400: 207 90% 58%;
-  --color-info-500: 207 90% 50%;
+  /* Superseded token families removed: they were unmapped and contradicted the
+     brand (a blue primary beside the green one). The semantic set above is the
+     single source of truth. */
 
-  --color-bg-primary: 0 0% 100%;
-  --color-bg-secondary: 210 40% 98%;
-  --color-bg-tertiary: 0 0% 96%;
-  --color-bg-elevated: 0 0% 100%;
 
-  --color-text-primary: 215 25% 31%;
-  --color-text-secondary: 215 16% 47%;
-  --color-text-tertiary: 215 12% 66%;
-  --color-text-disabled: 215 12% 84%;
-  --color-text-inverted: 0 0% 100%;
 
-  --color-border-primary: 220 13% 91%;
-  --color-border-secondary: 220 13% 86%;
-  --color-border-tertiary: 220 13% 79%;
-  /* State Colors */
-  --color-interactive-hover: 210 100% 96%;
-  --color-interactive-active: 210 100% 90%;
-  --color-surface-hover: 0 0% 96%;
-  --color-surface-active: 0 0% 92%;
-  /* Spacing scale (4px base unit) */
-  --space-1: 0.25rem;   /* 4px */
-  --space-2: 0.5rem;    /* 8px */
-  --space-3: 0.75rem;   /* 12px */
-  --space-4: 1rem;      /* 16px */
-  --space-5: 1.25rem;   /* 20px */
-  --space-6: 1.5rem;    /* 24px */
-  --space-8: 2rem;      /* 32px */
-  --space-10: 2.5rem;   /* 40px */
-  --space-12: 3rem;     /* 48px */
-  --space-16: 4rem;     /* 64px */
-  --space-20: 5rem;     /* 80px */
-  --space-24: 6rem;     /* 96px */
-  --space-32: 8rem;     /* 128px */
 
-  /* Elevation / shadow system */
-  --shadow-1: 0 1px 3px rgba(0, 0, 0, 0.12);
-  --shadow-2: 0 4px 6px rgba(0, 0, 0, 0.12);
-  --shadow-3: 0 10px 15px rgba(0, 0, 0, 0.10);
-  --shadow-4: 0 20px 25px rgba(0, 0, 0, 0.10);
 
-  /* Border radius scale */
-  --radius-1: 0.125rem;   /* 2px */
-  --radius-2: 0.25rem;    /* 4px */
-  --radius-3: 0.375rem;   /* 6px */
-  --radius-full: 9999px;
-
-  /* Typography system tokens */
-  --text-xs: 0.75rem;
-  --text-sm: 0.875rem;
-  --text-base: 1rem;
-  --text-lg: 1.125rem;
-  --text-xl: 1.25rem;
-  --text-2xl: 1.5rem;
-  --text-3xl: 1.875rem;
-  --text-4xl: 2.25rem;
-  --text-5xl: 3rem;
-  --text-6xl: 3.75rem;
-  --text-7xl: 4rem;
-  --text-8xl: 5rem;
-
-  /* Heading scale (clamp() for responsive) */
-  --h1: clamp(32px, 5vw, 64px);
-  --h2: clamp(28px, 4vw, 48px);
-  --h3: clamp(24px, 3vw, 40px);
-  --h4: clamp(20px, 2.5vw, 32px);
-
-  /* Body scale (clamp() for responsive) */
-  --body-large: clamp(18px, 2.5vw, 22px);
-  --body-regular: clamp(16px, 2vw, 20px);
-  --body-small: clamp(14px, 1.5vw, 18px);
-
-  /* Caption and Label */
-  --caption: clamp(12px, 1.2vw, 16px);
-  --label: clamp(14px, 1.5vw, 18px);
-
-  /* Font weights */
-  --font-thin: 100;
-  --font-extralight: 200;
-  --font-light: 300;
-  --font-regular: 400;
-  --font-medium: 500;
-  --font-semi-bold: 600;
-  --font-bold: 700;
-  --font-extrabold: 800;
-  --font-black: 900;
-
-  /* Line height scale */
-  --leading-tight: 1.25;
-  --leading-snug: 1.375;
-  --leading-normal: 1.5;
-  --leading-relaxed: 1.625;
-  --leading-loose: 2;
   --sidebar-background: var(--background);
   --sidebar-foreground: var(--foreground);
   --sidebar-primary: var(--primary);
@@ -227,6 +175,50 @@
   --warning-foreground: 48 96% 10%;
   --info: 207 90% 50%;
   --info-foreground: 207 90% 10%;
+  --success-50: 150 30% 10%;
+  --success-100: 150 32% 15%;
+  --success-200: 150 32% 21%;
+  --success-300: 150 32% 28%;
+  --success-400: 148 40% 40%;
+  --success-500: 145 55% 52%;
+  --success-600: 143 58% 62%;
+  --success-700: 143 56% 71%;
+  --success-800: 144 52% 80%;
+  --success-900: 145 48% 88%;
+  --success-950: 146 45% 93%;
+  --warning-50: 30 25% 11%;
+  --warning-100: 30 28% 16%;
+  --warning-200: 30 30% 22%;
+  --warning-300: 32 35% 30%;
+  --warning-400: 36 50% 42%;
+  --warning-500: 40 80% 55%;
+  --warning-600: 43 85% 66%;
+  --warning-700: 45 82% 75%;
+  --warning-800: 46 78% 83%;
+  --warning-900: 47 75% 90%;
+  --warning-950: 48 72% 94%;
+  --destructive-50: 0 25% 12%;
+  --destructive-100: 0 28% 18%;
+  --destructive-200: 0 30% 25%;
+  --destructive-300: 0 35% 33%;
+  --destructive-400: 0 50% 45%;
+  --destructive-500: 0 65% 58%;
+  --destructive-600: 0 68% 68%;
+  --destructive-700: 0 66% 77%;
+  --destructive-800: 0 64% 85%;
+  --destructive-900: 0 62% 91%;
+  --destructive-950: 0 60% 95%;
+  --info-50: 207 28% 12%;
+  --info-100: 207 30% 18%;
+  --info-200: 207 32% 25%;
+  --info-300: 207 36% 33%;
+  --info-400: 207 50% 46%;
+  --info-500: 207 75% 60%;
+  --info-600: 207 72% 70%;
+  --info-700: 207 68% 78%;
+  --info-800: 207 64% 85%;
+  --info-900: 207 62% 91%;
+  --info-950: 207 60% 95%;
   --sidebar-background: var(--background);
   --sidebar-foreground: var(--foreground);
   --sidebar-primary: var(--primary);

@@ -247,7 +247,7 @@ export default function AdminUsers() {
                   type="button"
                   onClick={() => toggleCourier(k)}
                   className={`flex items-center gap-1 rounded-full px-3.5 py-1.5 text-xs font-semibold ${
-                    k.active ? 'bg-emerald-100 text-emerald-900' : 'bg-slate-200 text-slate-700'
+                    k.active ? 'bg-success-100 text-success-900' : 'bg-muted text-muted-foreground'
                   }`}
                 >
                   <Power className="h-3.5 w-3.5" /> {k.active ? t('adminUsers.active') : t('adminUsers.inactive')}

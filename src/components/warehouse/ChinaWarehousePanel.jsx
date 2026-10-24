@@ -56,10 +56,10 @@ export default function ChinaWarehousePanel() {
             </div>
             <div className="mt-2 flex gap-2">
               {po.status === 'received' && (
-                <button type="button" disabled={Boolean(busy)} onClick={() => inspect(po, 'approved')} className="rounded-full bg-emerald-600 px-3 py-1 text-[10px] font-semibold text-white">{t('common.approve')}</button>
+                <button type="button" disabled={Boolean(busy)} onClick={() => inspect(po, 'approved')} className="rounded-full bg-success-600 px-3 py-1 text-[10px] font-semibold text-success-50">{t('common.approve')}</button>
               )}
               {po.status === 'received' && (
-                <button type="button" disabled={Boolean(busy)} onClick={() => inspect(po, 'rejected')} className="rounded-full bg-destructive px-3 py-1 text-[10px] font-semibold text-white">{t('common.reject')}</button>
+                <button type="button" disabled={Boolean(busy)} onClick={() => inspect(po, 'rejected')} className="rounded-full bg-destructive px-3 py-1 text-[10px] font-semibold text-destructive-50">{t('common.reject')}</button>
               )}
             </div>
           </div>

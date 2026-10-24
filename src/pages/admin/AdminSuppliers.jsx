@@ -201,7 +201,7 @@ export default function AdminSuppliers() {
                     type="button"
                     onClick={() => toggle(s)}
                     className={`flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-semibold ${
-                      s.enabled ? 'bg-emerald-100 text-emerald-900' : 'bg-slate-200 text-slate-700'
+                      s.enabled ? 'bg-success-100 text-success-900' : 'bg-muted text-muted-foreground'
                     }`}
                   >
                     <Power className="h-3.5 w-3.5" /> {s.enabled ? t('adminSuppliers.enabled') : t('adminSuppliers.disabled')}

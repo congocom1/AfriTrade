@@ -33,19 +33,19 @@ const CookieConsentBanner = () => {
 
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50 py-4"
+      className="fixed bottom-0 left-0 right-0 bg-card border-t border-border shadow-lg z-50 py-4"
       aria-label="Cookie consent banner"
     >
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between flex-wrap gap-4">
         <div className="flex items-center gap-3">
           <svg
-            className="h-5 w-5 text-gray-600"
+            className="h-5 w-5 text-muted-foreground"
             viewBox="0 0 24 24"
             fill="currentColor"
           >
             <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5L2 12zM2 12l10 5 10-5" />
           </svg>
-          <span className="text-sm text-gray-600">
+          <span className="text-sm text-muted-foreground">
             We use cookies and similar technologies to provide the best experience on our website. Learn more in our
             <a href="/privacy" className="text-primary font-medium underline">Privacy Policy</a>.
           </span>
@@ -53,21 +53,21 @@ const CookieConsentBanner = () => {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setAcceptedCategories('necessary')}
-            className="rounded-md border px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100"
+            className="rounded-md border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted"
             aria-label="Accept necessary cookies only"
           >
             Necessary
           </button>
           <button
             onClick={() => setAcceptedCategories('analytics')}
-            className="rounded-md border px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100"
+            className="rounded-md border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted"
             aria-label="Accept necessary and analytics cookies"
           >
             Analytics
           </button>
           <button
             onClick={() => setAcceptedCategories('marketing')}
-            className="rounded-md border px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100"
+            className="rounded-md border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted"
             aria-label="Accept all cookies"
           >
             All

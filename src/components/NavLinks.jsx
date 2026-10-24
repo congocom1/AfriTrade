@@ -69,7 +69,7 @@ export default function NavLinks() {
       <ul className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         {routes.map((r) => (
           <li key={r.path}>
-            <Link to={r.path} className="block p-3 rounded bg-slate-200 hover:bg-slate-300">
+            <Link to={r.path} className="block p-3 rounded bg-secondary hover:bg-accent">
               {r.label}
             </Link>
           </li>

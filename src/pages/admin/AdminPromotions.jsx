@@ -121,7 +121,7 @@ export default function AdminPromotions() {
                 type="button"
                 onClick={() => toggle(c)}
                 className={`flex items-center gap-1 rounded-full px-3.5 py-1.5 text-xs font-semibold ${
-                  c.active ? 'bg-emerald-100 text-emerald-900' : 'bg-slate-200 text-slate-700'
+                  c.active ? 'bg-success-100 text-success-900' : 'bg-muted text-muted-foreground'
                 }`}
               >
                 <Power className="h-3.5 w-3.5" /> {c.active ? t('adminPromotions.active') : t('adminPromotions.inactive')}
