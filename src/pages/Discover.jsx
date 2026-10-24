@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Heart, Share2, ShoppingBag, Plus, BadgeCheck, Play, Volume2 } from 'lucide-react';
@@ -8,6 +8,7 @@ import { useCart } from '@/lib/cart';
 import { useCurrency } from '@/lib/currency';
 import { getLikedContent, getReferralCode, toggleLikedContent } from '@/lib/session';
 import { compactNumber } from '@/lib/format';
+import usePullToRefresh from '@/hooks/usePullToRefresh';
 
 export default function Discover() {
   const { t } = useTranslation();
@@ -20,17 +21,27 @@ export default function Discover() {
   const { addItem } = useCart();
   const { format } = useCurrency();
 
+  const load = useCallback(async () => {
+    setLoadFailed(false);
+    try {
+      setItems(await base44.entities.Content.filter({ status: 'published' }, '-likes_count', 20));
+    } catch {
+      setLoadFailed(true);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
-    let active = true;
     setLiked(getLikedContent());
     setLoading(true);
-    setLoadFailed(false);
-    base44.entities.Content.filter({ status: 'published' }, '-likes_count', 20)
-      .then((rows) => { if (active) setItems(rows); })
-      .catch(() => { if (active) setLoadFailed(true); })
-      .finally(() => { if (active) setLoading(false); });
-    return () => { active = false; };
-  }, [reloadToken]);
+    load();
+  }, [reloadToken, load]);
+
+  // The feed scrolls inside its own rail, so only a pull at the rail's top refreshes.
+  const railRef = useRef(null);
+  const [railAtTop, setRailAtTop] = useState(true);
+  const { handlers: pullHandlers, indicator: pullIndicator } = usePullToRefresh(load, { disabled: loading || !railAtTop });
 
   const flash = (msg) => {
     setToast(msg);
@@ -93,13 +104,18 @@ export default function Discover() {
   }
 
   return (
-    <div className="relative">
+    <div className="relative" {...pullHandlers}>
+      {pullIndicator}
       {toast && (
         <div className="fixed bottom-24 left-1/2 z-50 -translate-x-1/2 rounded-full bg-foreground px-4 py-2 text-xs font-semibold text-background">
           {toast}
         </div>
       )}
-      <div className="mx-auto h-[calc(100vh-9.5rem)] w-full max-w-md snap-y snap-mandatory overflow-y-auto rounded-2xl">
+      <div
+        ref={railRef}
+        onScroll={() => setRailAtTop((railRef.current?.scrollTop ?? 0) <= 2)}
+        className="mx-auto h-[calc(100vh-9.5rem)] w-full max-w-md snap-y snap-mandatory overflow-y-auto rounded-2xl"
+      >
         {items.map((c) => {
           const isLiked = liked.includes(c.id);
           return (
