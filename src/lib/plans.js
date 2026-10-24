@@ -105,7 +105,12 @@ export function hasFeature(plan, featureKey) {
 }
 
 export function planAmount(plan, cycle) {
-  return round2Cents(cycle === 'yearly' ? plan?.price_yearly_usd_cents : plan?.price_monthly_usd_cents);
+  if (cycle === 'yearly') {
+    const cents = plan?.price_yearly_usd_cents ?? (plan?.price_yearly_usd !== undefined ? Number(plan.price_yearly_usd) * 100 : 0);
+    return round2Cents(cents);
+  }
+  const cents = plan?.price_monthly_usd_cents ?? (plan?.price_monthly_usd !== undefined ? Number(plan.price_monthly_usd) * 100 : 0);
+  return round2Cents(cents);
 }
 
 export function planAmountLabel(plan, cycle) {

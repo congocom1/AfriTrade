@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster"
 import ErrorBoundary from "@/components/ErrorBoundary"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, Navigate, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
@@ -197,6 +197,11 @@ const pageVariants = {
   },
 }
 
+function TrackRedirect() {
+  const { search } = useLocation();
+  return <Navigate to={`/order-tracking${search || ''}`} replace />;
+}
+
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
 
@@ -238,7 +243,7 @@ const AuthenticatedApp = () => {
         <Route path="/cart" element={<PageWrapper><Cart /></PageWrapper>} />
         <Route path="/checkout" element={<PageWrapper><Checkout /></PageWrapper>} />
         <Route path="/order/:number" element={<PageWrapper><OrderConfirmation /></PageWrapper>} />
-        <Route path="/track" element={<Navigate to={`/order-tracking${window.location.search}`} replace />} />
+        <Route path="/track" element={<TrackRedirect />} />
         <Route path="/wishlist" element={<PageWrapper><Wishlist /></PageWrapper>} />
         <Route path="/profile" element={<PageWrapper><Profile /></PageWrapper>} />
         <Route path="/wallet" element={<PageWrapper><Wallet /></PageWrapper>} />

@@ -41,7 +41,7 @@ export default function PlanCard({ plan, cycle = 'monthly', current, onSelect, c
             return (
               <li key={f.key} className={`flex items-center gap-2 ${on ? '' : 'text-muted-foreground'}`}>
                 {on ? <Check className="h-4 w-4 text-emerald-600" /> : <X className="h-4 w-4 opacity-50" />}
-                {f.label}
+                {f.label || t(f.labelKey)}
               </li>
             );
           })}

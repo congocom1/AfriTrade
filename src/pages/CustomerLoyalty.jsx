@@ -43,7 +43,8 @@ export default function CustomerLoyalty() {
     }
     setRedeeming(reward.code);
     try {
-      const record = await redeemReward({ reward, customer: profile, sessionId });
+      const rewardLabel = reward.label || (reward.labelKey ? t(reward.labelKey) : reward.code);
+      const record = await redeemReward({ reward: { ...reward, label: rewardLabel }, customer: profile, sessionId });
       setRedemptions((prev) => [record, ...prev]);
       setFlash(`Récompense obtenue — présentez le code ${record.coupon_code} au moment du paiement.`);
       emitEvent(base44, 'loyalty_redeemed', {
@@ -52,12 +53,12 @@ export default function CustomerLoyalty() {
         reference: record.coupon_code,
         actorName: profile.name || '',
         actorEmail: profile.email || '',
-        description: `Échange de ${reward.points} points contre « ${reward.label} »`,
+        description: `Échange de ${reward.points} points contre « ${rewardLabel} »`,
         payload: { reward_code: reward.code, points_spent: reward.points, coupon_code: record.coupon_code },
       });
       await base44.entities.Notification.create({
         title: 'Récompense fidélité échangée',
-        message: `${profile.name || 'Un client'} a échangé ${reward.points} points contre « ${reward.label} » (code ${record.coupon_code}).`,
+        message: `${profile.name || 'Un client'} a échangé ${reward.points} points contre « ${rewardLabel} » (code ${record.coupon_code}).`,
         type: 'promo',
         audience: 'customer',
       }).catch(() => {});
@@ -129,15 +130,19 @@ export default function CustomerLoyalty() {
 
       <InfoSection title={t('customerLoyalty.tiersTitle')}>
         <div className="space-y-2">
-          {LOYALTY_TIERS.map((tier) => (
-            <div key={tier.code} className={`rounded-xl border p-3 ${tier.code === summary.tier.code ? 'border-primary bg-primary/5' : 'border-border'}`}>
-              <div className="flex items-center justify-between gap-2">
-                <p className="text-xs font-bold">{t(tier.nameKey)}</p>
-                <span className="text-[11px] text-muted-foreground">{t('customerLoyalty.fromPoints', { count: tier.min_points.toLocaleString('fr-FR') })}</span>
+          {LOYALTY_TIERS.map((tier) => {
+            const perks = t(tier.perksKey, { returnObjects: true });
+            const perkText = Array.isArray(perks) ? perks.join(' · ') : String(perks || '');
+            return (
+              <div key={tier.code} className={`rounded-xl border p-3 ${tier.code === summary.tier.code ? 'border-primary bg-primary/5' : 'border-border'}`}>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-xs font-bold">{t(tier.nameKey)}</p>
+                  <span className="text-[11px] text-muted-foreground">{t('customerLoyalty.fromPoints', { count: tier.min_points.toLocaleString('fr-FR') })}</span>
+                </div>
+                <p className="mt-0.5 text-[11px] text-muted-foreground">{perkText}</p>
               </div>
-              <p className="mt-0.5 text-[11px] text-muted-foreground">{t(tier.perksKey, { returnObjects: true }).join(' · ')}</p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </InfoSection>
 

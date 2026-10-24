@@ -48,18 +48,31 @@ export default function SellerSettings() {
     }
   };
 
-  if (loadingSeller || !form) return <div className="h-40 animate-pulse rounded-2xl bg-secondary" />;
+  if (loadingSeller) return <div className="h-40 animate-pulse rounded-2xl bg-secondary" />;
+
+  const navLinks = [
+    { to: '/seller', label: t('sellerSettings.navDashboard'), end: true },
+    { to: '/seller/products', label: t('sellerSettings.navProducts') },
+    { to: '/seller/orders', label: t('sellerSettings.navOrders') },
+    { to: '/seller/import', label: t('sellerSettings.navImport') },
+    { to: '/seller/wallet', label: t('sellerSettings.navWallet') },
+    { to: '/seller/settings', label: t('sellerSettings.navShop') },
+  ];
+
+  if (!seller || !form) {
+    return (
+      <div className="space-y-5 pb-8">
+        <DashboardNav title={t('sellerSettings.title')} links={navLinks} />
+        <div className="rounded-2xl border border-border bg-card p-6 text-center text-sm text-muted-foreground">
+          {t('seller.noShop')}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5 pb-8">
-      <DashboardNav title={t('sellerSettings.title')} links={[
-        { to: '/seller', label: t('sellerSettings.navDashboard'), end: true },
-        { to: '/seller/products', label: t('sellerSettings.navProducts') },
-        { to: '/seller/orders', label: t('sellerSettings.navOrders') },
-        { to: '/seller/import', label: t('sellerSettings.navImport') },
-        { to: '/seller/wallet', label: t('sellerSettings.navWallet') },
-        { to: '/seller/settings', label: t('sellerSettings.navShop') },
-      ]} />
+      <DashboardNav title={t('sellerSettings.title')} links={navLinks} />
 
       <div className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4">
         <Store className="h-5 w-5 text-primary" />

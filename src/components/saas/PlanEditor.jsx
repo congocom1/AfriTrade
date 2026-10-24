@@ -10,8 +10,8 @@ import { PLAN_FEATURES } from '@/lib/plans';
 export default function PlanEditor({ plan, onSaved }) {
   const { t } = useTranslation();
   const [form, setForm] = useState({
-    price_monthly_usd: plan.price_monthly_usd || 0,
-    price_yearly_usd: plan.price_yearly_usd || 0,
+    price_monthly_usd: plan.price_monthly_usd ?? ((Number(plan.price_monthly_usd_cents) || 0) / 100),
+    price_yearly_usd: plan.price_yearly_usd ?? ((Number(plan.price_yearly_usd_cents) || 0) / 100),
     trial_days: plan.trial_days || 0,
     product_limit: plan.product_limit || 0,
     store_limit: plan.store_limit || 0,
@@ -36,6 +36,8 @@ export default function PlanEditor({ plan, onSaved }) {
       const payload = { ...form };
       ['price_monthly_usd', 'price_yearly_usd', 'trial_days', 'product_limit', 'store_limit', 'seller_limit', 'member_limit', 'commission_rate']
         .forEach((k) => { payload[k] = Number(payload[k]) || 0; });
+      payload.price_monthly_usd_cents = Math.round(payload.price_monthly_usd * 100);
+      payload.price_yearly_usd_cents = Math.round(payload.price_yearly_usd * 100);
       if (plan.id) await base44.entities.Plan.update(plan.id, payload);
       else await base44.entities.Plan.create({ code: plan.code, name: plan.name, description: plan.description, sort_order: plan.sort_order || 0, ...payload });
       onSaved();
@@ -73,7 +75,7 @@ export default function PlanEditor({ plan, onSaved }) {
               onClick={() => toggleFeature(f.key)}
               className={`rounded-full border px-2 py-0.5 text-[11px] ${form.features.includes(f.key) ? 'border-primary bg-primary text-primary-foreground' : 'border-border text-muted-foreground'}`}
             >
-              {f.label}
+              {f.label || t(f.labelKey)}
             </button>
           ))}
         </div>

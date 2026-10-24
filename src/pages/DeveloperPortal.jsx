@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Code2, Plus, Trash2, Copy } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { base44 } from '@/api/base44Client';
@@ -74,15 +74,16 @@ function ApiKeysTab({ tab, setTab }) {
   const loadKeys = async () => {
     setLoading(true);
     try {
-      const keys = await base44.functions.invoke('manage-api-keys', { method: 'GET' });
-      setApiKeys(keys);
+      const res = await base44.functions.invoke('manage-api-keys', { method: 'GET' });
+      const list = Array.isArray(res) ? res : (res?.data?.keys ?? res?.keys ?? res?.data ?? []);
+      setApiKeys(Array.isArray(list) ? list : []);
     } catch {
       setApiKeys([]);
     }
     setLoading(false);
   };
 
-  useState(() => {
+  useEffect(() => {
     loadKeys();
   }, []);
 
@@ -92,7 +93,8 @@ function ApiKeysTab({ tab, setTab }) {
       method: 'POST',
       body: newKey,
     });
-    setGeneratedKey(result.api_key);
+    const data = result?.data ?? result;
+    setGeneratedKey(data?.api_key || null);
     setCreating(false);
     loadKeys();
   };

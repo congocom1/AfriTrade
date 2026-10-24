@@ -5,7 +5,10 @@ import { Sparkles, Trophy } from 'lucide-react';
 /** Membership tier, points balance and progress to the next level. */
 export default function LoyaltyTierCard({ summary }) {
   const { t } = useTranslation();
-  const { tier, next, balance, pending, missingToNext, progress, lifetimeUsd, affordable } = summary;
+  const { tier, next, balance, pending, missingToNext, progress, lifetimeUsd, lifetimeUsdCents, affordable } = summary;
+  const lifetimeDollars = typeof lifetimeUsd === 'number' ? lifetimeUsd : (Number(lifetimeUsdCents) || 0) / 100;
+  const perks = t(tier.perksKey, { returnObjects: true });
+  const perkList = Array.isArray(perks) ? perks : [];
 
   return (
     <section className="space-y-4 rounded-2xl border border-border bg-card p-5">
@@ -26,7 +29,7 @@ export default function LoyaltyTierCard({ summary }) {
           { label: t('loyaltyTierCard.availPoints'), value: balance.toLocaleString('fr-FR') },
           { label: t('loyaltyTierCard.pendingPoints'), value: pending.toLocaleString('fr-FR') },
           { label: t('loyaltyTierCard.rewards'), value: String(affordable) },
-          { label: t('loyaltyTierCard.totalSpent'), value: `$${lifetimeUsd.toFixed(2)}` },
+          { label: t('loyaltyTierCard.totalSpent'), value: `$${lifetimeDollars.toFixed(2)}` },
         ].map((stat) => (
           <div key={stat.label} className="rounded-xl bg-secondary/60 p-3">
             <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{stat.label}</p>
@@ -38,7 +41,7 @@ export default function LoyaltyTierCard({ summary }) {
       {next ? (
         <div>
           <div className="flex items-center justify-between text-[11px]">
-            <span className="font-semibold">{t('loyaltyTierCard.nextLevel', { name: next.name })}</span>
+            <span className="font-semibold">{t('loyaltyTierCard.nextLevel', { name: next.name || t(next.nameKey) })}</span>
             <span className="text-muted-foreground">{t('loyaltyTierCard.pointsToGo', { count: missingToNext.toLocaleString('fr-FR') })}</span>
           </div>
           <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-secondary">
@@ -52,7 +55,7 @@ export default function LoyaltyTierCard({ summary }) {
       )}
 
       <ul className="space-y-1 text-[11px] text-muted-foreground">
-        {t(tier.perksKey, { returnObjects: true }).map((perk) => (
+        {perkList.map((perk) => (
           <li key={perk}>• {perk}</li>
         ))}
       </ul>

@@ -111,6 +111,11 @@ describe('dutyEstimate', () => {
     assert.equal(r.duty, 0);
     assert.equal(r.importVat, 0);
   });
+  it('supports goodsUsd in dollars when goodsUsdCents is omitted', () => {
+    const r = dutyEstimate({ goodsUsd: 100, config: DEFAULT_SHIPPING_CONFIG, originCountry: 'CN' });
+    assert.equal(r.goods, 10000);
+    assert.equal(r.duty, 1200);
+  });
 });
 
 describe('quoteShipping', () => {
@@ -133,6 +138,12 @@ describe('quoteShipping', () => {
   it('marks free shipping when above threshold', () => {
     const q = quoteShipping({ rates: [rate], config: cfg, destination: 'kinshasa', weightKg: 1, goodsUsdCents: 10000 });
     assert.equal(q.freeShipping, true);
+  });
+
+  it('supports goodsUsd in dollars for free shipping and duty calculation', () => {
+    const q = quoteShipping({ rates: [rate], config: cfg, destination: 'kinshasa', weightKg: 1, goodsUsd: 100, originCountry: 'CN' });
+    assert.equal(q.freeShipping, true);
+    assert.equal(q.duty.duty, 1200);
   });
 });
 

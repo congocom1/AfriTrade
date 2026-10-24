@@ -8,6 +8,12 @@ import ts from 'typescript';
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const source = fs.readFileSync(path.join(root, 'base44/functions/quoteRequest/entry.ts'), 'utf8');
 let moduleSequence = 0;
+const createdTestFiles = new Set();
+process.on('exit', () => {
+  for (const file of createdTestFiles) {
+    try { fs.unlinkSync(file); } catch { /* ignore */ }
+  }
+});
 
 async function loadHandler(dependencies) {
   globalThis.__quoteRequestDependencies = dependencies;
@@ -26,6 +32,7 @@ async function loadHandler(dependencies) {
   }).outputText;
   const modulePath = path.join(path.dirname(fileURLToPath(import.meta.url)), `quoteRequest-${++moduleSequence}.testmod.mjs`);
   fs.writeFileSync(modulePath, moduleSource);
+  createdTestFiles.add(modulePath);
   return import(pathToFileURL(modulePath).href);
 }
 
