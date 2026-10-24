@@ -1018,12 +1018,6 @@ export default {
     totalNote: 'Amount in {{currency}} · rate applied at payment time. Check your city in your profile for an exact quote.',
   },
 
-  categories: {
-    count: 'Count',
-    subtitle: 'Subtitle',
-    title: 'Title',
-  },
-
   categoryForm: {
     create: 'Create',
     descPh: 'Descph',

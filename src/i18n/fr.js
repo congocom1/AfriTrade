@@ -1018,12 +1018,6 @@ export default {
     totalNote: 'Montant en {{currency}} · taux appliqué au moment du paiement. Vérifiez votre ville dans votre profil pour un calcul exact.',
   },
 
-  categories: {
-    count: 'count',
-    subtitle: 'subtitle',
-    title: 'title',
-  },
-
   categoryForm: {
     create: 'create',
     descPh: 'descph',
