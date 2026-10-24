@@ -13,7 +13,7 @@ import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
 import OAuthConsent from '@/pages/OAuthConsent';
 import RequireLogin from '@/components/RequireLogin';
-import AdminOnly from '@/components/AdminOnly';
+import RequireAccess from '@/components/RequireAccess';
 import { CartProvider } from '@/lib/cart';
 import { CurrencyProvider } from '@/lib/currency';
 import AppLayout from '@/components/layout/AppLayout';
@@ -267,6 +267,7 @@ const AuthenticatedApp = () => {
         <Route path="/cgv" element={<PageWrapper><CGV /></PageWrapper>} />
         <Route path="/confidentialite" element={<PageWrapper><Confidentialite /></PageWrapper>} />
         <Route element={<RequireLogin />}>
+          <Route element={<RequireAccess />}>
           <Route path="/employee" element={<PageWrapper><EmployeeWorkspace /></PageWrapper>} />
           <Route path="/employee/:department" element={<PageWrapper><EmployeeWorkspace /></PageWrapper>} />
           <Route path="/messages" element={<PageWrapper><ErrorBoundary><Messages /></ErrorBoundary></PageWrapper>} />
@@ -317,8 +318,7 @@ const AuthenticatedApp = () => {
           <Route path="/tenant" element={<PageWrapper><TenantConsole /></PageWrapper>} />
           <Route path="/tenant-onboarding" element={<PageWrapper><TenantOnboarding /></PageWrapper>} />
 
-          <Route element={<AdminOnly />}>
-            <Route path="/admin/employees" element={<PageWrapper><EmployeeManagement /></PageWrapper>} />
+          <Route path="/admin/employees" element={<PageWrapper><EmployeeManagement /></PageWrapper>} />
             <Route path="/marketing-analytics" element={<PageWrapper><MarketingAnalytics /></PageWrapper>} />
             <Route path="/platform-analytics" element={<PageWrapper><PlatformAnalytics /></PageWrapper>} />
             <Route path="/marketplace-promos" element={<Navigate to="/admin/promotions" replace />} />
@@ -370,7 +370,7 @@ const AuthenticatedApp = () => {
         </Route>
       </Route>
       <Route element={<RequireLogin />}>
-        <Route element={<AdminOnly />}>
+        <Route element={<RequireAccess />}>
           <Route path="/backoffice" element={<PageWrapper><Backoffice /></PageWrapper>} />
           <Route path="/backoffice/sales" element={<PageWrapper><SalesIntelligence /></PageWrapper>} />
         </Route>
