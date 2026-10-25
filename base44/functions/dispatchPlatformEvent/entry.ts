@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
 import { planForEvent, buildNotifications } from '../../shared/events.ts';
 import { notify, openTicket, recordUsage } from '../../shared/workflowSupport.ts';
 import { addSecurityHeaders, checkRateLimit, rateLimitErrorResponse, getClientKey } from '../../shared/securityHeaders.ts';
@@ -23,6 +23,9 @@ export default async function (req) {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me().catch(() => null);
     if (!user) return addSecurityHeaders(Response.json({ error: 'Authentification requise' }, { status: 401 }));
+    // `client` pour les helpers partagés (ils résolvent asServiceRole eux-mêmes),
+    // `db` pour les accès directs aux entités.
+    const client = base44;
     const db = base44.asServiceRole;
 
     // Les appels anonymes (workflows, tâches planifiées) portent l'identité admin :
@@ -78,7 +81,7 @@ export default async function (req) {
 
     // Notifications déclarées par la règle de l'événement.
     const planned = buildNotifications(ctx, plan);
-    const notificationResults = await Promise.all(planned.map((n) => notify(db, {
+    const notificationResults = await Promise.all(planned.map((n) => notify(client, {
       audience: n.audience,
       title: n.title,
       message: n.message,
@@ -93,7 +96,7 @@ export default async function (req) {
     for (const step of plan.automate || []) {
       try {
         if (step === 'open_support_ticket') {
-          const ticket = await openTicket(db, {
+          const ticket = await openTicket(client, {
             subject: ctx.description || `Événement ${name}`,
             category: 'other',
             priority: 'high',
@@ -106,7 +109,7 @@ export default async function (req) {
           });
           actions.push({ step, ok: true, ticket_number: ticket?.ticket_number || '' });
         } else if (step === 'record_usage_event') {
-          await recordUsage(db, {
+          await recordUsage(client, {
             name,
             description: ctx.description || `Événement ${name}`,
             metadata: { source: ctx.source, reference: ctx.reference, category },
