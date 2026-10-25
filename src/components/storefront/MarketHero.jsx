@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowRight, Coins, MapPin, ShieldCheck, Store } from 'lucide-react';
 import { Image } from '@/components/ui/image';
+import Product3DViewer from '@/components/Product3DViewer';
 import './storefront.css';
 
 // A trade platform's first screen has to answer three questions at once:
@@ -10,7 +11,7 @@ import './storefront.css';
 // all three and hands off to the two journeys that matter (buy, sell).
 const HERO_IMAGE = 'https://media.base44.com/images/public/6ad35f967cfc0088309e830b/974fc7139_generated_image.png';
 
-export default function MarketHero({ productCount = 0, categoryCount = 0, sellerCount = 0 }) {
+export default function MarketHero({ productCount = 0, categoryCount = 0, sellerCount = 0, modelKey = null, modelTitle = '' }) {
   const { t } = useTranslation();
 
   const chips = [
@@ -64,7 +65,18 @@ export default function MarketHero({ productCount = 0, categoryCount = 0, seller
           )}
         </div>
         <div className="market-hero__media">
-          <Image src={HERO_IMAGE} alt="" className="market-hero__image" fittingType="fill" />
+          {modelKey ? (
+            <div className="market-hero__stage">
+              <Product3DViewer
+                modelKey={modelKey}
+                fallbackImage={HERO_IMAGE}
+                title={modelTitle}
+                interactive={false}
+              />
+            </div>
+          ) : (
+            <Image src={HERO_IMAGE} alt="" className="market-hero__image" fittingType="fill" />
+          )}
           <div className="market-hero__card">
             <p className="market-hero__card-label">{t('market.cardEtaLabel')}</p>
             <p className="market-hero__card-value">{t('market.cardEta')}</p>

@@ -146,6 +146,14 @@
   object-fit: cover;
 }
 
+.market-hero__stage {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(120% 85% at 50% 12%, hsl(var(--primary) / 0.16), transparent 62%),
+    linear-gradient(180deg, hsl(var(--card)), hsl(var(--background)));
+}
+
 .market-hero__card {
   position: absolute;
   left: 16px;

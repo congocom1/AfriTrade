@@ -11,7 +11,7 @@ import { getProduct3DBuilder } from '@/lib/product3d/registry';
  * - prefers-reduced-motion -> static first frame, no auto-rotate.
  * three.js is lazy-imported so the main bundle stays untouched.
  */
-export default function Product3DViewer({ modelKey, modelUrl, fallbackImage, title }) {
+export default function Product3DViewer({ modelKey, modelUrl, fallbackImage, title, interactive = true }) {
   const mountRef = useRef(null);
   const [failed, setFailed] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -84,6 +84,7 @@ export default function Product3DViewer({ modelKey, modelUrl, fallbackImage, tit
         disposables.push(ground.geometry, ground.material);
 
         const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enabled = interactive;
         controls.enableDamping = true;
         controls.enablePan = false;
         controls.minPolarAngle = 0.15;
@@ -123,7 +124,11 @@ export default function Product3DViewer({ modelKey, modelUrl, fallbackImage, tit
         scene.add(object);
 
         const halfHeight = (size.y * scale) / 2;
-        ground.position.y = -halfHeight - 0.002;
+        // Display mode (no controls) raises the model so an overlay card in the
+        // lower part of the frame never hides it.
+        const lift = interactive ? 0 : halfHeight * 0.45;
+        object.position.y += lift;
+        ground.position.y = -halfHeight - 0.002 + lift;
         camera.position.set(0, halfHeight * 0.85 + 0.25, 3.3);
         controls.target.set(0, 0, 0);
         controls.minDistance = 1.4;
@@ -158,7 +163,7 @@ export default function Product3DViewer({ modelKey, modelUrl, fallbackImage, tit
         renderer = null;
       }
     };
-  }, [modelKey, modelUrl]);
+  }, [modelKey, modelUrl, interactive]);
 
   if ((!modelKey && !modelUrl) || failed) {
     return <Image src={fallbackImage} alt={title} className="h-full w-full object-cover" />;
