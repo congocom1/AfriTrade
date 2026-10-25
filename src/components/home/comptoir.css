@@ -1,35 +1,35 @@
 /* ===== Comptoir du jour — the storefront front page =====
-   A printed-market front page: kraft ground, serif headlines, dotted rules
+   A printed-market front page: white ground, serif headlines, dotted rules
    between blocks. The palette lives on the page wrapper, so the same design
    renders in its night version when the app is in dark mode. */
 
 .k-page {
-  --k-bg: #fdf6ec;
-  --k-ink: #1f1a14;
+  --k-bg: #ffffff;
+  --k-ink: #0d0d0d;
   --k-accent: #008066;
   --k-accent-hover: #006b56;
   --k-accent-active: #005b48;
   --k-accent-ink: #ffffff;
   --k-brand-accent: #19c48d;
-  --k-line: #e7d9c6;
+  --k-line: #e5e7eb;
   --k-surface: #ffffff;
-  --k-muted: #6b5e50;
-  --k-dim: #7a6a58;
-  --k-rule: #8a7660;
-  --k-kraft: #d9bf9a;
-  --k-blk: #e7d9c6;
-  --k-blk-hover: #f6ead8;
-  --k-blk-text: #3a3026;
-  --k-foot: #1f1a14;
-  --k-foot-ink: #fdf6ec;
-  --k-foot-muted: #d8c8b0;
+  --k-muted: #6b7280;
+  --k-dim: #6b7280;
+  --k-rule: #d1d5db;
+  --k-kraft: #e6f4ef;
+  --k-blk: #f4f5f6;
+  --k-blk-hover: #eceef0;
+  --k-blk-text: #1f2937;
+  --k-foot: #0d0d0d;
+  --k-foot-ink: #ffffff;
+  --k-foot-muted: #d1d5db;
   --k-foot-link: #19c48d;
-  --k-hero-ink: #fdf6ec;
-  --k-hero-sub: #f1e4d0;
-  --k-hero-dt: #e7d9c6;
-  --k-hero-rule: rgba(253, 246, 236, 0.5);
-  --k-hero-chip: rgba(31, 26, 20, 0.35);
-  --k-scrim: linear-gradient(180deg, rgba(31, 26, 20, 0.7), rgba(31, 26, 20, 0.45) 40%, rgba(31, 26, 20, 0.92));
+  --k-hero-ink: #ffffff;
+  --k-hero-sub: #e5e7eb;
+  --k-hero-dt: #d1d5db;
+  --k-hero-rule: rgba(255, 255, 255, 0.5);
+  --k-hero-chip: rgba(0, 0, 0, 0.35);
+  --k-scrim: linear-gradient(180deg, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.45) 40%, rgba(0, 0, 0, 0.92));
   background: var(--k-bg);
   color: var(--k-ink);
   font-variant-numeric: tabular-nums;
@@ -37,32 +37,32 @@
 
 /* Night version */
 .dark .k-page {
-  --k-bg: #071b16;
-  --k-ink: #edf2ee;
+  --k-bg: #0a0a0a;
+  --k-ink: #f5f5f5;
   --k-accent: #19c48d;
   --k-accent-hover: #54d9ad;
   --k-accent-active: #0f9b6f;
-  --k-accent-ink: #071b16;
+  --k-accent-ink: #0a0a0a;
   --k-brand-accent: #19c48d;
-  --k-line: #1c3d33;
-  --k-surface: #0d2a22;
-  --k-muted: #9db8ac;
-  --k-dim: #8aa79a;
-  --k-rule: #24503f;
-  --k-kraft: #12332a;
-  --k-blk: #0f2b23;
-  --k-blk-hover: #123a2f;
-  --k-blk-text: #cfe3d9;
-  --k-foot: #03110d;
-  --k-foot-ink: #edf2ee;
-  --k-foot-muted: #9db8ac;
+  --k-line: #262626;
+  --k-surface: #141414;
+  --k-muted: #a3a3a3;
+  --k-dim: #a3a3a3;
+  --k-rule: #404040;
+  --k-kraft: #12211d;
+  --k-blk: #141414;
+  --k-blk-hover: #1f1f1f;
+  --k-blk-text: #d4d4d4;
+  --k-foot: #000000;
+  --k-foot-ink: #f5f5f5;
+  --k-foot-muted: #a3a3a3;
   --k-foot-link: #54d9ad;
-  --k-hero-ink: #edf2ee;
-  --k-hero-sub: #c5ded3;
-  --k-hero-dt: #c5ded3;
-  --k-hero-rule: rgba(237, 242, 238, 0.5);
-  --k-hero-chip: rgba(3, 17, 13, 0.45);
-  --k-scrim: linear-gradient(180deg, rgba(7, 27, 22, 0.76), rgba(7, 27, 22, 0.48) 40%, rgba(7, 27, 22, 0.94));
+  --k-hero-ink: #f5f5f5;
+  --k-hero-sub: #d4d4d4;
+  --k-hero-dt: #d4d4d4;
+  --k-hero-rule: rgba(245, 245, 245, 0.5);
+  --k-hero-chip: rgba(0, 0, 0, 0.45);
+  --k-scrim: linear-gradient(180deg, rgba(0, 0, 0, 0.76), rgba(0, 0, 0, 0.48) 40%, rgba(0, 0, 0, 0.94));
 }
 
 .k-page a { color: inherit; text-decoration: none; }
@@ -159,8 +159,8 @@
 .k-btn--pri { background: var(--k-accent); color: var(--k-accent-ink); }
 .k-btn--pri:hover { background: var(--k-accent-hover); box-shadow: 0 4px 12px rgba(0, 128, 102, 0.35); }
 .k-btn--pri:active { background: var(--k-accent-active); }
-.k-btn--gh { background: rgba(253, 246, 236, 0.1); color: var(--k-hero-ink); border-color: rgba(253, 246, 236, 0.6); }
-.k-btn--gh:hover { background: rgba(253, 246, 236, 0.22); }
+.k-btn--gh { background: rgba(255, 255, 255, 0.1); color: var(--k-hero-ink); border-color: rgba(255, 255, 255, 0.6); }
+.k-btn--gh:hover { background: rgba(255, 255, 255, 0.22); }
 .k-btn--ln { background: transparent; color: var(--k-accent); border-color: var(--k-accent); }
 .k-btn--ln:hover { background: var(--k-accent); color: var(--k-accent-ink); }
 .k-page :is(a, button):focus-visible { outline: 2px solid var(--k-accent); outline-offset: 2px; }
@@ -306,9 +306,9 @@
 .k-disc { position: relative; display: block; width: 130px; aspect-ratio: 3 / 4; overflow: hidden; border-radius: 3px; }
 .k-disc img { width: 100%; height: 100%; object-fit: cover; }
 .k-disc::after { content: ''; position: absolute; inset: 0; background: linear-gradient(0deg, rgba(31, 26, 20, 0.85), transparent 60%); }
-.dark .k-disc::after { background: linear-gradient(0deg, rgba(3, 17, 13, 0.88), transparent 60%); }
-.k-disc svg { position: absolute; top: 8px; left: 8px; z-index: 1; width: 20px; height: 20px; color: #fdf6ec; }
-.k-disc__label { position: absolute; right: 8px; bottom: 8px; left: 8px; z-index: 1; color: #fdf6ec; }
+.dark .k-disc::after { background: linear-gradient(0deg, rgba(0, 0, 0, 0.88), transparent 60%); }
+.k-disc svg { position: absolute; top: 8px; left: 8px; z-index: 1; width: 20px; height: 20px; color: #ffffff; }
+.k-disc__label { position: absolute; right: 8px; bottom: 8px; left: 8px; z-index: 1; color: #ffffff; }
 .k-disc__title { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 10px; font-weight: 500; line-height: 1.25; }
 .k-disc__handle { display: block; margin-top: 2px; font-size: 10px; opacity: 0.8; }
 

@@ -68,32 +68,31 @@
 
 /* ===== System foundation =====
    One canvas, one accent, hairline rules, pill controls: white background,
-   kraft paper, near-black ink, a single green accent. Every module reads these through the
+   white ground, near-black ink, a single green accent. Every module reads these through the
    shared tokens (bg-background, text-foreground, bg-primary, border-border,
    rounded-*), so the system reaches storefront, seller, admin, ops, auth and
    portal screens without per-page edits. */
 :root {
-  /* Day version of the storefront palette: kraft paper #fdf6ec, ink #1f1a14,
-     brand green #008066, warm rule #e7d9c6. */
-  --background: 35 81% 96%;
-  --foreground: 33 22% 10%;
+  /* White ground, near-black ink, a single green accent. */
+  --background: 0 0% 100%;
+  --foreground: 0 0% 5%;
   --card: 0 0% 100%;
-  --card-foreground: 33 22% 10%;
+  --card-foreground: 0 0% 5%;
   --popover: 0 0% 100%;
-  --popover-foreground: 33 22% 10%;
+  --popover-foreground: 0 0% 5%;
   --primary: 168 100% 25%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 36 63% 91%;
-  --secondary-foreground: 30 21% 19%;
-  --muted: 36 63% 91%;
-  --muted-foreground: 31 14% 37%;
-  --accent: 35 41% 84%;
-  --accent-foreground: 168 100% 18%;
+  --secondary: 0 0% 97%;
+  --secondary-foreground: 0 0% 9%;
+  --muted: 0 0% 96%;
+  --muted-foreground: 0 0% 38%;
+  --accent: 168 55% 96%;
+  --accent-foreground: 168 100% 20%;
   --destructive: 5 84% 45%;
   --destructive-foreground: 0 0% 100%;
   --destructive-text: 5 84% 45%;
-  --border: 35 41% 84%;
-  --input: 35 41% 84%;
+  --border: 220 9% 89%;
+  --input: 220 9% 89%;
   --ring: 168 100% 25%;
   --chart-1: 168 100% 25%;
   --chart-2: 205 78% 46%;
@@ -103,37 +102,36 @@
   --radius: 0.5rem;
 
   /* Interactive states — a control's hover is a token, not a brightness filter. */
-  --primary-hover: 168 100% 21%;
+  --primary-hover: 168 100% 19%;
   --destructive-hover: 5 84% 38%;
 }
 
 .dark {
-  /* Night version of the storefront palette: deep green ground #071b16, mint
-     accent #19c48d, cool ink #edf2ee. */
-  --background: 165 59% 7%;
-  --foreground: 132 16% 94%;
-  --card: 163 53% 11%;
-  --card-foreground: 132 16% 94%;
-  --popover: 163 53% 11%;
-  --popover-foreground: 132 16% 94%;
-  --primary: 161 77% 43%;
-  --primary-foreground: 165 59% 7%;
-  --secondary: 163 48% 11%;
-  --secondary-foreground: 150 26% 85%;
-  --muted: 164 48% 14%;
-  --muted-foreground: 153 16% 67%;
-  --accent: 164 53% 15%;
-  --accent-foreground: 132 16% 94%;
+  /* Night version: black ground, near-white ink, the same green accent. */
+  --background: 0 0% 5%;
+  --foreground: 0 0% 98%;
+  --card: 0 0% 9%;
+  --card-foreground: 0 0% 98%;
+  --popover: 0 0% 9%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 168 100% 33%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 0 0% 15%;
+  --secondary-foreground: 0 0% 98%;
+  --muted: 0 0% 15%;
+  --muted-foreground: 0 0% 65%;
+  --accent: 0 0% 15%;
+  --accent-foreground: 0 0% 98%;
   /* White on the 55% fill measured 3.99:1, under the 4.5 minimum for button
      text. Matching the light-mode 45% clears it at 5.23:1, and red-as-error-text
      on the dark canvas stays at 4.66:1. */
   --destructive: 5 84% 45%;
   --destructive-foreground: 0 0% 100%;
   --destructive-text: 5 84% 62%;
-  --border: 162 37% 17%;
-  --input: 162 37% 17%;
-  --ring: 160 64% 59%;
-  --primary-hover: 160 64% 59%;
+  --border: 0 0% 18%;
+  --input: 0 0% 18%;
+  --ring: 168 100% 40%;
+  --primary-hover: 168 100% 40%;
   --destructive-hover: 5 84% 52%;
 }
 
