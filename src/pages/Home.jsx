@@ -15,7 +15,6 @@ import SectionHeader from '@/components/SectionHeader';
 import ProductRow from '@/components/ProductRow';
 import ProductGrid from '@/components/ProductGrid';
 import { resolveStorefrontScope, scopeRecords } from '@/lib/tenancy';
-import { resolveProduct3D } from '@/lib/product3d/registry';
 import usePullToRefresh from '@/hooks/usePullToRefresh';
 
 export default function Home() {
@@ -84,11 +83,6 @@ export default function Home() {
     };
   }, [products]);
 
-  // The hero animates the 3D model of a real listed product; the photo stays as
-  // the fallback when WebGL is unavailable.
-  const heroProduct = useMemo(() => products.find((p) => resolveProduct3D(p)) || null, [products]);
-  const heroModelKey = heroProduct ? resolveProduct3D(heroProduct) : 'solar-panel';
-
   return (
     <div className="brand-home space-y-8 pb-6 md:space-y-12" {...pullHandlers}>
       {pullIndicator}
@@ -111,8 +105,6 @@ export default function Home() {
         productCount={products.length}
         categoryCount={categories.length}
         sellerCount={sellers.length}
-        modelKey={heroModelKey}
-        modelTitle={heroProduct?.title || 'AfriTrade'}
       />
 
       <DepartmentRail categories={categories} loading={loading} />

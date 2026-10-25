@@ -3,15 +3,13 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowRight, Coins, MapPin, ShieldCheck, Store } from 'lucide-react';
 import { Image } from '@/components/ui/image';
-import Product3DViewer from '@/components/Product3DViewer';
 import { HERO_PHOTO } from '@/lib/unsplashImages';
 import './storefront.css';
 
-// A trading street rather than a rendered placeholder: the photo stands behind
-// the animated model and takes over whenever WebGL is unavailable.
+// A trading street rather than a rendered placeholder.
 const HERO_IMAGE = HERO_PHOTO;
 
-export default function MarketHero({ productCount = 0, categoryCount = 0, sellerCount = 0, modelKey = null, modelTitle = '' }) {
+export default function MarketHero({ productCount = 0, categoryCount = 0, sellerCount = 0 }) {
   const { t } = useTranslation();
 
   const chips = [
@@ -65,18 +63,7 @@ export default function MarketHero({ productCount = 0, categoryCount = 0, seller
           )}
         </div>
         <div className="market-hero__media">
-          {modelKey ? (
-            <div className="market-hero__stage">
-              <Product3DViewer
-                modelKey={modelKey}
-                fallbackImage={HERO_IMAGE}
-                title={modelTitle}
-                interactive={false}
-              />
-            </div>
-          ) : (
-            <Image src={HERO_IMAGE} alt="" className="market-hero__image" fittingType="fill" />
-          )}
+          <Image src={HERO_IMAGE} alt="" className="market-hero__image" fittingType="fill" />
           <div className="market-hero__card">
             <p className="market-hero__card-label">{t('market.cardEtaLabel')}</p>
             <p className="market-hero__card-value">{t('market.cardEta')}</p>
