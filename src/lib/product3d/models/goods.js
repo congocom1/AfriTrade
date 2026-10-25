@@ -88,7 +88,7 @@ export function buildCementSack(THREE) {
 
   const sack = (y, tilt) => {
     const group = P.group([
-      P.roundedBox(0.56, 0.16, 0.36, 0.035, kraft),
+      P.roundedBox(0.56, 0.16, 0.36, 0.035, M.photoShell(0.56, 0.16) || kraft),
       P.roundedBox(0.5, 0.03, 0.3, 0.014, kraft, [0, 0.085, 0]),
       P.roundedBox(0.48, 0.014, 0.28, 0.006, M.paperWhite, [0, 0.105, 0]),
       P.box(0.3, 0.07, 0.006, M.photoPanel(0.3, 0.07), [0, 0, 0.181]),
@@ -115,7 +115,7 @@ export function buildCarton(THREE) {
   const flap = (w, d, x, z, rx, rz) => P.box(w, 0.006, d, M.paper, [x, H / 2 + 0.004, z], [rx, 0, rz]);
 
   return P.group([
-    P.box(W, H, D, M.paper, [0, H / 2, 0]),
+    P.box(W, H, D, M.photoShell(W, H) || M.paper, [0, H / 2, 0]),
     flap(W, D / 2, 0, -D / 4, -1.35, 0),
     flap(W, D / 2, 0, D / 4, 1.35, 0),
     flap(D, W / 2, -W / 4, 0, 0, -1.35),
@@ -137,7 +137,7 @@ export function buildSacks(THREE) {
 
   const sack = (pos, rot) => {
     const group = P.group([
-      P.roundedBox(0.62, 0.13, 0.4, 0.03, woven),
+      P.roundedBox(0.62, 0.13, 0.4, 0.03, M.photoShell(0.62, 0.13) || woven),
       P.roundedBox(0.5, 0.03, 0.3, 0.012, woven, [0, 0.07, 0]),
       P.roundedBox(0.46, 0.01, 0.26, 0.004, M.plasticGrey, [0, 0.088, 0]),
       P.box(0.2, 0.05, 0.004, M.photoPanel(0.2, 0.05), [0, 0, 0.201]),

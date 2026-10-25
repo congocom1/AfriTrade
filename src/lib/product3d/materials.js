@@ -56,6 +56,14 @@ export function createMaterials(THREE) {
     });
   };
 
+  // Body: the real photo wrapped over the model's main surfaces, so the model
+  // reads as the actual product rather than a plain studio shape. Null keeps
+  // the caller's own material, so a missing photo changes nothing.
+  const photoShell = (w, h) =>
+    PHOTO
+      ? new THREE.MeshStandardMaterial({ map: coverFit(THREE, PHOTO, w, h), roughness: 0.5, metalness: 0.06 })
+      : null;
+
   return {
     steel: standard(0xb4bac1, { roughness: 0.34, metalness: 0.9 }),
     alu: standard(0xd2d7dd, { roughness: 0.3, metalness: 0.85 }),
@@ -106,5 +114,6 @@ export function createMaterials(THREE) {
 
     photoPanel,
     screenPhoto,
+    photoShell,
   };
 }

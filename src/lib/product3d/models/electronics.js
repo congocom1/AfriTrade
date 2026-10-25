@@ -4,7 +4,7 @@ import { createMaterials } from '../materials.js';
 function buildLaptop(THREE, { width = 0.32, depth = 0.22, shell }) {
   const P = createParts(THREE);
   const M = createMaterials(THREE);
-  const body = new THREE.MeshStandardMaterial({ color: shell, roughness: 0.35, metalness: 0.55 });
+  const body = M.photoShell(width, depth) || new THREE.MeshStandardMaterial({ color: shell, roughness: 0.35, metalness: 0.55 });
 
   const base = P.group([
     P.roundedBox(width, 0.014, depth, 0.006, body, [0, 0.007, 0]),
@@ -39,20 +39,20 @@ export const buildLaptopEliteBook = (THREE) => buildLaptop(THREE, { width: 0.32,
 /** Lenovo IdeaPad style laptop, slightly larger and darker. */
 export const buildLaptopIdeaPad = (THREE) => buildLaptop(THREE, { width: 0.36, depth: 0.25, shell: 0x3d4249 });
 
-function buildPhone(THREE, { cameras, bodyColor, screenColor }) {
+function buildPhone(THREE, { cameras, bodyColor }) {
   const P = createParts(THREE);
   const M = createMaterials(THREE);
-  const body = new THREE.MeshStandardMaterial({ color: bodyColor, roughness: 0.35, metalness: 0.4 });
-  const screen = new THREE.MeshStandardMaterial({ color: screenColor, roughness: 0.12, metalness: 0.2, emissive: 0x0d2c4a, emissiveIntensity: 0.55 });
 
   const W = 0.076;
   const H = 0.164;
   const T = 0.009;
 
+  const body = M.photoShell(W, H) || new THREE.MeshStandardMaterial({ color: bodyColor, roughness: 0.35, metalness: 0.4 });
+
   return P.group([
     P.roundedBox(W, H, T, 0.011, body),
     P.roundedBox(W - 0.005, H - 0.008, 0.002, 0.009, M.plasticDark, [0, 0, T / 2 + 0.001]),
-    P.roundedBox(W - 0.012, H - 0.02, 0.001, 0.007, screen, [0, 0.002, T / 2 + 0.002]),
+    P.roundedBox(W - 0.012, H - 0.02, 0.001, 0.007, M.screenPhoto(W - 0.012, H - 0.02), [0, 0.002, T / 2 + 0.002]),
     P.roundedBox(W * 0.34, W * 0.34, 0.004, 0.008, M.plasticDark, [-W * 0.22, H * 0.36, -T / 2 - 0.002]),
     ...P.repeat(cameras, (i) =>
       P.group([
@@ -67,10 +67,10 @@ function buildPhone(THREE, { cameras, bodyColor, screenColor }) {
 }
 
 /** itel A70 — entry level, single rear camera. */
-export const buildPhoneItel = (THREE) => buildPhone(THREE, { cameras: 1, bodyColor: 0x1e2a44, screenColor: 0x0a1730 });
+export const buildPhoneItel = (THREE) => buildPhone(THREE, { cameras: 1, bodyColor: 0x1e2a44 });
 
 /** Tecno Spark 20C — triple rear camera. */
-export const buildPhoneTecno = (THREE) => buildPhone(THREE, { cameras: 3, bodyColor: 0x123b2e, screenColor: 0x07281f });
+export const buildPhoneTecno = (THREE) => buildPhone(THREE, { cameras: 3, bodyColor: 0x123b2e });
 
 /** 43" smart LED television on its stand. */
 export function buildTelevision(THREE) {
@@ -110,7 +110,7 @@ export function buildSpeaker(THREE) {
     ]);
 
   return P.group([
-    P.roundedBox(W, H, D, 0.022, M.plasticDark),
+    P.roundedBox(W, H, D, 0.022, M.photoShell(W, H) || M.plasticDark),
     drivers(-H * 0.16, 0.1),
     drivers(H * 0.2, 0.062),
     P.box(W * 0.9, 0.02, 0.012, M.plasticGrey, [0, H * 0.44, D / 2 - 0.002]),
@@ -159,7 +159,7 @@ export function buildFridge(THREE) {
   const W = 0.55;
   const H = 1.45;
   const D = 0.6;
-  const shell = new THREE.MeshStandardMaterial({ color: 0xdfe3e7, roughness: 0.42, metalness: 0.35 });
+  const shell = M.photoShell(W, H) || new THREE.MeshStandardMaterial({ color: 0xdfe3e7, roughness: 0.42, metalness: 0.35 });
 
   return P.group([
     P.roundedBox(W, H, D, 0.014, shell),

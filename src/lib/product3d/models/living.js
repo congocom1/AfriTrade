@@ -46,7 +46,7 @@ export function buildSofa(THREE) {
   const M = createMaterials(THREE);
 
   return P.group([
-    P.roundedBox(2, 0.3, 0.9, 0.05, M.fabric, [0, 0.25, 0]),
+    P.roundedBox(2, 0.3, 0.9, 0.05, M.photoShell(2, 0.9) || M.fabric, [0, 0.25, 0]),
     P.roundedBox(1.6, 0.42, 0.2, 0.05, M.fabric, [0, 0.62, -0.34], [-0.06, 0, 0]),
     P.roundedBox(0.22, 0.5, 0.9, 0.06, M.fabric, [-1, 0.36, 0]),
     P.roundedBox(0.22, 0.5, 0.9, 0.06, M.fabric, [1, 0.36, 0]),
@@ -107,7 +107,7 @@ export function buildCushions(THREE) {
 
   const cushion = (pos, rot, accent) =>
     P.group([
-      P.roundedBox(0.45, 0.45, 0.14, 0.045, M.fabricCream, pos, rot),
+      P.roundedBox(0.45, 0.45, 0.14, 0.045, M.photoShell(0.45, 0.45) || M.fabricCream, pos, rot),
       P.roundedBox(0.4, 0.012, 0.008, 0.004, accent, [pos[0], pos[1] + 0.09, pos[2] + 0.072], rot),
       P.roundedBox(0.4, 0.012, 0.008, 0.004, M.fabricOrange, [pos[0], pos[1] - 0.02, pos[2] + 0.072], rot),
       P.roundedBox(0.4, 0.012, 0.008, 0.004, accent, [pos[0], pos[1] - 0.13, pos[2] + 0.072], rot),
@@ -126,7 +126,7 @@ export function buildCushions(THREE) {
 export function buildShirt(THREE) {
   const P = createParts(THREE);
   const M = createMaterials(THREE);
-  const cloth = new THREE.MeshStandardMaterial({ color: 0x1f5fa8, roughness: 0.95 });
+  const cloth = M.photoShell(0.46, 0.58) || new THREE.MeshStandardMaterial({ color: 0x1f5fa8, roughness: 0.95 });
 
   const shirt = P.group([
     P.roundedBox(0.46, 0.58, 0.06, 0.02, cloth),
@@ -156,7 +156,7 @@ export function buildShirt(THREE) {
 export function buildDress(THREE) {
   const P = createParts(THREE);
   const M = createMaterials(THREE);
-  const cloth = new THREE.MeshStandardMaterial({ color: 0xb13a63, roughness: 0.95 });
+  const cloth = M.photoShell(0.34, 0.3) || new THREE.MeshStandardMaterial({ color: 0xb13a63, roughness: 0.95 });
 
   const bodice = P.group([
     P.roundedBox(0.34, 0.3, 0.15, 0.05, cloth, [0, 0.45, 0]),
@@ -209,7 +209,7 @@ export function buildHairOil(THREE) {
 
   return P.group([
     bottle,
-    P.cyl(0.0345, 0.0345, 0.055, M.label, [0, 0.045, 0], [0, 0, 0], 32),
+    P.cyl(0.0345, 0.0345, 0.055, M.photoShell(0.217, 0.055) || M.label, [0, 0.045, 0], [0, 0, 0], 32),
     P.cyl(0.0352, 0.0352, 0.012, M.accent, [0, 0.078, 0], [0, 0, 0], 32),
     P.cyl(0.0352, 0.0352, 0.008, M.accentOrange, [0, 0.018, 0], [0, 0, 0], 32),
     P.cone(0.008, 0.02, M.fabricGreen, [0.012, 0.055, 0.035], [0, 0, -0.4]),
@@ -230,7 +230,7 @@ export function buildCreamJar(THREE) {
     P.cyl(0.049, 0.049, 0.024, M.accent, [0, 0.089, 0], [0, 0, 0], 40),
     P.torus(0.048, 0.004, M.accent, [0, 0.077, 0], [Math.PI / 2, 0, 0]),
     P.cyl(0.0492, 0.0492, 0.008, M.accentOrange, [0, 0.1, 0], [0, 0, 0], 40),
-    P.cyl(0.0465, 0.0465, 0.03, M.label, [0, 0.036, 0], [0, 0, 0], 40),
+    P.cyl(0.0465, 0.0465, 0.03, M.photoShell(0.292, 0.03) || M.label, [0, 0.036, 0], [0, 0, 0], 40),
     P.cyl(0.0472, 0.0472, 0.008, M.accent, [0, 0.05, 0], [0, 0, 0], 40),
     P.cone(0.007, 0.018, M.fabricGreen, [0.015, 0.03, 0.044], [0, 0, -0.5]),
   ]);
@@ -243,7 +243,7 @@ export function buildBloodPressureMonitor(THREE) {
   const cuffFabric = new THREE.MeshStandardMaterial({ color: 0x3b4a5a, roughness: 0.95 });
 
   const body = P.group([
-    P.roundedBox(0.12, 0.1, 0.04, 0.014, M.plasticWhite),
+    P.roundedBox(0.12, 0.1, 0.04, 0.014, M.photoShell(0.12, 0.1) || M.plasticWhite),
     P.roundedBox(0.07, 0.04, 0.006, 0.006, M.screenLit, [0, 0.022, 0.021]),
     P.cyl(0.012, 0.012, 0.008, M.plasticGrey, [-0.03, -0.03, 0.021], [Math.PI / 2, 0, 0], 20),
     P.cyl(0.012, 0.012, 0.008, M.plasticGrey, [0, -0.03, 0.021], [Math.PI / 2, 0, 0], 20),

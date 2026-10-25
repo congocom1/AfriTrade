@@ -94,9 +94,10 @@ export default function Product3DViewer({ modelKey, modelUrl, fallbackImage, pho
         controls.autoRotate = !reduced;
         controls.autoRotateSpeed = 1.4;
 
-        // The product's real photo is the model's texture source: screens and
-        // printed faces, plus the reflections on metal and glass.
-        const photoUrl = photo || fallbackImage;
+        // The product's own photo is the model's texture source: body shell,
+        // screens and printed faces, plus the reflections on metal and glass.
+        // fallbackImage stays a flat photo fallback, never a model texture.
+        const photoUrl = photo;
         let photoTexture = null;
         if (photoUrl) {
           photoTexture = await new Promise((resolve) => {

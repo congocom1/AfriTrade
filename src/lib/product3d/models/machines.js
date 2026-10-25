@@ -57,7 +57,7 @@ export function buildWelder(THREE) {
   const P = createParts(THREE);
   const M = createMaterials(THREE);
 
-  const shell = new THREE.MeshStandardMaterial({ color: 0xd85a20, roughness: 0.45, metalness: 0.25 });
+  const shell = M.photoShell(0.4, 0.3) || new THREE.MeshStandardMaterial({ color: 0xd85a20, roughness: 0.45, metalness: 0.25 });
 
   const body = P.group([
     P.roundedBox(0.4, 0.3, 0.22, 0.018, shell),
@@ -131,7 +131,7 @@ export function buildWaterPump(THREE) {
   const shell = new THREE.MeshStandardMaterial({ color: 0xbe3628, roughness: 0.45, metalness: 0.3 });
 
   return P.group([
-    P.box(0.42, 0.3, 0.3, M.darkMetal, [-0.16, 0.26, 0]),
+    P.box(0.42, 0.3, 0.3, M.photoShell(0.42, 0.3) || M.darkMetal, [-0.16, 0.26, 0]),
     P.box(0.28, 0.1, 0.26, M.darkMetal, [-0.16, 0.45, 0]),
     P.roundedBox(0.36, 0.16, 0.26, 0.02, shell, [-0.1, 0.6, 0]),
     P.cyl(0.026, 0.026, 0.03, M.plasticDark, [-0.1, 0.69, 0]),

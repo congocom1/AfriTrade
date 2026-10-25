@@ -52,7 +52,7 @@ export function buildSolarBattery(THREE) {
   const D = 0.24;
 
   const body = P.group([
-    P.roundedBox(L, H, D, 0.02, M.plasticDark),
+    P.roundedBox(L, H, D, 0.02, M.photoShell(L, H) || M.plasticDark),
     P.box(L - 0.02, 0.02, D - 0.02, M.plasticBlack, [0, H / 2, 0]),
     P.box(L - 0.16, 0.09, 0.006, M.label, [0, -0.005, D / 2 + 0.002]),
     P.box(L - 0.16, 0.016, 0.008, M.accent, [0, 0.055, D / 2 + 0.003]),
