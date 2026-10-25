@@ -17,6 +17,7 @@ import ProductRow from '@/components/ProductRow';
 import ProductReviews from '@/components/ProductReviews';
 import Product3DViewer from '@/components/Product3DViewer';
 import { resolveProduct3D } from '@/lib/product3d/registry';
+import { productImage } from '@/lib/productImages';
 import SectionHeader from '@/components/SectionHeader';
 import { compactNumber } from '@/lib/format';
 import { inTenantScope, resolveStorefrontScope, scopeRecords } from '@/lib/tenancy';
@@ -218,7 +219,12 @@ export default function ProductDetail() {
           )}
           <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-secondary">
             {view3d && model3d ? (
-              <Product3DViewer modelKey={model3d} fallbackImage={product.images?.[activeImage]} title={product.title} />
+              <Product3DViewer
+                modelKey={model3d}
+                fallbackImage={product.images?.[activeImage] || productImage(product)}
+                photo={product.images?.[activeImage] || productImage(product)}
+                title={product.title}
+              />
             ) : (
               <Image src={product.images?.[activeImage]} alt={`${product.title} - image principale`} className="h-full w-full object-cover" />
             )}

@@ -91,7 +91,7 @@ export function buildCementSack(THREE) {
       P.roundedBox(0.56, 0.16, 0.36, 0.035, kraft),
       P.roundedBox(0.5, 0.03, 0.3, 0.014, kraft, [0, 0.085, 0]),
       P.roundedBox(0.48, 0.014, 0.28, 0.006, M.paperWhite, [0, 0.105, 0]),
-      P.roundedBox(0.3, 0.07, 0.006, 0.004, M.paperWhite, [0, 0, 0.181]),
+      P.box(0.3, 0.07, 0.006, M.photoPanel(0.3, 0.07), [0, 0, 0.181]),
       P.roundedBox(0.3, 0.02, 0.008, 0.004, M.accent, [0, 0.028, 0.183]),
       P.roundedBox(0.3, 0.014, 0.008, 0.004, M.accentOrange, [0, -0.03, 0.183]),
       ...P.repeat(7, (i) => P.box(0.02, 0.002, 0.002, M.paperWhite, [-0.09 + i * 0.03, 0.108, 0.001])),
@@ -123,7 +123,7 @@ export function buildCarton(THREE) {
     P.box(0.07, 0.004, D + 0.02, M.plasticGrey, [0, H / 2 + 0.008, 0]),
     P.box(W + 0.002, 0.06, 0.002, M.paperWhite, [0, H * 0.4, -D / 2 - 0.002]),
     P.box(W * 0.6, 0.03, 0.003, M.accent, [0, H * 0.4, -D / 2 - 0.003]),
-    P.box(0.14, 0.09, 0.002, M.label, [W / 2 + 0.002, H * 0.6, 0], [0, Math.PI / 2, 0]),
+    P.box(0.14, 0.09, 0.002, M.photoPanel(0.14, 0.09), [W / 2 + 0.002, H * 0.6, 0], [0, Math.PI / 2, 0]),
     P.box(W + 0.004, 0.004, 0.004, M.paperWhite, [0, H * 0.55, -D / 2 - 0.001]),
     P.box(W + 0.004, 0.004, 0.004, M.paperWhite, [0, H * 0.25, -D / 2 - 0.001]),
   ]);
@@ -140,7 +140,7 @@ export function buildSacks(THREE) {
       P.roundedBox(0.62, 0.13, 0.4, 0.03, woven),
       P.roundedBox(0.5, 0.03, 0.3, 0.012, woven, [0, 0.07, 0]),
       P.roundedBox(0.46, 0.01, 0.26, 0.004, M.plasticGrey, [0, 0.088, 0]),
-      P.roundedBox(0.2, 0.05, 0.004, 0.004, M.label, [0, 0, 0.201]),
+      P.box(0.2, 0.05, 0.004, M.photoPanel(0.2, 0.05), [0, 0, 0.201]),
       P.roundedBox(0.2, 0.014, 0.006, 0.004, M.accent, [0, 0.018, 0.202]),
       P.box(0.6, 0.002, 0.004, M.paperWhite, [0, -0.02, 0.202]),
     ]);

@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Box } from 'lucide-react';
 import { Image } from '@/components/ui/image';
 import { getProduct3DBuilder } from '@/lib/product3d/registry';
+import { setProductPhoto } from '@/lib/product3d/materials';
 
 /**
  * 3D product viewer (experience layer, never mandatory).
@@ -11,7 +12,7 @@ import { getProduct3DBuilder } from '@/lib/product3d/registry';
  * - prefers-reduced-motion -> static first frame, no auto-rotate.
  * three.js is lazy-imported so the main bundle stays untouched.
  */
-export default function Product3DViewer({ modelKey, modelUrl, fallbackImage, title, interactive = true }) {
+export default function Product3DViewer({ modelKey, modelUrl, fallbackImage, photo, title, interactive = true }) {
   const mountRef = useRef(null);
   const [failed, setFailed] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -93,6 +94,37 @@ export default function Product3DViewer({ modelKey, modelUrl, fallbackImage, tit
         controls.autoRotate = !reduced;
         controls.autoRotateSpeed = 1.4;
 
+        // The product's real photo is the model's texture source: screens and
+        // printed faces, plus the reflections on metal and glass.
+        const photoUrl = photo || fallbackImage;
+        let photoTexture = null;
+        if (photoUrl) {
+          photoTexture = await new Promise((resolve) => {
+            new THREE.TextureLoader()
+              .setCrossOrigin('anonymous')
+              .load(
+                photoUrl,
+                (texture) => {
+                  texture.colorSpace = THREE.SRGBColorSpace;
+                  texture.wrapS = THREE.ClampToEdgeWrapping;
+                  texture.wrapT = THREE.ClampToEdgeWrapping;
+                  resolve(texture);
+                },
+                undefined,
+                () => resolve(null),
+              );
+          });
+        }
+        if (photoTexture) {
+          const pmrem = new THREE.PMREMGenerator(renderer);
+          const environment = pmrem.fromEquirectangular(photoTexture).texture;
+          pmrem.dispose();
+          scene.environment = environment;
+          scene.environmentIntensity = 0.3;
+          disposables.push(photoTexture, environment);
+        }
+        setProductPhoto(photoTexture);
+
         let object = null;
         if (modelUrl) {
           const { GLTFLoader } = await import('three/addons/loaders/GLTFLoader.js');
@@ -103,6 +135,7 @@ export default function Product3DViewer({ modelKey, modelUrl, fallbackImage, tit
           const build = getProduct3DBuilder(modelKey);
           if (!build) throw new Error(`Unknown 3D model: ${modelKey}`);
           object = build(THREE);
+          setProductPhoto(null);
         }
         if (cancelled) return;
 
@@ -154,6 +187,7 @@ export default function Product3DViewer({ modelKey, modelUrl, fallbackImage, tit
 
     return () => {
       cancelled = true;
+      setProductPhoto(null);
       cancelAnimationFrame(raf);
       resizeObserver?.disconnect();
       disposables.forEach((d) => d?.dispose?.());

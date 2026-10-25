@@ -24,7 +24,7 @@ function buildLaptop(THREE, { width = 0.32, depth = 0.22, shell }) {
   const lid = P.group([
     P.roundedBox(width, depth * 0.94, 0.008, 0.005, body),
     P.box(width - 0.022, depth * 0.9, 0.004, M.screen, [0, 0, 0.006]),
-    P.box(width - 0.06, depth * 0.82, 0.002, M.screenLit, [0, 0.006, 0.009]),
+    P.box(width - 0.06, depth * 0.82, 0.002, M.screenPhoto(width - 0.06, depth * 0.82), [0, 0.006, 0.009]),
     P.cyl(0.005, 0.005, 0.005, M.plasticDark, [0, depth * 0.42, 0.006], [Math.PI / 2, 0, 0]),
   ]);
   lid.rotation.x = -0.28;
@@ -83,7 +83,7 @@ export function buildTelevision(THREE) {
   return P.group([
     P.roundedBox(W, H, 0.026, 0.008, M.plasticDark),
     P.box(W - 0.014, H - 0.014, 0.004, M.screen, [0, 0, 0.014]),
-    P.box(W - 0.03, H - 0.05, 0.002, M.screenLit, [0, 0.004, 0.017]),
+    P.box(W - 0.03, H - 0.05, 0.002, M.screenPhoto(W - 0.03, H - 0.05), [0, 0.004, 0.017]),
     P.box(W * 0.5, 0.006, 0.004, M.plasticGrey, [0, -H / 2 + 0.004, 0.014]),
     P.box(0.05, 0.22, 0.03, M.darkMetal, [0, -H / 2 - 0.1, 0]),
     P.roundedBox(0.34, 0.016, 0.2, 0.008, M.plasticDark, [0, -H / 2 - 0.21, 0]),

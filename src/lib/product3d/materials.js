@@ -2,9 +2,59 @@
  * Shared materials for the procedural product models.
  * Created once per build from the lazy-loaded three.js namespace.
  */
+
+// The viewer loads the product's real photo and hands it over before a model
+// builds, so screens and printed faces show the actual product instead of flat
+// colour. Null keeps the original studio-material look.
+let PHOTO = null;
+
+export function setProductPhoto(texture) {
+  PHOTO = texture || null;
+}
+
+/** Crops the photo to the panel's own aspect so nothing is squashed. */
+function coverFit(THREE, texture, panelWidth, panelHeight) {
+  const fitted = texture.clone();
+  fitted.needsUpdate = true;
+  fitted.wrapS = THREE.ClampToEdgeWrapping;
+  fitted.wrapT = THREE.ClampToEdgeWrapping;
+  const imageAspect = (texture.image?.width || 1) / (texture.image?.height || 1);
+  const panelAspect = panelWidth / panelHeight;
+  if (imageAspect > panelAspect) {
+    fitted.repeat.set(panelAspect / imageAspect, 1);
+    fitted.offset.set((1 - panelAspect / imageAspect) / 2, 0);
+  } else {
+    fitted.repeat.set(1, imageAspect / panelAspect);
+    fitted.offset.set(0, (1 - imageAspect / panelAspect) / 2);
+  }
+  return fitted;
+}
+
 export function createMaterials(THREE) {
   const standard = (color, extra = {}) =>
     new THREE.MeshStandardMaterial({ color, roughness: 0.62, metalness: 0.05, ...extra });
+
+  // Printed face: sack, carton, label. Plain paper when no photo is loaded.
+  const photoPanel = (w, h) =>
+    PHOTO
+      ? new THREE.MeshStandardMaterial({ map: coverFit(THREE, PHOTO, w, h), roughness: 0.58, metalness: 0.04 })
+      : standard(0xe9e3d6, { roughness: 0.88 });
+
+  // Screen: the photo doubles as the light source, so it reads as switched on.
+  const screenPhoto = (w, h) => {
+    if (!PHOTO) {
+      return standard(0x123a5e, { roughness: 0.2, metalness: 0.1, emissive: 0x0b2a45, emissiveIntensity: 0.7 });
+    }
+    const map = coverFit(THREE, PHOTO, w, h);
+    return new THREE.MeshStandardMaterial({
+      map,
+      emissive: 0xffffff,
+      emissiveMap: map,
+      emissiveIntensity: 0.4,
+      roughness: 0.14,
+      metalness: 0.12,
+    });
+  };
 
   return {
     steel: standard(0xb4bac1, { roughness: 0.34, metalness: 0.9 }),
@@ -53,5 +103,8 @@ export function createMaterials(THREE) {
     label: standard(0xfbfbf8, { roughness: 0.82 }),
     accent: standard(0x008066, { roughness: 0.45 }),
     accentOrange: standard(0xe4572e, { roughness: 0.5 }),
+
+    photoPanel,
+    screenPhoto,
   };
 }
