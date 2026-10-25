@@ -3,12 +3,19 @@ import { Outlet, useLocation, useNavigationType } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { navigationDirection, routeMotion } from '@/lib/navigationDirection';
 import { applyTenantBranding, clearTenantBranding, resolveTenantByHost } from '@/lib/tenancy';
+import { PORTAL_BUYER, portalForPath } from '@/lib/portals';
 import TopBar from './TopBar';
 import BottomNav from './BottomNav';
+import PortalHeader from '@/components/portal/PortalHeader';
+import PortalNav from '@/components/portal/PortalNav';
 import LegalFooter from '@/components/legal/LegalFooter';
 
 export default function AppLayout() {
   const location = useLocation();
+  // The shop keeps the storefront bar; a console portal gets its own header and
+  // navigation, so an operator never sees shop links inside their console.
+  const portal = portalForPath(location.pathname);
+  const isConsole = portal.id !== PORTAL_BUYER;
   const navigationType = useNavigationType();
   const reducedMotion = useReducedMotion();
   const lastRoute = useRef({ key: location.key, index: window.history.state?.idx });
@@ -37,8 +44,15 @@ export default function AppLayout() {
   }, []);
 
   return (
-    <div className="brand-app-shell min-h-screen bg-background pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-8">
-      <TopBar />
+    <div className={`brand-app-shell min-h-screen bg-background ${isConsole ? 'pb-8' : 'pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-8'}`}>
+      {isConsole ? (
+        <>
+          <PortalHeader portal={portal} />
+          <PortalNav portal={portal} />
+        </>
+      ) : (
+        <TopBar />
+      )}
       <main data-webview-scroll className="mx-auto w-full min-w-0 max-w-6xl px-3 py-6 md:px-6 md:py-9">
         <AnimatePresence mode="wait" initial={false} custom={direction}>
           <motion.div
@@ -54,7 +68,7 @@ export default function AppLayout() {
         </AnimatePresence>
         <LegalFooter />
       </main>
-      <BottomNav />
+      {!isConsole && <BottomNav />}
     </div>
   );
 }

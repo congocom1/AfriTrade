@@ -7,6 +7,7 @@ import ThemeToggle from '@/components/ThemeToggle';
 import { useAuth } from '@/lib/AuthContext';
 import { isAdmin } from '@/lib/roles';
 import { WORKSPACE_ITEMS } from '@/components/layout/workspaces';
+import { PORTAL_LIST } from '@/lib/portals';
 import {
   Drawer,
   DrawerContent,
@@ -120,6 +121,14 @@ export default function MobileDrawer({ isOpen, onClose }) {
                 </div>
               </section>
             )}
+            <section aria-label={t('portals.title')} className="border-t border-border pt-4">
+              <h3 className="px-3 pb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                {t('portals.title')}
+              </h3>
+              <div className="space-y-1">
+                {renderItems(PORTAL_LIST.map((portal) => ({ key: portal.labelKey, path: portal.home, icon: portal.icon })))}
+              </div>
+            </section>
             <section aria-label={t('nav.utilities')} className="border-t border-border pt-4">
               <h3 className="px-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t('nav.utilities')}</h3>
               <div className="flex flex-wrap items-center gap-2 px-3"><ThemeToggle /><CurrencyToggle /><LanguageToggle /></div>

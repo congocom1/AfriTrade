@@ -157,6 +157,8 @@ const CoverageMap = lazy(() => import('@/pages/CoverageMap'));
 const MerchantDisputes = lazy(() => import('@/pages/MerchantDisputes'));
 const PayoutLedger = lazy(() => import('@/pages/PayoutLedger'));
 const BulkOrders = lazy(() => import('@/pages/BulkOrders'));
+const ProPortal = lazy(() => import('@/pages/ProPortal'));
+const LogisticsPortal = lazy(() => import('@/pages/LogisticsPortal'));
 const B2BMarketplace = lazy(() => import('@/pages/B2BMarketplace'));
 const B2BQuotes = lazy(() => import('@/pages/B2BQuotes'));
 const MarketTrends = lazy(() => import('@/pages/MarketTrends'));
@@ -266,6 +268,8 @@ const AuthenticatedApp = () => {
         <Route path="/platform-guidelines" element={<PageWrapper><PlatformGuidelines /></PageWrapper>} />
         <Route path="/checkout-success" element={<PageWrapper><CheckoutSuccess /></PageWrapper>} />
         <Route path="/pricing" element={<PageWrapper><Pricing /></PageWrapper>} />
+        <Route path="/pro" element={<PageWrapper><ProPortal /></PageWrapper>} />
+        <Route path="/logistics" element={<PageWrapper><LogisticsPortal /></PageWrapper>} />
         <Route path="/mentions-legales" element={<PageWrapper><MentionsLegales /></PageWrapper>} />
         <Route path="/cgv" element={<PageWrapper><CGV /></PageWrapper>} />
         <Route path="/confidentialite" element={<PageWrapper><Confidentialite /></PageWrapper>} />
