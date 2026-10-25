@@ -9,6 +9,7 @@ import { base44 } from '@/api/base44Client';
 import DashboardNav from '@/components/DashboardNav';
 import OpsHeader from '@/components/ops/OpsHeader';
 import StatCard from '@/components/ops/StatCard';
+import CalendarSyncCard from '@/components/calendar/CalendarSyncCard';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -132,6 +133,9 @@ export default function LogisticsHub() {
       </div>
 
       {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+
+      <CalendarSyncCard />
+
       {/* Nœuds d'expédition */}
       <section className="rounded-2xl border border-border bg-card">
         <header className="flex items-center justify-between gap-2 border-b border-border px-4 py-3">
