@@ -2,6 +2,8 @@
 // public/assets/marketplace/categories. Categories live in the database with
 // free-form slugs and names, so a slug is matched first, then the words of the
 // name, and anything unmatched keeps the neutral mark.
+import { familyPhoto } from '@/lib/unsplashImages';
+
 const BASE = '/assets/marketplace/categories';
 
 export const DEPARTMENT_ART = [
@@ -50,18 +52,28 @@ const fold = (value) =>
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '');
 
-// Accepts a category record or a bare slug/name.
-export function resolveCategoryArt(category) {
+// Accepts a category record or bare text (slug, name, product title).
+export function resolveCategoryFamily(category) {
   if (!category) return null;
-  if (typeof category === 'object' && category.image_url) return category.image_url;
 
   const text = fold(typeof category === 'string' ? category : `${category.slug || ''} ${category.name || ''}`).trim();
   if (!text) return null;
 
   const direct = DEPARTMENT_ART.find((slug) => text.includes(slug));
-  if (direct) return `${BASE}/${direct}.svg`;
+  if (direct) return direct;
 
   const words = text.split(/[^a-z0-9]+/).filter(Boolean);
   const match = Object.entries(KEYWORDS).find(([, keys]) => keys.some((key) => words.includes(key)));
-  return match ? `${BASE}/${match[0]}.svg` : null;
+  return match ? match[0] : null;
+}
+
+// A department shows real photography when the family is known; the flat SVG
+// stays as the fallback for anything the keyword map cannot place.
+export function resolveCategoryArt(category) {
+  if (!category) return null;
+  if (typeof category === 'object' && category.image_url) return category.image_url;
+
+  const family = resolveCategoryFamily(category);
+  if (!family) return null;
+  return familyPhoto(family, 400) || `${BASE}/${family}.svg`;
 }

@@ -5,6 +5,7 @@ import { BadgeCheck, MapPin } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Image } from '@/components/ui/image';
 import RatingStars from './RatingStars';
+import { SHOP_PHOTO } from '@/lib/unsplashImages';
 import { compactNumber } from '@/lib/format';
 
 export default function SellerCard({ seller }) {
@@ -42,7 +43,7 @@ export default function SellerCard({ seller }) {
       className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 transition-colors hover:border-primary/40"
     >
       <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full bg-secondary">
-        <Image src={seller.logo_url} alt={seller.name} className="h-full w-full object-cover" />
+        <Image src={seller.logo_url || SHOP_PHOTO} alt={seller.name} className="h-full w-full object-cover" />
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1">

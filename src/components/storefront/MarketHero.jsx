@@ -4,12 +4,12 @@ import { useTranslation } from 'react-i18next';
 import { ArrowRight, Coins, MapPin, ShieldCheck, Store } from 'lucide-react';
 import { Image } from '@/components/ui/image';
 import Product3DViewer from '@/components/Product3DViewer';
+import { HERO_PHOTO } from '@/lib/unsplashImages';
 import './storefront.css';
 
-// A trade platform's first screen has to answer three questions at once:
-// what can I buy, who is selling it, and how does it reach me. The hero states
-// all three and hands off to the two journeys that matter (buy, sell).
-const HERO_IMAGE = 'https://media.base44.com/images/public/6ad35f967cfc0088309e830b/974fc7139_generated_image.png';
+// A trading street rather than a rendered placeholder: the photo stands behind
+// the animated model and takes over whenever WebGL is unavailable.
+const HERO_IMAGE = HERO_PHOTO;
 
 export default function MarketHero({ productCount = 0, categoryCount = 0, sellerCount = 0, modelKey = null, modelTitle = '' }) {
   const { t } = useTranslation();

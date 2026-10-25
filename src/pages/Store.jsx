@@ -10,6 +10,7 @@ import EmptyState from '@/components/EmptyState';
 import { getFollowedIds, toggleFollowId } from '@/lib/session';
 import { compactNumber } from '@/lib/format';
 import { inTenantScope, resolveStorefrontScope, scopeRecords } from '@/lib/tenancy';
+import { SHOP_BANNER_PHOTO, SHOP_PHOTO } from '@/lib/unsplashImages';
 
 export default function Store() {
   const { t } = useTranslation();
@@ -101,11 +102,11 @@ export default function Store() {
   return (
     <div className="space-y-5 pb-6">
       <div className="relative overflow-hidden rounded-2xl">
-        <Image src={seller.banner_url} alt={seller.name} className="h-36 w-full object-cover md:h-52" />
+        <Image src={seller.banner_url || SHOP_BANNER_PHOTO} alt={seller.name} className="h-36 w-full object-cover md:h-52" />
         <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 to-transparent" />
         <div className="absolute bottom-3 left-3 right-3 flex items-end gap-3">
           <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl border-2 border-background bg-secondary md:h-20 md:w-20">
-            <Image src={seller.logo_url} alt={seller.name} className="h-full w-full object-cover" />
+            <Image src={seller.logo_url || SHOP_PHOTO} alt={seller.name} className="h-full w-full object-cover" />
           </div>
           <div className="flex-1 pb-1 text-background">
             <p className="flex items-center gap-1 text-base font-bold md:text-xl">
