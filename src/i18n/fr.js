@@ -3876,7 +3876,7 @@ export default {
   store: {
     about: 'about',
     backHome: 'backhome',
-    defaultDelivery: 'defaultdelivery',
+    defaultDelivery: 'Livraison par défaut',
     deliveryPickup: 'deliverypickup',
     follow: 'follow',
     followers: 'followers',
@@ -3887,7 +3887,7 @@ export default {
     notFound: 'notfound',
     notFoundDesc: 'notfounddesc',
     products: 'products',
-    storeRating: 'storerating',
+    storeRating: 'Note de la boutique',
   },
 
   subscriptionPanel: {
