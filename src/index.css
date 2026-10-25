@@ -1182,3 +1182,8 @@ button, [role="button"], [role="tab"], .header-icon-button {
   [data-webview-dialog-content], [data-webview-alert-dialog-content],
   [data-webview-sheet-content] { animation: none !important; }
 }
+:root {
+    --theme-background-background-1: 13.516484 77.118644% 53.725490%;
+    --theme-background-background-2: 175.339806 77.443609% 26.078431%;
+    --theme-background-background-3: 221.212121 83.193277% 53.333333%;
+}
