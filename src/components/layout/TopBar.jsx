@@ -111,7 +111,7 @@ export default function TopBar() {
       <nav aria-label={t('nav.primary')} className="hidden shrink-0 items-center gap-0.5 md:flex">
         {[['/discover', 'nav.discover'], ['/categories', 'nav.categories']].map(([to, key]) => <NavLink key={to} to={to} className={({ isActive }) => `app-nav-item inline-flex min-h-11 items-center rounded-full px-3.5 text-sm transition-colors ${isActive ? 'bg-secondary font-semibold text-foreground' : 'font-medium text-muted-foreground hover:bg-secondary/70 hover:text-foreground'}`}>{t(key)}</NavLink>)}
       </nav>
-      <form onSubmit={submit} role="search" className={`${isChildScreen ? 'hidden md:block' : ''} relative min-w-0 flex-1 md:mx-auto md:w-full md:max-w-[20rem] md:flex-none lg:max-w-[26rem] xl:max-w-[30rem]`}>
+      <form onSubmit={submit} role="search" className={`${isChildScreen ? 'hidden md:block' : ''} relative min-w-0 flex-1 md:mx-auto md:w-full md:max-w-[20rem] lg:max-w-[26rem] xl:max-w-[30rem]`}>
         <label htmlFor="site-search" className="sr-only">{t('nav.searchPlaceholder')}</label>
         <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
         <input id="site-search" type="search" value={term} onChange={event => setTerm(event.target.value)} placeholder={t('nav.searchPlaceholder')} enterKeyHint="search" className="h-11 w-full min-w-0 rounded-full border border-border bg-secondary/60 pl-10 pr-4 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/75 hover:border-border focus:border-primary/60 focus:bg-card focus:ring-2 focus:ring-primary/15" />
