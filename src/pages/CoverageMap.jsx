@@ -209,9 +209,9 @@ export default function CoverageMap() {
         <div className="rounded-2xl border border-border bg-card p-4">
           <h2 className="text-sm font-bold">{t('coverageMap.legend')}</h2>
           <ul className="mt-2 space-y-1.5 text-[11px] text-muted-foreground">
-            <li><span className="mr-2 inline-block h-3 w-3 rounded-full bg-[#e4572e]" /> {t('coverageMap.legendPoints')}</li>
-            <li><span className="mr-2 inline-block h-3 w-3 rounded-full bg-[#0f766e]" /> {t('coverageMap.legendZones')}</li>
-            <li><span className="mr-2 inline-block h-3 w-3 rounded-full bg-[#2563eb]" /> {t('coverageMap.legendCouriers')}</li>
+            <li><span className="mr-2 inline-block h-3 w-3 rounded-full bg-[hsl(var(--theme-background-background-1))]" /> {t('coverageMap.legendPoints')}</li>
+            <li><span className="mr-2 inline-block h-3 w-3 rounded-full bg-[hsl(var(--theme-background-background-2))]" /> {t('coverageMap.legendZones')}</li>
+            <li><span className="mr-2 inline-block h-3 w-3 rounded-full bg-[hsl(var(--theme-background-background-3))]" /> {t('coverageMap.legendCouriers')}</li>
           </ul>
           <p className="mt-3 text-[11px] text-muted-foreground">
             {t('coverageMap.nodesNote')}
