@@ -60,6 +60,16 @@ export default {
       average: 'Note moyenne',
       new: 'Nouveau',
     },
+    threeDAssets: {
+      built: 'Modèle généré',
+      builtNote: 'Généré dans le navigateur : aucune photo produit n’est appliquée ici, alors qu’une fiche produit habille le modèle avec la photo de l’article.',
+      empty: 'Aucun modèle ne correspond à cette recherche.',
+      file: 'Fichier 3D',
+      fileNote: 'Fichier .glb réel, adapté à l’univers « {{family}} ». Un vendeur peut téléverser son propre fichier depuis sa fiche produit.',
+      search: 'Rechercher un modèle',
+      subtitle: '{{count}} modèles 3D disponibles. Choisissez-en un pour le faire tourner.',
+      title: 'Assets 3D',
+    },
   },
 
   en: {
@@ -112,6 +122,16 @@ export default {
     rating: {
       average: 'Average rating',
       new: 'New',
+    },
+    threeDAssets: {
+      built: 'Generated model',
+      builtNote: 'Built in the browser: no product photo is applied here, while a product page textures the model with the item photo.',
+      empty: 'No model matches this search.',
+      file: '3D file',
+      fileNote: 'A real .glb file, suited to {{family}}. A seller can upload their own file from the product form.',
+      search: 'Search models',
+      subtitle: '{{count}} 3D models available. Pick one to spin it.',
+      title: '3D assets',
     },
   },
 };

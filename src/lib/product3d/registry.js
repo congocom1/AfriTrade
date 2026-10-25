@@ -132,3 +132,44 @@ export function resolveProduct3D(product) {
 export function getProduct3DBuilder(modelKey) {
   return BUILDERS[modelKey] || null;
 }
+
+/** Readable name per model key, used by the 3D asset showcase. */
+const MODEL_LABELS = {
+  'solar-panel': 'Solar panel',
+  'solar-battery': 'Solar battery',
+  'laptop-elitebook': 'HP EliteBook laptop',
+  'laptop-ideapad': 'Lenovo IdeaPad laptop',
+  'phone-itel': 'Itel smartphone',
+  'phone-tecno': 'Tecno smartphone',
+  television: 'Television',
+  speaker: 'Party speaker',
+  blender: 'Blender',
+  fridge: 'Fridge',
+  generator: 'Generator',
+  welder: 'Welding machine',
+  'maize-sheller': 'Maize sheller',
+  'water-pump': 'Water pump',
+  'grinding-mill': 'Grinding mill',
+  'block-machine': 'Block-making machine',
+  tyre: 'Tyre',
+  'brake-pads': 'Brake pads',
+  'roofing-sheet': 'Roofing sheet',
+  'cement-sack': 'Cement sack',
+  carton: 'Carton',
+  sacks: 'Polypropylene sacks',
+  'dining-set': 'Dining set',
+  sofa: 'Sofa',
+  basket: 'Raffia basket',
+  cushions: 'Cushions',
+  shirt: 'Shirt',
+  dress: 'Ankara dress',
+  'hair-oil': 'Hair oil',
+  'cream-jar': 'Shea butter jar',
+  'bp-monitor': 'Blood pressure monitor',
+  oximeter: 'Pulse oximeter',
+};
+
+/** Every model the browser can build, for the 3D asset showcase. */
+export const MODEL_KEYS = Object.keys(BUILDERS);
+
+export const modelLabel = (modelKey) => MODEL_LABELS[modelKey] || modelKey;

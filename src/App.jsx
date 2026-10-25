@@ -127,6 +127,7 @@ const SellerQuotes = lazy(() => import('@/pages/seller/SellerQuotes'));
 // Admin
 const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard'));
 const AdminProducts = lazy(() => import('@/pages/admin/AdminProducts'));
+const ThreeDAssets = lazy(() => import('@/pages/ThreeDAssets'));
 const AdminSuppliers = lazy(() => import('@/pages/admin/AdminSuppliers'));
 const AdminB2BOperations = lazy(() => import('@/pages/admin/AdminB2BOperations'));
 const AdminOrders = lazy(() => import('@/pages/admin/AdminOrders'));
@@ -339,6 +340,7 @@ const AuthenticatedApp = () => {
             <Route path="/logistics-rates" element={<PageWrapper><LogisticsRates /></PageWrapper>} />
             <Route path="/inventory-sheets" element={<PageWrapper><InventorySheets /></PageWrapper>} />
             <Route path="/airtable-sync" element={<PageWrapper><AirtableSync /></PageWrapper>} />
+            <Route path="/3d-assets" element={<PageWrapper><ThreeDAssets /></PageWrapper>} />
             <Route path="/integration-logs" element={<PageWrapper><IntegrationLogs /></PageWrapper>} />
             <Route path="/category-manager" element={<PageWrapper><CategoryManager /></PageWrapper>} />
             <Route path="/delivery-map" element={<PageWrapper><DeliveryMap /></PageWrapper>} />

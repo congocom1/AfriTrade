@@ -2,6 +2,7 @@ export const ADMIN_LINKS = [
   { to: '/admin', group: 'overview', label: "Vue d'ensemble", end: true },
   { to: '/admin/orders', group: 'commerce', label: 'Commandes' },
   { to: '/admin/products', group: 'commerce', label: 'Produits' },
+  { to: '/3d-assets', group: 'commerce', label: 'Assets 3D' },
   { to: '/admin/suppliers', group: 'commerce', label: 'Fournisseurs' },
   { to: '/admin/b2b', group: 'commerce', label: 'Opérations B2B' },
   { to: '/inventory-sheets', group: 'commerce', label: 'Stocks Google Sheets' },

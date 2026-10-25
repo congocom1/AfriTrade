@@ -187,6 +187,9 @@ export default function ProductDetail() {
   const isIntl = product.source_type === 'international_supplier';
   const outOfStock = Number(product.stock) <= 0;
   const model3d = resolveProduct3D(product);
+  // A product can also ship a real .glb/.gltf file; the viewer prefers it.
+  const modelFile = product.model_3d_url || '';
+  const has3d = Boolean(model3d || modelFile);
   // Products arrive from CSV imports and suppliers without a photo of their own,
   // so the gallery falls back to real photography of the department.
   const heroPhoto = product.images?.[activeImage] || productImage(product);
@@ -206,7 +209,7 @@ export default function ProductDetail() {
 
       <div className="grid gap-5 md:grid-cols-2 md:gap-8">
         <div className="space-y-2">
-          {model3d && (
+          {has3d && (
             <div className="inline-flex rounded-full bg-secondary p-0.5" role="group" aria-label={t('productDetail.media')}>
               <button
                 type="button"
@@ -227,9 +230,10 @@ export default function ProductDetail() {
             </div>
           )}
           <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-secondary">
-            {view3d && model3d ? (
+            {view3d && has3d ? (
               <Product3DViewer
                 modelKey={model3d}
+                modelUrl={modelFile || undefined}
                 fallbackImage={heroPhoto}
                 photo={heroPhoto}
                 title={product.title}

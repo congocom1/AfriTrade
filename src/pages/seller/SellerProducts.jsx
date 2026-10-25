@@ -22,6 +22,7 @@ const productSchema = z.object({
   stock: z.coerce.number().int('sellerProducts.errStockInt').nonnegative('sellerProducts.errStockNeg').default(0),
   category_id: z.string().default(''),
   images: z.string().default(''),
+  model_3d_url: z.string().default(''),
   is_b2b: z.boolean().default(false),
   b2b_only: z.boolean().default(false),
   wholesale_price_usd: z.coerce.number().nonnegative().default(0),
@@ -33,7 +34,7 @@ const productSchema = z.object({
   }
 });
 
-const EMPTY = { title: '', description: '', price_usd: '', compare_at_usd: '', stock: '', category_id: '', images: '', is_b2b: false, b2b_only: false, wholesale_price_usd: '', moq: '1', origin_country: 'CD' };
+const EMPTY = { title: '', description: '', price_usd: '', compare_at_usd: '', stock: '', category_id: '', images: '', model_3d_url: '', is_b2b: false, b2b_only: false, wholesale_price_usd: '', moq: '1', origin_country: 'CD' };
 
 export default function SellerProducts() {
   const { t } = useTranslation();
@@ -44,7 +45,9 @@ export default function SellerProducts() {
   const [editingId, setEditingId] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
-  const { register, handleSubmit, reset, formState: { errors } } = useForm({ resolver: zodResolver(productSchema), defaultValues: EMPTY });
+  const [uploadingModel, setUploadingModel] = useState(false);
+  const [modelFileError, setModelFileError] = useState('');
+  const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm({ resolver: zodResolver(productSchema), defaultValues: EMPTY });
 
   const load = async (sellerId) => {
     const rows = await base44.entities.Product.filter({ seller_id: sellerId }, 'title', 200);
@@ -75,6 +78,7 @@ export default function SellerProducts() {
       stock: p.stock ?? 0,
       category_id: p.category_id || '',
       images: (p.images || []).join(', '),
+      model_3d_url: p.model_3d_url || '',
       is_b2b: Boolean(p.is_b2b),
       b2b_only: Boolean(p.b2b_only),
       wholesale_price_usd: p.wholesale_price_usd ?? '',
@@ -100,6 +104,7 @@ export default function SellerProducts() {
       category_id: formData.category_id,
       category_name: category?.name || '',
       images: String(formData.images || '').split(',').map((s) => s.trim()).filter(Boolean),
+      model_3d_url: String(formData.model_3d_url || '').trim(),
       seller_id: seller.id,
       seller_name: seller.name,
       source_type: 'local_seller',
@@ -137,6 +142,22 @@ export default function SellerProducts() {
       await base44.functions.invoke('sellerProfile', { action: 'productCount', seller_id: seller.id });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const onModelFile = async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+    setModelFileError('');
+    setUploadingModel(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadPublicFile({ file });
+      setValue('model_3d_url', file_url);
+    } catch {
+      setModelFileError('Import impossible : collez plutôt l’adresse du fichier .glb.');
+    } finally {
+      setUploadingModel(false);
     }
   };
 
@@ -237,6 +258,29 @@ export default function SellerProducts() {
             placeholder={t('sellerProducts.phImages')}
             className="h-11 w-full rounded-lg border border-border bg-background px-3 text-sm"
           />
+          <div className="rounded-xl border border-border bg-secondary/30 p-3">
+            <p className="text-sm font-semibold">Modèle 3D (optionnel)</p>
+            <p className="mt-1 text-[11px] text-muted-foreground">
+              Un fichier .glb ou .gltf : l’acheteur voit alors un onglet « Vue 3D » sur la fiche produit. Le fichier est stocké publiquement — toute personne ayant le lien peut l’ouvrir.
+            </p>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <input
+                {...register('model_3d_url')}
+                placeholder="https://…/modele.glb"
+                className="h-10 min-w-0 flex-1 rounded-lg border border-border bg-background px-3 text-sm"
+              />
+              <label className="cursor-pointer rounded-full border border-border bg-background px-4 py-2 text-xs font-semibold">
+                {uploadingModel ? 'Import…' : 'Choisir un fichier'}
+                <input
+                  type="file"
+                  accept=".glb,.gltf,model/gltf-binary,model/gltf+json"
+                  className="hidden"
+                  onChange={onModelFile}
+                />
+              </label>
+            </div>
+            {modelFileError && <p className="mt-1 text-[11px] text-destructive">{modelFileError}</p>}
+          </div>
           <div className="rounded-xl border border-border bg-secondary/30 p-3">
             <label className="flex cursor-pointer items-center gap-2 text-sm font-semibold">
               <input type="checkbox" {...register('is_b2b')} className="h-4 w-4" />
