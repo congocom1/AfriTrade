@@ -1,5 +1,22 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+/* base44-workspace-fonts:start */
+@font-face {
+  font-family: 'Avenir Light';
+  font-weight: 300;
+  font-style: italic;
+  font-display: swap;
+  src: url('https://media.base44.com/files/public/builder-assets/wix-fonts/avenir-300-italic.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Avenir Light';
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+  src: url('https://media.base44.com/files/public/builder-assets/wix-fonts/avenir-300-normal.woff2') format('woff2');
+}
+/* base44-workspace-fonts:end */
+
 @config "../tailwind.config.js";
 
 /* Tailwind entry directives, kept alongside the v4 import so the token file
@@ -39,9 +56,9 @@
   /* The core theme scalars live in src/styles/trade-system.css, which main.jsx
      imports after this file and which therefore wins the cascade. Copies kept
      here were silently dead — editing this file changed nothing on screen. */
-  --font-heading: 'Manrope', sans-serif;
-  --font-body: 'Manrope', sans-serif;
-  --font-display: 'Manrope', sans-serif;
+  --font-heading: 'Avenir Light', sans-serif;
+  --font-body: 'Avenir Light', sans-serif;
+  --font-display: 'Avenir Light', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
   /* Status ramps — one scale per semantic role, so a status colour is never
