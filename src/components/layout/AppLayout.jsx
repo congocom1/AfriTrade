@@ -4,6 +4,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { navigationDirection, routeMotion } from '@/lib/navigationDirection';
 import { applyTenantBranding, clearTenantBranding, resolveTenantByHost } from '@/lib/tenancy';
 import { PORTAL_BUYER, portalForPath } from '@/lib/portals';
+import { usePortalIdentity } from '@/hooks/usePortalIdentity';
 import TopBar from './TopBar';
 import BottomNav from './BottomNav';
 import PortalHeader from '@/components/portal/PortalHeader';
@@ -16,6 +17,8 @@ export default function AppLayout() {
   // navigation, so an operator never sees shop links inside their console.
   const portal = portalForPath(location.pathname);
   const isConsole = portal.id !== PORTAL_BUYER;
+  // A seller, creator or courier is taken into its own space once per session.
+  usePortalIdentity();
   const navigationType = useNavigationType();
   const reducedMotion = useReducedMotion();
   const lastRoute = useRef({ key: location.key, index: window.history.state?.idx });
