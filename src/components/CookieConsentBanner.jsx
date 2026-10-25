@@ -33,7 +33,7 @@ const CookieConsentBanner = () => {
 
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 bg-card border-t border-border shadow-lg z-50 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))]"
+      className="fixed bottom-[calc(3.5rem_+_env(safe-area-inset-bottom))] left-0 right-0 z-50 border-t border-border bg-card pt-4 pb-4 shadow-lg md:bottom-0 md:pb-[max(1rem,env(safe-area-inset-bottom))]"
       aria-label="Cookie consent banner"
     >
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between flex-wrap gap-4">
