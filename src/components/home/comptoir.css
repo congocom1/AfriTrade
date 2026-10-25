@@ -94,6 +94,8 @@
 }
 
 .k-hero__bg { position: absolute; inset: 0; overflow: hidden; }
+/* The photo ships inside an inline wrapper: it needs a real box or it collapses. */
+.k-hero__bg-image { display: block; width: 100%; height: 100%; }
 .k-hero__bg img { width: 100%; height: 100%; object-fit: cover; animation: k-drift 14s ease-in-out infinite alternate; }
 .k-hero__scrim { position: absolute; inset: 0; background: var(--k-scrim); }
 .k-hero > *:not(.k-hero__bg):not(.k-hero__scrim) {
