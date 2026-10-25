@@ -6,11 +6,11 @@
 .k-page {
   --k-bg: #fdf6ec;
   --k-ink: #1f1a14;
-  --k-accent: #c2410c;
-  --k-accent-hover: #a8370a;
-  --k-accent-active: #8f2f08;
+  --k-accent: #008066;
+  --k-accent-hover: #006b56;
+  --k-accent-active: #005b48;
   --k-accent-ink: #ffffff;
-  --k-brand-accent: #f08a4b;
+  --k-brand-accent: #19c48d;
   --k-line: #e7d9c6;
   --k-surface: #ffffff;
   --k-muted: #6b5e50;
@@ -23,7 +23,7 @@
   --k-foot: #1f1a14;
   --k-foot-ink: #fdf6ec;
   --k-foot-muted: #d8c8b0;
-  --k-foot-link: #f08a4b;
+  --k-foot-link: #19c48d;
   --k-hero-ink: #fdf6ec;
   --k-hero-sub: #f1e4d0;
   --k-hero-dt: #e7d9c6;
@@ -157,7 +157,7 @@
   transition: background-color 0.2s, box-shadow 0.2s, opacity 0.2s, color 0.2s, border-color 0.2s;
 }
 .k-btn--pri { background: var(--k-accent); color: var(--k-accent-ink); }
-.k-btn--pri:hover { background: var(--k-accent-hover); box-shadow: 0 4px 12px rgba(194, 65, 12, 0.4); }
+.k-btn--pri:hover { background: var(--k-accent-hover); box-shadow: 0 4px 12px rgba(0, 128, 102, 0.35); }
 .k-btn--pri:active { background: var(--k-accent-active); }
 .k-btn--gh { background: rgba(253, 246, 236, 0.1); color: var(--k-hero-ink); border-color: rgba(253, 246, 236, 0.6); }
 .k-btn--gh:hover { background: rgba(253, 246, 236, 0.22); }

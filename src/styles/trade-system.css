@@ -68,34 +68,34 @@
 
 /* ===== System foundation =====
    One canvas, one accent, hairline rules, pill controls: white background,
-   kraft paper, near-black ink, a single terracotta accent. Every module reads these through the
+   kraft paper, near-black ink, a single green accent. Every module reads these through the
    shared tokens (bg-background, text-foreground, bg-primary, border-border,
    rounded-*), so the system reaches storefront, seller, admin, ops, auth and
    portal screens without per-page edits. */
 :root {
   /* Day version of the storefront palette: kraft paper #fdf6ec, ink #1f1a14,
-     terracotta #c2410c, warm rule #e7d9c6. */
+     brand green #008066, warm rule #e7d9c6. */
   --background: 35 81% 96%;
   --foreground: 33 22% 10%;
   --card: 0 0% 100%;
   --card-foreground: 33 22% 10%;
   --popover: 0 0% 100%;
   --popover-foreground: 33 22% 10%;
-  --primary: 18 88% 40%;
+  --primary: 168 100% 25%;
   --primary-foreground: 0 0% 100%;
   --secondary: 36 63% 91%;
   --secondary-foreground: 30 21% 19%;
   --muted: 36 63% 91%;
   --muted-foreground: 31 14% 37%;
   --accent: 35 41% 84%;
-  --accent-foreground: 17 89% 30%;
+  --accent-foreground: 168 100% 18%;
   --destructive: 5 84% 45%;
   --destructive-foreground: 0 0% 100%;
   --destructive-text: 5 84% 45%;
   --border: 35 41% 84%;
   --input: 35 41% 84%;
-  --ring: 18 88% 40%;
-  --chart-1: 18 88% 40%;
+  --ring: 168 100% 25%;
+  --chart-1: 168 100% 25%;
   --chart-2: 205 78% 46%;
   --chart-3: 265 60% 58%;
   --chart-4: 32 90% 52%;
@@ -103,7 +103,7 @@
   --radius: 0.5rem;
 
   /* Interactive states — a control's hover is a token, not a brightness filter. */
-  --primary-hover: 17 88% 35%;
+  --primary-hover: 168 100% 21%;
   --destructive-hover: 5 84% 38%;
 }
 
