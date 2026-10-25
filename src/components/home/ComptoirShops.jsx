@@ -7,29 +7,29 @@ import EmptyState from '@/components/EmptyState';
 
 // Verified shops carry the trust a cross-border marketplace needs: buyers here
 // choose the seller as much as the product.
-export default function SellerSpotlight({ sellers = [], loading = false }) {
+export default function ComptoirShops({ sellers = [], loading = false }) {
   const { t } = useTranslation();
 
   return (
-    <section aria-labelledby="market-sellers-title">
-      <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+    <section className="k-sec" aria-labelledby="comptoir-shops">
+      <div className="k-sh">
         <div>
-          <h2 id="market-sellers-title" className="text-lg font-semibold tracking-tight md:text-xl">{t('market.sellersTitle')}</h2>
-          <p className="mt-1 text-sm text-muted-foreground">{t('market.sellersSub')}</p>
+          <h2 id="comptoir-shops" className="k-serif">{t('market.sellersTitle')}</h2>
+          <p className="mt-1 text-sm text-[var(--k-muted)]">{t('market.sellersSub')}</p>
         </div>
-        <Link to="/partner-directory" className="flex min-h-11 shrink-0 items-center gap-1 px-2 text-sm font-semibold text-primary hover:underline">
-          {t('market.sellersAll')}
-        </Link>
+        <Link to="/partner-directory" className="k-sh__all">{t('market.sellersAll')}</Link>
       </div>
 
       {loading ? (
-        <div className="grid gap-2.5 md:grid-cols-2">
+        <div className="k-dl">
           {Array.from({ length: 4 }).map((_, index) => (
-            <div key={index} className="h-20 animate-pulse rounded-xl bg-secondary" />
+            <div key={index} className="flex min-h-14 items-center py-3.5">
+              <span className="h-4 w-1/3 animate-pulse rounded bg-[var(--k-line)]" />
+            </div>
           ))}
         </div>
       ) : sellers.length ? (
-        <div className="grid gap-2.5 md:grid-cols-2">
+        <div className="k-dl">
           {sellers.slice(0, 6).map((seller) => (
             <SellerCard key={seller.id} seller={seller} />
           ))}
