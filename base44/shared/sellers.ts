@@ -59,7 +59,7 @@ export function sellerPlan(context, seller) {
  * Sends one outreach e-mail, mirrors it into the seller's in-app feed and
  * records the contact so the weekly run never repeats itself.
  */
-export async function sendSellerOutreach(base44, { seller, email, subject, message, html, action, type = 'system', details = {} }) {
+export async function sendSellerOutreach(base44, { seller, email, subject, message, html, template_name, variables, action, type = 'system', details = {} }) {
   const notification = await base44.asServiceRole.entities.Notification.create({
     tenant_id: seller.tenant_id || '',
     tenant_owner_email: seller.tenant_owner_email || '',
@@ -73,8 +73,7 @@ export async function sendSellerOutreach(base44, { seller, email, subject, messa
     await base44.asServiceRole.integrations.Core.SendEmail({
       to: email,
       subject,
-      html,
-      text: message,
+      ...(template_name ? { template_name, variables } : { html, text: message }),
       from_name: 'AfriTrade',
     });
     await base44.asServiceRole.entities.AuditLog.create({
