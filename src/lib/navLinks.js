@@ -5,6 +5,7 @@ export const ADMIN_LINKS = [
   { to: '/admin/suppliers', group: 'commerce', label: 'Fournisseurs' },
   { to: '/admin/b2b', group: 'commerce', label: 'Opérations B2B' },
   { to: '/inventory-sheets', group: 'commerce', label: 'Stocks Google Sheets' },
+  { to: '/airtable-sync', group: 'commerce', label: 'Stocks Airtable' },
   { to: '/integration-logs', group: 'administration', label: "Journaux d'intégration" },
   { to: '/category-manager', group: 'commerce', label: 'Catégories' },
   { to: '/admin/command-center', group: 'operations', label: 'Centre de commande' },

@@ -81,6 +81,7 @@ const PlatformHealth = lazy(() => import('@/pages/PlatformHealth'));
 const ServiceLevelMonitor = lazy(() => import('@/pages/ServiceLevelMonitor'));
 const LogisticsRates = lazy(() => import('@/pages/admin/LogisticsRates'));
 const InventorySheets = lazy(() => import('@/pages/admin/InventorySheets'));
+const AirtableSync = lazy(() => import('@/pages/admin/AirtableSync'));
 const ShippingConfig = lazy(() => import('@/pages/ShippingConfig'));
 const CustomerLoyalty = lazy(() => import('@/pages/CustomerLoyalty'));
 const VendorRatings = lazy(() => import('@/pages/VendorRatings'));
@@ -337,6 +338,7 @@ const AuthenticatedApp = () => {
             <Route path="/service-level-monitor" element={<PageWrapper><ServiceLevelMonitor /></PageWrapper>} />
             <Route path="/logistics-rates" element={<PageWrapper><LogisticsRates /></PageWrapper>} />
             <Route path="/inventory-sheets" element={<PageWrapper><InventorySheets /></PageWrapper>} />
+            <Route path="/airtable-sync" element={<PageWrapper><AirtableSync /></PageWrapper>} />
             <Route path="/integration-logs" element={<PageWrapper><IntegrationLogs /></PageWrapper>} />
             <Route path="/category-manager" element={<PageWrapper><CategoryManager /></PageWrapper>} />
             <Route path="/delivery-map" element={<PageWrapper><DeliveryMap /></PageWrapper>} />
