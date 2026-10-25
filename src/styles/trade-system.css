@@ -130,10 +130,10 @@
   --destructive: 5 84% 45%;
   --destructive-foreground: 0 0% 100%;
   --destructive-text: 5 84% 62%;
-  --border: 0 0% 18%;
-  --input: 0 0% 18%;
-  --ring: 168 100% 40%;
-  --primary-hover: 168 100% 40%;
+  --border: 162 37% 17%;
+  --input: 162 37% 17%;
+  --ring: 160 64% 59%;
+  --primary-hover: 160 64% 59%;
   --destructive-hover: 5 84% 52%;
 }
 
