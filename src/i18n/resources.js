@@ -13,6 +13,7 @@ import loyalty from './loyalty.js';
 import home from './home.js';
 import categories from './categories.js';
 import mobileMoney from './mobileMoney.js';
+import portals from './portals.js';
 
 export const mergeNamespaces = (base, extra) =>
   Object.entries(extra).reduce((out, [ns, values]) => ({ ...out, [ns]: { ...(out[ns] || {}), ...values } }), { ...base });
@@ -39,6 +40,6 @@ const baseTranslations = {
 
 export const translations = Object.fromEntries(
   Object.entries(baseTranslations).map(([language, dictionary]) => [
-    language, mergeNamespaces(mergeNamespaces(mergeNamespaces(mergeNamespaces(mergeNamespaces(mergeNamespaces(mergeNamespaces(dictionary, commerceIntro[language] || commerceIntro.fr), portalStatus[language] || portalStatus.fr), portalComponents[language] || portalComponents.fr), workforce[language] || workforce.fr), loyalty[language] || loyalty.fr), home[language] || home.fr), categories[language] || categories.fr),
+    language, mergeNamespaces(mergeNamespaces(mergeNamespaces(mergeNamespaces(mergeNamespaces(mergeNamespaces(mergeNamespaces(mergeNamespaces(dictionary, commerceIntro[language] || commerceIntro.fr), portalStatus[language] || portalStatus.fr), portalComponents[language] || portalComponents.fr), workforce[language] || workforce.fr), loyalty[language] || loyalty.fr), home[language] || home.fr), categories[language] || categories.fr), portals[language] || portals.fr),
   ]),
 );
