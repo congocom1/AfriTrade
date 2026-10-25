@@ -15,6 +15,9 @@ export default function AppLayout() {
   const location = useLocation();
   // The shop keeps the storefront bar; a console portal gets its own header and
   // navigation, so an operator never sees shop links inside their console.
+  // The front page carries its own masthead inside the hero, so the storefront
+  // bar stays out of its way.
+  const isFrontPage = location.pathname === '/';
   const portal = portalForPath(location.pathname);
   const isConsole = portal.id !== PORTAL_BUYER;
   // A seller, creator or courier is taken into its own space once per session.
@@ -53,7 +56,7 @@ export default function AppLayout() {
           <PortalHeader portal={portal} />
           <PortalNav portal={portal} />
         </>
-      ) : (
+      ) : isFrontPage ? null : (
         <TopBar />
       )}
       <main data-webview-scroll className="mx-auto w-full min-w-0 max-w-6xl px-3 py-6 md:px-6 md:py-9">
