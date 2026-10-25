@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Search } from 'lucide-react';
 import BackButton from '@/components/BackButton';
 import Product3DViewer from '@/components/Product3DViewer';
+import DetectFromPicture from '@/components/product3d/DetectFromPicture';
 import { MODEL_KEYS, modelLabel } from '@/lib/product3d/registry';
 import { DEMO_MODEL_CREDIT, DEMO_MODEL_FILES } from '@/lib/product3d/assets';
 import { PRODUCT_PLACEHOLDER } from '@/lib/productImages';
@@ -28,9 +29,23 @@ export default function ThreeDAssets() {
 
   const [term, setTerm] = useState('');
   const [activeId, setActiveId] = useState(assets[0]?.id);
+  const [detection, setDetection] = useState(null);
   const needle = term.trim().toLowerCase();
   const visible = needle ? assets.filter((asset) => asset.label.toLowerCase().includes(needle)) : assets;
-  const active = assets.find((asset) => asset.id === activeId) || assets[0];
+  const picked = assets.find((asset) => asset.id === activeId) || assets[0];
+  // A successful detection replaces the library pick: the viewer builds the
+  // model the AI read off the photo, textured and tinted with that photo.
+  const detected = detection?.detected ? detection : null;
+  const active = detected
+    ? {
+        id: `ai-${detected.imageUrl}`,
+        label: detected.objectName || modelLabel(detected.modelKey),
+        kind: 'ai',
+        modelKey: detected.modelKey,
+        photo: detected.imageUrl,
+        tint: { primary: detected.primaryColor, secondary: detected.secondaryColor },
+      }
+    : picked;
 
   return (
     <div className="space-y-5 pb-8">
@@ -43,6 +58,7 @@ export default function ThreeDAssets() {
 
       <div className="grid gap-5 lg:grid-cols-2">
         <div className="order-2 space-y-3 lg:order-1">
+          <DetectFromPicture detection={detection} onDetected={setDetection} onClear={() => setDetection(null)} />
           <label className="relative block">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
             <input
@@ -58,7 +74,10 @@ export default function ThreeDAssets() {
                 key={asset.id}
                 type="button"
                 aria-pressed={asset.id === active?.id}
-                onClick={() => setActiveId(asset.id)}
+                onClick={() => {
+                  setActiveId(asset.id);
+                  setDetection(null);
+                }}
                 className={`rounded-xl border px-3 py-2 text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                   asset.id === active?.id ? 'border-primary bg-primary/10' : 'border-border bg-card hover:border-primary/40'
                 }`}
@@ -84,7 +103,9 @@ export default function ThreeDAssets() {
                 key={active.id}
                 modelKey={active.modelKey}
                 modelUrl={active.modelUrl}
-                fallbackImage={PRODUCT_PLACEHOLDER}
+                photo={active.photo}
+                tint={active.tint}
+                fallbackImage={active.photo || PRODUCT_PLACEHOLDER}
                 title={active.label}
               />
             )}
@@ -95,7 +116,9 @@ export default function ThreeDAssets() {
               <p className="mt-1 text-muted-foreground">
                 {active.kind === 'file'
                   ? t('threeDAssets.fileNote', { family: active.family })
-                  : t('threeDAssets.builtNote')}
+                  : active.kind === 'ai'
+                    ? t('threeDAssets.detectBadge')
+                    : t('threeDAssets.builtNote')}
               </p>
               {active.kind === 'file' && (
                 <>

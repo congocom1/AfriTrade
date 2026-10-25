@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Box } from 'lucide-react';
 import { Image } from '@/components/ui/image';
 import { getProduct3DBuilder } from '@/lib/product3d/registry';
-import { setProductPhoto } from '@/lib/product3d/materials';
+import { setProductPhoto, setProductTint } from '@/lib/product3d/materials';
 
 /**
  * 3D product viewer (experience layer, never mandatory).
@@ -13,8 +13,10 @@ import { setProductPhoto } from '@/lib/product3d/materials';
  * - prefers-reduced-motion -> static first frame, no auto-rotate.
  * three.js is lazy-imported so the main bundle stays untouched.
  */
-export default function Product3DViewer({ modelKey, modelUrl, fallbackImage, photo, title, interactive = true }) {
+export default function Product3DViewer({ modelKey, modelUrl, fallbackImage, photo, tint, title, interactive = true }) {
   const { t } = useTranslation();
+  // Stable dependency: callers rebuild the tint object on every render.
+  const tintKey = tint ? `${tint.primary || ''}|${tint.secondary || ''}` : '';
   const mountRef = useRef(null);
   const [failed, setFailed] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -134,6 +136,7 @@ export default function Product3DViewer({ modelKey, modelUrl, fallbackImage, pho
           disposables.push(photoTexture, environment);
         }
         setProductPhoto(photoTexture);
+        setProductTint(tint);
 
         let object = null;
         if (modelUrl) {
@@ -146,6 +149,7 @@ export default function Product3DViewer({ modelKey, modelUrl, fallbackImage, pho
           if (!build) throw new Error(`Unknown 3D model: ${modelKey}`);
           object = build(THREE);
           setProductPhoto(null);
+          setProductTint(null);
         }
         if (cancelled) return;
 
@@ -198,6 +202,7 @@ export default function Product3DViewer({ modelKey, modelUrl, fallbackImage, pho
     return () => {
       cancelled = true;
       setProductPhoto(null);
+      setProductTint(null);
       cancelAnimationFrame(raf);
       window.clearTimeout(hintTimer);
       resizeObserver?.disconnect();
@@ -208,7 +213,7 @@ export default function Product3DViewer({ modelKey, modelUrl, fallbackImage, pho
         renderer = null;
       }
     };
-  }, [modelKey, modelUrl, interactive]);
+  }, [modelKey, modelUrl, interactive, tintKey]);
 
   if ((!modelKey && !modelUrl) || failed) {
     return <Image src={fallbackImage} alt={title} className="h-full w-full object-cover" />;

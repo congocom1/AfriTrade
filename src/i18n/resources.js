@@ -17,6 +17,7 @@ import portals from './portals.js';
 import productPage from './productPage.js';
 import deliveryCalendar from './deliveryCalendar.js';
 import copyFixes from './copyFixes.js';
+import threeD from './threeD.js';
 
 export const mergeNamespaces = (base, extra) =>
   Object.entries(extra).reduce((out, [ns, values]) => ({ ...out, [ns]: { ...(out[ns] || {}), ...values } }), { ...base });
@@ -35,10 +36,10 @@ const frWithExtensions = mergeNamespaces(fr, frExtended);
  * namespaces.
  */
 const baseTranslations = {
-  fr: mergeNamespaces(mergeNamespaces(mergeNamespaces(mergeNamespaces(frWithExtensions, intlShipment.fr), homeCollections.fr), mobileMoney.fr), productPage.fr),
-  en: mergeNamespaces(mergeNamespaces(mergeNamespaces(mergeNamespaces(en, intlShipment.en), homeCollections.en), mobileMoney.en), productPage.en),
-  ln: mergeNamespaces(mergeNamespaces(mergeNamespaces(mergeNamespaces(mergeNamespaces(ln, frExtended), intlShipment.fr), homeCollections.fr), mobileMoney.fr), productPage.fr),
-  sw: mergeNamespaces(mergeNamespaces(mergeNamespaces(mergeNamespaces(mergeNamespaces(sw, frExtended), intlShipment.fr), homeCollections.fr), mobileMoney.fr), productPage.fr),
+  fr: mergeNamespaces(mergeNamespaces(mergeNamespaces(mergeNamespaces(mergeNamespaces(frWithExtensions, intlShipment.fr), homeCollections.fr), mobileMoney.fr), productPage.fr), threeD.fr),
+  en: mergeNamespaces(mergeNamespaces(mergeNamespaces(mergeNamespaces(mergeNamespaces(en, intlShipment.en), homeCollections.en), mobileMoney.en), productPage.en), threeD.en),
+  ln: mergeNamespaces(mergeNamespaces(mergeNamespaces(mergeNamespaces(mergeNamespaces(mergeNamespaces(ln, frExtended), intlShipment.fr), homeCollections.fr), mobileMoney.fr), productPage.fr), threeD.fr),
+  sw: mergeNamespaces(mergeNamespaces(mergeNamespaces(mergeNamespaces(mergeNamespaces(mergeNamespaces(sw, frExtended), intlShipment.fr), homeCollections.fr), mobileMoney.fr), productPage.fr), threeD.fr),
 };
 
 export const translations = Object.fromEntries(

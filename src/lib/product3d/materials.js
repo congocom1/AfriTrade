@@ -12,6 +12,31 @@ export function setProductPhoto(texture) {
   PHOTO = texture || null;
 }
 
+// Colours the AI detector read off the product photo. When set, the model's
+// shell materials take the product's own body colour, so the built shape
+// matches the picture instead of the studio palette. Null keeps the original.
+let TINT = null;
+
+export function setProductTint(tint) {
+  TINT = tint || null;
+}
+
+// Parts that read as the product's shell. Metals, glass and screens keep
+// their physical look, so a tint never turns a steel frame into plastic.
+const SHELL_KEYS = [
+  'plasticWhite',
+  'plasticGrey',
+  'plasticBlack',
+  'plasticDark',
+  'paper',
+  'paperWhite',
+  'woven',
+  'ceramic',
+  'fabric',
+  'fabricCream',
+  'woodLight',
+];
+
 /** Crops the photo to the panel's own aspect so nothing is squashed. */
 function coverFit(THREE, texture, panelWidth, panelHeight) {
   const fitted = texture.clone();
@@ -64,7 +89,7 @@ export function createMaterials(THREE) {
       ? new THREE.MeshStandardMaterial({ map: coverFit(THREE, PHOTO, w, h), roughness: 0.5, metalness: 0.06 })
       : null;
 
-  return {
+  const materials = {
     steel: standard(0xb4bac1, { roughness: 0.34, metalness: 0.9 }),
     alu: standard(0xd2d7dd, { roughness: 0.3, metalness: 0.85 }),
     darkMetal: standard(0x3b4046, { roughness: 0.45, metalness: 0.75 }),
@@ -116,4 +141,11 @@ export function createMaterials(THREE) {
     screenPhoto,
     photoShell,
   };
+
+  if (TINT?.primary) {
+    SHELL_KEYS.forEach((key) => materials[key]?.color?.set(TINT.primary));
+  }
+  if (TINT?.secondary) materials.accent?.color?.set(TINT.secondary);
+
+  return materials;
 }
