@@ -49,7 +49,7 @@ export const ADMIN_LINKS = [
   { to: '/admin/tenants', group: 'administration', label: 'Enseignes SaaS' },
   { to: '/admin/compliance', group: 'administration', label: 'Conformité' },
   { to: '/security-activity', group: 'administration', label: 'Activité de sécurité' },
-  { to: '/admin/access-matrix', group: 'administration', label: 'Matrice des accès' },
+  { to: '/admin/access-matrix', group: 'administration', label: 'Rôles & accès' },
   { to: '/admin/settings', group: 'administration', label: 'Paramètres' },
 ];
 
