@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@base44/sdk": "^0.8.57",
-    "@base44/vite-plugin": "^1.0.47",
+    "@base44/vite-plugin": "^1.0.48",
     "@hello-pangea/dnd": "^17.0.0",
     "@hookform/resolvers": "^5.9.2",
     "@mainmoneyapp/js-checkout": "^0.1.1",
