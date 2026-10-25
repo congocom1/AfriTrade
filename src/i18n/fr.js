@@ -2946,11 +2946,6 @@ export default {
     updated: 'updated',
   },
 
-  priceBreakdown: {
-    customerPrice: 'customerprice',
-    title: 'title',
-  },
-
   pricing: {
     cta: 'Démarrer l’essai',
     includedText: 'Tunnel de commande multi-vendeurs, paiement mobile money (M-Pesa, Airtel, Orange) et à la livraison, suivi logistique, retours et litiges, programme créateurs et conformité TVA.',
@@ -3002,40 +2997,6 @@ export default {
     searchPh: 'searchph',
     subtitle: 'subtitle',
     title: 'title',
-  },
-
-  productDetail: {
-    add: 'add',
-    addToCart: 'addtocart',
-    addedToCart: 'addedtocart',
-    backHome: 'backhome',
-    buy: 'buy',
-    buyNow: 'buynow',
-    buyerProtection: 'buyerprotection',
-    defaultIntlEta: 'defaultintleta',
-    defaultLocalEta: 'defaultlocaleta',
-    deliveryEta: 'deliveryeta',
-    description: 'description',
-    favorite: 'favorite',
-    finalPriceNote: 'finalpricenote',
-    flashSale: 'flashsale',
-    image: 'image',
-    importEta: 'importeta',
-    inStock: 'instock',
-    intlBadge: 'intlbadge',
-    intlPartner: 'intlpartner',
-    localBadge: 'localbadge',
-    notFound: 'notfound',
-    notFoundDesc: 'notfounddesc',
-    photo: 'photo',
-    pickupNote: 'pickupnote',
-    shippingCalc: 'shippingcalc',
-    similar: 'similar',
-    supplier: 'supplier',
-    supplierRef: 'supplierref',
-    view3d: 'Vue 3D',
-    viewStore: 'viewstore',
-    zoneEta: 'zoneeta',
   },
 
   profile: {
@@ -3142,11 +3103,6 @@ export default {
     typeCity: 'Ville',
     typeCountry: 'Pays',
     typeZone: 'Zone',
-  },
-
-  rating: {
-    average: 'average',
-    new: 'new',
   },
 
   ratingSort: {

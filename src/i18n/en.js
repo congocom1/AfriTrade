@@ -2947,11 +2947,6 @@ export default {
     updated: 'Updated',
   },
 
-  priceBreakdown: {
-    customerPrice: 'Customerprice',
-    title: 'Title',
-  },
-
   pricing: {
     cta: 'Start the trial',
     includedText: 'Multi-vendor checkout, mobile money (M-Pesa, Airtel, Orange) and cash-on-delivery payments, logistics tracking, returns and disputes, creator program, and VAT compliance.',
@@ -3006,40 +3001,6 @@ export default {
     searchPh: 'Searchph',
     subtitle: 'Subtitle',
     title: 'Title',
-  },
-
-  productDetail: {
-    add: 'Add',
-    addToCart: 'Addtocart',
-    addedToCart: 'Addedtocart',
-    backHome: 'Backhome',
-    buy: 'Buy',
-    buyNow: 'Buynow',
-    buyerProtection: 'Buyerprotection',
-    defaultIntlEta: 'Defaultintleta',
-    defaultLocalEta: 'Defaultlocaleta',
-    deliveryEta: 'Deliveryeta',
-    description: 'Description',
-    favorite: 'Favorite',
-    finalPriceNote: 'Finalpricenote',
-    flashSale: 'Flashsale',
-    image: 'Image',
-    importEta: 'Importeta',
-    inStock: 'Instock',
-    intlBadge: 'Intlbadge',
-    intlPartner: 'Intlpartner',
-    localBadge: 'Localbadge',
-    notFound: 'Notfound',
-    notFoundDesc: 'Notfounddesc',
-    photo: 'Photo',
-    pickupNote: 'Pickupnote',
-    shippingCalc: 'Shippingcalc',
-    similar: 'Similar',
-    supplier: 'Supplier',
-    supplierRef: 'Supplierref',
-    view3d: '3D view',
-    viewStore: 'Viewstore',
-    zoneEta: 'Zoneeta',
   },
 
   profile: {
@@ -3152,11 +3113,6 @@ export default {
     typeCity: 'City',
     typeCountry: 'Country',
     typeZone: 'Zone',
-  },
-
-  rating: {
-    average: 'Average',
-    new: 'New',
   },
 
   ratingSort: {

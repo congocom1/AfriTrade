@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Box } from 'lucide-react';
 import { Image } from '@/components/ui/image';
 import { getProduct3DBuilder } from '@/lib/product3d/registry';
@@ -13,9 +14,11 @@ import { setProductPhoto } from '@/lib/product3d/materials';
  * three.js is lazy-imported so the main bundle stays untouched.
  */
 export default function Product3DViewer({ modelKey, modelUrl, fallbackImage, photo, title, interactive = true }) {
+  const { t } = useTranslation();
   const mountRef = useRef(null);
   const [failed, setFailed] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [hintVisible, setHintVisible] = useState(true);
 
   useEffect(() => {
     if (!modelKey && !modelUrl) return;
@@ -23,7 +26,9 @@ export default function Product3DViewer({ modelKey, modelUrl, fallbackImage, pho
     let renderer = null;
     let resizeObserver = null;
     let raf = 0;
+    let hintTimer = 0;
     const disposables = [];
+    setHintVisible(true);
 
     (async () => {
       try {
@@ -40,13 +45,13 @@ export default function Product3DViewer({ modelKey, modelUrl, fallbackImage, pho
         renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
         renderer.outputColorSpace = THREE.SRGBColorSpace;
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.05;
+        renderer.toneMappingExposure = 1;
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         mount.appendChild(renderer.domElement);
 
         const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(38, w / h, 0.05, 100);
+        const camera = new THREE.PerspectiveCamera(36, w / h, 0.05, 100);
 
         const fitToMount = () => {
           const nextWidth = mount.clientWidth || 400;
@@ -62,13 +67,15 @@ export default function Product3DViewer({ modelKey, modelUrl, fallbackImage, pho
         const key = new THREE.DirectionalLight(0xffffff, 2.2);
         key.position.set(3, 5, 4);
         key.castShadow = true;
-        key.shadow.mapSize.set(1024, 1024);
+        // Tight shadow frustum: the model is ~2.4 units across, so the map
+        // stays sharp around it instead of spreading over an empty 10-unit box.
+        key.shadow.mapSize.set(2048, 2048);
         key.shadow.camera.near = 0.5;
         key.shadow.camera.far = 24;
-        key.shadow.camera.left = -5;
-        key.shadow.camera.right = 5;
-        key.shadow.camera.top = 5;
-        key.shadow.camera.bottom = -5;
+        key.shadow.camera.left = -2.6;
+        key.shadow.camera.right = 2.6;
+        key.shadow.camera.top = 2.6;
+        key.shadow.camera.bottom = -2.6;
         key.shadow.bias = -0.0009;
         scene.add(key);
         const fill = new THREE.DirectionalLight(0xffffff, 0.5);
@@ -78,7 +85,7 @@ export default function Product3DViewer({ modelKey, modelUrl, fallbackImage, pho
         rim.position.set(-2, 3, -5);
         scene.add(rim);
 
-        const ground = new THREE.Mesh(new THREE.PlaneGeometry(30, 30), new THREE.ShadowMaterial({ opacity: 0.16 }));
+        const ground = new THREE.Mesh(new THREE.PlaneGeometry(30, 30), new THREE.ShadowMaterial({ opacity: 0.22 }));
         ground.rotation.x = -Math.PI / 2;
         ground.receiveShadow = true;
         scene.add(ground);
@@ -92,7 +99,9 @@ export default function Product3DViewer({ modelKey, modelUrl, fallbackImage, pho
         controls.maxPolarAngle = Math.PI / 2.04;
         const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
         controls.autoRotate = !reduced;
-        controls.autoRotateSpeed = 1.4;
+        controls.autoRotateSpeed = 0.9;
+        controls.addEventListener('start', () => setHintVisible(false));
+        hintTimer = window.setTimeout(() => setHintVisible(false), 6000);
 
         // The product's own photo is the model's texture source: body shell,
         // screens and printed faces, plus the reflections on metal and glass.
@@ -163,7 +172,7 @@ export default function Product3DViewer({ modelKey, modelUrl, fallbackImage, pho
         const lift = interactive ? 0 : halfHeight * 0.45;
         object.position.y += lift;
         ground.position.y = -halfHeight - 0.002 + lift;
-        camera.position.set(0, halfHeight * 0.85 + 0.25, 3.3);
+        camera.position.set(0, halfHeight * 0.8 + 0.2, 3.15);
         controls.target.set(0, 0, 0);
         controls.minDistance = 1.4;
         controls.maxDistance = 9;
@@ -190,6 +199,7 @@ export default function Product3DViewer({ modelKey, modelUrl, fallbackImage, pho
       cancelled = true;
       setProductPhoto(null);
       cancelAnimationFrame(raf);
+      window.clearTimeout(hintTimer);
       resizeObserver?.disconnect();
       disposables.forEach((d) => d?.dispose?.());
       if (renderer) {
@@ -205,13 +215,29 @@ export default function Product3DViewer({ modelKey, modelUrl, fallbackImage, pho
   }
 
   return (
-    <div className="relative h-full w-full">
-      <div ref={mountRef} className="h-full w-full" role="img" aria-label={`Vue 3D — ${title}`} />
+    <div className="relative h-full w-full overflow-hidden">
+      {interactive && (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_36%,hsl(var(--card)),hsl(var(--secondary)))]"
+        />
+      )}
+      <div
+        ref={mountRef}
+        className={`relative h-full w-full ${interactive ? 'cursor-grab active:cursor-grabbing' : ''}`}
+        role="img"
+        aria-label={`${t('productDetail.view3d')} — ${title}`}
+      />
       {loading && (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-secondary">
           <Box className="h-6 w-6 animate-pulse text-muted-foreground" />
-          <p className="text-xs text-muted-foreground">Chargement de la vue 3D…</p>
+          <p className="text-xs text-muted-foreground">{t('productDetail.loading3d')}</p>
         </div>
+      )}
+      {interactive && !loading && hintVisible && (
+        <p className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-card/90 px-3 py-1 text-[11px] font-medium text-muted-foreground shadow-sm">
+          {t('productDetail.dragHint')}
+        </p>
       )}
     </div>
   );
