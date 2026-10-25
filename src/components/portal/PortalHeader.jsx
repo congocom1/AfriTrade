@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ShoppingBag, User } from 'lucide-react';
 import { useCart } from '@/lib/cart';
 import { useAuth } from '@/lib/AuthContext';
+import SpaceSwitcher from '@/components/layout/SpaceSwitcher';
 
 const ICON_BUTTON = 'flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring';
 
@@ -29,6 +30,7 @@ export default function PortalHeader({ portal }) {
           <span className="truncate">{t(portal.labelKey)}</span>
         </span>
         <div className="ml-auto flex shrink-0 items-center gap-1.5">
+          <SpaceSwitcher />
           <Link to="/cart" className={`${ICON_BUTTON} relative`} aria-label={`${t('nav.cart')} (${count})`}>
             <ShoppingBag className="h-5 w-5" />
             {count > 0 && <span className="absolute -right-0.5 -top-0.5 rounded-full bg-primary px-1.5 text-[10px] font-bold leading-5 text-primary-foreground ring-2 ring-background">{count > 99 ? '99+' : count}</span>}

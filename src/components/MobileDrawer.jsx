@@ -1,12 +1,11 @@
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
-import { X, User, Heart, MessageCircle, Bell, ShieldCheck, LogOut } from 'lucide-react';
+import { X, User, Heart, MessageCircle, Bell, LogOut } from 'lucide-react';
 import CurrencyToggle from '@/components/CurrencyToggle';
 import LanguageToggle from '@/components/LanguageToggle';
 import ThemeToggle from '@/components/ThemeToggle';
 import { useAuth } from '@/lib/AuthContext';
-import { isAdmin } from '@/lib/roles';
-import { WORKSPACE_ITEMS } from '@/components/layout/workspaces';
+import SpaceSwitcher from '@/components/layout/SpaceSwitcher';
 import {
   Drawer,
   DrawerContent,
@@ -18,10 +17,6 @@ const USER_ITEMS = [
   { key: 'nav.wishlist', path: '/wishlist', icon: Heart },
   { key: 'nav.messages', path: '/messages', icon: MessageCircle },
   { key: 'nav.notifications', path: '/notifications', icon: Bell },
-];
-
-const ADMIN_ITEMS = [
-  { key: 'nav.admin', path: '/admin', icon: ShieldCheck },
 ];
 
 const GUEST_ITEMS = [
@@ -86,6 +81,8 @@ export default function MobileDrawer({ isOpen, onClose }) {
           </DrawerHeader>
 
           <nav className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain px-3 py-4" aria-label={t('nav.menu')}>
+            {/* The one control that moves between the shop and the spaces it works in */}
+            <SpaceSwitcher variant="list" onNavigate={onClose} />
             {/* User Account */}
             <section aria-label={t('nav.account')}>
               <h3 className="px-3 pb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -109,17 +106,6 @@ export default function MobileDrawer({ isOpen, onClose }) {
                 )}
               </div>
             </section>
-            {user && (
-              <section aria-label={t('nav.workspaces')}>
-                <h3 className="px-3 pb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  {t('nav.workspaces')}
-                </h3>
-                <div className="space-y-1">
-                  {renderItems(WORKSPACE_ITEMS)}
-                  {isAdmin(user) && renderItems(ADMIN_ITEMS)}
-                </div>
-              </section>
-            )}
             <section aria-label={t('nav.utilities')} className="border-t border-border pt-4">
               <h3 className="px-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t('nav.utilities')}</h3>
               <div className="flex flex-wrap items-center gap-2 px-3"><ThemeToggle /><CurrencyToggle /><LanguageToggle /></div>

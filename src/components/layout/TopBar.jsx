@@ -1,11 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Search, Menu, ShoppingBag, User, Heart, MessageCircle, Bell, ShieldCheck, LogOut, ChevronDown } from 'lucide-react';
+import { Search, Menu, ShoppingBag, User, Heart, MessageCircle, Bell, LogOut, ChevronDown } from 'lucide-react';
 import { useCart } from '@/lib/cart';
 import { useAuth } from '@/lib/AuthContext';
-import { isAdmin } from '@/lib/roles';
-import { WORKSPACE_ITEMS } from '@/components/layout/workspaces';
+import SpaceSwitcher from '@/components/layout/SpaceSwitcher';
 import MobileDrawer from '@/components/MobileDrawer';
 import BackButton from '@/components/BackButton';
 import CurrencyToggle from '@/components/CurrencyToggle';
@@ -118,6 +117,7 @@ export default function TopBar() {
       </form>
       <button type="button" className={`${isChildScreen ? 'ml-auto' : 'ml-0'} flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring md:hidden`} onClick={() => setDrawerOpen(true)} aria-label={t('nav.menu')} aria-expanded={drawerOpen} aria-controls="mobile-drawer"><Menu className="h-5 w-5" /></button>
       <div className="hidden shrink-0 items-center gap-1.5 md:flex">
+        <SpaceSwitcher />
         <DropdownMenu open={accountOpen} onOpenChange={setAccountOpen}>
           <DropdownMenuTrigger asChild><button type="button" className="flex h-11 items-center gap-2 rounded-full pl-1.5 pr-2.5 text-sm font-medium transition-colors hover:bg-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring" aria-label={t('nav.account')}>
             {user ? <span aria-hidden="true" className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">{initials || <User className="h-4 w-4" />}</span> : <span aria-hidden="true" className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-secondary text-muted-foreground"><User className="h-4 w-4" /></span>}
@@ -128,10 +128,6 @@ export default function TopBar() {
             {user ? <>
               <DropdownMenuLabel className="truncate">{user.full_name || user.name || user.email}</DropdownMenuLabel><DropdownMenuSeparator />
               {ACCOUNT_LINKS.map(([to, key, Icon]) => <DropdownMenuItem key={to} asChild><Link to={to}><Icon className="mr-2 h-4 w-4" />{t(key)}</Link></DropdownMenuItem>)}
-              <DropdownMenuSeparator />
-              <DropdownMenuLabel className="font-normal">{t('nav.workspaces')}</DropdownMenuLabel>
-              {WORKSPACE_ITEMS.map(({ path, key, icon: Icon }) => <DropdownMenuItem key={path} asChild><Link to={path}><Icon className="mr-2 h-4 w-4" />{t(key)}</Link></DropdownMenuItem>)}
-              {isAdmin(user) && <DropdownMenuItem asChild><Link to="/admin"><ShieldCheck className="mr-2 h-4 w-4" />{t('nav.admin')}</Link></DropdownMenuItem>}
               <DropdownMenuSeparator />
             </> : <>
               <DropdownMenuItem asChild><Link to="/login">{t('nav.login')}</Link></DropdownMenuItem>
