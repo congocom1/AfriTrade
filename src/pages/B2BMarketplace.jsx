@@ -114,6 +114,10 @@ export default function B2BMarketplace() {
     setQuoteState({ saving: true, error: "", success: "" });
     try {
       const { data } = await base44.functions.invoke('quoteRequest', { action: 'submit', product_id: quoteProduct.id, quantity, target_price_usd: Number(quote.targetPrice) || 0, phone: quote.phone.trim(), country: quote.country.trim(), message: quote.message.trim() });
+      base44.analytics.track({
+        eventName: "quote_requested",
+        properties: { product_title: quoteProduct.title },
+      });
       setQuoteState({ saving: false, error: "", success: `Quote request ${data?.quote?.quote_number || ""} sent. Track it in My Quotes.` });
     } catch (error) {
       setQuoteState({ saving: false, error: error?.message || "We could not submit your request. Please try again.", success: "" });

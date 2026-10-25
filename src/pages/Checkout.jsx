@@ -252,6 +252,10 @@ export default function Checkout() {
         paymentPhone: chargePhone,
         consent,
       });
+      base44.analytics.track({
+        eventName: 'order_placed',
+        properties: { order_number: result.order.order_number },
+      });
       // Hosted checkout (card) is now handled inside the server function — it
       // returns redirectUrl when the provider requires a redirect. The client-side
       // create-checkout call is removed: prices and splits are locked down
