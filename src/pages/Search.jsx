@@ -16,6 +16,9 @@ import {
   filterByMaxPrice,
   filterByMinRating,
   filterByInStock,
+  filterByProvider,
+  filterByPickup,
+  providerName,
   sortProducts,
 } from '@/lib/searchUtils';
 
@@ -40,6 +43,8 @@ export default function Search() {
   const [maxPrice, setMaxPrice] = useState('');
   const [minRating, setMinRating] = useState(0);
   const [inStock, setInStock] = useState(false);
+  const [provider, setProvider] = useState('');
+  const [pickupOnly, setPickupOnly] = useState(false);
 
   const load = useCallback(async (isActive = () => true) => {
     setLoading(true);
@@ -81,6 +86,12 @@ export default function Search() {
     return categories.find((c) => c.slug === category)?.id || category;
   }, [category, categories]);
 
+  // Providers present in the catalogue, so the filter never lists an empty name.
+  const providers = useMemo(() => {
+    const names = new Set(products.map(providerName).filter(Boolean));
+    return [...names].sort((a, b) => a.localeCompare(b, 'fr'));
+  }, [products]);
+
   const results = useMemo(() => {
     const trimmed = (params.get('q') || '').trim();
     // Score once so relevance sort reflects the query, then filter.
@@ -106,12 +117,18 @@ export default function Search() {
     // Apply stock filter
     productsList = filterByInStock(productsList, inStock);
 
+    // Apply provider filter
+    productsList = filterByProvider(productsList, provider);
+
+    // Apply relay-point pickup filter
+    productsList = filterByPickup(productsList, pickupOnly);
+
     // Sort: relevance uses the query score, other modes use sortProducts.
     if ((!sort || sort === 'relevance') && trimmed) {
       return [...productsList].sort((a, b) => (scored.get(b) ?? 0) - (scored.get(a) ?? 0));
     }
     return sortProducts(productsList, sort);
-  }, [products, params, categoryId, source, sort, maxPrice, minRating, inStock]);
+  }, [products, params, categoryId, source, sort, maxPrice, minRating, inStock, provider, pickupOnly]);
 
   const applyTerm = (value) => {
     const next = new URLSearchParams(params);
@@ -126,12 +143,14 @@ export default function Search() {
     setMaxPrice('');
     setMinRating(0);
     setInStock(false);
+    setProvider('');
+    setPickupOnly(false);
     const next = new URLSearchParams();
     if (params.get('q')) next.set('q', params.get('q'));
     setParams(next);
   };
 
-  const activeFilters = [category, source !== 'all' ? source : '', maxPrice, minRating, inStock].filter(Boolean).length;
+  const activeFilters = [category, source !== 'all' ? source : '', maxPrice, minRating, inStock, provider, pickupOnly].filter(Boolean).length;
 
   return (
     <div className="space-y-4 pb-6" {...pullHandlers}>
@@ -231,9 +250,26 @@ export default function Search() {
               ))}
             </div>
           </div>
+          <div>
+            <p className="mb-1.5 text-xs font-semibold text-muted-foreground">{t('search.provider')}</p>
+            <LegacySelect
+              value={provider}
+              onChange={(e) => setProvider(e.target.value)}
+              className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm"
+            >
+              <option value="">{t('search.all')}</option>
+              {providers.map((name) => (
+                <option key={name} value={name}>{name}</option>
+              ))}
+            </LegacySelect>
+          </div>
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" checked={inStock} onChange={(e) => setInStock(e.target.checked)} className="h-4 w-4 accent-[hsl(var(--primary))]" />
             {t('search.inStockOnly')}
+          </label>
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={pickupOnly} onChange={(e) => setPickupOnly(e.target.checked)} className="h-4 w-4 accent-[hsl(var(--primary))]" />
+            {t('search.pickupOnly', { defaultValue: 'Retrait en point relais' })}
           </label>
           <button type="button" onClick={clearFilters} className="flex items-center gap-1 text-xs font-semibold text-primary">
             <X className="h-3.5 w-3.5" /> {t('search.resetFilters')}

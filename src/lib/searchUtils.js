@@ -271,6 +271,36 @@ export function filterByInStock(products, inStock) {
 }
 
 /**
+ * The name a buyer sees as the product's provider: the import supplier when
+ * there is one, otherwise the shop that sells it.
+ */
+export function providerName(product) {
+  return String(product?.supplier_name || product?.seller_name || '').trim();
+}
+
+/** Filter products by provider (supplier or selling shop). */
+export function filterByProvider(products, provider) {
+  if (!provider) return products;
+  return products.filter(product => providerName(product) === provider);
+}
+
+/**
+ * A product can be collected at a relay point when it is held locally: imported
+ * goods travel through our own delivery team and never ride a partner relay.
+ */
+export function isPickupAvailable(product) {
+  const source = product?.source_type || 'local_seller';
+  if (source === 'international_supplier') return false;
+  return parseInt(product?.stock || 0) > 0;
+}
+
+/** Filter products to those collectable at a relay point. */
+export function filterByPickup(products, pickupOnly) {
+  if (!pickupOnly) return products;
+  return products.filter(isPickupAvailable);
+}
+
+/**
  * Sort products based on sort criteria
  */
 export function sortProducts(products, sortCriteria) {

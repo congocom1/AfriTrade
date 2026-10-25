@@ -12,8 +12,10 @@ import { base44 } from '@/api/base44Client';
 import { useActiveSeller } from '@/lib/seller';
 import { sellerInsights } from '@/lib/ai';
 import DashboardShell from '@/components/DashboardShell';
-import StatusBadge from '@/components/StatusBadge';
 import { Image } from '@/components/ui/image';
+import SellerSalesOverview from '@/components/seller/SellerSalesOverview';
+import RelayPointDeposits from '@/components/seller/RelayPointDeposits';
+import DeliveryAlerts from '@/components/seller/DeliveryAlerts';
 import { formatUsdAmount } from '@/lib/format';
 
 const HERO_IMAGE = '/photography/warehouse-operations.jpg';
@@ -155,34 +157,9 @@ export default function SellerDashboard() {
         </div>
 
         <div className="paper-col paper-col-right">
-          <section className="paper-section paper-orders">
-            <h2 className="paper-label">{t('seller.latestOrders')}</h2>
-            {loading ? <p role="status" className="paper-caption">{t('portalStatus.loading')}</p> : fulfillments.length ? (
-              <>
-                <div className="paper-orderlist">
-                  {fulfillments.slice(0, 6).map((f) => (
-                    <div key={f.id} className="paper-order">
-                      <div className="min-w-0">
-                        <div className="paper-orderno">{f.order_number}</div>
-                        <div className="paper-meta">
-                          {f.fulfillment_number} · {t('seller.itemCount', { count: (f.items || []).length })}
-                        </div>
-                      </div>
-                      <div className="paper-details">
-                        <StatusBadge status={f.status} variant="paper" />
-                        <span className="paper-money">{formatUsdAmount(f.subtotal_usd)}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <Link to="/seller/orders" className="paper-all">
-                  {t('seller.viewAllOrders')}
-                </Link>
-              </>
-            ) : (
-              <p className="paper-caption">{t('seller.noOrders')}</p>
-            )}
-          </section>
+          <SellerSalesOverview fulfillments={fulfillments} loading={loading} />
+          <RelayPointDeposits fulfillments={fulfillments} loading={loading} />
+          <DeliveryAlerts fulfillments={fulfillments} loading={loading} />
         </div>
 
         <section className="paper-tiles">
