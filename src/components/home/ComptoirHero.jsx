@@ -15,18 +15,18 @@ export default function ComptoirHero({ productCount = 0, categoryCount = 0, sell
   const night = resolvedTheme === 'dark';
 
   const chips = [
-    [ShieldCheck, 'market.chipVerified'],
-    [Coins, 'market.chipCurrency'],
-    [MapPin, 'market.chipDelivery'],
-  ];
+  [ShieldCheck, 'market.chipVerified'],
+  [Coins, 'market.chipCurrency'],
+  [MapPin, 'market.chipDelivery']];
+
 
   // Only figures the marketplace can stand behind: a live platform showing
   // "0 products" reads as broken, so empty counts are left out.
   const stats = [
-    [productCount, 'market.statProducts'],
-    [categoryCount, 'market.statCategories'],
-    [sellerCount, 'market.statSellers'],
-  ].filter(([value]) => Number(value) > 0);
+  [productCount, 'market.statProducts'],
+  [categoryCount, 'market.statCategories'],
+  [sellerCount, 'market.statSellers']].
+  filter(([value]) => Number(value) > 0);
 
   return (
     <section className="k-hero" aria-labelledby="comptoir-title">
@@ -43,14 +43,14 @@ export default function ComptoirHero({ productCount = 0, categoryCount = 0, sell
             type="button"
             className="k-theme"
             onClick={() => setTheme(night ? 'light' : 'dark')}
-            aria-label={night ? t('market.themeDay') : t('market.themeNight')}
-          >
+            aria-label={night ? t('market.themeDay') : t('market.themeNight')}>
+            
             {night ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
           </button>
         </span>
       </div>
 
-      <h1 id="comptoir-title" className="k-hero__title k-serif k-d2">{t('market.title')}</h1>
+      <h1 id="comptoir-title" className="k-hero__title k-serif k-d2 font-light [font-family:'JetBrains_Mono',_monospace]">{t('market.title')}</h1>
       <p className="k-hero__sub k-d3">{t('market.subtitle')}</p>
 
       <Link to="/search" className="k-search k-d4">
@@ -64,24 +64,24 @@ export default function ComptoirHero({ productCount = 0, categoryCount = 0, sell
       </div>
 
       <ul className="k-chips k-d6">
-        {chips.map(([Icon, key]) => (
-          <li key={key}>
+        {chips.map(([Icon, key]) =>
+        <li key={key}>
             <Icon aria-hidden="true" />
             {t(key)}
           </li>
-        ))}
+        )}
       </ul>
 
-      {!!stats.length && (
-        <dl className="k-stats k-d7">
-          {stats.map(([value, key]) => (
-            <div key={key}>
+      {!!stats.length &&
+      <dl className="k-stats k-d7">
+          {stats.map(([value, key]) =>
+        <div key={key}>
               <dt>{t(key)}</dt>
               <dd className="k-serif">{value}</dd>
             </div>
-          ))}
+        )}
         </dl>
-      )}
+      }
 
       <div className="k-eta k-d8">
         <p className="k-cap k-accent-text">{t('market.cardEtaLabel')}</p>
@@ -91,6 +91,6 @@ export default function ComptoirHero({ productCount = 0, categoryCount = 0, sell
           {t('market.cardPickup')}
         </p>
       </div>
-    </section>
-  );
+    </section>);
+
 }
