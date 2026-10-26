@@ -68,7 +68,6 @@ export function buildSofa(THREE) {
 /** Handwoven raffia floor basket. */
 export function buildBasket(THREE) {
   const P = createParts(THREE);
-  const M = createMaterials(THREE);
   const raffia = new THREE.MeshStandardMaterial({ color: 0xd9c39a, roughness: 0.95 });
   const raffiaDark = new THREE.MeshStandardMaterial({ color: 0xbfa275, roughness: 0.95 });
 
