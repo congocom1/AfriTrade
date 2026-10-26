@@ -174,6 +174,8 @@ export default {
     },
     orderTracking: { search: 'Rechercher' },
     partnerDirectory: {
+      subtitle: 'Grossistes et fournisseurs vérifiés par AfriTrade',
+      title: 'Annuaire des partenaires',
       noSellers: 'Aucune boutique pour le moment',
       noSuppliers: 'Aucun fournisseur pour le moment',
       sellerMeta: '{{city}} · {{count}} produits · {{rating}}/5',
@@ -182,6 +184,9 @@ export default {
       suppliersTab: 'Fournisseurs',
     },
     productComparison: {
+      comparison: 'Comparaison détaillée',
+      subtitle: 'Prix, délais et garanties côte à côte',
+      title: 'Comparer les produits',
       addProduct: 'Ajouter un produit',
       needTwo: 'Sélectionnez au moins deux produits à comparer.',
       oneSelected: '{{title}} sélectionné. Ajoutez un autre produit à comparer.',
@@ -197,15 +202,6 @@ export default {
       submit: 'Envoyer',
       tab: 'Réception Chine',
       uploading: 'Envoi des photos…',
-    },
-    partnerDirectory: {
-      subtitle: 'Grossistes et fournisseurs vérifiés par AfriTrade',
-      title: 'Annuaire des partenaires',
-    },
-    productComparison: {
-      comparison: 'Comparaison détaillée',
-      subtitle: 'Prix, délais et garanties côte à côte',
-      title: 'Comparer les produits',
     },
     rewardsCatalog: {
       desc: 'Échangez vos points contre des réductions et des avantages.',
