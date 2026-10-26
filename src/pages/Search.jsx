@@ -280,11 +280,17 @@ export default function Search() {
       <div className="flex items-center justify-between gap-2">
         <p className="text-xs text-muted-foreground">
           {loading ? t('common.loading') : t('search.resultsCount', { count: results.length })}
-          {params.get('q') ? t('search.resultsForTerm', { term: params.get('q') }) : ''}
+          {params.get('q') ? ` ${t('search.resultsForTerm', { term: params.get('q') })}` : ''}
         </p>
         <LegacySelect
           value={sort}
-          onChange={(e) => setSort(e.target.value)}
+          onChange={(e) => {
+            const next = new URLSearchParams(params);
+            if (e.target.value === 'relevance') next.delete('sort');
+            else next.set('sort', e.target.value);
+            setSort(e.target.value);
+            setParams(next);
+          }}
           className="h-9 rounded-lg border border-border bg-card px-2 text-xs"
         >
           {SORTS.map((s) => (

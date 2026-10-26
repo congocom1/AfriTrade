@@ -9,7 +9,7 @@ export default {
 
   active: 'active',
 
-  addStock: 'addstock',
+  addStock: 'Ajouter du stock',
 
   adding: 'adding',
 
@@ -85,7 +85,7 @@ export default {
 
   name: 'name',
 
-  onHand: 'onhand',
+  onHand: 'En stock',
 
   order: 'order',
 
@@ -121,7 +121,7 @@ export default {
 
   retry: 'retry',
 
-  returnTo: 'returnto',
+  returnTo: 'Retour vers',
 
   save: 'save',
 
