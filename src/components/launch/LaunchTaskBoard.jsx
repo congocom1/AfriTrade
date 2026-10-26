@@ -17,6 +17,8 @@ export default function LaunchTaskBoard() {
   const { t } = useTranslation();
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [track, setTrack] = useState('all');
   const [status, setStatus] = useState('all');
   const [title, setTitle] = useState('');
@@ -26,35 +28,42 @@ export default function LaunchTaskBoard() {
   const load = async () => {
     const page = await base44.entities.LaunchTask.list({ sort: '-created_date', limit: 200 });
     setTasks(page.items || []);
+    setError(false);
   };
 
   useEffect(() => {
-    load().finally(() => setLoading(false));
+    load().catch(() => setError(true)).finally(() => setLoading(false));
     const unsubscribe = base44.entities.LaunchTask.subscribe(() => {
-      load().catch(() => {});
+      load().catch(() => setError(true));
     });
     return unsubscribe;
   }, []);
 
   const changeStatus = async (task, next) => {
-    setTasks((current) => current.map((item) => (item.id === task.id ? { ...item, status: next } : item)));
-    await base44.entities.LaunchTask.update(task.id, {
-      status: next,
-      completed_at: next === 'done' ? new Date().toISOString() : '',
-    });
+    try {
+      await base44.entities.LaunchTask.update(task.id, {
+        status: next,
+        completed_at: next === 'done' ? new Date().toISOString() : '',
+      });
+      await load();
+    } catch { setError(true); }
   };
 
   const remove = async (task) => {
     if (!window.confirm(t('launch.board.confirmDelete'))) return;
-    setTasks((current) => current.filter((item) => item.id !== task.id));
-    await base44.entities.LaunchTask.delete(task.id);
+    try {
+      await base44.entities.LaunchTask.delete(task.id);
+      setTasks((current) => current.filter((item) => item.id !== task.id));
+      setError(false);
+    } catch { setError(true); }
   };
 
   const add = async (event) => {
     event.preventDefault();
     const trimmed = title.trim();
-    if (!trimmed) return;
-    setTitle('');
+    if (!trimmed || saving) return;
+    setSaving(true);
+    try {
     await base44.entities.LaunchTask.create({
       title: trimmed,
       track: newTrack,
@@ -62,7 +71,10 @@ export default function LaunchTaskBoard() {
       status: 'todo',
       source_agent: 'manual',
     });
+    setTitle('');
     await load();
+    } catch { setError(true); }
+    finally { setSaving(false); }
   };
 
   const visible = tasks.filter(
@@ -80,6 +92,7 @@ export default function LaunchTaskBoard() {
         </p>
       </div>
 
+      {error && <div role="alert" className="text-sm text-destructive">{t('intlApproval.error')} <button type="button" className="min-h-11 underline" onClick={() => load().catch(() => setError(true))}>{t('asyncState.retry')}</button></div>}
       <form onSubmit={add} className="flex flex-wrap gap-2">
         <input
           value={title}
@@ -113,7 +126,7 @@ export default function LaunchTaskBoard() {
         </LegacySelect>
         <button
           type="submit"
-          disabled={!title.trim()}
+          disabled={saving || !title.trim()}
           className="flex h-9 items-center gap-1 rounded-full bg-primary px-3 text-xs font-semibold text-primary-foreground disabled:opacity-50"
         >
           <Plus className="h-3.5 w-3.5" /> {t('launch.board.add')}
