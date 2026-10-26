@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Plus } from 'lucide-react';
@@ -86,7 +87,7 @@ export default function LaunchTaskBoard() {
           placeholder={t('launch.board.addPlaceholder')}
           className="h-9 min-w-[12rem] flex-1 rounded-full border border-border bg-card px-3 text-sm outline-none focus:border-primary"
         />
-        <select
+        <LegacySelect
           value={newTrack}
           onChange={(event) => setNewTrack(event.target.value)}
           aria-label={t('launch.board.track')}
@@ -97,8 +98,8 @@ export default function LaunchTaskBoard() {
               {t(`launch.track.${value}`)}
             </option>
           ))}
-        </select>
-        <select
+        </LegacySelect>
+        <LegacySelect
           value={newPriority}
           onChange={(event) => setNewPriority(event.target.value)}
           aria-label={t('launch.board.priority')}
@@ -109,7 +110,7 @@ export default function LaunchTaskBoard() {
               {t(`launch.priority.${value}`)}
             </option>
           ))}
-        </select>
+        </LegacySelect>
         <button
           type="submit"
           disabled={!title.trim()}

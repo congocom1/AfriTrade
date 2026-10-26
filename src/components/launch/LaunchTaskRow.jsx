@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Trash2 } from 'lucide-react';
@@ -48,7 +49,7 @@ export default function LaunchTaskRow({ task, onStatus, onDelete }) {
             {task.area}
           </span>
         )}
-        <select
+        <LegacySelect
           value={task.status}
           onChange={(event) => onStatus(task, event.target.value)}
           aria-label={t('launch.board.status')}
@@ -59,7 +60,7 @@ export default function LaunchTaskRow({ task, onStatus, onDelete }) {
               {t(`launch.status.${status}`)}
             </option>
           ))}
-        </select>
+        </LegacySelect>
       </div>
     </div>
   );

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { canOpen } from '../src/lib/access.js';
 import { isAdmin, WORKSPACES } from '../src/lib/roles.js';
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
@@ -50,13 +51,13 @@ describe('navigation surfaces', () => {
   const topBar = fs.readFileSync(path.join(root, 'src/components/layout/TopBar.jsx'), 'utf8');
 
   it('renders the shared workspace list in the mobile drawer', () => {
-    assert.ok(drawer.includes('WORKSPACE_ITEMS'), 'drawer does not render WORKSPACE_ITEMS');
-    assert.ok(drawer.includes('isAdmin(user) && renderItems(ADMIN_ITEMS)'), 'drawer hides the admin console from admins');
+    assert.ok(drawer.includes('<SpaceSwitcher variant="list"'), 'drawer must render the shared permission-aware switcher');
   });
 
   it('renders the shared workspace list in the desktop account menu', () => {
-    assert.ok(topBar.includes('WORKSPACE_ITEMS'), 'top bar does not render WORKSPACE_ITEMS');
-    assert.ok(topBar.includes('isAdmin(user) &&'), 'top bar does not gate the admin console on the role');
+    assert.ok(topBar.includes('<SpaceSwitcher />'), 'desktop must render the shared permission-aware switcher');
+    const switcher = fs.readFileSync(path.join(root, 'src/components/layout/SpaceSwitcher.jsx'), 'utf8');
+    assert.ok(switcher.includes('if (access.isAdmin) spaces.push(BACKOFFICE)'));
   });
 
   it('no longer branches on the unused seller platform role', () => {
@@ -75,10 +76,14 @@ describe('admin route protection', () => {
     assert.ok(developerRoute > -1, '/developers route is missing');
 
     // The route must sit inside an AdminOnly block, not in the public block.
-    const adminOnly = app.lastIndexOf('<Route element={<AdminOnly />}>', developerRoute);
+    const adminOnly = app.lastIndexOf('<Route element={<RequireAccess />}>', developerRoute);
     const adminOnlyEnd = app.indexOf('</Route>', adminOnly);
     assert.ok(adminOnly > -1, '/developers is not inside an AdminOnly block');
-    assert.ok(adminOnlyEnd > developerRoute, '/developers is outside the AdminOnly block');
+    assert.ok(adminOnlyEnd > developerRoute, '/developers is outside the access guard');
+    assert.equal(canOpen('/developers', { isAdmin: true }), true);
+    for (const access of [null, {}, { roles: ['seller', 'creator', 'courier'], departments: ['technology', 'administration'] }]) {
+      assert.equal(canOpen('/developers', access), false);
+    }
   });
 
   it('hides the admin workspace link from non-administrators on the profile page', () => {
