@@ -50,7 +50,7 @@ export default function AppLayout() {
   }, []);
 
   return (
-    <div className={`brand-app-shell min-h-screen bg-background ${isConsole ? 'pb-8' : 'pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-8'}`}>
+    <div className={`brand-app-shell min-h-screen bg-background ${isConsole || isFrontPage ? 'pb-8' : 'pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-8'}`}>
       {isConsole ? (
         <>
           <PortalHeader portal={portal} />
@@ -74,7 +74,7 @@ export default function AppLayout() {
         </AnimatePresence>
         <LegalFooter />
       </main>
-      {!isConsole && <BottomNav />}
+      {!isConsole && !isFrontPage && <BottomNav />}
     </div>
   );
 }
