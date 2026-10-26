@@ -11,6 +11,63 @@
  */
 export default {
   fr: {
+    launch: {
+      title: 'Salle de lancement',
+      subtitle:
+        'Trois agents préparent la mise en ligne, web et mobile : ils lisent les données réelles et consignent chaque point bloquant dans la liste de lancement.',
+      agents: {
+        qa: {
+          name: 'Assurance qualité',
+          role: 'Audite le catalogue, les boutiques, les catégories et le parcours de commande, puis consigne chaque blocage.',
+        },
+        app: {
+          name: 'Lancement mobile',
+          role: "Prépare les fiches App Store et Google Play, les captures d'écran et les réponses de conformité.",
+        },
+        web: {
+          name: 'Lancement web',
+          role: 'Rend le site trouvable, rapide et digne de confiance : référencement, pages légales, vitesse, preuves de lancement.',
+        },
+      },
+      suggest: {
+        qa: {
+          1: 'Audite tout et donne-moi le verdict go/no-go.',
+          2: 'Quels blocages empêchent un acheteur de payer aujourd’hui ?',
+        },
+        app: {
+          1: 'Rédige la fiche App Store et Google Play en français et en anglais.',
+          2: 'Liste ce qui manque pour passer la revue des deux magasins.',
+        },
+        web: {
+          1: 'Audite le référencement et les pages de confiance.',
+          2: 'Que faut-il corriger avant d’annoncer le lancement ?',
+        },
+      },
+      chat: {
+        title: 'Conversation',
+        newThread: 'Nouvelle conversation',
+        empty: 'Lancez la mission de cet agent.',
+        thinking: 'L’agent travaille…',
+        placeholder: 'Écrivez votre consigne…',
+        send: 'Envoyer',
+        sendError: 'Le message n’a pas pu être envoyé.',
+      },
+      board: {
+        title: 'Liste de lancement',
+        counts: '{{open}} à traiter · {{critical}} critiques',
+        addPlaceholder: 'Ajouter une tâche…',
+        add: 'Ajouter',
+        track: 'Périmètre',
+        priority: 'Priorité',
+        status: 'Statut',
+        delete: 'Supprimer',
+        confirmDelete: 'Supprimer cette tâche ?',
+        empty: 'Aucune tâche pour ce filtre.',
+      },
+      track: { all: 'Tout', web: 'Web', app: 'Application', shared: 'Commun' },
+      status: { all: 'Tous', todo: 'À faire', in_progress: 'En cours', blocked: 'Bloqué', done: 'Fait' },
+      priority: { critical: 'Critique', high: 'Élevée', normal: 'Normale' },
+    },
     activityFeed: {
       aProduct: 'un produit',
       anItem: 'un article',
@@ -234,6 +291,63 @@ export default {
     theme: { dark: 'Thème sombre', label: 'Thème', light: 'Thème clair' },
   },
   en: {
+    launch: {
+      title: 'Launch room',
+      subtitle:
+        'Three agents prepare the web and mobile launch: they read the real data and file every blocker on the launch list.',
+      agents: {
+        qa: {
+          name: 'Release QA',
+          role: 'Audits the catalogue, shops, categories and the order path, then files every blocker.',
+        },
+        app: {
+          name: 'Mobile launch',
+          role: 'Prepares the App Store and Google Play listings, the screenshot plan and the store compliance answers.',
+        },
+        web: {
+          name: 'Web launch',
+          role: 'Gets the site found, fast and trusted: SEO, legal pages, speed and launch proof.',
+        },
+      },
+      suggest: {
+        qa: {
+          1: 'Audit everything and give me the go/no-go verdict.',
+          2: 'What blocks a buyer from paying today?',
+        },
+        app: {
+          1: 'Write the App Store and Google Play listing in French and English.',
+          2: 'List what is missing to pass both stores’ review.',
+        },
+        web: {
+          1: 'Audit the SEO and the trust pages.',
+          2: 'What has to be fixed before we announce the launch?',
+        },
+      },
+      chat: {
+        title: 'Conversation',
+        newThread: 'New conversation',
+        empty: 'Give this agent its mission.',
+        thinking: 'The agent is working…',
+        placeholder: 'Write your instruction…',
+        send: 'Send',
+        sendError: 'The message could not be sent.',
+      },
+      board: {
+        title: 'Launch list',
+        counts: '{{open}} open · {{critical}} critical',
+        addPlaceholder: 'Add a task…',
+        add: 'Add',
+        track: 'Track',
+        priority: 'Priority',
+        status: 'Status',
+        delete: 'Delete',
+        confirmDelete: 'Delete this task?',
+        empty: 'No task for this filter.',
+      },
+      track: { all: 'All', web: 'Web', app: 'Mobile app', shared: 'Shared' },
+      status: { all: 'All', todo: 'To do', in_progress: 'In progress', blocked: 'Blocked', done: 'Done' },
+      priority: { critical: 'Critical', high: 'High', normal: 'Normal' },
+    },
     adminDisputes: { staff: 'Staff' },
     adminLogistics: { demo: 'Demo' },
     adminOrders: { unarchived: 'Unarchived' },

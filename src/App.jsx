@@ -112,6 +112,7 @@ const ChinaWarehouse = lazy(() => import('@/pages/admin/ChinaWarehouse'));
 const ShippingLabels = lazy(() => import('@/pages/admin/ShippingLabels'));
 const AdvancedAnalytics = lazy(() => import('@/pages/admin/AdvancedAnalytics'));
 const TicketAutomation = lazy(() => import('@/pages/admin/TicketAutomation'));
+const LaunchRoom = lazy(() => import('@/pages/LaunchRoom'));
 
 // Seller
 const SellerDashboard = lazy(() => import('@/pages/seller/SellerDashboard'));
@@ -316,6 +317,7 @@ const AuthenticatedApp = () => {
           <Route path="/partner-ai-settings" element={<PageWrapper><PartnerAiSettings /></PageWrapper>} />
           <Route path="/security-activity" element={<PageWrapper><SecurityActivity /></PageWrapper>} />
           <Route path="/admin/access-matrix" element={<PageWrapper><AccessMatrix /></PageWrapper>} />
+          <Route path="/launch-room" element={<PageWrapper><LaunchRoom /></PageWrapper>} />
           <Route path="/merchant-disputes" element={<PageWrapper><MerchantDisputes /></PageWrapper>} />
           <Route path="/payout-ledger" element={<PageWrapper><PayoutLedger /></PageWrapper>} />
           <Route path="/coverage-map" element={<PageWrapper><CoverageMap /></PageWrapper>} />
