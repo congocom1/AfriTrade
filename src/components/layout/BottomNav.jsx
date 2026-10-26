@@ -56,13 +56,13 @@ export default function BottomNav() {
               onClick={(event) => handleTabClick(event, item.path, active)}
               aria-current={active ? 'page' : undefined}
               aria-label={t(item.key)}
-              className={`bottom-nav-item relative flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-lg px-1 text-[10px] font-medium transition-colors duration-150 active:bg-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring ${
+              className={`bottom-nav-item relative flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-lg px-1 text-[10px] font-medium transition-[color,background-color,transform] duration-150 active:scale-95 active:bg-accent/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring ${
                 active ? 'text-primary' : 'text-muted-foreground'
               }`}
             >
               <Icon className="h-5 w-5" strokeWidth={active ? 2.4 : 1.8} />
               {item.badge && count > 0 && (
-                <span className="absolute right-2 top-0.5 min-w-[18px] rounded-full bg-primary px-1 text-center text-[9px] leading-[18px] text-primary-foreground">
+                <span aria-hidden="true" className="pointer-events-none absolute right-2 top-0.5 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-primary px-1 text-center text-[9px] leading-none text-primary-foreground">
                   {count > 99 ? '99+' : count}
                 </span>
               )}

@@ -49,7 +49,10 @@ export function rememberTabPath(pathname) {
     lastPathByTab.delete('/');
     return;
   }
-  if (activeTab) lastPathByTab.set(activeTab, pathname);
+  // A page that belongs to no tab is filed under the tab the user is inside.
+  // Nothing has been tapped yet on a fresh page load, so it falls back to Home,
+  // which owns "/" and is already the fallback for these pages everywhere else.
+  lastPathByTab.set(activeTab || '/', pathname);
 }
 
 /** Where a tab tap should land: its remembered position, else its root. */

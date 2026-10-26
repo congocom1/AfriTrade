@@ -46,7 +46,7 @@ export default function MobileDrawer({ isOpen, onClose }) {
           onClick={onClose}
           aria-current={active ? 'page' : undefined}
           // P0 M-06: Add press feedback on mobile
-          className={`app-nav-item flex min-h-11 items-center gap-3 rounded-lg px-3 py-2.5 text-base font-medium transition-colors active:scale-[0.98] active:bg-accent duration-75 ease-out ${
+          className={`app-nav-item flex min-h-12 items-center gap-3 rounded-lg px-3 py-2.5 text-base font-medium transition-[color,background-color,transform] active:scale-95 active:bg-accent/40 duration-75 ease-out ${
             active ? 'bg-primary text-primary-foreground' : 'text-foreground hover:bg-secondary'
           }`}
         >
@@ -73,7 +73,7 @@ export default function MobileDrawer({ isOpen, onClose }) {
             <button
               type="button"
               onClick={onClose}
-              className="flex h-11 w-11 items-center justify-center rounded-lg hover:bg-secondary focus:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-90"
+              className="flex h-12 w-12 items-center justify-center rounded-lg transition-[color,background-color,transform] hover:bg-secondary active:scale-95 active:bg-accent/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-label={t('nav.close')}
             >
               <X className="h-6 w-6" aria-hidden="true" />
@@ -95,7 +95,7 @@ export default function MobileDrawer({ isOpen, onClose }) {
                     <button
                       type="button"
                       onClick={() => { logout(); onClose(); }}
-                      className="flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-2.5 text-base font-medium text-destructive transition-colors hover:bg-secondary text-left active:bg-accent active:scale-[0.98] duration-75"
+                      className="flex min-h-12 w-full items-center gap-3 rounded-lg px-3 py-2.5 text-base font-medium text-destructive transition-[color,background-color,transform] hover:bg-secondary text-left active:scale-95 active:bg-accent/40 duration-75"
                     >
                       <LogOut className="h-6 w-6" aria-hidden="true" />
                       <span>{t('nav.logout')}</span>

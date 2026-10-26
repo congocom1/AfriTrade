@@ -98,12 +98,15 @@ export default function TopBar() {
     event.preventDefault();
     if (term.trim()) { navigate(`/search?q=${encodeURIComponent(term.trim())}`); setTerm(''); }
   };
-  const iconButton = 'flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring';
+  // 48px minimum tap target for iOS WebView. The badge below is positioned inside
+  // this box and ignores pointer events, so it neither widens the button nor
+  // steals part of its hit area.
+  const iconButton = 'flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-[color,background-color,transform] hover:bg-secondary hover:text-foreground active:scale-95 active:bg-accent/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring';
   const initials = (user?.full_name || user?.name || user?.email || '').trim().split(/\s+/).map(part => part[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
   return <header className="sticky top-0 z-50 border-b border-border/60 bg-background/90 pt-[env(safe-area-inset-top)] shadow-[0_1px_3px_rgba(15,36,29,0.06)] backdrop-blur-md">
     <div className="relative mx-auto flex max-w-7xl flex-nowrap items-center gap-2 px-3 py-2 md:gap-4 md:px-6 md:py-2.5">
       {isChildScreen && <div className="pointer-events-none absolute inset-0 flex items-center px-3 md:hidden">
-        <BackButton className="pointer-events-auto"><span className="sr-only">{t('common.back')}</span></BackButton>
+        <BackButton className="pointer-events-auto min-h-12 active:bg-accent/40"><span className="sr-only">{t('common.back')}</span></BackButton>
         <h1 className="absolute left-1/2 max-w-[58%] -translate-x-1/2 truncate text-sm font-semibold text-foreground">{childTitle}</h1>
       </div>}
       <Link to="/" aria-label={`AfriTrade — ${t('nav.home')}`} className={`${isChildScreen ? 'hidden md:flex' : 'flex'} min-h-11 shrink-0 items-center rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring`}><span className="font-heading text-lg font-extrabold tracking-[-0.03em] text-foreground md:text-xl">Afri<span className="text-primary">Trade</span></span></Link>
@@ -115,7 +118,7 @@ export default function TopBar() {
         <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
         <input id="site-search" type="search" value={term} onChange={event => setTerm(event.target.value)} placeholder={t('nav.searchPlaceholder')} enterKeyHint="search" className="h-11 w-full min-w-0 rounded-full border border-border bg-secondary/60 pl-10 pr-4 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/75 hover:border-border focus:border-primary/60 focus:bg-card focus:ring-2 focus:ring-primary/15" />
       </form>
-      <button type="button" className={`${isChildScreen ? 'ml-auto' : 'ml-0'} flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring md:hidden`} onClick={() => setDrawerOpen(true)} aria-label={t('nav.menu')} aria-expanded={drawerOpen} aria-controls="mobile-drawer"><Menu className="h-5 w-5" /></button>
+      <button type="button" className={`${isChildScreen ? 'ml-auto' : 'ml-0'} flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-[color,background-color,transform] hover:bg-secondary hover:text-foreground active:scale-95 active:bg-accent/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring md:hidden`} onClick={() => setDrawerOpen(true)} aria-label={t('nav.menu')} aria-expanded={drawerOpen} aria-controls="mobile-drawer"><Menu className="h-5 w-5" /></button>
       <div className="hidden shrink-0 items-center gap-1.5 md:flex">
         <SpaceSwitcher />
         <DropdownMenu open={accountOpen} onOpenChange={setAccountOpen}>
@@ -139,7 +142,7 @@ export default function TopBar() {
             {user && <><DropdownMenuSeparator /><DropdownMenuItem onSelect={() => logout()} className="text-destructive"><LogOut className="mr-2 h-4 w-4" />{t('nav.logout')}</DropdownMenuItem></>}
           </DropdownMenuContent>
         </DropdownMenu>
-        <Link to="/cart" className={`${iconButton} header-icon-button relative`} aria-label={`${t('nav.cart')} (${count})`}><ShoppingBag className="h-5 w-5" />{count > 0 && <span className="absolute -right-0.5 -top-0.5 rounded-full bg-primary px-1.5 text-[10px] font-bold leading-5 text-primary-foreground ring-2 ring-background">{count > 99 ? '99+' : count}</span>}</Link>
+        <Link to="/cart" className={`${iconButton} header-icon-button relative`} aria-label={`${t('nav.cart')} (${count})`}><ShoppingBag className="h-5 w-5" aria-hidden="true" />{count > 0 && <span aria-hidden="true" className="pointer-events-none absolute right-0.5 top-0.5 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground ring-2 ring-background">{count > 99 ? '99+' : count}</span>}</Link>
       </div>
     </div>
     <MobileDrawer isOpen={drawerOpen} onClose={() => setDrawerOpen(false)} />

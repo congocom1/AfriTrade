@@ -140,18 +140,35 @@ export default defineConfig({
       output: {
         codeSplitting: {
           groups: [
+            // React first. A group absorbs the dependencies of the modules it
+            // matches, so without its own group React is folded into whichever
+            // dependency cluster is emitted first (charts, three) and shipped
+            // twice.
+            { name: 'react-core', test: /node_modules\/(react|react-dom|scheduler)\// },
+            // Three.js: three.core.js (the engine) and three.module.js (the engine
+            // plus the WebGL renderer) are two separate build files, and the
+            // examples/addons directory is a third. Keeping them apart means a page
+            // that only needs the core does not download the renderer or the addons.
             { name: 'three-engine-core', test: /node_modules\/three\/build\/three\.core\.js$/ },
             { name: 'three-engine-module', test: /node_modules\/three\/build\/three\.module\.js$/ },
-            { name: 'three-renderers', test: /node_modules\/three\/src\/renderers\// },
-            { name: 'three-math', test: /node_modules\/three\/src\/math\// },
-            { name: 'three-loaders', test: /node_modules\/three\/examples\/jsm\/loaders\// },
-            { name: 'three-controls', test: /node_modules\/three\/examples\/jsm\/controls\// },
-            { name: 'three-core', test: /node_modules\/three\// },
-            { name: 'translations', test: /src\/i18n\/(en|fr|ln|sw|resources)\.js$/ },
-            { name: 'charts', test: /node_modules\/(recharts|d3-[^/]+)\// },
+            { name: 'three-addons', test: /node_modules\/three\/examples\/jsm\// },
+            { name: 'three-other', test: /node_modules\/three\// },
+            // Charts: the d3 modules recharts builds on get their own chunk, so a
+            // chart page fetches recharts and its maths in parallel instead of as
+            // one oversized bundle.
+            { name: 'charts-d3', test: /node_modules\/d3-[^/]+\// },
+            { name: 'charts-recharts', test: /node_modules\/(recharts|victory-vendor|react-smooth|fast-equals|decimal\.js-light)\// },
             { name: 'pdf', test: /node_modules\/jspdf\// },
             { name: 'html2canvas', test: /node_modules\/html2canvas\// },
             { name: 'pdf-deps', test: /node_modules\/(fflate|canvg|@babel)\// },
+            // Translations: one chunk per locale instead of a single ~330KB
+            // bundle, plus a chunk for the shared copy patches that every locale
+            // consumes. Order matters: the locale patterns must come first.
+            { name: 'locale-fr', test: /src\/i18n\/(fr|fr-extended)\.js$/ },
+            { name: 'locale-en', test: /src\/i18n\/en\.js$/ },
+            { name: 'locale-ln', test: /src\/i18n\/ln\.js$/ },
+            { name: 'locale-sw', test: /src\/i18n\/sw\.js$/ },
+            { name: 'i18n-copy', test: /src\/i18n\// },
           ],
         },
       },
