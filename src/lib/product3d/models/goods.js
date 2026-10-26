@@ -64,7 +64,6 @@ export function buildBrakePads(THREE) {
 /** Corrugated roofing sheet, 3 m long. */
 export function buildRoofingSheet(THREE) {
   const P = createParts(THREE);
-  const M = createMaterials(THREE);
   const steel = new THREE.MeshStandardMaterial({ color: 0x9aa3ab, roughness: 0.36, metalness: 0.9 });
 
   const ribs = P.repeat(10, (i) => P.cyl(0.05, 0.05, 3, steel, [-0.45 + i * 0.1, 0, 0], [Math.PI / 2, 0, 0], 20));
