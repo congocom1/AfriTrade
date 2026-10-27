@@ -25,7 +25,7 @@ describe('longestSide', () => {
 
 describe('volumetricWeight', () => {
   it('computes volumetric weight with default divisor', () => {
-    assert.equal(volumetricWeight({ length: 40, width: 30, height: 20 }), 5); // (40*30*20)/5000 = 24000/5000 = 4.8, rounded to 5 cents
+    assert.equal(volumetricWeight({ length: 40, width: 30, height: 20 }), 4.8);
   });
   it('returns 0 when any dimension is missing', () => {
     assert.equal(volumetricWeight({ length: 40, width: 30 }), 0);
@@ -124,7 +124,7 @@ describe('quoteShipping', () => {
 
   it('computes freight and adds fees', () => {
     const q = quoteShipping({ rates: [rate], config: cfg, destination: 'kinshasa', weightKg: 2 });
-    assert.ok(q.freight >= 5);
+    assert.equal(q.freight, 700);
     assert.ok(q.total >= q.freight);
     assert.equal(q.matched, true);
   });
@@ -160,4 +160,10 @@ describe('averageRate', () => {
   it('returns null when no rates match weight', () => {
     assert.equal(averageRate([{ active: true, base_usd: 5, per_kg_usd: 1, max_weight_kg: 10 }], 100), null);
   });
+});
+
+it('preserves fractional kilograms when quoting freight', () => {
+  const q = quoteShipping({ rates: [{ base_usd_cents: 500, per_kg_usd_cents: 100 }], weightKg: 0.4 });
+  assert.equal(q.weight.billable, 0.4);
+  assert.equal(q.freight, 540);
 });

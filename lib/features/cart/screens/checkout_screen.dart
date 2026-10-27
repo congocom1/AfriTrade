@@ -63,7 +63,7 @@ class CheckoutScreen extends ConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Total',
+                        'Items subtotal',
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w700,
                         ),
@@ -83,56 +83,18 @@ class CheckoutScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
           
-          // Payment methods
-          Card(
+          const Card(
             child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Payment method',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  RadioListTile<String>(
-                    value: 'mpesa',
-                    title: const Text('M-Pesa'),
-                    subtitle: const Text('Mobile money'),
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                  RadioListTile<String>(
-                    value: 'airtel',
-                    title: const Text('Airtel Money'),
-                    subtitle: const Text('Mobile money'),
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                  RadioListTile<String>(
-                    value: 'orange',
-                    title: const Text('Orange Money'),
-                    subtitle: const Text('Mobile money'),
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                  RadioListTile<String>(
-                    value: 'cod',
-                    title: const Text('Cash on delivery'),
-                    subtitle: const Text('Pay when you receive'),
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                ],
-              ),
+              padding: EdgeInsets.all(16),
+              child: Text('Checkout is not available in this app yet. No order or payment will be submitted. Your cart is saved.'),
             ),
           ),
-          const SizedBox(height: 16),
-          
           // Place order
           SizedBox(
             height: 50,
             child: ElevatedButton(
-              onPressed: () {},
-              child: Text('Pay ${formatUSD(cart.subtotalUsd)}'),
+              onPressed: null,
+              child: const Text('Checkout unavailable'),
             ),
           ),
         ],

@@ -20,7 +20,8 @@ class ProfileScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.settings_outlined),
-            onPressed: () {},
+            onPressed: null,
+            tooltip: 'Settings unavailable',
           ),
         ],
       ),
@@ -91,7 +92,7 @@ class ProfileScreen extends ConsumerWidget {
                 child: _StatTile(
                   icon: Icons.receipt_long_outlined,
                   label: 'Orders',
-                  value: '0',
+                  value: '—',
                 ),
               ),
             ],
@@ -102,11 +103,11 @@ class ProfileScreen extends ConsumerWidget {
           _MenuSection(
             title: 'Shopping',
             items: [
-              (Icons.receipt_long_outlined, 'My orders', () {}),
-              (Icons.favorite_outline, 'My favorites', () {}),
-              (Icons.account_balance_wallet_outlined, 'My wallet', () {}),
-              (Icons.local_offer_outlined, 'Promo codes', () {}),
-              (Icons.card_giftcard_outlined, 'Loyalty & rewards', () {}),
+              (Icons.receipt_long_outlined, 'My orders', null),
+              (Icons.favorite_outline, 'My favorites', null),
+              (Icons.account_balance_wallet_outlined, 'My wallet', null),
+              (Icons.local_offer_outlined, 'Promo codes', null),
+              (Icons.card_giftcard_outlined, 'Loyalty & rewards', null),
             ],
           ),
           const SizedBox(height: 16),
@@ -114,11 +115,11 @@ class ProfileScreen extends ConsumerWidget {
           _MenuSection(
             title: 'Account',
             items: [
-              (Icons.location_on_outlined, 'Saved addresses', () {}),
-              (Icons.notifications_outlined, 'Notification settings', () {}),
-              (Icons.shield_outlined, 'Privacy settings', () {}),
-              (Icons.help_outline, 'Help center', () {}),
-              (Icons.language, 'Language', () {}),
+              (Icons.location_on_outlined, 'Saved addresses', null),
+              (Icons.notifications_outlined, 'Notification settings', null),
+              (Icons.shield_outlined, 'Privacy settings', null),
+              (Icons.help_outline, 'Help center', null),
+              (Icons.language, 'Language', null),
             ],
           ),
           const SizedBox(height: 16),
@@ -128,9 +129,10 @@ class ProfileScreen extends ConsumerWidget {
             child: ListTile(
               leading: Icon(Icons.storefront, color: theme.colorScheme.primary),
               title: const Text('Seller space'),
-              subtitle: const Text('Manage your shop'),
+              subtitle: const Text('Not available in this app yet'),
+              enabled: false,
               trailing: const Icon(Icons.chevron_right),
-              onTap: () {},
+              onTap: null,
             ),
           ),
           const SizedBox(height: 8),
@@ -139,9 +141,10 @@ class ProfileScreen extends ConsumerWidget {
             child: ListTile(
               leading: Icon(Icons.people_outline, color: theme.colorScheme.primary),
               title: const Text('Creator space'),
-              subtitle: const Text('Affiliation & content'),
+              subtitle: const Text('Not available in this app yet'),
+              enabled: false,
               trailing: const Icon(Icons.chevron_right),
-              onTap: () {},
+              onTap: null,
             ),
           ),
           const SizedBox(height: 24),
@@ -201,7 +204,7 @@ class _StatTile extends StatelessWidget {
 
 class _MenuSection extends StatelessWidget {
   final String title;
-  final List<(IconData, String, VoidCallback)> items;
+  final List<(IconData, String, VoidCallback?)> items;
   
   const _MenuSection({required this.title, required this.items});
   
@@ -233,6 +236,8 @@ class _MenuSection extends StatelessWidget {
                       title: Text(item.$2),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: item.$3,
+                      enabled: item.$3 != null,
+                      subtitle: item.$3 == null ? const Text('Not available in this app yet') : null,
                     ),
                     if (entry.key < items.length - 1)
                       const Divider(height: 1, indent: 56),

@@ -221,6 +221,7 @@ async function revokeKey(db: any, id: string, reason?: string) {
     active: false,
     description: `Révoked${reason ? ` — ${String(reason).slice(0, 200)}` : ''}`,
   }).catch(() => null);
+  if (!updated) return addSecurityHeaders(Response.json({ error: 'Key revocation failed' }, { status: 500 }));
   return addSecurityHeaders(Response.json({ id, revoked: true, active: false, description: updated?.description }));
 }
 
