@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/providers/providers.dart';
+import '../../../core/services/hosted_features.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -20,8 +21,8 @@ class ProfileScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.settings_outlined),
-            onPressed: null,
-            tooltip: 'Settings unavailable',
+            onPressed: () => context.push('/settings'),
+            tooltip: 'App settings',
           ),
         ],
       ),
@@ -103,11 +104,11 @@ class ProfileScreen extends ConsumerWidget {
           _MenuSection(
             title: 'Shopping',
             items: [
-              (Icons.receipt_long_outlined, 'My orders', null),
-              (Icons.favorite_outline, 'My favorites', null),
-              (Icons.account_balance_wallet_outlined, 'My wallet', null),
-              (Icons.local_offer_outlined, 'Promo codes', null),
-              (Icons.card_giftcard_outlined, 'Loyalty & rewards', null),
+              (Icons.receipt_long_outlined, 'My orders (web)', () => openHostedFeature(context, '/order-history')),
+              (Icons.favorite_outline, 'My favorites', () => context.push('/favorites')),
+              (Icons.account_balance_wallet_outlined, 'My wallet (web)', () => openHostedFeature(context, '/wallet')),
+              (Icons.local_offer_outlined, 'Promo codes (web)', () => openHostedFeature(context, '/coupons')),
+              (Icons.card_giftcard_outlined, 'Loyalty & rewards (web)', () => openHostedFeature(context, '/customer-loyalty')),
             ],
           ),
           const SizedBox(height: 16),
@@ -115,11 +116,11 @@ class ProfileScreen extends ConsumerWidget {
           _MenuSection(
             title: 'Account',
             items: [
-              (Icons.location_on_outlined, 'Saved addresses', null),
-              (Icons.notifications_outlined, 'Notification settings', null),
-              (Icons.shield_outlined, 'Privacy settings', null),
-              (Icons.help_outline, 'Help center', null),
-              (Icons.language, 'Language', null),
+              (Icons.location_on_outlined, 'Saved addresses (web)', () => openHostedFeature(context, '/saved-addresses')),
+              (Icons.notifications_outlined, 'Notification settings (web)', () => openHostedFeature(context, '/notification-settings')),
+              (Icons.shield_outlined, 'Privacy settings (web)', () => openHostedFeature(context, '/privacy-settings')),
+              (Icons.help_outline, 'Help center (web)', () => openHostedFeature(context, '/help-center')),
+              (Icons.language, 'Language', () => context.push('/settings')),
             ],
           ),
           const SizedBox(height: 16),
@@ -129,10 +130,9 @@ class ProfileScreen extends ConsumerWidget {
             child: ListTile(
               leading: Icon(Icons.storefront, color: theme.colorScheme.primary),
               title: const Text('Seller space'),
-              subtitle: const Text('Not available in this app yet'),
-              enabled: false,
+              subtitle: const Text('Opens on the web; sign-in may be required'),
               trailing: const Icon(Icons.chevron_right),
-              onTap: null,
+              onTap: () => openHostedFeature(context, '/seller'),
             ),
           ),
           const SizedBox(height: 8),
@@ -141,10 +141,9 @@ class ProfileScreen extends ConsumerWidget {
             child: ListTile(
               leading: Icon(Icons.people_outline, color: theme.colorScheme.primary),
               title: const Text('Creator space'),
-              subtitle: const Text('Not available in this app yet'),
-              enabled: false,
+              subtitle: const Text('Opens on the web; sign-in may be required'),
               trailing: const Icon(Icons.chevron_right),
-              onTap: null,
+              onTap: () => openHostedFeature(context, '/creator'),
             ),
           ),
           const SizedBox(height: 24),
