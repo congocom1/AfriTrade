@@ -63,7 +63,6 @@ export default function ShippingConfig() {
   if (loading) return <div className="h-64 animate-pulse rounded-2xl bg-secondary" />;
 
   const duty = dutyEstimate({ goodsUsdCents: Math.round((Number(estimate.goodsUsd) || 0) * 100), config, originCountry: estimate.originCountry });
-
   return (
     <div className="space-y-5 pb-8">
       <DashboardNav title={t('shippingConfig.title')} links={ADMIN_LINKS} />

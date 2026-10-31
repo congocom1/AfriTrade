@@ -22,3 +22,19 @@ export async function resolve(specifier, context, next) {
   }
   return next(specifier, context);
 }
+
+// Node 22.12 does not strip TypeScript; keep tests portable across the CI matrix.
+export async function load(url, context, next) {
+  if (url.startsWith('file:') && url.endsWith('.ts')) {
+    const { default: ts } = await import('typescript');
+    const source = fs.readFileSync(fileURLToPath(url), 'utf8');
+    return {
+      format: 'module',
+      shortCircuit: true,
+      source: ts.transpileModule(source, {
+        compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
+      }).outputText,
+    };
+  }
+  return next(url, context);
+}

@@ -1,12 +1,10 @@
 import base44 from "@base44/vite-plugin";
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
-import path from 'node:path';
 import fs from 'node:fs';
+import path from 'node:path';
 import { securityHeadersPlugin } from './scripts/security-headers-plugin.js';
 
-// Use a CommonJS-style config so builders that parse vite.config.js with
-// CJS (like some CI/build environments) won't fail with ESM-only syntax.
 const SRC = path.resolve(process.cwd(), 'src');
 
 // Performance analyzer for bundle analysis
@@ -15,13 +13,12 @@ const buildAnalyzerPlugin = () => {
     return {
       name: 'vite-bundle-analyzer',
       generateBundle(options, bundle) {
-
         const statsPath = path.join(process.cwd(), 'dist', 'stats.json');
         const stats = {
           assets: Object.values(bundle)
             .filter(chunk => chunk.type === 'asset' || chunk.type === 'chunk')
             .map(chunk => ({
-              name: chunk.name,
+              name: chunk.name || chunk.fileName,
               type: chunk.type,
               size: chunk.type === 'asset' ? chunk.source?.length || 0 : chunk.code?.length || 0,
             })),
@@ -30,6 +27,7 @@ const buildAnalyzerPlugin = () => {
           }, 0)
         };
 
+        fs.mkdirSync(path.dirname(statsPath), { recursive: true });
         fs.writeFileSync(statsPath, JSON.stringify(stats, null, 2));
         console.log('\n📊 Bundle analysis saved to dist/stats.json');
       }
@@ -62,7 +60,7 @@ const performanceMonitorPlugin = () => {
           console.log(`\n⚠️  Found ${largeChunks.length} oversized chunks (>500KB):`);
           largeChunks.forEach(chunk => {
             const sizeKB = ((chunk.code?.length || 0) / 1024).toFixed(2);
-            console.log(`  - ${chunk.name}: ${sizeKB}KB`);
+            console.log(`  - ${chunk.name || chunk.fileName}: ${sizeKB}KB`);
           });
         }
 
@@ -75,7 +73,14 @@ const performanceMonitorPlugin = () => {
 
 export default defineConfig({
   server: {
+    host: '0.0.0.0',
     port: 5174,
+    allowedHosts: true,
+  },
+  preview: {
+    host: '0.0.0.0',
+    port: 4173,
+    allowedHosts: true,
   },
   plugins: [
     base44({
@@ -175,3 +180,4 @@ export default defineConfig({
     },
   },
 });
+

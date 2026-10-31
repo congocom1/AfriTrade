@@ -3,9 +3,9 @@ name: CI Pipeline
 on:
   workflow_dispatch:
   push:
-    branches: [main, design/simple-clean]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 permissions:
   contents: read
@@ -59,6 +59,23 @@ jobs:
 
       - name: Run frontend build
         run: npm run build
+
+  route-switching:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Test route switching without a live backend
+        run: npx playwright test test/e2e/route-switching.spec.js --project=chromium --project=mobile-chrome --project=mobile-webkit
+        env:
+          E2E_MOCK_API: '1'
+          CI: 'true'
 
   flutter-checks:
     runs-on: ubuntu-latest

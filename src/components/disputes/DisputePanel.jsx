@@ -27,7 +27,7 @@ export default function DisputePanel() {
   const profile = getProfile();
   // A return escalated from /returns arrives with ?order=…&phone=…&reason=…,
   // so the dispute form opens already filled in.
-  const params = new URLSearchParams(window.location.search);
+  const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams();
   const requestedType = params.get('reason') || '';
   const [disputes, setDisputes] = useState([]);
   const [loading, setLoading] = useState(true);

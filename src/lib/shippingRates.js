@@ -64,12 +64,12 @@ export function volumetricWeight(dims, divisor) {
   const w = Number(dims?.width) || 0;
   const h = Number(dims?.height) || 0;
   if (!l || !w || !h) return 0;
-  return round2Cents((l * w * h) / (Number(divisor) || DEFAULT_SHIPPING_CONFIG.volumetric_divisor));
+  return (l * w * h) / (Number(divisor) || DEFAULT_SHIPPING_CONFIG.volumetric_divisor);
 }
 
 /** Couriers bill the greater of real weight and volumetric weight. */
 export function billableWeight({ weightKg = 0, dims = null } = {}, divisor) {
-  const actual = round2Cents(Number(weightKg) || 0);
+  const actual = Math.max(0, Number(weightKg) || 0);
   const volumetric = volumetricWeight(dims, divisor);
   return { actual, volumetric, billable: Math.max(actual, volumetric) };
 }
@@ -153,7 +153,7 @@ export function quoteShipping({
     longestSideCm: longestSide(dims),
   });
 
-  const freight = rate ? round2Cents((Number(rate.base_usd_cents) || Number(rate.base_usd) * 100 || 0) + (Number(rate.per_kg_usd_cents) || Number(rate.per_kg_usd) * 100 || 0) * (weight.billable / 100)) : 0;
+  const freight = rate ? round2Cents((Number(rate.base_usd_cents) || Number(rate.base_usd) * 100 || 0) + (Number(rate.per_kg_usd_cents) || Number(rate.per_kg_usd) * 100 || 0) * weight.billable) : 0;
   const rateSurcharge = round2Cents(Number(rate?.surcharge_usd_cents) || Number(rate?.surcharge_usd) * 100 || 0);
   const fuel = round2Cents(freight * ((Number(cfg.fuel_surcharge_percent) || 0) / 100));
   const regional = rate ? regionalSurchargeFor(cfg, destination) : round2Cents(Number(cfg.remote_area_surcharge_usd_cents) || Number(cfg.remote_area_surcharge_usd) * 100 || 0);

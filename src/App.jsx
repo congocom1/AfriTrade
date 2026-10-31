@@ -184,10 +184,10 @@ const PageWrapper = ({ children }) => (
 );
 
 /** /track is the legacy entry point; its query string must survive the redirect. */
-const TrackRedirect = () => {
+function TrackRedirect() {
   const { search } = useLocation();
-  return <Navigate to={`/order-tracking${search}`} replace />;
-};
+  return <Navigate to={`/order-tracking${search || ''}`} replace />;
+}
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();

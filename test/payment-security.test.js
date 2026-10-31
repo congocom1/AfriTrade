@@ -20,9 +20,17 @@ function transpile(source) {
   }).outputText;
 }
 
+const createdTestFiles = new Set();
+process.on('exit', () => {
+  for (const file of createdTestFiles) {
+    try { fs.unlinkSync(file); } catch { /* ignore */ }
+  }
+});
+
 async function transpileFile(sourcePath, name) {
   const outputPath = path.join(path.dirname(fileURLToPath(import.meta.url)), `${name}.testmod.mjs`);
   fs.writeFileSync(outputPath, transpile(fs.readFileSync(sourcePath, 'utf8')));
+  createdTestFiles.add(outputPath);
   return import(pathToFileURL(outputPath).href);
 }
 
@@ -59,6 +67,7 @@ async function loadFunction(sourcePath, name, options) {
   const outputPath = path.join(path.dirname(fileURLToPath(import.meta.url)), `${name}.testmod.mjs`);
   const source = withRuntimeImports(fs.readFileSync(sourcePath, 'utf8'), options);
   fs.writeFileSync(outputPath, transpile(source));
+  createdTestFiles.add(outputPath);
   return import(pathToFileURL(outputPath).href);
 }
 
