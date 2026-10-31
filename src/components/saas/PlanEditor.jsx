@@ -10,8 +10,9 @@ import { PLAN_FEATURES } from '@/lib/plans';
 export default function PlanEditor({ plan, onSaved }) {
   const { t } = useTranslation();
   const [form, setForm] = useState({
-    price_monthly_usd: plan.price_monthly_usd ?? ((Number(plan.price_monthly_usd_cents) || 0) / 100),
-    price_yearly_usd: plan.price_yearly_usd ?? ((Number(plan.price_yearly_usd_cents) || 0) / 100),
+    // Stored as integer cents, edited as dollars.
+    price_monthly_usd: plan.price_monthly_usd_cents != null ? plan.price_monthly_usd_cents / 100 : plan.price_monthly_usd || 0,
+    price_yearly_usd: plan.price_yearly_usd_cents != null ? plan.price_yearly_usd_cents / 100 : plan.price_yearly_usd || 0,
     trial_days: plan.trial_days || 0,
     product_limit: plan.product_limit || 0,
     store_limit: plan.store_limit || 0,
@@ -36,6 +37,7 @@ export default function PlanEditor({ plan, onSaved }) {
       const payload = { ...form };
       ['price_monthly_usd', 'price_yearly_usd', 'trial_days', 'product_limit', 'store_limit', 'seller_limit', 'member_limit', 'commission_rate']
         .forEach((k) => { payload[k] = Number(payload[k]) || 0; });
+      // Persist the cents view too: the pricing engine reads the *_cents fields.
       payload.price_monthly_usd_cents = Math.round(payload.price_monthly_usd * 100);
       payload.price_yearly_usd_cents = Math.round(payload.price_yearly_usd * 100);
       if (plan.id) await base44.entities.Plan.update(plan.id, payload);

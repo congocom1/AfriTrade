@@ -1,3 +1,5 @@
+import { usePortalData } from '@/hooks/usePortalData';
+import PortalStatus from '@/components/PortalStatus';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PackageCheck, Package } from 'lucide-react';
@@ -18,14 +20,13 @@ export default function IntlPackingPanel() {
   const [busy, setBusy] = useState('');
   const [errors, setErrors] = useState({});
 
-  const load = async () => {
-    const list = await base44.entities.FulfillmentOrder
-      .filter({ source_type: 'international_supplier' }, '-created_date', 200)
-      .catch(() => []);
-    setRows(list.filter((f) => f.status === 'PACKING'));
-  };
+  const { data: loadedRows, loading, error: loadError, reload: load } = usePortalData(['intl-packing'], async () => {
+    const list = await base44.entities.FulfillmentOrder.filter({ source_type: 'international_supplier' }, '-created_date', 200);
+    if (!Array.isArray(list)) throw new Error('Invalid queue');
+    return list.filter((row) => row.status === 'PACKING');
+  });
+  useEffect(() => { setRows(loadedRows || null); }, [loadedRows]);
 
-  useEffect(() => { load(); }, []);
 
   const handOver = async (f) => {
     setErrors((prev) => ({ ...prev, [f.id]: '' }));
@@ -46,6 +47,7 @@ export default function IntlPackingPanel() {
     }
   };
 
+  if (loading || loadError) return <PortalStatus loading={loading} retry={load} />;
   if (!rows) return <p className="text-sm text-muted-foreground">{t('intlPacking.loading')}</p>;
   if (!rows.length) {
     return (

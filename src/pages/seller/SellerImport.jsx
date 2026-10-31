@@ -1,3 +1,5 @@
+import LegacySelect from '@/components/ui/legacy-select';
+import { SELLER_LINKS } from '@/lib/navLinks';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Search, Upload, Info, CheckCircle2 } from 'lucide-react';
@@ -9,7 +11,9 @@ import { generateProductDescription, suggestProductTags } from '@/lib/ai';
 import { loadPlatformConfig } from '@/lib/config';
 import DashboardNav from '@/components/DashboardNav';
 import { Image } from '@/components/ui/image';
-import { formatUSD } from '@/lib/format';
+import { formatUsdAmount } from '@/lib/format';
+import { productImage } from '@/lib/productImages';
+import { notifyLoadError } from '@/lib/safeList';
 
 
 
@@ -30,8 +34,8 @@ export default function SellerImport() {
     loadPlatformConfig();
     (async () => {
       const [s, c] = await Promise.all([
-        base44.entities.Supplier.filter({ enabled: true }).catch(() => []),
-        base44.entities.Category.list('sort_order', 40).catch(() => []),
+        base44.entities.Supplier.filter({ enabled: true }).catch(notifyLoadError),
+        base44.entities.Category.list('sort_order', 40).catch(notifyLoadError),
       ]);
       setSuppliers(s);
       setCategories(c);
@@ -126,7 +130,7 @@ export default function SellerImport() {
         products_count: (supplier.products_count || 0) + 1,
         last_sync_at: new Date().toISOString(),
       }).catch(() => {});
-      setDone(t('sellerImport.publishedMsg', { title: product.title, price: formatUSD(product.price_usd) }));
+      setDone(t('sellerImport.publishedMsg', { title: product.title, price: formatUsdAmount(product.price_usd) }));
       setSelected(null);
     } finally {
       setPublishing(false);
@@ -137,14 +141,7 @@ export default function SellerImport() {
 
   return (
     <div className="space-y-5 pb-8">
-      <DashboardNav title={t('sellerImport.title')} links={[
-        { to: '/seller', label: t('sellerImport.navDashboard'), end: true },
-        { to: '/seller/products', label: t('sellerImport.navProducts') },
-        { to: '/seller/orders', label: t('sellerImport.navOrders') },
-        { to: '/seller/import', label: t('sellerImport.navImport') },
-        { to: '/seller/wallet', label: t('sellerImport.navWallet') },
-        { to: '/seller/settings', label: t('sellerImport.navShop') },
-      ]} />
+      <DashboardNav title={t('sellerImport.title')} links={SELLER_LINKS} />
 
       <div className="flex items-start gap-2 rounded-xl border border-sky-200 bg-sky-50 p-3 text-xs text-sky-900">
         <Info className="mt-0.5 h-4 w-4 shrink-0" />
@@ -195,14 +192,14 @@ export default function SellerImport() {
               }`}
             >
               <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-secondary">
-                <Image src={r.images?.[0]} alt={r.title} className="h-full w-full object-cover" />
+                <Image src={productImage(r)} alt={r.title} className="h-full w-full object-cover" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">{r.title}</p>
                 <p className="text-[11px] text-muted-foreground">
                   {t('sellerImport.resultMeta', { supplier: r.supplierName, ref: r.externalProductId, stock: r.stock })}
                 </p>
-                <p className="text-xs font-bold">{t('sellerImport.supplierCost', { price: formatUSD(r.supplierPrice) })}</p>
+                <p className="text-xs font-bold">{t('sellerImport.supplierCost', { price: formatUsdAmount(r.supplierPrice) })}</p>
               </div>
             </button>
           ))}
@@ -230,7 +227,7 @@ export default function SellerImport() {
             <button type="button" onClick={writeDescription} className="text-xs font-semibold text-primary">
               {t('sellerImport.generateDesc')}
             </button>
-            <select
+            <LegacySelect
               value={draft.category_id}
               onChange={(e) => setDraft({ ...draft, category_id: e.target.value })}
               className="h-11 w-full rounded-lg border border-border bg-background px-3 text-sm"
@@ -239,7 +236,7 @@ export default function SellerImport() {
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
-            </select>
+            </LegacySelect>
             <div>
               <label className="text-xs font-semibold text-muted-foreground">{t('sellerImport.marginLabel', { value: draft.markup_percent })}</label>
               <input
@@ -254,13 +251,13 @@ export default function SellerImport() {
 
             {preview && (
               <div className="space-y-1 rounded-xl bg-secondary/50 p-3 text-xs">
-                <div className="flex justify-between"><span className="text-muted-foreground">{t('sellerImport.costRow')}</span><span>{formatUSD(preview.supplierPrice)}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">{t('sellerImport.intlShipRow')}</span><span>{formatUSD(preview.intlShipping)}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">{t('sellerImport.importRow')}</span><span>{formatUSD(preview.importCosts)}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">{t('sellerImport.localRow')}</span><span>{formatUSD(preview.logistics)}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">{t('sellerImport.marginRow')}</span><span>{formatUSD(preview.margin)}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">{t('sellerImport.costRow')}</span><span>{formatUsdAmount(preview.supplierPrice)}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">{t('sellerImport.intlShipRow')}</span><span>{formatUsdAmount(preview.intlShipping)}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">{t('sellerImport.importRow')}</span><span>{formatUsdAmount(preview.importCosts)}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">{t('sellerImport.localRow')}</span><span>{formatUsdAmount(preview.logistics)}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">{t('sellerImport.marginRow')}</span><span>{formatUsdAmount(preview.margin)}</span></div>
                 <div className="flex justify-between border-t border-border pt-1 text-sm font-bold">
-                  <span>{t('sellerImport.clientPrice')}</span><span className="text-primary">{formatUSD(preview.total)}</span>
+                  <span>{t('sellerImport.clientPrice')}</span><span className="text-primary">{formatUsdAmount(preview.total)}</span>
                 </div>
               </div>
             )}

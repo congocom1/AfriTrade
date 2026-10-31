@@ -8,6 +8,17 @@ const RATE_WINDOW_MS = 3600 * 1000;
 
 const error = (message, status = 400) => Response.json({ error: message }, { status });
 const editable = { name: 120, city: 100, phone: 40, description: 2000, logo_url: 500, banner_url: 500, delivery_info: 1000 };
+// Branding fields are rendered on public storefront pages, so only http(s) URLs may be stored:
+// a javascript:/data: URI here would become stored script execution or a redirect on the storefront.
+const URL_FIELDS = new Set(['logo_url', 'banner_url']);
+const isHttpUrl = (value: string) => {
+  try {
+    const { protocol } = new URL(value);
+    return protocol === 'http:' || protocol === 'https:';
+  } catch {
+    return false;
+  }
+};
 
 export default async function(req: Request): Promise<Response> {
   try {
@@ -80,7 +91,10 @@ export default async function(req: Request): Promise<Response> {
     const patch = {};
     for (const [key, value] of Object.entries(form)) {
       if (typeof value !== 'string' || value.length > editable[key]) return addSecurityHeaders(error('Valeur invalide'));
-      patch[key] = value.trim();
+      const trimmed = value.trim();
+      // An empty value clears the field; anything else must be a real http(s) link.
+      if (URL_FIELDS.has(key) && trimmed && !isHttpUrl(trimmed)) return addSecurityHeaders(error('Lien invalide'));
+      patch[key] = trimmed;
     }
     if (Object.hasOwn(patch, 'name') && !patch.name) return addSecurityHeaders(error('Nom de la boutique requis'));
     const updated = await db.entities.Seller.update(seller.id, patch);

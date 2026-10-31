@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Heart, Share2, ShoppingBag, Plus, BadgeCheck, Play, Volume2 } from 'lucide-react';
@@ -8,25 +8,40 @@ import { useCart } from '@/lib/cart';
 import { useCurrency } from '@/lib/currency';
 import { getLikedContent, getReferralCode, toggleLikedContent } from '@/lib/session';
 import { compactNumber } from '@/lib/format';
+import usePullToRefresh from '@/hooks/usePullToRefresh';
 
 export default function Discover() {
   const { t } = useTranslation();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [reloadToken, setReloadToken] = useState(0);
   const [liked, setLiked] = useState([]);
   const [toast, setToast] = useState('');
   const { addItem } = useCart();
   const { format } = useCurrency();
 
+  const load = useCallback(async () => {
+    setLoadFailed(false);
+    try {
+      setItems(await base44.entities.Content.filter({ status: 'published' }, '-likes_count', 20));
+    } catch {
+      setLoadFailed(true);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     setLiked(getLikedContent());
-    base44.entities.Content.filter({ status: 'published' }, '-likes_count', 20)
-      .then((rows) => {
-        setItems(rows);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
+    setLoading(true);
+    load();
+  }, [reloadToken, load]);
+
+  // The feed scrolls inside its own rail, so only a pull at the rail's top refreshes.
+  const railRef = useRef(null);
+  const [railAtTop, setRailAtTop] = useState(true);
+  const { handlers: pullHandlers, indicator: pullIndicator } = usePullToRefresh(load, { disabled: loading || !railAtTop });
 
   const flash = (msg) => {
     setToast(msg);
@@ -78,20 +93,29 @@ export default function Discover() {
   if (!items.length) {
     return (
       <div className="rounded-2xl border border-dashed border-border bg-card p-10 text-center">
-        <p className="font-semibold">{t('discover.emptyTitle')}</p>
-        <p className="mt-1 text-sm text-muted-foreground">{t('discover.emptyDesc')}</p>
+        <p className="font-semibold">{loadFailed ? t('home.loadFailed') : t('discover.emptyTitle')}</p>
+        {!loadFailed && <p className="mt-1 text-sm text-muted-foreground">{t('discover.emptyDesc')}</p>}
+        {loadFailed && <button type="button" onClick={() => setReloadToken(n => n + 1)}
+          className="mt-4 min-h-11 rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground">
+          {t('common.retry')}
+        </button>}
       </div>
     );
   }
 
   return (
-    <div className="relative">
+    <div className="relative" {...pullHandlers}>
+      {pullIndicator}
       {toast && (
         <div className="fixed bottom-24 left-1/2 z-50 -translate-x-1/2 rounded-full bg-foreground px-4 py-2 text-xs font-semibold text-background">
           {toast}
         </div>
       )}
-      <div className="mx-auto h-[calc(100vh-9.5rem)] w-full max-w-md snap-y snap-mandatory overflow-y-auto rounded-2xl">
+      <div
+        ref={railRef}
+        onScroll={() => setRailAtTop((railRef.current?.scrollTop ?? 0) <= 2)}
+        className="mx-auto h-[calc(100vh-9.5rem)] w-full max-w-md snap-y snap-mandatory overflow-y-auto rounded-2xl"
+      >
         {items.map((c) => {
           const isLiked = liked.includes(c.id);
           return (
@@ -142,7 +166,7 @@ export default function Discover() {
 
               {/* Product bar */}
               {c.product_id && (
-                <div className="absolute bottom-3 left-3 right-3 z-20 flex items-center gap-2 rounded-xl bg-white/95 p-2 backdrop-blur">
+                <div className="absolute bottom-3 left-3 right-3 z-20 flex items-center gap-2 rounded-xl bg-card/95 p-2 backdrop-blur">
                   <Link to={`/product/${c.product_id}`} className="flex min-w-0 flex-1 items-center gap-2 rounded-lg" aria-label={c.product_title || c.title}>
                     <span className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-secondary">
                       <Image src={c.product_image} alt={c.product_title} className="h-full w-full object-cover" />

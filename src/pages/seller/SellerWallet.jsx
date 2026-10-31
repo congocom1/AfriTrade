@@ -1,3 +1,5 @@
+import { SELLER_LINKS } from '@/lib/navLinks';
+import { Link } from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
 import { Wallet as WalletIcon, ArrowDownLeft, ArrowUpRight, Banknote } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
@@ -7,16 +9,8 @@ import { useTranslation } from 'react-i18next';
 import DashboardNav from '@/components/DashboardNav';
 import { Input } from '@/components/ui/input';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
-import { formatUSD, formatDateTime } from '@/lib/format';
+import { formatUsdAmount, formatDateTime } from '@/lib/format';
 
-const LINKS = [
-  { to: '/seller', key: 'sellerNav.dashboard', end: true },
-  { to: '/seller/products', key: 'sellerNav.products' },
-  { to: '/seller/orders', key: 'sellerNav.orders' },
-  { to: '/seller/import', key: 'seller.import' },
-  { to: '/seller/wallet', key: 'sellerNav.wallet' },
-  { to: '/seller/settings', key: 'seller.shop' },
-];
 
 const METHODS = ['M-Pesa', 'Airtel Money', 'Orange Money', 'Virement bancaire'];
 
@@ -29,21 +23,20 @@ export default function SellerWallet() {
   const [amount, setAmount] = useState('');
   const [method, setMethod] = useState(METHODS[0]);
   const [message, setMessage] = useState('');
+  const [loadError, setLoadError] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const load = async () => {
-    if (!seller) {
-      setLoading(false);
-      return;
-    }
-    const wallets = await base44.entities.Wallet.filter({ owner_type: 'seller', owner_id: seller.id }).catch(() => []);
-    const mine = wallets[0] || null;
-    setWallet(mine);
-    if (mine) {
-      const txs = await base44.entities.WalletTransaction.filter({ wallet_id: mine.id, status: { $ne: 'preparing' } }, '-created_date', 50).catch(() => []);
-      setTransactions(txs);
-    }
-    setLoading(false);
+    if (!seller) { setLoading(false); return; }
+    setLoadError(false);
+    try {
+      const wallets = await base44.entities.Wallet.filter({ owner_type: 'seller', owner_id: seller.id });
+      if (wallets.length > 1) throw new Error('Ambiguous wallet');
+      const mine = wallets[0] || null;
+      setWallet(mine);
+      setTransactions(mine ? await base44.entities.WalletTransaction.filter({ wallet_id: mine.id, status: { $ne: 'preparing' } }, '-created_date', 50) : []);
+    } catch { setLoadError(true); }
+    finally { setLoading(false); }
   };
 
   useEffect(() => {
@@ -63,10 +56,11 @@ export default function SellerWallet() {
       const updated = await requestWithdrawal({ wallet, amount: value, method: WITHDRAWAL_METHOD_IDS[method] || 'mpesa' });
       setWallet(updated);
       setAmount('');
-      setMessage(t('sellerWallet.sent', { amount: formatUSD(value), method }));
+      setMessage(t('sellerWallet.sent', { amount: formatUsdAmount(value), method }));
       await load();
     } catch (err) {
-      setMessage(err?.message || t('sellerWallet.failed'));
+      const apiError = err?.response?.data?.error || err?.response?.data?.message;
+      setMessage(apiError || err?.message || t('sellerWallet.failed'));
     } finally {
       setSaving(false);
     }
@@ -74,18 +68,35 @@ export default function SellerWallet() {
 
   if (loadingSeller || loading) return <div className="h-40 animate-pulse rounded-2xl bg-secondary" />;
 
+  if (!seller) {
+    return (
+      <div className="space-y-5 pb-8">
+        <DashboardNav title={t('sellerWallet.title')} links={SELLER_LINKS} />
+        <div className="rounded-2xl border border-dashed border-border bg-card p-10 text-center">
+          <WalletIcon className="mx-auto h-8 w-8 text-muted-foreground" />
+          <p className="mt-2 font-semibold">{t('sellerPortal.noShop')}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{t('sellerPortal.noShopDesc')}</p>
+          <Link to="/seller-application" className="mt-4 inline-block rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground">
+            {t('sellerPortal.becomeSeller')}
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-5 pb-8">
-      <DashboardNav title={t('sellerWallet.title')} links={LINKS} />
+      <DashboardNav title={t('sellerWallet.title')} links={SELLER_LINKS} />
 
+      {loadError && <p role="alert" className="text-sm text-destructive">{t('sellerWallet.loadFailed')} <button type="button" onClick={load} className="min-h-11 px-3 underline">{t('refresh')}</button></p>}
       <section className="rounded-2xl bg-gradient-to-br from-primary to-primary/70 p-5 text-primary-foreground">
         <p className="flex items-center gap-2 text-xs font-semibold opacity-90">
           <WalletIcon className="h-4 w-4" /> {t('wallet.balance')}
         </p>
-        <p className="mt-2 text-3xl font-black">{formatUSD(wallet?.balance_usd || 0)}</p>
-        <div className="mt-2 flex gap-4 text-[11px] opacity-90">
-          <span>{t('wallet.awaitingDelivery')} : {formatUSD(wallet?.pending_usd || 0)}</span>
-          <span>{t('wallet.totalEarned')} : {formatUSD(wallet?.lifetime_credit_usd || 0)}</span>
+        <p className="mt-2 text-3xl font-black">{formatUsdAmount(wallet?.balance_usd || 0)}</p>
+        <div className="mt-2 flex flex-wrap gap-4 text-[11px] opacity-90">
+          <span>{t('wallet.awaitingDelivery')} : {formatUsdAmount(wallet?.pending_usd || 0)}</span>
+          <span>{t('wallet.totalEarned')} : {formatUsdAmount(wallet?.lifetime_credit_usd || 0)}</span>
         </div>
       </section>
 
@@ -95,6 +106,9 @@ export default function SellerWallet() {
         </h2>
         <div className="grid gap-3 md:grid-cols-2">
           <Input
+            aria-label={t('sellerWallet.amountUsd')}
+            min="0.01"
+            required
             type="number"
             step="0.01"
             value={amount}
@@ -103,7 +117,7 @@ export default function SellerWallet() {
             className="h-11 rounded-lg border border-border bg-background px-3 text-sm"
           />
           <Select value={method} onValueChange={(v) => setMethod(String(v))} className="h-11 rounded-lg border border-border bg-background px-3 text-sm">
-            <SelectTrigger className="w-full">
+            <SelectTrigger aria-label={t('sellerWallet.method')} className="w-full">
               <SelectValue placeholder={t('sellerWallet.method')} />
             </SelectTrigger>
             <SelectContent>
@@ -113,8 +127,8 @@ export default function SellerWallet() {
             </SelectContent>
           </Select>
         </div>
-        {message && <p className="text-xs text-primary">{message}</p>}
-        <button type="submit" disabled={saving} className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground disabled:opacity-50">{saving ? t('common.saving') : t('sellerWallet.sendRequest')}</button>
+        {message && <p role="status" className="text-xs text-primary">{message}</p>}
+        <button type="submit" disabled={saving || !wallet || loadError} className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground disabled:opacity-50">{saving ? t('common.saving') : t('sellerWallet.sendRequest')}</button>
         <p className="text-[11px] text-muted-foreground">
           {t('sellerWallet.localSalesNote')}
         </p>
@@ -138,7 +152,7 @@ export default function SellerWallet() {
                   </p>
                 </div>
                 <span className={`text-sm font-bold ${tx.direction === 'credit' ? 'text-emerald-600' : ''}`}>
-                  {tx.direction === 'credit' ? '+' : '−'}{formatUSD(tx.amount_usd)}
+                  {tx.direction === 'credit' ? '+' : '−'}{formatUsdAmount(tx.amount_usd)}
                 </span>
               </div>
             ))}

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-CONGO COMMERCE - scroll-scrub film renderer (v2).
+AFRITRADE - scroll-scrub film renderer (v2).
 
 One continuous camera move: a lone commerce node in a deep ink-green-black
 void, pushed into as its jade light ignites outward into a deforming network

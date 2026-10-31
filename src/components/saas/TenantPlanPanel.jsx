@@ -1,9 +1,11 @@
+import LegacySelect from '@/components/ui/legacy-select';
+import { formatUsdAmount } from '@/lib/format';
 import React, { memo, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { formatDate, formatUSD } from '@/lib/format';
+import { formatDate, } from '@/lib/format';
 import { BILLING_CYCLES, cancelSubscription, changePlan, renewSubscription, subscriptionLabel } from '@/lib/saas';
 import { planByCode, planLimit, usagePercent } from '@/lib/plans';
 import { useTranslation } from 'react-i18next';
@@ -61,13 +63,13 @@ export default memo(function TenantPlanPanel({ tenant, subscription, plans, invo
                 {t('tenantPlanPanel.periodLine', { date: formatDate(subscription.current_period_end) })}
               </p>
             </div>
-            <p className="text-lg font-bold">{formatUSD(subscription.amount_usd)}<span className="text-xs font-normal text-muted-foreground">/{subscription.billing_cycle === 'yearly' ? t('tenantPlanPanel.perYear') : t('tenantPlanPanel.perMonth')}</span></p>
+            <p className="text-lg font-bold">{formatUsdAmount(subscription.amount_usd)}<span className="text-xs font-normal text-muted-foreground">/{subscription.billing_cycle === 'yearly' ? t('tenantPlanPanel.perYear') : t('tenantPlanPanel.perMonth')}</span></p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <select value={cycle} onChange={(e) => setCycle(e.target.value)} className="h-9 rounded-md border border-input bg-background px-2 text-sm">
+            <LegacySelect value={cycle} onChange={(e) => setCycle(e.target.value)} className="h-9 rounded-md border border-input bg-background px-2 text-sm">
               {BILLING_CYCLES.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
-            </select>
+            </LegacySelect>
             <Button size="sm" variant="outline" disabled={busy} onClick={() => run(() => changePlan(subscription, plan, cycle), t('tenantPlanPanel.planUpdated'))}>
               {t('tenantPlanPanel.apply')}
             </Button>
@@ -108,7 +110,7 @@ export default memo(function TenantPlanPanel({ tenant, subscription, plans, invo
             <div key={inv.id} className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-2 text-sm last:border-0">
               <span className="font-mono text-xs">{inv.invoice_number}</span>
               <span className="text-muted-foreground">{t('tenantPlanPanel.invoiceMeta', { date: formatDate(inv.issued_at), plan: inv.plan_code, cycle: inv.billing_cycle === 'yearly' ? t('tenantPlanPanel.yearly') : t('tenantPlanPanel.monthly') })}</span>
-              <span className="font-semibold">{formatUSD(inv.total_usd)}</span>
+              <span className="font-semibold">{formatUsdAmount(inv.total_usd)}</span>
               <span className="text-xs">{inv.status === 'paid' ? t('tenantPlanPanel.paid') : inv.status === 'past_due' ? t('tenantPlanPanel.pastDue') : inv.status}</span>
             </div>
           ))}

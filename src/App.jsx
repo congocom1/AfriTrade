@@ -13,17 +13,20 @@ import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
 import OAuthConsent from '@/pages/OAuthConsent';
 import RequireLogin from '@/components/RequireLogin';
-import AdminOnly from '@/components/AdminOnly';
+import RequireAccess from '@/components/RequireAccess';
 import { CartProvider } from '@/lib/cart';
 import { CurrencyProvider } from '@/lib/currency';
 import AppLayout from '@/components/layout/AppLayout';
 import Backoffice from '@/pages/Backoffice';
 import SalesIntelligence from '@/pages/admin/SalesIntelligence';
-import { motion } from 'framer-motion';
+import MobileMoneyTransactions from '@/pages/backoffice/MobileMoneyTransactions';
 import { Suspense, lazy, useEffect } from 'react';
 import LoadingFallback from '@/components/LoadingFallback';
+import { ThemeProvider } from 'next-themes';
 
 // Customer - lazy load all page components for code splitting
+const EmployeeWorkspace = lazy(() => import('@/pages/EmployeeWorkspace'));
+const EmployeeManagement = lazy(() => import('@/pages/admin/EmployeeManagement'));
 const Home = lazy(() => import('@/pages/Home'));
 const Discover = lazy(() => import('@/pages/Discover'));
 const Categories = lazy(() => import('@/pages/Categories'));
@@ -78,6 +81,7 @@ const PlatformHealth = lazy(() => import('@/pages/PlatformHealth'));
 const ServiceLevelMonitor = lazy(() => import('@/pages/ServiceLevelMonitor'));
 const LogisticsRates = lazy(() => import('@/pages/admin/LogisticsRates'));
 const InventorySheets = lazy(() => import('@/pages/admin/InventorySheets'));
+const AirtableSync = lazy(() => import('@/pages/admin/AirtableSync'));
 const ShippingConfig = lazy(() => import('@/pages/ShippingConfig'));
 const CustomerLoyalty = lazy(() => import('@/pages/CustomerLoyalty'));
 const VendorRatings = lazy(() => import('@/pages/VendorRatings'));
@@ -108,6 +112,7 @@ const ChinaWarehouse = lazy(() => import('@/pages/admin/ChinaWarehouse'));
 const ShippingLabels = lazy(() => import('@/pages/admin/ShippingLabels'));
 const AdvancedAnalytics = lazy(() => import('@/pages/admin/AdvancedAnalytics'));
 const TicketAutomation = lazy(() => import('@/pages/admin/TicketAutomation'));
+const LaunchRoom = lazy(() => import('@/pages/LaunchRoom'));
 
 // Seller
 const SellerDashboard = lazy(() => import('@/pages/seller/SellerDashboard'));
@@ -123,6 +128,7 @@ const SellerQuotes = lazy(() => import('@/pages/seller/SellerQuotes'));
 // Admin
 const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard'));
 const AdminProducts = lazy(() => import('@/pages/admin/AdminProducts'));
+const ThreeDAssets = lazy(() => import('@/pages/ThreeDAssets'));
 const AdminSuppliers = lazy(() => import('@/pages/admin/AdminSuppliers'));
 const AdminB2BOperations = lazy(() => import('@/pages/admin/AdminB2BOperations'));
 const AdminOrders = lazy(() => import('@/pages/admin/AdminOrders'));
@@ -140,6 +146,7 @@ const AdminWorkflows = lazy(() => import('@/pages/admin/AdminWorkflows'));
 const AdminFraud = lazy(() => import('@/pages/admin/AdminFraud'));
 const AdminDisputes = lazy(() => import('@/pages/admin/AdminDisputes'));
 const AdminBilling = lazy(() => import('@/pages/admin/AdminBilling'));
+const AdminMobileMoney = lazy(() => import('@/pages/admin/AdminMobileMoney'));
 const PayoutHistory = lazy(() => import('@/pages/PayoutHistory'));
 const PayoutSettings = lazy(() => import('@/pages/PayoutSettings'));
 const DataExport = lazy(() => import('@/pages/DataExport'));
@@ -148,10 +155,13 @@ const DataExport = lazy(() => import('@/pages/DataExport'));
 const LogisticsHub = lazy(() => import('@/pages/LogisticsHub'));
 const WorkflowMonitor = lazy(() => import('@/pages/WorkflowMonitor'));
 const SecurityActivity = lazy(() => import('@/pages/SecurityActivity'));
+const AccessMatrix = lazy(() => import('@/pages/admin/AccessMatrix'));
 const CoverageMap = lazy(() => import('@/pages/CoverageMap'));
 const MerchantDisputes = lazy(() => import('@/pages/MerchantDisputes'));
 const PayoutLedger = lazy(() => import('@/pages/PayoutLedger'));
 const BulkOrders = lazy(() => import('@/pages/BulkOrders'));
+const ProPortal = lazy(() => import('@/pages/ProPortal'));
+const LogisticsPortal = lazy(() => import('@/pages/LogisticsPortal'));
 const B2BMarketplace = lazy(() => import('@/pages/B2BMarketplace'));
 const B2BQuotes = lazy(() => import('@/pages/B2BQuotes'));
 const MarketTrends = lazy(() => import('@/pages/MarketTrends'));
@@ -166,37 +176,14 @@ const CreatorDashboard = lazy(() => import('@/pages/CreatorDashboard'));
 const CourierConsole = lazy(() => import('@/pages/courier/CourierConsole'));
 
 const PageWrapper = ({ children }) => (
-  <Suspense fallback={<LoadingFallback />}>
-    {children}
-  </Suspense>
+  <ErrorBoundary>
+    <Suspense fallback={<LoadingFallback />}>
+      {children}
+    </Suspense>
+  </ErrorBoundary>
 );
 
-// Page transition variants
-const pageVariants = {
-  initial: {
-    opacity: 0,
-    x: 20,
-  },
-  animate: {
-    opacity: 1,
-    x: 0,
-    transition: {
-      type: 'spring',
-      stiffness: 300,
-      damping: 20,
-    },
-  },
-  exit: {
-    opacity: 0,
-    x: -20,
-    transition: {
-      type: 'spring',
-      stiffness: 300,
-      damping: 20,
-    },
-  },
-}
-
+/** /track is the legacy entry point; its query string must survive the redirect. */
 function TrackRedirect() {
   const { search } = useLocation();
   return <Navigate to={`/order-tracking${search || ''}`} replace />;
@@ -204,7 +191,6 @@ function TrackRedirect() {
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
-
   useEffect(() => {
     if (authError?.type === 'auth_required') {
       navigateToLogin();
@@ -215,7 +201,7 @@ const AuthenticatedApp = () => {
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
       <div className="fixed inset-0 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-4 border-muted border-t-primary rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -231,8 +217,7 @@ const AuthenticatedApp = () => {
 
   // Render the main app
   return (
-    <motion.div variants={pageVariants} initial="initial" animate="animate" exit="exit">
-      <Routes>
+    <Routes>
         <Route element={<AppLayout />}>
         <Route path="/" element={<PageWrapper><Home /></PageWrapper>} />
         <Route path="/discover" element={<PageWrapper><Discover /></PageWrapper>} />
@@ -286,11 +271,15 @@ const AuthenticatedApp = () => {
         <Route path="/platform-guidelines" element={<PageWrapper><PlatformGuidelines /></PageWrapper>} />
         <Route path="/checkout-success" element={<PageWrapper><CheckoutSuccess /></PageWrapper>} />
         <Route path="/pricing" element={<PageWrapper><Pricing /></PageWrapper>} />
-        <Route path="/developers" element={<PageWrapper><DeveloperPortal /></PageWrapper>} />
+        <Route path="/pro" element={<PageWrapper><ProPortal /></PageWrapper>} />
+        <Route path="/logistics" element={<PageWrapper><LogisticsPortal /></PageWrapper>} />
         <Route path="/mentions-legales" element={<PageWrapper><MentionsLegales /></PageWrapper>} />
         <Route path="/cgv" element={<PageWrapper><CGV /></PageWrapper>} />
         <Route path="/confidentialite" element={<PageWrapper><Confidentialite /></PageWrapper>} />
         <Route element={<RequireLogin />}>
+          <Route element={<RequireAccess />}>
+          <Route path="/employee" element={<PageWrapper><EmployeeWorkspace /></PageWrapper>} />
+          <Route path="/employee/:department" element={<PageWrapper><EmployeeWorkspace /></PageWrapper>} />
           <Route path="/messages" element={<PageWrapper><ErrorBoundary><Messages /></ErrorBoundary></PageWrapper>} />
           <Route path="/payout-requests" element={<PageWrapper><PayoutRequests /></PageWrapper>} />
           <Route path="/dispute-resolution" element={<PageWrapper><DisputeResolution /></PageWrapper>} />
@@ -327,6 +316,8 @@ const AuthenticatedApp = () => {
           <Route path="/inventory-management" element={<PageWrapper><InventoryManagement /></PageWrapper>} />
           <Route path="/partner-ai-settings" element={<PageWrapper><PartnerAiSettings /></PageWrapper>} />
           <Route path="/security-activity" element={<PageWrapper><SecurityActivity /></PageWrapper>} />
+          <Route path="/admin/access-matrix" element={<PageWrapper><AccessMatrix /></PageWrapper>} />
+          <Route path="/launch-room" element={<PageWrapper><LaunchRoom /></PageWrapper>} />
           <Route path="/merchant-disputes" element={<PageWrapper><MerchantDisputes /></PageWrapper>} />
           <Route path="/payout-ledger" element={<PageWrapper><PayoutLedger /></PageWrapper>} />
           <Route path="/coverage-map" element={<PageWrapper><CoverageMap /></PageWrapper>} />
@@ -339,17 +330,19 @@ const AuthenticatedApp = () => {
           <Route path="/tenant" element={<PageWrapper><TenantConsole /></PageWrapper>} />
           <Route path="/tenant-onboarding" element={<PageWrapper><TenantOnboarding /></PageWrapper>} />
 
-          <Route element={<AdminOnly />}>
+          <Route path="/admin/employees" element={<PageWrapper><EmployeeManagement /></PageWrapper>} />
             <Route path="/marketing-analytics" element={<PageWrapper><MarketingAnalytics /></PageWrapper>} />
             <Route path="/platform-analytics" element={<PageWrapper><PlatformAnalytics /></PageWrapper>} />
-            <Route path="/marketplace-promos" element={<PageWrapper><AdminPromotions /></PageWrapper>} />
-            <Route path="/fraud-rules" element={<PageWrapper><AdminFraud /></PageWrapper>} />
-            <Route path="/supplier-integration" element={<PageWrapper><AdminSuppliers /></PageWrapper>} />
-            <Route path="/compliance-center" element={<PageWrapper><AdminCompliance /></PageWrapper>} />
+            <Route path="/marketplace-promos" element={<Navigate to="/admin/promotions" replace />} />
+            <Route path="/fraud-rules" element={<Navigate to="/admin/fraud" replace />} />
+            <Route path="/supplier-integration" element={<Navigate to="/admin/suppliers" replace />} />
+            <Route path="/compliance-center" element={<Navigate to="/admin/compliance" replace />} />
             <Route path="/platform-health" element={<PageWrapper><PlatformHealth /></PageWrapper>} />
             <Route path="/service-level-monitor" element={<PageWrapper><ServiceLevelMonitor /></PageWrapper>} />
             <Route path="/logistics-rates" element={<PageWrapper><LogisticsRates /></PageWrapper>} />
             <Route path="/inventory-sheets" element={<PageWrapper><InventorySheets /></PageWrapper>} />
+            <Route path="/airtable-sync" element={<PageWrapper><AirtableSync /></PageWrapper>} />
+            <Route path="/3d-assets" element={<PageWrapper><ThreeDAssets /></PageWrapper>} />
             <Route path="/integration-logs" element={<PageWrapper><IntegrationLogs /></PageWrapper>} />
             <Route path="/category-manager" element={<PageWrapper><CategoryManager /></PageWrapper>} />
             <Route path="/delivery-map" element={<PageWrapper><DeliveryMap /></PageWrapper>} />
@@ -383,16 +376,19 @@ const AuthenticatedApp = () => {
             <Route path="/admin/workflows" element={<PageWrapper><AdminWorkflows /></PageWrapper>} />
             <Route path="/admin/fraud" element={<PageWrapper><AdminFraud /></PageWrapper>} />
             <Route path="/admin/billing" element={<PageWrapper><AdminBilling /></PageWrapper>} />
+            <Route path="/admin/mobile-money" element={<PageWrapper><AdminMobileMoney /></PageWrapper>} />
             <Route path="/admin/disputes" element={<PageWrapper><AdminDisputes /></PageWrapper>} />
             <Route path="/logistics-hub" element={<PageWrapper><LogisticsHub /></PageWrapper>} />
             <Route path="/workflow-monitor" element={<PageWrapper><WorkflowMonitor /></PageWrapper>} />
+            <Route path="/developers" element={<PageWrapper><DeveloperPortal /></PageWrapper>} />
           </Route>
         </Route>
       </Route>
       <Route element={<RequireLogin />}>
-        <Route element={<AdminOnly />}>
+        <Route element={<RequireAccess />}>
           <Route path="/backoffice" element={<PageWrapper><Backoffice /></PageWrapper>} />
           <Route path="/backoffice/sales" element={<PageWrapper><SalesIntelligence /></PageWrapper>} />
+          <Route path="/backoffice/mobile-money" element={<PageWrapper><MobileMoneyTransactions /></PageWrapper>} />
         </Route>
       </Route>
       <Route path="/login" element={<Login />} />
@@ -400,9 +396,8 @@ const AuthenticatedApp = () => {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/oauth/consent" element={<OAuthConsent />} />
-      <Route path="*" element={<div className="min-h-screen flex items-center justify-center p-6 bg-slate-50"><div className="max-w-md w-full text-center space-y-6"><h1 className="text-7xl font-black tracking-tight text-slate-900">404</h1><p className="text-lg text-slate-600">Page not found</p></div></div>} />
-      </Routes>
-    </motion.div>
+      <Route path="*" element={<div className="min-h-screen flex items-center justify-center p-6 bg-background"><div className="max-w-md w-full text-center space-y-6"><h1 className="text-7xl font-black tracking-tight text-foreground">404</h1><p className="text-lg text-muted-foreground">Page not found</p></div></div>} />
+    </Routes>
   );
 };
 
@@ -410,20 +405,22 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <AuthProvider>
-        <QueryClientProvider client={queryClientInstance}>
-          <Router>
-            <ScrollToTop />
-            <PageMetadata />
-            <CartProvider>
-              <CurrencyProvider>
-                <AuthenticatedApp />
-              </CurrencyProvider>
-            </CartProvider>
-          </Router>
-          <Toaster />
-        </QueryClientProvider>
-      </AuthProvider>
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <AuthProvider>
+          <QueryClientProvider client={queryClientInstance}>
+            <Router>
+              <ScrollToTop />
+              <PageMetadata />
+              <CartProvider>
+                <CurrencyProvider>
+                  <AuthenticatedApp />
+                </CurrencyProvider>
+              </CartProvider>
+            </Router>
+            <Toaster />
+          </QueryClientProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   )
 }

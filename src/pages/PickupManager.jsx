@@ -7,7 +7,7 @@ import OpsHeader from '@/components/ops/OpsHeader';
 import { Button } from '@/components/ui/button';
 import PickupPointForm from '@/components/pickup/PickupPointForm';
 import PickupHandover from '@/components/pickup/PickupHandover';
-import { formatUSD } from '@/lib/format';
+import { formatUsdAmount, } from '@/lib/format';
 
 export default function PickupManager() {
   const { t } = useTranslation();
@@ -67,7 +67,7 @@ export default function PickupManager() {
                 <p className="text-xs text-muted-foreground">{[p.commune, p.city].filter(Boolean).join(', ')} · {p.hours}</p>
                 <p className="text-xs text-muted-foreground">{p.address} {p.phone && `· ${p.phone}`}</p>
               </div>
-              <span className="text-sm font-semibold">{formatUSD(p.fee_usd || 0)}</span>
+              <span className="text-sm font-semibold">{formatUsdAmount(p.fee_usd || 0)}</span>
             </div>
             <div className="mt-3 flex items-center justify-between">
               <span className="text-xs font-semibold">{t('pickupManager.waitingCount', { count: waiting(p.id) })}</span>

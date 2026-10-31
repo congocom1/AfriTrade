@@ -5,7 +5,7 @@ import { ArrowLeft, Printer, FileText } from 'lucide-react';
 import { getProfile } from '@/lib/session';
 import { lookupOrder } from '@/lib/orderLookup';
 import StatusBadge from '@/components/StatusBadge';
-import { formatUSD, formatDateTime } from '@/lib/format';
+import { formatUsdAmount, formatUSD, formatDateTime } from '@/lib/format';
 import { getCompanyConfig, getTaxConfig } from '@/lib/config';
 import { splitVat, getVatRate } from '@/lib/tax';
 
@@ -134,8 +134,8 @@ export default function Invoice() {
                     {it.variant && <p className="text-[11px] text-muted-foreground">{it.variant}</p>}
                   </td>
                   <td className="py-2 px-2 text-right">{it.quantity}</td>
-                  <td className="py-2 px-2 text-right">{formatUSD(it.unit_price_usd)}</td>
-                  <td className="py-2 pl-2 text-right font-semibold">{formatUSD(it.line_total_usd)}</td>
+                  <td className="py-2 px-2 text-right">{formatUsdAmount(it.unit_price_usd)}</td>
+                  <td className="py-2 pl-2 text-right font-semibold">{formatUsdAmount(it.line_total_usd)}</td>
                 </tr>
               ))}
             </tbody>
@@ -145,21 +145,21 @@ export default function Invoice() {
         <section className="ml-auto w-full space-y-1.5 text-sm md:max-w-xs">
           <div className="flex justify-between">
             <span className="text-muted-foreground">{t('invoice.subtotal')}</span>
-            <span>{formatUSD(order.subtotal_usd)}</span>
+            <span>{formatUsdAmount(order.subtotal_usd)}</span>
           </div>
           {Number(order.discount_usd) > 0 && (
             <div className="flex justify-between text-emerald-600">
               <span>{t('invoice.discountIs', { code: order.coupon_code })}</span>
-              <span>-{formatUSD(order.discount_usd)}</span>
+              <span>-{formatUsdAmount(order.discount_usd)}</span>
             </div>
           )}
           <div className="flex justify-between">
             <span className="text-muted-foreground">{t('invoice.shipping')}</span>
-            <span>{Number(order.shipping_usd) === 0 ? t('invoice.free') : formatUSD(order.shipping_usd)}</span>
+            <span>{Number(order.shipping_usd) === 0 ? t('invoice.free') : formatUsdAmount(order.shipping_usd)}</span>
           </div>
           <div className="flex justify-between border-t border-border pt-2 font-bold">
             <span>{t('invoice.total')}</span>
-            <span>{formatUSD(order.total_usd)}</span>
+            <span>{formatUsdAmount(order.total_usd)}</span>
           </div>
           <div className="flex justify-between text-xs">
             <span className="text-muted-foreground">{t('invoice.totalHt')}</span>

@@ -23,7 +23,7 @@ export const LOYALTY_TIERS = [
     nameKey: 'loyalty.tierSilver',
     min_points: 1500,
     multiplier: 1.25,
-    badge: 'bg-slate-200 text-slate-800',
+    badge: 'bg-muted text-foreground',
     perksKey: 'loyalty.tierSilverPerks',
   },
   {
@@ -97,6 +97,7 @@ export function loyaltySummary({ orders = [], redemptions = [] } = {}) {
     spent,
     balance,
     lifetimeUsdCents,
+    // Dollar view of the same figure, so no caller has to divide cents itself.
     lifetimeUsd: lifetimeUsdCents / 100,
     tier,
     next,
@@ -133,7 +134,7 @@ export async function redeemReward({ reward, customer, sessionId }) {
     customer_name: customer?.name || '',
     customer_phone: customer?.phone || '',
     reward_code: reward.code,
-    reward_label: reward.label || reward.code,
+    reward_label: reward.label || reward.labelKey || reward.code,
     points_spent: reward.points,
     value_usd_cents: reward.value_usd_cents || 0,
     coupon_code: generateRewardCode(reward.code.slice(0, 3)),

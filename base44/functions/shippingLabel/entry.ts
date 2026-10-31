@@ -147,14 +147,25 @@ async function getLabel(db, body, user) {
 
 async function printLabels(db, body, user) {
   const { label_ids } = body;
-  if (!label_ids?.length) return fail('label_ids requis');
+  if (!Array.isArray(label_ids) || label_ids.length < 1 || label_ids.length > 100 ||
+      label_ids.some(id => typeof id !== 'string' || !id || id.length > 128)) {
+    return fail('Liste des étiquettes invalide', 400);
+  }
+  // Preflight the ENTIRE batch before changing any row. A late unauthorized
+  // or terminal label must not leave earlier labels silently printed.
+  const toPrint = [];
+  for (const id of new Set(label_ids)) {
+    const label = await db.entities.ShippingLabel.get(id).catch(() => null);
+    if (!label) return fail('Étiquette introuvable', 404);
+    if (!(await mayManageLabel(db, user, label))) return fail('Accès refusé', 403);
+    if (label.status !== 'generated' && label.status !== 'printed') return fail('Étiquette non imprimable à cette étape', 409);
+    toPrint.push(label);
+  }
   const now = new Date().toISOString();
   const results = [];
-  for (const id of label_ids) {
-    const label = await db.entities.ShippingLabel.get(id).catch(() => null);
-    if (!label) continue;
-    if (!(await mayManageLabel(db, user, label))) return fail('Accès refusé', 403);
-    const updated = await db.entities.ShippingLabel.update(id, { status: 'printed', printed_at: now });
+  for (const label of toPrint) {
+    const updated = label.status === 'printed' ? label :
+      await db.entities.ShippingLabel.update(label.id, { status: 'printed', printed_at: now });
     results.push(updated);
   }
   return Response.json({ labels: results, count: results.length });
@@ -166,6 +177,20 @@ async function updateStatus(db, body, user) {
   const existing = await db.entities.ShippingLabel.get(label_id).catch(() => null);
   if (!existing) return fail('Étiquette introuvable', 404);
   if (!(await mayManageLabel(db, user, existing))) return fail('Accès refusé', 403);
+  // Enforce the entity enum AND an ordered shipping lifecycle. Otherwise a
+  // legitimate partner could set an arbitrary state (including DELIVERED) or
+  // reopen a terminal label using this service-role update.
+  const allowed = {
+    pending: ['generated'],
+    generated: ['printed'],
+    printed: ['in_transit'],
+    in_transit: ['delivered', 'returned'],
+    delivered: [],
+    returned: [],
+  };
+  if (!Object.hasOwn(allowed, status)) return fail('Statut invalide', 400);
+  if (status === existing.status) return addSecurityHeaders(Response.json({ label: existing }));
+  if (!(allowed[existing.status] || []).includes(status)) return fail('Transition de statut non autorisée', 409);
   const label = await db.entities.ShippingLabel.update(label_id, { status });
   await db.entities.AuditLog.create({ action: 'shipping_label.status_changed', actor: user.email, entity: 'ShippingLabel', entity_id: label_id, details: { status } });
   return Response.json({ label });

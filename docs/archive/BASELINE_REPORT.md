@@ -1,4 +1,4 @@
-# BASELINE REPORT — CongoCommerce / AfriTrade
+# BASELINE REPORT — AfriTrade (formerly Congo Commerce)
 
 **Generated:** 2026-10-17  
 **Archive:** Legacy Congo Commerce reference removed from audit documents
@@ -62,7 +62,7 @@
 - Entities defined in `base44/.types/types.d.ts` — Wallet, WalletTransaction, Order, Product, Seller, Shipment, IdempotencyKey, etc.  
 
 ### Mobile
-- Flutter project under `lib/` with Android/iOS. Package `com.congocommerce.congo_commerce_flutter`.  
+- Flutter project under `lib/` with Android/iOS. Package `com.afritrade.afritrade_flutter`.  
 
 ### Tests
 - Node tests: `test/**/*.test.js` — passing.  

@@ -1,3 +1,6 @@
+import LegacySelect from '@/components/ui/legacy-select';
+import { Link } from 'react-router-dom';
+import { SELLER_LINKS } from '@/lib/navLinks';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Save, Store, BadgeCheck } from 'lucide-react';
@@ -50,21 +53,17 @@ export default function SellerSettings() {
 
   if (loadingSeller) return <div className="h-40 animate-pulse rounded-2xl bg-secondary" />;
 
-  const navLinks = [
-    { to: '/seller', label: t('sellerSettings.navDashboard'), end: true },
-    { to: '/seller/products', label: t('sellerSettings.navProducts') },
-    { to: '/seller/orders', label: t('sellerSettings.navOrders') },
-    { to: '/seller/import', label: t('sellerSettings.navImport') },
-    { to: '/seller/wallet', label: t('sellerSettings.navWallet') },
-    { to: '/seller/settings', label: t('sellerSettings.navShop') },
-  ];
-
   if (!seller || !form) {
     return (
       <div className="space-y-5 pb-8">
-        <DashboardNav title={t('sellerSettings.title')} links={navLinks} />
-        <div className="rounded-2xl border border-border bg-card p-6 text-center text-sm text-muted-foreground">
-          {t('seller.noShop')}
+        <DashboardNav title={t('sellerSettings.title')} links={SELLER_LINKS} />
+        <div className="rounded-2xl border border-dashed border-border bg-card p-10 text-center">
+          <Store className="mx-auto h-8 w-8 text-muted-foreground" />
+          <p className="mt-2 font-semibold">{t('sellerPortal.noShop')}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{t('sellerPortal.noShopDesc')}</p>
+          <Link to="/seller-application" className="mt-4 inline-block rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground">
+            {t('sellerPortal.becomeSeller')}
+          </Link>
         </div>
       </div>
     );
@@ -72,7 +71,7 @@ export default function SellerSettings() {
 
   return (
     <div className="space-y-5 pb-8">
-      <DashboardNav title={t('sellerSettings.title')} links={navLinks} />
+      <DashboardNav title={t('sellerSettings.title')} links={SELLER_LINKS} />
 
       <div className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4">
         <Store className="h-5 w-5 text-primary" />
@@ -97,7 +96,7 @@ export default function SellerSettings() {
             placeholder={t('sellerSettings.phName')}
             className="h-11 rounded-lg border border-border bg-background px-3 text-sm"
           />
-          <select
+          <LegacySelect
             value={form.city}
             onChange={(e) => setForm({ ...form, city: e.target.value })}
             className="h-11 rounded-lg border border-border bg-background px-3 text-sm"
@@ -105,7 +104,7 @@ export default function SellerSettings() {
             {getCities().map((c) => (
               <option key={c} value={c}>{c}</option>
             ))}
-          </select>
+          </LegacySelect>
           <input
             value={form.phone}
             onChange={(e) => setForm({ ...form, phone: e.target.value })}

@@ -2,12 +2,13 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import { ShieldAlert } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
+import { isAdmin } from '@/lib/roles';
 
 /** Nested inside RequireLogin: the marketplace console is for admin accounts. */
 export default function AdminOnly() {
   const { user } = useAuth();
 
-  if (user?.role !== 'admin') {
+  if (!isAdmin(user)) {
     return (
       <div className="mx-auto max-w-md rounded-2xl border border-border bg-card p-6 text-center">
         <ShieldAlert className="mx-auto h-8 w-8 text-primary" />

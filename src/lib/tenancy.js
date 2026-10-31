@@ -1,7 +1,10 @@
-import { useCallback, useEffect, useState } from 'react';
+import { usePortalData } from '@/hooks/usePortalData';
+import { useCallback, useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import { isAdmin as hasAdminRole } from '@/lib/roles';
 
-const ACTIVE_TENANT_KEY = 'congo_commerce:saas:active_tenant';
+const ACTIVE_TENANT_KEY = 'afritrade:saas:active_tenant';
+const LEGACY_ACTIVE_TENANT_KEY = 'congo_commerce:saas:active_tenant';
 
 /**
  * Multitenancy for the SaaS layer.
@@ -49,7 +52,18 @@ export async function resolveTenantByHost(host = currentHostname()) {
 
 export function readActiveTenantId() {
   try {
-    return localStorage.getItem(ACTIVE_TENANT_KEY) || '';
+    // Try new key first
+    let value = localStorage.getItem(ACTIVE_TENANT_KEY);
+    if (value) return value;
+
+    // Fallback to legacy key for migration
+    value = localStorage.getItem(LEGACY_ACTIVE_TENANT_KEY);
+    if (value) {
+      writeActiveTenantId(value);
+      try { localStorage.removeItem(LEGACY_ACTIVE_TENANT_KEY); } catch { /* ignore migration cleanup error */ }
+      return value;
+    }
+    return '';
   } catch {
     return '';
   }
@@ -113,33 +127,20 @@ export function clearTenantBranding() {
  * Admins get the full list plus an account switcher.
  */
 export function useActiveTenant() {
-  const [tenants, setTenants] = useState([]);
-  const [hostTenant, setHostTenant] = useState(null);
-  const [me, setMe] = useState(null);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState(() => readActiveTenantId());
-
-  const load = useCallback(async () => {
-    const user = await base44.auth.me().catch(() => null);
-    const admin = user?.role === 'admin';
-    const email = String(user?.email || '').trim().toLowerCase();
-    const [all, memberships, host] = await Promise.all([
-      base44.entities.Tenant.list('name', 200).catch(() => []),
-      email ? base44.entities.TenantMember.filter({ email }).catch(() => []) : Promise.resolve([]),
+  const { data, loading, error, reload } = usePortalData(['saas-account-scope'], async () => {
+    const me = await base44.auth.me();
+    const isAdmin = hasAdminRole(me);
+    const email = String(me?.email || '').trim().toLowerCase();
+    const [all, memberships, hostTenant] = await Promise.all([
+      base44.entities.Tenant.list('name', 200),
+      email ? base44.entities.TenantMember.filter({ email }) : [],
       resolveTenantByHost(),
     ]);
-    const assigned = new Set(memberships.filter(m => m.status !== 'suspended').map(m => m.tenant_id));
-    setMe(user);
-    setIsAdmin(admin);
-    setHostTenant(host);
-    setTenants(admin ? all : all.filter((t) => email && (String(t.owner_email || '').trim().toLowerCase() === email || assigned.has(t.id))));
-    setLoading(false);
-  }, []);
-
-  useEffect(() => {
-    load();
-  }, [load]);
+    const assigned = new Set(memberships.filter((member) => member.status !== 'suspended').map((member) => member.tenant_id));
+    return { me, isAdmin, hostTenant, tenants: isAdmin ? all : all.filter((tenant) => email && (String(tenant.owner_email || '').trim().toLowerCase() === email || assigned.has(tenant.id))) };
+  });
+  const { tenants = [], hostTenant = null, me = null, isAdmin = false } = data || {};
 
   const selectTenant = useCallback((id) => {
     writeActiveTenantId(id);
@@ -148,12 +149,12 @@ export function useActiveTenant() {
 
   const tenant = hostTenant || tenants.find((t) => t.id === selectedId) || tenants[0] || null;
 
-  return { tenant, tenants, hostTenant, me, isAdmin, loading, selectTenant, reload: load };
+  return { tenant, tenants, hostTenant, me, isAdmin, loading, error, selectTenant, reload };
 }
 
 export function isTenantOwner(tenant, me) {
   if (!tenant || !me) return false;
-  if (me.role === 'admin') return true;
+  if (hasAdminRole(me)) return true;
   return String(tenant.owner_email || '').trim().toLowerCase() === String(me.email || '').trim().toLowerCase();
 }
 

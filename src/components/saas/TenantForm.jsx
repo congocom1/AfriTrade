@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -79,7 +80,7 @@ export default function TenantForm({ initial, onSubmit, submitting = false, subm
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="t-currency">{t('tenantForm.currency')}</Label>
-          <select
+          <LegacySelect
             id="t-currency"
             value={form.currency}
             onChange={(e) => set('currency', e.target.value)}
@@ -87,7 +88,7 @@ export default function TenantForm({ initial, onSubmit, submitting = false, subm
           >
             <option value="USD">{t('tenantForm.usd')}</option>
             <option value="CDF">{t('tenantForm.cdf')}</option>
-          </select>
+          </LegacySelect>
         </div>
       </div>
 

@@ -1,7 +1,7 @@
 // src/components/AnimatedDrag.tsx
 import { useRef, useEffect, useState } from 'react';
 import { useMotionValue, useSpring, animate } from 'framer-motion';
-import { useReducedMotion } from '../hooks/useReducedMotion';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 /**
  * Draggable component that follows the Apple Motion guidelines:

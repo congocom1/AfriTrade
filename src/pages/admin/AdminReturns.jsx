@@ -4,8 +4,9 @@ import { base44 } from '@/api/base44Client';
 import DashboardNav from '@/components/DashboardNav';
 import StatusBadge from '@/components/StatusBadge';
 import { ADMIN_LINKS } from '@/lib/navLinks';
-import { formatUSD, formatDateTime } from '@/lib/format';
+import { formatUsdAmount, formatUSD, formatDateTime } from '@/lib/format';
 import { useTranslation } from 'react-i18next';
+import { notifyLoadError } from '@/lib/safeList';
 
 const REASON_IDS = ['not_received', 'wrong_product', 'damaged', 'not_as_described', 'missing_item', 'changed_mind', 'payment_issue'];
 
@@ -21,8 +22,8 @@ export default function AdminReturns() {
 
   const load = async () => {
     const [r, d] = await Promise.all([
-      base44.entities.Return.list('-created_date', 100).catch(() => []),
-      base44.entities.Dispute.list('-created_date', 100).catch(() => []),
+      base44.entities.Return.list('-created_date', 100).catch(notifyLoadError),
+      base44.entities.Dispute.list('-created_date', 100).catch(notifyLoadError),
     ]);
     setReturns(r);
     setDisputes(d);
@@ -127,7 +128,7 @@ export default function AdminReturns() {
                 </div>
                 <div className="flex items-center gap-2">
                   <StatusBadge status={r.status} />
-                  <span className="text-sm font-bold">{formatUSD(r.refund_amount_usd)}</span>
+                  <span className="text-sm font-bold">{formatUsdAmount(r.refund_amount_usd)}</span>
                 </div>
               </div>
               {r.description && <p className="mt-2 rounded-lg bg-secondary/50 p-2.5 text-xs">{r.description}</p>}
@@ -177,7 +178,7 @@ export default function AdminReturns() {
                 <div className="flex items-center gap-2">
                   <StatusBadge status={d.priority} />
                   <StatusBadge status={d.status} />
-                  <span className="text-sm font-bold">{formatUSD(d.amount_usd)}</span>
+                  <span className="text-sm font-bold">{formatUsdAmount(d.amount_usd)}</span>
                 </div>
               </div>
               {d.description && <p className="mt-2 rounded-lg bg-secondary/50 p-2.5 text-xs">{d.description}</p>}

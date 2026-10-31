@@ -1,3 +1,9 @@
+import LegacySelect from '@/components/ui/legacy-select';
+import { SELLER_LINKS } from '@/lib/navLinks';
+import PortalRefresh from '@/components/portal/PortalRefresh';
+import { usePortalData } from '@/hooks/usePortalData';
+import { loadRecordGroups } from '@/lib/portalData';
+import PortalStatus from '@/components/PortalStatus';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -6,20 +12,14 @@ import { base44 } from '@/api/base44Client';
 import { useActiveSeller } from '@/lib/seller';
 import { sellerInsights } from '@/lib/ai';
 import DashboardShell from '@/components/DashboardShell';
-import StatusBadge from '@/components/StatusBadge';
 import { Image } from '@/components/ui/image';
-import { formatUSD } from '@/lib/format';
+import SellerSalesOverview from '@/components/seller/SellerSalesOverview';
+import RelayPointDeposits from '@/components/seller/RelayPointDeposits';
+import DeliveryAlerts from '@/components/seller/DeliveryAlerts';
+import { formatUsdAmount } from '@/lib/format';
 
-const HERO_IMAGE = 'https://media.base44.com/images/public/6ab43a1371d65d1a911b0fe7/5c6b76710_generated_016c1e6f.jpg';
+const HERO_IMAGE = '/photography/warehouse-operations.jpg';
 
-const LINKS = [
-  { to: '/seller', key: 'sellerNav.dashboard', end: true },
-  { to: '/seller/products', key: 'sellerNav.products' },
-  { to: '/seller/orders', key: 'sellerNav.orders' },
-  { to: '/seller/import', key: 'seller.import' },
-  { to: '/seller/wallet', key: 'sellerNav.wallet' },
-  { to: '/seller/settings', key: 'seller.shop' },
-];
 
 const TILES = [
   { to: '/seller/products', key: 'seller.tileProducts', icon: Package },
@@ -36,39 +36,24 @@ const TILES = [
 
 export default function SellerDashboard() {
   const { t } = useTranslation();
-  const { sellers, seller, isAdmin, loading: loadingSeller, selectSeller } = useActiveSeller();
-  const [products, setProducts] = useState([]);
-  const [fulfillments, setFulfillments] = useState([]);
-  const [wallet, setWallet] = useState(null);
+  const { sellers, seller, isAdmin, loading: loadingSeller, error: scopeError, reload: reloadScope, selectSeller } = useActiveSeller();
+  const { data, loading, error, reload, updatedAt } = usePortalData(['seller-overview', seller?.id], () => loadRecordGroups({
+    products: () => base44.entities.Product.filter({ seller_id: seller.id }, '-created_date', 200),
+    fulfillments: () => base44.entities.FulfillmentOrder.filter({ seller_id: seller.id }, '-created_date', 50),
+    wallets: () => base44.entities.Wallet.filter({ owner_type: 'seller', owner_id: seller.id }),
+  }), { enabled: Boolean(seller) });
+  const products = data?.products || [];
+  const fulfillments = data?.fulfillments || [];
+  const wallet = data?.wallets?.[0] || null;
   const [insights, setInsights] = useState([]);
-  const [loading, setLoading] = useState(true);
-
   useEffect(() => {
-    if (!seller) {
-      setLoading(false);
-      return;
-    }
     let alive = true;
-    (async () => {
-      setLoading(true);
-      const [p, f, wallets] = await Promise.all([
-        base44.entities.Product.filter({ seller_id: seller.id }, '-created_date', 100).catch(() => []),
-        base44.entities.FulfillmentOrder.filter({ seller_id: seller.id }, '-created_date', 50).catch(() => []),
-        base44.entities.Wallet.filter({ owner_type: 'seller', owner_id: seller.id }).catch(() => []),
-      ]);
-      if (!alive) return;
-      setProducts(p);
-      setFulfillments(f);
-      setWallet(wallets[0] || null);
-      setLoading(false);
-
-      const tips = await sellerInsights({ sellerId: seller.id });
-      if (alive && tips.length) setInsights(tips);
-    })();
-    return () => {
-      alive = false;
-    };
-  }, [seller]);
+    setInsights([]);
+    if (seller) sellerInsights({ sellerId: seller.id }).then((tips) => {
+      if (alive) setInsights(tips || []);
+    }).catch(() => {});
+    return () => { alive = false; };
+  }, [seller?.id]);
 
   if (loadingSeller) {
     return (
@@ -77,6 +62,8 @@ export default function SellerDashboard() {
       </div>
     );
   }
+
+  if (scopeError) return <PortalStatus retry={reloadScope} />;
 
   if (!seller) {
     return (
@@ -93,28 +80,31 @@ export default function SellerDashboard() {
     );
   }
 
-  const revenue = fulfillments.reduce((s, f) => s + (f.subtotal_usd || 0), 0);
+  if (error) return <PortalStatus retry={reload} />;
+
+  const revenue = fulfillments.reduce((s, f) => s + (Number(f.subtotal_usd) || 0), 0);
   const pending = fulfillments.filter((f) => !['DELIVERED', 'CANCELLED', 'RETURNED'].includes(f.status));
   const published = products.filter((p) => p.status === 'published').length;
 
   const stats = [
     { icon: Package, key: 'seller.publishedProducts', value: `${published}/${products.length}` },
-    { icon: TrendingUp, key: 'seller.revenue', value: formatUSD(revenue) },
+    { icon: TrendingUp, key: 'seller.revenue', value: formatUsdAmount(revenue) },
     { icon: ShoppingBag, key: 'seller.toProcess', value: pending.length },
-    { icon: WalletIcon, key: 'wallet.available', value: formatUSD(wallet?.balance_usd || 0) },
+    { icon: WalletIcon, key: 'wallet.available', value: formatUsdAmount(wallet?.balance_usd || 0) },
   ];
 
   return (
-    <DashboardShell nav={LINKS} title={t('seller.title')} variant="paper" className="paper-console">
+    <DashboardShell nav={SELLER_LINKS} title={t('seller.title')} variant="paper" className="paper-console">
+      <PortalRefresh onRefresh={reload} updatedAt={updatedAt} />
       <div className="paper-hero">
-        <Image src={HERO_IMAGE} alt="" />
+        <Image src={HERO_IMAGE} alt="Warehouse shelves with parcels ready for fulfillment, illustrative stock photography" />
       </div>
 
       <div className="paper-shop">
         <span className="paper-shopmark" />
         <strong>{t('seller.managedShop')}</strong>
         {isAdmin ? (
-          <select
+          <LegacySelect
             value={seller.id}
             onChange={(e) => selectSeller(e.target.value)}
             aria-label={t('seller.managedShop')}
@@ -123,7 +113,7 @@ export default function SellerDashboard() {
             {sellers.map((s) => (
               <option key={s.id} value={s.id}>{s.name}</option>
             ))}
-          </select>
+          </LegacySelect>
         ) : (
           <span className="paper-shopname">{seller.name}</span>
         )}
@@ -134,7 +124,7 @@ export default function SellerDashboard() {
           <section className="paper-section">
             <h2 className="paper-label">{t('seller.overview', { defaultValue: 'Aperçu' })}</h2>
             {loading ? (
-              <div className="paper-stats">
+              <div role="status" aria-label={t('portalStatus.loading')} aria-busy="true" className="paper-stats">
                 {Array.from({ length: 4 }).map((_, i) => (
                   <div key={i} className="paper-stat paper-skeleton-block animate-pulse" />
                 ))}
@@ -167,34 +157,9 @@ export default function SellerDashboard() {
         </div>
 
         <div className="paper-col paper-col-right">
-          <section className="paper-section paper-orders">
-            <h2 className="paper-label">{t('seller.latestOrders')}</h2>
-            {fulfillments.length ? (
-              <>
-                <div className="paper-orderlist">
-                  {fulfillments.slice(0, 6).map((f) => (
-                    <div key={f.id} className="paper-order">
-                      <div className="min-w-0">
-                        <div className="paper-orderno">{f.order_number}</div>
-                        <div className="paper-meta">
-                          {f.fulfillment_number} · {t('seller.itemCount', { count: (f.items || []).length })}
-                        </div>
-                      </div>
-                      <div className="paper-details">
-                        <StatusBadge status={f.status} variant="paper" />
-                        <span className="paper-money">{formatUSD(f.subtotal_usd)}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <Link to="/seller/orders" className="paper-all">
-                  {t('seller.viewAllOrders')}
-                </Link>
-              </>
-            ) : (
-              <p className="paper-caption">{t('seller.noOrders')}</p>
-            )}
-          </section>
+          <SellerSalesOverview fulfillments={fulfillments} loading={loading} />
+          <RelayPointDeposits fulfillments={fulfillments} loading={loading} />
+          <DeliveryAlerts fulfillments={fulfillments} loading={loading} />
         </div>
 
         <section className="paper-tiles">

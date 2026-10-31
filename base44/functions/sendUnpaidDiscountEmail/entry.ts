@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.49';
 import {
+  hoursSince,
   addDays,
   discountCode,
   frenchDate,
@@ -25,35 +26,64 @@ const DISCOUNT_PERCENT = 10;
 const VALID_DAYS = 7;
 const EVENT = 'payment_discount';
 
+// Rate limiting configuration for sendUnpaidDiscountEmail
+const DISCOUNT_EMAIL_RATE_LIMIT_PER_HOUR = 120;
+const RATE_WINDOW_MS = 3600 * 1000;
+
 export default async function (req) {
   try {
     const base44 = createClientFromRequest(req);
+    // Fail closed: reject anonymous callers before consuming a rate-limit slot
+    // or touching the request. They get 401 rather than 400, and no slot burns.
+    const auth = await requireAdmin(base44);
+    if (!auth.ok) return addSecurityHeaders(auth.response);
+
     const body = await req.json().catch(() => ({}));
     const fulfillmentId = String(body.fulfillment_id || '').trim();
-    if (!fulfillmentId) return Response.json({ error: 'fulfillment_id is required' }, { status: 400 });
+    if (!fulfillmentId) return addSecurityHeaders(Response.json({ error: 'fulfillment_id is required' }, { status: 400 }));
 
-    // This mints a discount coupon, so only the platform's own unpaid-order
-    // workflow (or an administrator) may trigger it — and the code is never
-    // handed back to the caller, only to the customer's inbox.
-    const auth = await requireAdmin(base44);
-    if (!auth.ok) return auth.response;
+    // The workflow runs on schedule; cap raw calls per IP as outbound traffic.
+    const clientKey = getClientKey(req);
+    const rateLimitResult = await checkRateLimit(
+      base44.asServiceRole,
+      clientKey || 'unidentified',
+      {
+        keyPrefix: 'send_unpaid_discount_email',
+        limit: DISCOUNT_EMAIL_RATE_LIMIT_PER_HOUR,
+        windowMs: RATE_WINDOW_MS,
+        failClosed: true,
+      }
+    );
+    if (!rateLimitResult.ok) {
+      return rateLimitErrorResponse(rateLimitResult);
+    }
 
     const { fulfillment, order } = await resolveFulfillment(base44, fulfillmentId);
     if (!fulfillment) return Response.json({ error: 'FulfillmentOrder not found' }, { status: 404 });
 
+    // Missing parent state is not evidence of an unpaid order. Never send a
+    // customer reminder or issue a discount while payment status is unknown.
+    if (!order?.id || !order.payment_status) {
+      return addSecurityHeaders(Response.json({ error: 'Authoritative payment state unavailable' }, { status: 503, headers: { 'Retry-After': '120' } }));
+    }
     const state = paymentState(fulfillment, order);
     if (state.paid) return Response.json({ skipped: true, reason: 'already paid', payment_status: state.payment_status });
     if (state.closed) return Response.json({ skipped: true, reason: `order is ${state.payment_status || state.fulfillment_status}` });
 
+    if (!fulfillment.created_date || hoursSince(fulfillment.created_date) < 24) {
+      return addSecurityHeaders(Response.json({ skipped: true, reason: '24-hour waiting period not reached' }));
+    }
     const reference = orderNumber(fulfillment, order);
     const tenant = tenantOf(fulfillment, order);
     const email = String(order?.customer_email || '').trim();
     const code = discountCode(fulfillment.id);
 
     const alreadySent = await base44.asServiceRole.entities.OrderNotification
-      .filter({ order_number: reference, event: EVENT, status: 'sent' })
-      .catch(() => []);
-    if (alreadySent.length) return Response.json({ skipped: true, reason: 'discount already sent' });
+      .filter({ order_number: reference, event: EVENT });
+    if (alreadySent.some((row) => row.status === 'sent')) return Response.json({ skipped: true, reason: 'discount already sent' });
+    if (alreadySent.some((row) => ['queued', 'sending', 'delivery_unknown'].includes(row.status))) {
+      return addSecurityHeaders(Response.json({ error: 'Delivery outcome requires review' }, { status: 409 }));
+    }
 
     const expiresAt = addDays(VALID_DAYS);
     const subject = `Votre commande ${reference} vous attend — ${DISCOUNT_PERCENT} % de remise`;
@@ -88,7 +118,7 @@ export default async function (req) {
       return Response.json({ sent: false, skipped: true, reason: 'no customer email', order_number: reference });
     }
 
-    const coupons = await base44.asServiceRole.entities.Coupon.filter({ code }).catch(() => []);
+    const coupons = await base44.asServiceRole.entities.Coupon.filter({ code });
     const coupon = coupons[0] || await base44.asServiceRole.entities.Coupon.create({
       ...tenant,
       code,
@@ -116,6 +146,7 @@ export default async function (req) {
     `;
 
     try {
+      await base44.asServiceRole.entities.OrderNotification.update(ledger.id, { status: 'sending', attempts: 1 });
       await base44.asServiceRole.integrations.Core.SendEmail({
         to: email,
         subject,
@@ -123,17 +154,11 @@ export default async function (req) {
         text: message,
         from_name: 'AfriTrade',
       });
-      await base44.asServiceRole.entities.OrderNotification.update(ledger.id, {
-        status: 'sent',
-        channel: 'email',
-        provider: 'email',
-        sent_at: new Date().toISOString(),
-        attempts: 1,
-        error: '',
-      });
     } catch (error) {
+      const status = Number(error?.status || error?.statusCode || error?.response?.status || 0);
+      const retryable = status === 429; // 503 may have occurred after mail acceptance: require human review
       await base44.asServiceRole.entities.OrderNotification.update(ledger.id, {
-        status: 'failed',
+        status: retryable ? 'failed' : 'delivery_unknown',
         attempts: 1,
         error: String(error?.message || error).slice(0, 500),
       });
@@ -146,8 +171,12 @@ export default async function (req) {
         severity: 'warning',
         details: { code, error: String(error?.message || error).slice(0, 300) },
       });
-      return Response.json({ sent: false, reason: 'email refused', order_number: reference });
+      return addSecurityHeaders(Response.json({ sent: false, retryable, reason: 'email delivery failed; review notification ledger', order_number: reference }, { status: retryable ? status : 503, headers: { 'Retry-After': retryable ? '120' : '3600' } }));
     }
+
+    await base44.asServiceRole.entities.OrderNotification.update(ledger.id, {
+      status: 'sent', channel: 'email', provider: 'email', sent_at: new Date().toISOString(), attempts: 1, error: '',
+    });
 
     await base44.asServiceRole.entities.AuditLog.create({
       action: 'billing.unpaid_discount_sent',
@@ -166,6 +195,7 @@ export default async function (req) {
       order_number: reference,
     });
   } catch (error) {
-    return Response.json({ error: String(error?.message || error) }, { status: 500 });
+    console.error('[sendUnpaidDiscountEmail] failed', { error: String(error?.message || error).slice(0, 200) });
+    return addSecurityHeaders(Response.json({ error: 'Discount email unavailable; verify notification ledger before retry' }, { status: 503, headers: { 'Retry-After': '120' } }));
   }
 }

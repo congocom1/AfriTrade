@@ -14,26 +14,42 @@ import { addSecurityHeaders, getClientKey, checkRateLimit, rateLimitErrorRespons
 const RESEND_WINDOW_MS = 10 * 60 * 1000;
 const MAX_PER_ADDRESS_PER_HOUR = 3;
 
+// Rate limiting configuration for sendDataRequestVerification
+const VERIFICATION_RATE_LIMIT_PER_HOUR = 60;
+const RATE_WINDOW_MS = 3600 * 1000;
+
 export default async function (req) {
   try {
     const base44 = createClientFromRequest(req);
+    // The function uses service-role reads and writes. Reject unknown callers
+    // BEFORE looking up a private DataRequest or mutating its email status.
+    const auth = await requireAdmin(base44);
+    if (!auth.ok) return addSecurityHeaders(auth.response);
+
+    // Every call sends an outbound e-mail, so the endpoint is capped: a single
+    // caller must not be able to turn it into a mail relay.
+    const clientKey = getClientKey(req);
+    const rateLimitResult = await checkRateLimit(
+      base44.asServiceRole,
+      clientKey || 'unidentified',
+      {
+        keyPrefix: 'send_data_request_verification',
+        limit: VERIFICATION_RATE_LIMIT_PER_HOUR,
+        windowMs: RATE_WINDOW_MS,
+        failClosed: true,
+      }
+    );
+    if (!rateLimitResult.ok) {
+      return rateLimitErrorResponse(rateLimitResult);
+    }
+
+    if (req.method !== 'POST') return addSecurityHeaders(Response.json({ error: 'Method not allowed' }, { status: 405 }));
     const body = await req.json().catch(() => ({}));
     const requestId = String(body.request_id || '').trim();
     if (!requestId) return Response.json({ error: 'request_id is required' }, { status: 400 });
 
     const request = await base44.asServiceRole.entities.DataRequest.get(requestId).catch(() => null);
     if (!request) return Response.json({ error: 'DataRequest not found' }, { status: 404 });
-
-    // Only the request lifecycle itself (a platform workflow) and an
-    // administrator may trigger an outgoing verification e-mail.
-    const auth = await requireAdmin(base44);
-    if (!auth.ok) {
-      await base44.asServiceRole.entities.DataRequest.update(requestId, {
-        email_status: 'skipped',
-        email_error: `Envoi refusé — appel non autorisé (${auth.status})`,
-      }).catch(() => null);
-      return auth.response;
-    }
 
     const email = String(request.email || '').trim();
     if (!email) {

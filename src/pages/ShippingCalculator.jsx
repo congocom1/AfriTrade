@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -6,7 +7,7 @@ import { base44 } from '@/api/base44Client';
 import InfoPage, { InfoSection } from '@/components/InfoPage';
 import { getProfile } from '@/lib/session';
 import { listCouriers } from '@/lib/logistics';
-import { formatUSD, round2Cents } from '@/lib/format';
+import { formatUsdAmount, formatUSD, round2Cents } from '@/lib/format';
 
 export default function ShippingCalculator() {
   const { t } = useTranslation();
@@ -38,7 +39,7 @@ export default function ShippingCalculator() {
     e.preventDefault();
     setError('');
     const kg = Math.max(Number(weight) || 0, 0);
-    if (!kg) {
+    if (!Number.isFinite(kg) || kg <= 0) {
       setError(t('shippingCalculator.weightRequired'));
       return;
     }
@@ -71,18 +72,18 @@ export default function ShippingCalculator() {
       <section className="space-y-3 rounded-2xl border border-border bg-card p-5">
         <form onSubmit={calculate} className="space-y-3">
           <div className="grid gap-3 md:grid-cols-3">
-            <select
+            <LegacySelect
               value={city}
-              onChange={(e) => setCity(e.target.value)}
+              onChange={(e) => { setCity(e.target.value); setResult(null); }}
               className="h-11 rounded-lg border border-border bg-background px-3 text-sm"
             >
               {cities.map((c) => (
                 <option key={c} value={c}>{c}</option>
               ))}
-            </select>
+            </LegacySelect>
             <input
               value={commune}
-              onChange={(e) => setCommune(e.target.value)}
+              onChange={(e) => { setCommune(e.target.value); setResult(null); }}
               placeholder={t('shippingCalculator.communePh')}
               className="h-11 rounded-lg border border-border bg-background px-3 text-sm"
             />
@@ -91,7 +92,7 @@ export default function ShippingCalculator() {
               min="0"
               step="0.1"
               value={weight}
-              onChange={(e) => setWeight(e.target.value)}
+              onChange={(e) => { setWeight(e.target.value); setResult(null); }}
               placeholder={t('shippingCalculator.weightPh')}
               className="h-11 rounded-lg border border-border bg-background px-3 text-sm"
             />
@@ -126,7 +127,7 @@ export default function ShippingCalculator() {
                 <p className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
                   <Store className="h-3.5 w-3.5 text-primary" /> {t('shippingCalculator.pickupTitle')}
                 </p>
-                <p className="mt-1.5 text-lg font-bold text-primary">{result.pickup ? formatUSD(Math.round((Number(result.pickup.fee_usd) || 0) * 100)) : t('shippingCalculator.unavailable')}</p>
+                <p className="mt-1.5 text-lg font-bold text-primary">{result.pickup ? formatUsdAmount(result.pickup.fee_usd || 0) : t('shippingCalculator.unavailable')}</p>
                 <p className="mt-1 text-[11px]">
                   {result.pickup
                     ? `${result.pickup.name} · ${[result.pickup.commune, result.pickup.address].filter(Boolean).join(' · ')}`

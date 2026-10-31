@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { SHIPMENT_STATUS_LABELS } from '@/lib/logistics';
-import { formatUSD } from '@/lib/format';
+import { formatUsdAmount, } from '@/lib/format';
 import CourierProofForm from './CourierProofForm';
 
 const TERMINAL = ['DELIVERED', 'FAILED', 'RETURNED', 'CANCELLED'];
@@ -40,7 +40,7 @@ export default memo(function CourierJobCard({ shipment, fulfillment, order, busy
         <div>
           <p className="text-sm font-bold">{shipment.order_number}</p>
           <p className="text-[11px] text-muted-foreground">
-            {shipment.tracking_number || t('courierJobCard.noTracking')} · {t('courierJobCard.tripPay', { amount: formatUSD(fulfillment?.shipping_usd || 0) })}
+            {shipment.tracking_number || t('courierJobCard.noTracking')} · {t('courierJobCard.tripPay', { amount: formatUsdAmount(fulfillment?.shipping_usd || 0) })}
           </p>
         </div>
         <div className="flex items-center gap-2">

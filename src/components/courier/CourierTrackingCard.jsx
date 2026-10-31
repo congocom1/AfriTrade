@@ -2,7 +2,7 @@ import React, { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MapPin, Phone, Navigation, CheckCircle2, XCircle } from 'lucide-react';
 import { SHIPMENT_STATUS_LABELS } from '@/lib/logistics';
-import { formatUSD } from '@/lib/format';
+import { formatUsdAmount, } from '@/lib/format';
 import CourierProofForm from './CourierProofForm';
 
 const STEPS = ['PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED'];
@@ -35,7 +35,7 @@ export default memo(function CourierTrackingCard({ shipment, fulfillment, order,
         <div>
           <p className="text-sm font-bold">{shipment.order_number}</p>
           <p className="text-[11px] text-muted-foreground">
-            {shipment.tracking_number || t('courierTrackingCard.noTracking')} · {t('courierTrackingCard.tripPay', { amount: formatUSD(fulfillment?.shipping_usd || 0) })}
+            {shipment.tracking_number || t('courierTrackingCard.noTracking')} · {t('courierTrackingCard.tripPay', { amount: formatUsdAmount(fulfillment?.shipping_usd || 0) })}
           </p>
         </div>
         <div className="flex items-center gap-2">

@@ -1,0 +1,12 @@
+# Six production release gates — AfriTrade
+
+Outcome: NOT CLEARED for production. Local safeguards implemented; external attestation and hosted testing required.
+
+1. **Compromised Base44 user token:** Secret is not required for SDK access through the connected tool. Automated source scanning added in `test/release-gates.test.js`. **Account owner must revoke the exposed token and replace dependent uses**; repository access cannot revoke account credentials, and successful rotation must be confirmed without revealing the replacement token.
+2. **Payments/wallet:** Existing receipt-based ledger, webhook signature validation and fail-closed refund gate are preserved. New test guards retention of the rollout protocol. **Hosted atomic updateMany, concurrency, webhook replay and order reconciliation tests remain mandatory**. Never switch on refunds or production money flows before passing the staging protocol in `WALLET_PROTOCOL.md`.
+3. **Role isolation:** Automated assertions added for TenantMember role mutation authorization and AuditLog RLS existence. **Not proof of hosted isolation**; audit durability and direct entity edits by privileged actors remain risks. Run buyer/seller/tenant admin/unauthorized role matrices on staging.
+4. **Production response security headers:** Local preview plugin is present but the Base44 production edge configuration is not established. **Host owner must set and verify HSTS, CSP/frame-ancestors, X-Content-Type-Options and Referrer-Policy on actual responses**; HTML meta tags do not substitute for response headers.
+5. **Authenticated browser QA:** Existing Playwright tests cover device sizes and several key flows. Local `base44 dev` continues to require a separate device authorization that has timed out on earlier attempts. **Set an authorized STAGING_BASE_URL for CI** and run role-based E2E and mobile layout/keyboard/accessibility coverage before approval.
+6. **Production credentials / supplier connections / rollback:** Supplier demo adapters are explicitly mocked and frontend supplier keys removed. **Provider endpoint contract, credential provisioning and rotation, safe Base44 server adapter, test accounts, financial accounts and rollback ownership remain owner-controlled**. CI runs without deployments; confirm GitHub required checks, checkpoint and deployment rollback procedure in staging.
+
+Do not claim all six gates are solved because source checks pass. The exposed token should be revoked promptly. No live deployment authorized here.

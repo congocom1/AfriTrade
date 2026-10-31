@@ -1,12 +1,17 @@
-#env
+# Local secrets — keep the safe template trackable
 .env
 .env.*
+!.env.example
+*.pem
+*.p12
+*.pfx
 
 # Test generated files
 *.testmod.mjs
 
-# E2E regenerated baseline screenshot (changes on every run)
-test-results/baseline-seller-products.png
+# Generated Playwright output (screenshots, traces and reports)
+/test-results/
+/playwright-report/
 
 # Logs
 /logs
@@ -28,7 +33,7 @@ dist-ssr
 .wrangler
 
 # Editor directories and files
-.vscode/*
+**/.vscode/*
 !.vscode/extensions.json
 .idea
 .DS_Store
@@ -66,4 +71,10 @@ ios/Flutter/Generated.xcconfig
 ios/Flutter/flutter_export_environment.sh
 *.iml
 congo_commerce_flutter.iml
-test-results/baseline-seller-dashboard.png
+
+# AI assistant workspaces (not part of the application stack)
+.agents/
+.claude/
+.codex/
+.gstack/
+oracleJdk-27/

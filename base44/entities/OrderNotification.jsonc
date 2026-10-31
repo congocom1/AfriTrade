@@ -53,6 +53,8 @@
       "enum": [
         "queued",
         "sent",
+        "sending",
+        "delivery_unknown",
         "failed",
         "skipped"
       ],
@@ -81,13 +83,21 @@
     "event"
   ],
   "rls": {
-    "create": { "user_condition": { "role": "admin" } },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
     "read": {
       "user_condition": {
         "role": "admin"
       }
     },
-    "update": null,
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
     "delete": {
       "user_condition": {
         "role": "admin"

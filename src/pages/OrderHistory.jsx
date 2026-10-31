@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Package, FileText, MapPin } from 'lucide-react';
@@ -8,6 +8,7 @@ import EmptyState from '@/components/EmptyState';
 import StatusBadge from '@/components/StatusBadge';
 import { useCurrency } from '@/lib/currency';
 import { formatDateTime } from '@/lib/format';
+import usePullToRefresh from '@/hooks/usePullToRefresh';
 
 export default function OrderHistory() {
   const { t } = useTranslation();
@@ -15,14 +16,18 @@ export default function OrderHistory() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    (async () => {
-      setOrders(await fetchMyOrders({ limit: 50 }));
-      setLoading(false);
-    })();
+  const load = useCallback(async () => {
+    setOrders(await fetchMyOrders({ limit: 50 }));
+    setLoading(false);
   }, []);
 
-  return (<InfoPage
+  useEffect(() => { load(); }, [load]);
+  const { handlers: pullHandlers, indicator: pullIndicator } = usePullToRefresh(load, { disabled: loading });
+
+  return (
+    <div {...pullHandlers}>
+      {pullIndicator}
+      <InfoPage
       icon={Package}
       title={t('orderHistory.title')}
       subtitle={t('orderHistory.subtitle')}
@@ -104,6 +109,7 @@ export default function OrderHistory() {
           {t('orderHistory.searchByNumber')}
         </Link>
       </InfoSection>
-    </InfoPage>
+      </InfoPage>
+    </div>
   );
 }

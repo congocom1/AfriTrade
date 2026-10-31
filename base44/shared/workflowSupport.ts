@@ -98,38 +98,67 @@ export async function notify(base44, options = {}) {
 }
 
 export async function recordAudit(base44, options = {}) {
-  return base44.asServiceRole.entities.AuditLog.create({
-    action: options.action || 'workflow.step',
-    actor: options.actor || 'system',
-    entity: options.entity || 'WorkflowExecution',
-    entity_id: options.entityId || '',
-    reference: options.reference || '',
-    severity: options.severity || 'info',
-    details: options.details || {},
-  }).catch(() => null);
+  try {
+    return await base44.asServiceRole.entities.AuditLog.create({
+      action: options.action || 'workflow.step',
+      actor: options.actor || 'system',
+      entity: options.entity || 'WorkflowExecution',
+      entity_id: options.entityId || '',
+      reference: options.reference || '',
+      severity: options.severity || 'info',
+      details: options.details || {},
+    });
+  } catch (error) {
+    // Audit failures must NOT be swallowed — log for visibility and rethrow
+    // so callers can decide whether to retry or escalate.
+    console.error('[AUDIT FAILURE]', {
+      action: options.action,
+      entity: options.entity,
+      entityId: options.entityId,
+      error: String(error?.message || error),
+    });
+    throw error;
+  }
 }
 
 export async function recordAnalytics(base44, options = {}) {
-  return base44.asServiceRole.entities.AnalyticsEvent.create({
-    name: options.name,
-    session_id: options.sessionId || '',
-    product_id: options.productId || '',
-    path: options.path || '',
-    value_usd: round2(options.valueUsd),
-    description: options.description || '',
-  }).catch(() => null);
+  try {
+    return await base44.asServiceRole.entities.AnalyticsEvent.create({
+      name: options.name,
+      session_id: options.sessionId || '',
+      product_id: options.productId || '',
+      path: options.path || '',
+      value_usd: round2(options.valueUsd),
+      description: options.description || '',
+    });
+  } catch (error) {
+    console.error('[ANALYTICS FAILURE]', {
+      name: options.name,
+      error: String(error?.message || error),
+    });
+    throw error;
+  }
 }
 
 export async function recordUsage(base44, options = {}) {
-  return base44.asServiceRole.entities.TenantUsageEvent.create({
-    tenant_id: options.tenantId || 'platform',
-    name: options.name,
-    path: '',
-    quantity: options.quantity || 1,
-    value_usd: round2(options.valueUsd),
-    description: options.description || '',
-    metadata: options.metadata || {},
-  }).catch(() => null);
+  try {
+    return await base44.asServiceRole.entities.TenantUsageEvent.create({
+      tenant_id: options.tenantId || 'platform',
+      name: options.name,
+      path: '',
+      quantity: options.quantity || 1,
+      value_usd: round2(options.valueUsd),
+      description: options.description || '',
+      metadata: options.metadata || {},
+    });
+  } catch (error) {
+    console.error('[USAGE FAILURE]', {
+      name: options.name,
+      tenantId: options.tenantId,
+      error: String(error?.message || error),
+    });
+    throw error;
+  }
 }
 
 /** Ledger entry guarded by an idempotency key — the same credit can never post twice. */

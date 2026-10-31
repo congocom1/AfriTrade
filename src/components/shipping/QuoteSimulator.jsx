@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Calculator, Info } from 'lucide-react';
@@ -60,10 +61,10 @@ export default function QuoteSimulator({ rates = [], config, couriers = [], dest
         </label>
         <label className="text-[11px] text-muted-foreground">
           {t('quoteSimulator.carrier')}
-          <select value={form.courierId} onChange={(e) => set({ courierId: e.target.value })} className="mt-1 h-11 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground">
+          <LegacySelect value={form.courierId} onChange={(e) => set({ courierId: e.target.value })} className="mt-1 h-11 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground">
             <option value="">{t('quoteSimulator.cheapest')}</option>
             {couriers.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
+          </LegacySelect>
         </label>
         <label className="text-[11px] text-muted-foreground">
           {t('quoteSimulator.weight')}
@@ -85,17 +86,17 @@ export default function QuoteSimulator({ rates = [], config, couriers = [], dest
         </label>
         <label className="text-[11px] text-muted-foreground">
           {t('quoteSimulator.origin')}
-          <select value={form.originCountry} onChange={(e) => set({ originCountry: e.target.value })} className="mt-1 h-11 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground">
+          <LegacySelect value={form.originCountry} onChange={(e) => set({ originCountry: e.target.value })} className="mt-1 h-11 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground">
             <option value="CD">{t('quoteSimulator.originLocal')}</option>
             <option value="CN">{t('quoteSimulator.originImport')}</option>
-          </select>
+          </LegacySelect>
         </label>
         <label className="text-[11px] text-muted-foreground">
           {t('quoteSimulator.payment')}
-          <select value={form.paymentMethod} onChange={(e) => set({ paymentMethod: e.target.value })} className="mt-1 h-11 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground">
+          <LegacySelect value={form.paymentMethod} onChange={(e) => set({ paymentMethod: e.target.value })} className="mt-1 h-11 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground">
             <option value="mobile_money">{t('quoteSimulator.payMomo')}</option>
             <option value="cash_on_delivery">{t('quoteSimulator.payCod')}</option>
-          </select>
+          </LegacySelect>
         </label>
       </div>
 

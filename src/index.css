@@ -1,3 +1,28 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+
+@import "tailwindcss";
+@import "tw-animate-css";
+/* base44-workspace-fonts:start */
+@font-face {
+  font-family: 'Avenir Light';
+  font-weight: 300;
+  font-style: italic;
+  font-display: swap;
+  src: url('https://media.base44.com/files/public/builder-assets/wix-fonts/avenir-300-italic.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Avenir Light';
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+  src: url('https://media.base44.com/files/public/builder-assets/wix-fonts/avenir-300-normal.woff2') format('woff2');
+}
+/* base44-workspace-fonts:end */
+
+@config "../tailwind.config.js";
+
+/* Tailwind entry directives, kept alongside the v4 import so the token file
+   satisfies the platform's stylesheet contract. */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -30,43 +55,84 @@
    `border-border` in the app resolves through these variables — without this
    block they all compute to nothing and the UI renders unstyled/black. */
 :root {
-  --background: 43 33% 97%;
-  --foreground: 160 42% 10%;
-  --card: 44 36% 99%;
-  --card-foreground: 160 42% 10%;
-  --popover: 44 36% 99%;
-  --popover-foreground: 160 42% 10%;
-  --primary: 158 78% 27%;
-  --primary-foreground: 0 0% 100%;
-  --secondary: 43 24% 92%;
-  --secondary-foreground: 160 30% 15%;
-  --muted: 42 22% 93%;
-  --muted-foreground: 159 14% 34%;
-  --accent: 157 44% 91%;
-  --accent-foreground: 158 74% 22%;
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 154 16% 84%;
-  --input: 154 16% 84%;
-  --ring: 158 78% 29%;
-  --chart-1: 162 81% 37%;
-  --chart-2: 160 60% 55%;
-  --chart-3: 197 37% 24%;
-  --chart-4: 43 74% 66%;
-  --chart-5: 27 87% 67%;
-  --radius: 0.4rem;
-  --font-heading: 'Sora', sans-serif;
-  --font-body: 'Manrope', sans-serif;
-  --font-display: 'Sora', sans-serif;
+  /* The core theme scalars live in src/styles/trade-system.css, which main.jsx
+     imports after this file and which therefore wins the cascade. Copies kept
+     here were silently dead — editing this file changed nothing on screen. */
+  --font-heading: 'Avenir Light', sans-serif;
+  --font-body: 'Avenir Light', sans-serif;
+  --font-display: 'Avenir Light', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
-  --sidebar-background: 0 0% 98%;
-  --sidebar-foreground: 240 5.3% 26.1%;
-  --sidebar-primary: 240 5.9% 10%;
-  --sidebar-primary-foreground: 0 0% 98%;
-  --sidebar-accent: 240 4.8% 95.9%;
-  --sidebar-accent-foreground: 240 5.9% 10%;
-  --sidebar-border: 220 13% 91%;
-  --sidebar-ring: 217.2 91.2% 59.8%;
+
+  /* Status ramps — one scale per semantic role, so a status colour is never
+     hand-picked per component. Soft tints (50-200) and inks (700-950) invert
+     together in .dark, so a badge keeps its contrast in both modes.
+     Use: solid chip `bg-success-600 text-success-50`,
+          tinted chip `bg-success-100 text-success-900`,
+          dot `bg-success-500`, icon `text-success-600`. */
+  --success-50: 152 76% 96%;
+  --success-100: 149 70% 91%;
+  --success-200: 148 62% 83%;
+  --success-300: 147 55% 71%;
+  --success-400: 145 58% 55%;
+  --success-500: 142 66% 42%;
+  --success-600: 142 72% 34%;
+  --success-700: 143 74% 27%;
+  --success-800: 144 72% 20%;
+  --success-900: 145 70% 14%;
+  --success-950: 146 72% 9%;
+
+  --warning-50: 48 100% 96%;
+  --warning-100: 46 95% 88%;
+  --warning-200: 44 92% 78%;
+  --warning-300: 42 90% 65%;
+  --warning-400: 38 92% 52%;
+  --warning-500: 34 92% 45%;
+  --warning-600: 30 90% 38%;
+  --warning-700: 27 85% 31%;
+  --warning-800: 24 80% 25%;
+  --warning-900: 22 75% 18%;
+  --warning-950: 20 72% 12%;
+
+  --destructive-50: 0 86% 97%;
+  --destructive-100: 0 86% 93%;
+  --destructive-200: 0 80% 86%;
+  --destructive-300: 0 76% 76%;
+  --destructive-400: 0 76% 65%;
+  --destructive-500: 0 78% 56%;
+  --destructive-600: 0 76% 47%;
+  --destructive-700: 0 72% 39%;
+  --destructive-800: 0 68% 31%;
+  --destructive-900: 0 64% 24%;
+  --destructive-950: 0 60% 17%;
+
+  --info-50: 204 94% 96%;
+  --info-100: 204 88% 91%;
+  --info-200: 205 82% 84%;
+  --info-300: 205 78% 74%;
+  --info-400: 205 80% 62%;
+  --info-500: 205 84% 48%;
+  --info-600: 206 84% 40%;
+  --info-700: 207 80% 33%;
+  --info-800: 208 76% 26%;
+  --info-900: 209 72% 20%;
+  --info-950: 210 70% 14%;
+
+  /* Superseded token families removed: they were unmapped and contradicted the
+     brand (a blue primary beside the green one). The semantic set above is the
+     single source of truth. */
+
+
+
+
+
+  --sidebar-background: var(--background);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: var(--accent);
+  --sidebar-accent-foreground: var(--accent-foreground);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
   --success: 142 76% 44%;
   --success-foreground: 142 76% 10%;
   --warning: 48 96% 60%;
@@ -76,25 +142,8 @@
 }
 
 .dark {
-  --background: 150 42% 5%;
-  --foreground: 0 0% 98%;
-  --card: 150 35% 7%;
-  --card-foreground: 0 0% 98%;
-  --popover: 150 35% 7%;
-  --popover-foreground: 0 0% 98%;
-  --primary: 160 70% 55%;
-  --primary-foreground: 150 42% 5%;
-  --secondary: 0 0% 14.9%;
-  --secondary-foreground: 0 0% 98%;
-  --muted: 0 0% 14.9%;
-  --muted-foreground: 0 0% 63.9%;
-  --accent: 0 0% 14.9%;
-  --accent-foreground: 0 0% 98%;
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 150 25% 14%;
-  --input: 150 25% 14%;
-  --ring: 160 70% 55%;
+  /* Theme scalars: src/styles/trade-system.css. The chart ramp is declared here
+     only, so it stays in this file. */
   --chart-1: 162 81% 45%;
   --chart-2: 160 60% 55%;
   --chart-3: 30 80% 55%;
@@ -106,14 +155,58 @@
   --warning-foreground: 48 96% 10%;
   --info: 207 90% 50%;
   --info-foreground: 207 90% 10%;
-  --sidebar-background: 240 5.9% 10%;
-  --sidebar-foreground: 240 4.8% 95.9%;
-  --sidebar-primary: 224.3 76.3% 48%;
-  --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 240 3.7% 15.9%;
-  --sidebar-accent-foreground: 240 4.8% 95.9%;
-  --sidebar-border: 240 3.7% 15.9%;
-  --sidebar-ring: 217.2 91.2% 59.8%;
+  --success-50: 150 30% 10%;
+  --success-100: 150 32% 15%;
+  --success-200: 150 32% 21%;
+  --success-300: 150 32% 28%;
+  --success-400: 148 40% 40%;
+  --success-500: 145 55% 52%;
+  --success-600: 143 58% 62%;
+  --success-700: 143 56% 71%;
+  --success-800: 144 52% 80%;
+  --success-900: 145 48% 88%;
+  --success-950: 146 45% 93%;
+  --warning-50: 30 25% 11%;
+  --warning-100: 30 28% 16%;
+  --warning-200: 30 30% 22%;
+  --warning-300: 32 35% 30%;
+  --warning-400: 36 50% 42%;
+  --warning-500: 40 80% 55%;
+  --warning-600: 43 85% 66%;
+  --warning-700: 45 82% 75%;
+  --warning-800: 46 78% 83%;
+  --warning-900: 47 75% 90%;
+  --warning-950: 48 72% 94%;
+  --destructive-50: 0 25% 12%;
+  --destructive-100: 0 28% 18%;
+  --destructive-200: 0 30% 25%;
+  --destructive-300: 0 35% 33%;
+  --destructive-400: 0 50% 45%;
+  --destructive-500: 0 65% 58%;
+  --destructive-600: 0 68% 68%;
+  --destructive-700: 0 66% 77%;
+  --destructive-800: 0 64% 85%;
+  --destructive-900: 0 62% 91%;
+  --destructive-950: 0 60% 95%;
+  --info-50: 207 28% 12%;
+  --info-100: 207 30% 18%;
+  --info-200: 207 32% 25%;
+  --info-300: 207 36% 33%;
+  --info-400: 207 50% 46%;
+  --info-500: 207 75% 60%;
+  --info-600: 207 72% 70%;
+  --info-700: 207 68% 78%;
+  --info-800: 207 64% 85%;
+  --info-900: 207 62% 91%;
+  --info-950: 207 60% 95%;
+  --sidebar-background: var(--background);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: var(--accent);
+  --sidebar-accent-foreground: var(--accent-foreground);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
 }
 
 @layer base {
@@ -139,18 +232,13 @@
   body {
     overscroll-behavior-y: none;
     @apply bg-background text-foreground font-body antialiased;
-    background-image: radial-gradient(hsl(158 28% 20% / 0.05) 0.6px, transparent 0.6px);
+    background-image: radial-gradient(hsl(var(--foreground) / 0.05) 0.6px, transparent 0.6px);
     background-size: 7px 7px;
   }
 
   /* P0 A-01: Fix contrast — ensure secondary text meets 4.5:1 ratio */
   .text-muted-foreground {
     color: hsl(var(--muted-foreground));
-  }
-
-  button, [role="button"], .bottom-nav-item {
-    -webkit-user-select: none;
-    user-select: none;
   }
 
   * {
@@ -212,11 +300,7 @@
 
 /* AfriTrade brand system — a pragmatic trade house, not a generic storefront. */
 .brand-app-shell {
-  background:
-    linear-gradient(90deg, hsl(var(--primary) / 0.025) 1px, transparent 1px),
-    linear-gradient(hsl(var(--primary) / 0.025) 1px, transparent 1px),
-    hsl(var(--background));
-  background-size: 28px 28px;
+  background: hsl(var(--background));
 }
 
 .brand-lockup {
@@ -246,26 +330,16 @@
   color: hsl(var(--primary));
 }
 
-.brand-home-link:hover .brand-lockup__mark {
-  transform: rotate(12deg);
-}
-
-.brand-lockup__mark {
-  transition: transform 180ms ease;
-}
-
 header[role='banner'] {
-  border-bottom-color: hsl(var(--border) / 0.8) !important;
-  background: hsl(var(--background) / 0.86) !important;
-  backdrop-filter: blur(18px) saturate(115%);
-  -webkit-backdrop-filter: blur(18px) saturate(115%);
+  border-bottom-color: hsl(var(--border));
+  background: hsl(var(--background));
 }
 
 .brand-hero,
 .brand-trust-band,
 .brand-seller-cta {
   border: 1px solid hsl(var(--border));
-  box-shadow: 0 18px 45px -30px hsl(160 42% 10% / 0.42);
+  box-shadow: none;
 }
 
 .brand-hero {
@@ -394,42 +468,15 @@ header[role='banner'] {
   background: hsl(var(--card) / 0.9);
 }
 
-.brand-trust-band::after {
-  position: absolute;
-  right: -3.5rem;
-  top: -5rem;
-  width: 12rem;
-  height: 12rem;
-  border: 1px solid hsl(var(--primary) / 0.18);
-  border-radius: 50%;
-  box-shadow: 0 0 0 1.5rem hsl(var(--primary) / 0.045), 0 0 0 3rem hsl(var(--primary) / 0.025);
-  content: '';
-  pointer-events: none;
-}
-
 .brand-trust-band > * {
   position: relative;
   z-index: 1;
 }
 
 .brand-seller-cta {
-  border-color: #0b7555;
-  border-radius: 0.55rem;
-  background:
-    linear-gradient(135deg, rgb(7 27 22 / 0.05) 25%, transparent 25%) -16px 0 / 32px 32px,
-    linear-gradient(225deg, rgb(7 27 22 / 0.05) 25%, transparent 25%) -16px 0 / 32px 32px,
-    #0d7858;
-}
-
-.brand-seller-cta::after {
-  position: absolute;
-  right: -1rem;
-  bottom: -4rem;
-  width: 15rem;
-  height: 15rem;
-  border: 1px solid rgb(237 242 238 / 0.22);
-  border-radius: 38% 62% 58% 42% / 43% 39% 61% 57%;
-  content: '';
+  border-color: hsl(var(--primary));
+  border-radius: var(--radius);
+  background: hsl(var(--primary));
 }
 
 @media (max-width: 639px) {
@@ -532,7 +579,7 @@ header[role='banner'] {
 }
 
 .paper-title {
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-body);
   font-weight: 400;
   letter-spacing: -.035em;
   font-size: 42px;
@@ -620,7 +667,7 @@ header[role='banner'] {
 
 .paper-shopname,
 .paper-shop-select {
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-body);
   font-size: 18px;
 }
 
@@ -735,7 +782,7 @@ header[role='banner'] {
 }
 
 .paper-value {
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-body);
   font-size: 38px;
   line-height: 1.1;
   font-variant-numeric: tabular-nums;
@@ -798,7 +845,7 @@ header[role='banner'] {
 }
 
 .paper-money {
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-body);
   font-size: 16px;
   white-space: nowrap;
 }
@@ -1023,10 +1070,139 @@ html, body {
   height: 100%;
 }
 
+/* Keep interior scroll containers inside the host WebView. The scrollable
+   discovery rail still uses its own overflow and touch behavior. */
+main, .brand-app-shell main, [data-webview-scroll] {
+  overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+
+/* WebView: hide native scrollbar chrome without disabling touch or keyboard
+   scrolling. Keep visible desktop scrollbars for discoverability/accessibility. */
+@media (max-width: 767px) {
+  html, body, body * {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  html::-webkit-scrollbar, body::-webkit-scrollbar,
+  body *::-webkit-scrollbar { display: none; width: 0; height: 0; }
+}
+
+/* Coarse-pointer WebViews need >= 44px hit areas. Keep desktop densities
+   unchanged and leave ordinary inline links fully selectable. */
+@media (max-width: 767px) and (pointer: coarse) {
+  button, [role="button"], .bottom-nav-item, .app-nav-item {
+    min-inline-size: 44px;
+    min-block-size: 44px;
+  }
+}
+
 /* Prevent text selection on interactive elements (but not links - M-08) */
-button, [role="button"], .bottom-nav-item {
+button, [role="button"], [role="tab"], .header-icon-button {
   user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
+}
+
+@layer base {
+  body { background-color: hsl(var(--background)); color: hsl(var(--foreground)); }
+  h1, h2, h3, h4 { font-family: var(--font-heading); }
+  h1 { letter-spacing: -.045em; line-height: 1.15; }
+  h2, h3 { letter-spacing: -.025em; }
+  input, textarea, select { accent-color: hsl(var(--primary)); }
+  table { font-variant-numeric: tabular-nums; }
+  th { font-weight: 600; }
+  ::selection { background: hsl(var(--primary) / .2); }
+}
+
+/* WebView presentation only — retain native Radix focus management and the
+   original desktop Popper/dialog placement at widths >= 768px. */
+@media (max-width: 767px) {
+  [data-webview-dialog-content],
+  [data-webview-alert-dialog-content],
+  [data-webview-sheet-content] {
+    position: fixed !important;
+    top: auto !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: calc(100dvh - env(safe-area-inset-top) - 12px) !important;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    transform: none !important;
+    border-radius: 18px 18px 0 0 !important;
+    border-left: 0;
+    border-right: 0;
+    border-bottom: 0;
+    padding-bottom: max(1.5rem, env(safe-area-inset-bottom)) !important;
+    animation: webview-bottom-drawer-in 180ms ease-out both !important;
+  }
+  [data-webview-dialog-content][data-state="closed"],
+  [data-webview-alert-dialog-content][data-state="closed"],
+  [data-webview-sheet-content][data-state="closed"] {
+    animation: webview-bottom-drawer-out 150ms ease-in both !important;
+  }
+  [data-webview-drawer-content] {
+    max-height: calc(100dvh - env(safe-area-inset-top) - 12px);
+    padding-bottom: env(safe-area-inset-bottom);
+    overscroll-behavior-y: contain;
+  }
+
+  /* Radix Select Popper normally follows its trigger. On small screens move
+     its portaled wrapper to the viewport bottom, independent of parent dialogs. */
+  [data-radix-popper-content-wrapper]:has([data-webview-select-content]) {
+    position: fixed !important;
+    top: auto !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    transform: none !important;
+    z-index: 81 !important;
+  }
+  [data-webview-select-backdrop] {
+    display: block !important;
+    z-index: 80;
+  }
+  [data-webview-select-content] {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-height: min(70dvh, 34rem) !important;
+    border-radius: 18px 18px 0 0 !important;
+    padding-bottom: env(safe-area-inset-bottom);
+    transform: none !important;
+    z-index: 81 !important;
+  }
+  [data-webview-select-viewport] {
+    height: auto !important;
+    max-height: min(64dvh, 30rem);
+    min-width: 0 !important;
+    width: 100% !important;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}
+@keyframes webview-bottom-drawer-in {
+  from { opacity: .65; }
+  to { opacity: 1; }
+}
+@keyframes webview-bottom-drawer-out {
+  from { opacity: 1; }
+  to { opacity: .65; }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-webview-dialog-content], [data-webview-alert-dialog-content],
+  [data-webview-sheet-content] { animation: none !important; }
+}
+:root {
+    --theme-background-background-1: 13.516484 77.118644% 53.725490%;
+    --theme-background-background-2: 175.339806 77.443609% 26.078431%;
+    --theme-background-background-3: 221.212121 83.193277% 53.333333%;
 }

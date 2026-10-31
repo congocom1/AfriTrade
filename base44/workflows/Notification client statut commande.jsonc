@@ -1,0 +1,40 @@
+{
+  "description": "Pr\u00e9vient le client par e-mail \u00e0 chaque changement de statut de sa commande, y compris quand son colis est pr\u00eat \u00e0 retirer au point relais.",
+  "trigger": {
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "update"
+      ],
+      "entity_name": "FulfillmentOrder"
+    },
+    "condition": "${ (.trigger.data.status // \"\") != \"\" and (.trigger.old_data.status // \"\") != .trigger.data.status }"
+  },
+  "name": "Notification client statut commande",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "customer_order_status_notification",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "notify_customer": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "notifyCustomerOrderStatus",
+            "args": {
+              "fulfillment_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Pr\u00e9venir le client",
+            "description": "E-mail au client selon le nouveau statut"
+          }
+        }
+      }
+    ]
+  }
+}

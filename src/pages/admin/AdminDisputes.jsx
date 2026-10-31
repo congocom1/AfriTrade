@@ -6,7 +6,8 @@ import DashboardNav from '@/components/DashboardNav';
 import StatusBadge from '@/components/StatusBadge';
 import DisputeProofUpload from '@/components/disputes/DisputeProofUpload';
 import { ADMIN_LINKS } from '@/lib/navLinks';
-import { formatUSD, formatDateTime } from '@/lib/format';
+import { formatUsdAmount, formatDateTime } from '@/lib/format';
+import { notifyLoadError } from '@/lib/safeList';
 
 const TYPE_IDS = ['not_received', 'wrong_product', 'damaged', 'not_as_described', 'missing_item', 'payment_issue'];
 
@@ -31,7 +32,7 @@ export default function AdminDisputes() {
     (async () => {
       const me = await base44.auth.me().catch(() => null);
       if (me?.email) setReviewer(me.email);
-      const rows = await base44.entities.Dispute.list('-created_date', 100).catch(() => []);
+      const rows = await base44.entities.Dispute.list('-created_date', 100).catch(notifyLoadError);
       setDisputes(rows);
       setLoading(false);
     })();
@@ -64,7 +65,7 @@ export default function AdminDisputes() {
     });
     setDisputes((prev) => prev.map((d) => (d.id === dispute.id ? updated : d)));
 
-    const shipments = await base44.entities.Shipment.filter({ order_number: dispute.order_number }).catch(() => []);
+    const shipments = await base44.entities.Shipment.filter({ order_number: dispute.order_number }).catch(notifyLoadError);
     if (shipments[0]) {
       await base44.entities.Shipment
         .update(shipments[0].id, {
@@ -145,7 +146,7 @@ export default function AdminDisputes() {
               <div className="flex items-center gap-2">
                 <StatusBadge status={d.priority} />
                 <StatusBadge status={d.status} />
-                <span className="text-sm font-bold">{formatUSD(d.amount_usd)}</span>
+                <span className="text-sm font-bold">{formatUsdAmount(d.amount_usd)}</span>
               </div>
             </div>
 

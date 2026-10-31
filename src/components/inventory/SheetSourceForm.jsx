@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/input';
@@ -33,10 +34,10 @@ export default function SheetSourceForm({ suppliers, onSave }) {
       <Input placeholder={t('sheetSourceForm.phName')} value={f.name} onChange={set('name')} />
       <Input placeholder={t('sheetSourceForm.phUrl')} value={f.url} onChange={set('url')} />
       <Input placeholder={t('sheetSourceForm.phRange')} value={f.sheet_range} onChange={set('sheet_range')} />
-      <select value={f.supplier_id} onChange={set('supplier_id')} className="h-9 rounded-md border border-input bg-card px-3 text-sm">
+      <LegacySelect value={f.supplier_id} onChange={set('supplier_id')} className="h-9 rounded-md border border-input bg-card px-3 text-sm">
         <option value="">{t('sheetSourceForm.allProducts')}</option>
         {suppliers.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-      </select>
+      </LegacySelect>
       <Button type="submit" disabled={!f.name || !f.url || saving} className="md:col-span-2">
         {saving ? t('sheetSourceForm.adding') : t('sheetSourceForm.add')}
       </Button>

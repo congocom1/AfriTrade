@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:congo_commerce_flutter/core/models/product_model.dart';
-import 'package:congo_commerce_flutter/core/providers/providers.dart';
-import 'package:congo_commerce_flutter/features/search/screens/search_screen.dart';
-import 'package:congo_commerce_flutter/ui/widgets/product_card.dart';
+import 'package:afritrade/core/models/product_model.dart';
+import 'package:afritrade/core/providers/providers.dart';
+import 'package:afritrade/features/search/screens/search_screen.dart';
+import 'package:afritrade/ui/widgets/product_card.dart';
 
 void main() {
   testWidgets('Product cards fit narrow screens with enlarged text', (tester) async {

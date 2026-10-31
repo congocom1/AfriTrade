@@ -1,10 +1,14 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { usePortalData } from '@/hooks/usePortalData';
+import { loadRecordGroups } from '@/lib/portalData';
+import PortalStatus from '@/components/PortalStatus';
+import PortalRefresh from '@/components/portal/PortalRefresh';
+import React, { useMemo, useState } from 'react';
 import { TrendingUp, ShoppingCart, CreditCard, Percent, PackageCheck } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import EventTrendChart from '@/components/marketing/EventTrendChart';
 import DashboardNav from '@/components/DashboardNav';
 import { ADMIN_LINKS } from '@/lib/navLinks';
-import { formatUSD } from '@/lib/format';
+import { formatUsdAmount } from '@/lib/format';
 
 const DAY = 86400000;
 const RANGES = [
@@ -26,25 +30,15 @@ function Tile({ icon: Icon, label, value, hint }) {
 }
 
 export default function MarketingAnalytics() {
-  const [events, setEvents] = useState([]);
-  const [orders, setOrders] = useState([]);
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data, loading, error, reload, updatedAt } = usePortalData(['marketing-analytics'], () => loadRecordGroups({
+    events: () => base44.entities.AnalyticsEvent.list('-created_date', 500),
+    orders: () => base44.entities.Order.list('-created_date', 200),
+    products: () => base44.entities.Product.list('-sold_count', 100),
+  }));
+  const events = data?.events || [];
+  const orders = data?.orders || [];
+  const products = data?.products || [];
   const [days, setDays] = useState(14);
-
-  useEffect(() => {
-    (async () => {
-      const [ev, ord, prod] = await Promise.all([
-        base44.entities.AnalyticsEvent.list('-created_date', 500).catch(() => []),
-        base44.entities.Order.list('-created_date', 200).catch(() => []),
-        base44.entities.Product.list('-sold_count', 100).catch(() => []),
-      ]);
-      setEvents(ev);
-      setOrders(ord);
-      setProducts(prod);
-      setLoading(false);
-    })();
-  }, []);
 
   const stats = useMemo(() => {
     const since = Date.now() - days * DAY;
@@ -91,10 +85,12 @@ export default function MarketingAnalytics() {
     };
   }, [events, orders, products, days]);
 
-  if (loading) return <div className="h-64 animate-pulse rounded-2xl bg-secondary" />;
+  if (loading || error) return <PortalStatus loading={loading} retry={reload} />;
 
   return (
     <div className="space-y-5 pb-8">
+      <PortalRefresh onRefresh={reload} updatedAt={updatedAt} />
+      <p className="text-xs text-muted-foreground">Résultats calculés sur les enregistrements chargés, pas sur l’historique complet.</p>
       <DashboardNav title="Marketing" links={ADMIN_LINKS} />
 
       <div className="flex flex-wrap gap-2">
@@ -129,7 +125,7 @@ export default function MarketingAnalytics() {
           icon={PackageCheck}
           label="Commandes enregistrées"
           value={stats.ordersCount}
-          hint={`${stats.paidCount} payée(s) · ${formatUSD(stats.revenue)}`}
+          hint={`${stats.paidCount} payée(s) · ${formatUsdAmount(stats.revenue)}`}
         />
       </section>
 

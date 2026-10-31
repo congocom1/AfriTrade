@@ -12,7 +12,8 @@ for path in glob.glob('src/**/*.jsx', recursive=True) + glob.glob('src/**/*.js',
     try:
         with open(path, 'r', encoding='utf-8') as f:
             content = f.read()
-        matches = re.findall(r"t\(['\"]([^'\"]+)['\"]\)", content)
+        # Simple pattern: match t('key' or t("key" - works with or without options object
+        matches = re.findall(r"t\(['\"]([^'\"]+)['\"]", content)
         used_keys.update(matches)
     except:
         pass
@@ -84,8 +85,13 @@ for section, subkeys in by_section.items():
         if subkey not in fr_dict[section]:
             fr_dict[section][subkey] = subkey.replace('_', ' ').lower()
 
-# Handle root-level keys
+# Handle root-level keys - avoid conflicts with section names
 for k in by_section.get('__root__', []):
+    # Skip root keys that conflict with section names (e.g., 'pricing' as both root and section)
+    if k in en_dict and k != '__root__':
+        continue
+    if k in fr_dict and k != '__root__':
+        continue
     if k not in en_dict['__root__']:
         en_dict['__root__'][k] = k.replace('_', ' ').title()
     if k not in fr_dict['__root__']:
@@ -96,26 +102,31 @@ def escape_js(s):
     return s.replace('\\', '\\\\').replace("'", "\\'").replace('\n', '\\n')
 
 def write_translations(translations_dict, output_path):
+    # Track written sections to avoid duplicates
+    written_sections = set()
     sections = []
     for section in sorted(translations_dict.keys()):
         if section == '__root__':
             continue
-        lines = [f"  {section}: {{"]
+        if section in written_sections:
+            continue
+        written_sections.add(section)
+        lines = [f"  {section}: {{\n"]
         for k, v in sorted(translations_dict[section].items()):
             escaped = escape_js(v)
-            lines.append(f"    {k}: '{escaped}',")
-        lines.append("  },")
-        sections.append("\n".join(lines))
-    
+            lines.append(f"    {k}: '{escaped}',\n")
+        lines.append("  },\n")
+        sections.append("".join(lines))
+
     if '__root__' in translations_dict and translations_dict['__root__']:
         lines = []
         for k, v in sorted(translations_dict['__root__'].items()):
             escaped = escape_js(v)
-            lines.append(f"  {k}: '{escaped}',")
-        sections = lines + [""] + sections
-    
-    new_content = "export default {\n" + "\n\n".join(sections) + "\n}"
-    
+            lines.append(f"  {k}: '{escaped}',\n")
+        sections = lines + ["\n"] + sections
+
+    new_content = "export default {\n" + "\n".join(sections) + "}\n"
+
     with open(output_path, 'w', encoding='utf-8') as f:
         f.write(new_content)
     print(f"Wrote {output_path}")

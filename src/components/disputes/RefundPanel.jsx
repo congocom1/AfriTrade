@@ -1,10 +1,11 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { RotateCcw, AlertCircle } from 'lucide-react';
 import StatusBadge from '@/components/StatusBadge';
 import { openReturn, fetchMyReturns } from '@/lib/customerAccount';
 import { getProfile } from '@/lib/session';
-import { formatUSD, formatDate } from '@/lib/format';
+import { formatUsdAmount, formatDate } from '@/lib/format';
 
 export default function RefundPanel() {
   const { t } = useTranslation();
@@ -96,7 +97,7 @@ export default function RefundPanel() {
             placeholder={t('refundPanel.itemPh')}
             className="h-11 w-full rounded-lg border border-border bg-background px-3 text-sm"
           />
-          <select
+          <LegacySelect
             value={form.reason}
             onChange={(e) => setForm({ ...form, reason: e.target.value })}
             className="h-11 w-full rounded-lg border border-border bg-background px-3 text-sm"
@@ -104,7 +105,7 @@ export default function RefundPanel() {
             {REASONS.map((r) => (
               <option key={r.id} value={r.id}>{r.label}</option>
             ))}
-          </select>
+          </LegacySelect>
           <textarea
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
@@ -142,7 +143,7 @@ export default function RefundPanel() {
                     <p className="text-sm font-semibold">{r.return_number}</p>
                     <div className="flex items-center gap-2">
                       <StatusBadge status={r.status} />
-                      <span className="text-sm font-semibold">{formatUSD(r.refund_amount_usd)}</span>
+                      <span className="text-sm font-semibold">{formatUsdAmount(r.refund_amount_usd)}</span>
                     </div>
                   </div>
                   <p className="text-[11px] text-muted-foreground">

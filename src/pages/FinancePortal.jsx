@@ -1,37 +1,33 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { formatUsdAmount } from '@/lib/format';
+import PortalRefresh from '@/components/portal/PortalRefresh';
+import React, { useMemo } from 'react';
+import { usePortalData } from '@/hooks/usePortalData';
+import { loadRecordGroups } from '@/lib/portalData';
+import PortalStatus from '@/components/PortalStatus';
+
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import DashboardNav from '@/components/DashboardNav';
 import { ADMIN_LINKS } from '@/lib/navLinks';
-import OpsHeader from '@/components/ops/OpsHeader';
 import StatCard from '@/components/ops/StatCard';
 import ReconciliationTable from '@/components/finance/ReconciliationTable';
 import { providerLabel } from '@/lib/payments';
 import { formatUSD, formatDateTime } from '@/lib/format';
 import { useTranslation } from 'react-i18next';
 
-const PAID = ['PAID', 'AUTHORIZED'];
+const PAID = ['PAID'];
 const FAILED = ['FAILED', 'CANCELLED', 'REFUNDED'];
 
 export default function FinancePortal() {
   const { t } = useTranslation();
-  const [orders, setOrders] = useState([]);
-  const [purchases, setPurchases] = useState([]);
-  const [payouts, setPayouts] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    Promise.all([
-      base44.entities.Order.list('-created_date', 500),
-      base44.entities.Base44Purchase.list('-created_date', 200).catch(() => []),
-      base44.entities.WalletTransaction.filter({ type: 'PAYOUT', status: { $ne: 'preparing' } }, '-created_date', 200),
-    ]).then(([o, p, w]) => {
-      setOrders(o.filter((x) => !x.is_demo));
-      setPurchases(p);
-      setPayouts(w);
-      setLoading(false);
-    });
-  }, []);
+  const { data, loading, error, reload, updatedAt } = usePortalData(['finance'], () => loadRecordGroups({
+    orders: () => base44.entities.Order.list('-created_date', 500),
+    purchases: () => base44.entities.Base44Purchase.list('-created_date', 200),
+    payouts: () => base44.entities.WalletTransaction.filter({ type: 'PAYOUT', status: { $ne: 'preparing' } }, '-created_date', 200),
+  }));
+  const orders = (data?.orders || []).filter((order) => !order.is_demo);
+  const purchases = data?.purchases || [];
+  const payouts = data?.payouts || [];
 
   const rows = useMemo(() => {
     const map = {};
@@ -53,19 +49,24 @@ export default function FinancePortal() {
   const byNumber = Object.fromEntries(orders.map((o) => [o.order_number, o]));
   const mismatches = purchases.filter((p) => p.status === 'paid' && byNumber[p.productId]?.payment_status !== 'PAID');
 
-  if (loading) return <p className="p-6 text-sm text-muted-foreground">{t('financePortal.loading')}</p>;
+  if (loading || error) return <div className="space-y-5"><DashboardNav title={t('financePortal.title')} links={ADMIN_LINKS} /><PortalStatus loading={loading} retry={reload} /></div>;
 
   return (
     <div className="space-y-5">
-      <DashboardNav title={t('financePortal.admin')} links={ADMIN_LINKS} />
-      <OpsHeader title={t('financePortal.title')} subtitle={t('financePortal.subtitle')}>
+      <DashboardNav title={t('financePortal.title')} links={ADMIN_LINKS} />
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="space-y-2"><p className="max-w-2xl text-sm text-muted-foreground">{t('financePortal.subtitle')}</p>
+        <p className="text-xs text-muted-foreground">{t('portalComponents.recordScope')}</p></div>
+        <div className="flex flex-wrap items-center gap-3">
+        <PortalRefresh onRefresh={reload} updatedAt={updatedAt} />
         <Link to="/admin/payouts" className="rounded-full bg-primary px-4 py-2 text-xs font-bold text-primary-foreground">{t('financePortal.processPayouts')}</Link>
-      </OpsHeader>
+        </div>
+      </div>
       <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
-        <StatCard label={t('financePortal.collected')} value={formatUSD(sum('paid'))} tone="good" />
-        <StatCard label={t('financePortal.pending')} value={formatUSD(sum('pending'))} tone="warn" />
-        <StatCard label={t('financePortal.vat')} value={formatUSD(vat)} />
-        <StatCard label={t('financePortal.payoutsDue')} value={formatUSD(pendingPayouts.reduce((s, p) => s + (Number(p.amount_usd) || 0), 0))} hint={t('financePortal.requestCount', { count: pendingPayouts.length })} tone={pendingPayouts.length ? 'warn' : 'default'} />
+        <StatCard label={t('financePortal.collected')} value={formatUsdAmount(sum('paid'))} tone="good" />
+        <StatCard label={t('financePortal.pending')} value={formatUsdAmount(sum('pending'))} tone="warn" />
+        <StatCard label={t('financePortal.vat')} value={formatUsdAmount(vat)} />
+        <StatCard label={t('financePortal.payoutsDue')} value={formatUsdAmount(pendingPayouts.reduce((s, p) => s + (Number(p.amount_usd) || 0), 0))} hint={t('financePortal.requestCount', { count: pendingPayouts.length })} tone={pendingPayouts.length ? 'warn' : 'default'} />
         <StatCard label={t('financePortal.cardGaps')} value={mismatches.length} tone={mismatches.length ? 'bad' : 'good'} hint={t('financePortal.cardGapsHint')} />
       </div>
       <ReconciliationTable rows={rows} />

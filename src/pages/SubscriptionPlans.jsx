@@ -1,3 +1,4 @@
+import { formatUsdAmount } from '@/lib/format';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AlertCircle, CheckCircle2, Store } from 'lucide-react';
@@ -9,7 +10,7 @@ import PlanComparisonTable from '@/components/saas/PlanComparisonTable';
 import { Progress } from '@/components/ui/progress';
 import { BILLING_CYCLES, changePlan, startSubscription, subscriptionLabel } from '@/lib/saas';
 import { loadPlans, planAmountLabel, planByCode, planLimit, usagePercent } from '@/lib/plans';
-import { formatDate, formatUSD } from '@/lib/format';
+import { formatDate, } from '@/lib/format';
 
 export default function SubscriptionPlans() {
   const { t } = useTranslation();
@@ -131,7 +132,7 @@ export default function SubscriptionPlans() {
             <p className="text-lg font-bold">{planAmountLabel(current, cycle)}</p>
             <p className="text-[11px] text-muted-foreground">
               {t('subscriptionPlans.commissionRate', { rate: Number(current.commission_rate) || 0 })}
-              {subscription ? t('subscriptionPlans.billed', { amount: formatUSD(subscription.amount_usd) }) : ''}
+              {subscription ? t('subscriptionPlans.billed', { amount: formatUsdAmount(subscription.amount_usd) }) : ''}
             </p>
           </div>
         </div>

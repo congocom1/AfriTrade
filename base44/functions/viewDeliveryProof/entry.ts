@@ -44,7 +44,11 @@ export default async function(req) {
     if (user.role !== 'admin') {
       if (kind === 'dispute') return addSecurityHeaders(Response.json({ error: 'Accès refusé' }, { status: 403 }));
       const couriers = await base44.asServiceRole.entities.Courier.filter({ email: user.email });
-      const allowed = couriers.some((c) => c.active !== false && (c.id === record.courier_id || c.name === record.courier_name));
+      // The courier carrying the parcel is the one whose record id the shipment
+      // stores. Matching the display name instead let a courier whose name
+      // collided with another's open that courier's proof-of-delivery photo,
+      // which shows the recipient and their address.
+      const allowed = couriers.some((c) => c.active !== false && c.id === record.courier_id);
       if (!allowed) return addSecurityHeaders(Response.json({ error: 'Accès refusé' }, { status: 403 }));
     }
 

@@ -1,4 +1,4 @@
-# Phase A — Visual Audit: CongoCommerce Repository
+# Phase A — Visual Audit: AfriTrade Repository
 
 **Date:** 2026-10-17  
 **Branch:** `visual-redesign` (new dedicated branch for all visual work)  
@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-The repository implements a mature visual design system under the brand name **AfriTrade** (not "CongoCommerce" — see Brand Integrity below). The design system is cohesive: Tailwind tokens resolve through CSS custom properties in `src/index.css`, all pages consume a consistent set of shared components, Radix UI primitives, and lucide-react icons. Layout shells (DashboardShell/DashboardNav, AuthLayout, BottomNav/TopBar) are reusable and consistent.
+The repository implements a mature visual design system under the brand name **AfriTrade** (formerly referred to as "CongoCommerce" in legacy references — see Brand Integrity below). The design system is cohesive: Tailwind tokens resolve through CSS custom properties in `src/index.css`, all pages consume a consistent set of shared components, Radix UI primitives, and lucide-react icons. Layout shells (DashboardShell/DashboardNav, AuthLayout, BottomNav/TopBar) are reusable and consistent.
 
 **Overall assessment:** Strong foundation — minor inconsistencies only. No critical visual defects found. The directive's "Apple-level simplicity," "Stripe financial clarity," and "Shopify usability" targets are structurally supported by the current architecture.
 
@@ -16,16 +16,16 @@ The repository implements a mature visual design system under the brand name **A
 
 ## Brand Integrity
 
-**The product brand is AfriTrade, not CongoCommerce.** This is confirmed by four independent sources:
+**The product brand is AfriTrade.** This is confirmed by four independent sources:
 
 | Source | Evidence |
 |--------|----------|
-| `BRAND.md` | "AfriTrade" named as the brand throughout; monogram "C/C"; never an Africa map |
+| `BRAND.md` | "AfriTrade" named as the brand throughout; monogram "A/T"; never an Africa map |
 | `public/design-brief.md` | "The network that holds"; Sora/Manrope/JetBrains Mono; ≤32MiB desktop / ≤16MiB mobile |
 | `index.html` | `<title>` and meta reference AfriTrade |
 | `src/components/BrandLogo.jsx` | Renders `Afri<span>Trade</span>`; LOGO_URL = `/brand/logo-primary.svg` |
 
-**Decision:** Per directive constraint #3 ("Inspect the project's actual brand direction before changing names"), we will **not** rename to CongoCommerce. All 12 design docs and visual enhancements will use the AfriTrade brand identity as-is.
+**Historical Note:** Legacy documentation and repository references used "CongoCommerce" prior to the rebrand. The decision to standardize on AfriTrade was made per directive constraint #3 ("Inspect the project's actual brand direction before changing names"). All 12 design docs and visual enhancements use the AfriTrade brand identity.
 
 **Brand color:** Congo Jade — `--primary: hsl(158 78% 29%)` (light mode), `hsl(160 70% 55%)` (dark mode). Accent: `--accent: hsl(157 44% 91%)` / dark `#0d7858` seller-CTA gradient.
 

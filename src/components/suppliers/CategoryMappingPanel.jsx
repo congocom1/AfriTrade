@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check, Info, Layers } from 'lucide-react';
@@ -59,14 +60,14 @@ export default function CategoryMappingPanel({ supplier, categories, onSave }) {
           {external.map((label) => (
             <div key={label} className="flex flex-wrap items-center gap-2">
               <span className="min-w-0 flex-1 truncate text-xs font-medium">{label}</span>
-              <select
+              <LegacySelect
                 value={draft[label] || ''}
                 onChange={(e) => setDraft({ ...draft, [label]: e.target.value })}
                 className="h-9 w-56 rounded-lg border border-border bg-card px-2 text-xs"
               >
                 <option value="">{t('categoryMappingPanel.unmapped')}</option>
                 {categories.map((c) => <option key={c.id} value={c.name}>{c.name}</option>)}
-              </select>
+              </LegacySelect>
             </div>
           ))}
         </div>

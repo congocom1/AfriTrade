@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import React, { useEffect, useState } from 'react';
 import { RefreshCw, Power, Info, Plus, Layers } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
@@ -8,6 +9,7 @@ import { getSupplierAdapter, SUPPLIER_REGISTRY } from '@/lib/suppliers';
 import CategoryMappingPanel from '@/components/suppliers/CategoryMappingPanel';
 import { formatUSD, formatDateTime } from '@/lib/format';
 import { useTranslation } from 'react-i18next';
+import { notifyLoadError } from '@/lib/safeList';
 
 const ADAPTERS = Object.keys(SUPPLIER_REGISTRY);
 
@@ -24,8 +26,8 @@ export default function AdminSuppliers() {
 
   const load = async () => {
     const [rows, cats] = await Promise.all([
-      base44.entities.Supplier.list('name', 100).catch(() => []),
-      base44.entities.Category.list('sort_order', 200).catch(() => []),
+      base44.entities.Supplier.list('name', 100).catch(notifyLoadError),
+      base44.entities.Category.list('sort_order', 200).catch(notifyLoadError),
     ]);
     setSuppliers(rows);
     setCategories(cats);
@@ -138,16 +140,16 @@ export default function AdminSuppliers() {
           <div className="grid gap-3 md:grid-cols-2">
             <input value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} placeholder={t('adminSuppliers.name')} required className="h-11 rounded-lg border border-border bg-background px-3 text-sm" />
             <input value={draft.code} onChange={(e) => setDraft({ ...draft, code: e.target.value.toUpperCase() })} placeholder={t('adminSuppliers.code')} required className="h-11 rounded-lg border border-border bg-background px-3 text-sm" />
-            <select value={draft.adapter} onChange={(e) => setDraft({ ...draft, adapter: e.target.value })} className="h-11 rounded-lg border border-border bg-background px-3 text-sm">
+            <LegacySelect value={draft.adapter} onChange={(e) => setDraft({ ...draft, adapter: e.target.value })} className="h-11 rounded-lg border border-border bg-background px-3 text-sm">
               <option value="manual">{t('adminSuppliers.manual')}</option>
               {ADAPTERS.map((a) => (
                 <option key={a} value={a}>{t('adminSuppliers.demoAdapter', { adapter: a })}</option>
               ))}
-            </select>
-            <select value={draft.type} onChange={(e) => setDraft({ ...draft, type: e.target.value })} className="h-11 rounded-lg border border-border bg-background px-3 text-sm">
+            </LegacySelect>
+            <LegacySelect value={draft.type} onChange={(e) => setDraft({ ...draft, type: e.target.value })} className="h-11 rounded-lg border border-border bg-background px-3 text-sm">
               <option value="international">{t('adminSuppliers.intl')}</option>
               <option value="local_warehouse">{t('adminSuppliers.warehouse')}</option>
-            </select>
+            </LegacySelect>
           </div>
           <input value={draft.description} onChange={(e) => setDraft({ ...draft, description: e.target.value })} placeholder={t('adminSuppliers.description')} className="h-11 w-full rounded-lg border border-border bg-background px-3 text-sm" />
           <button type="submit" disabled={creating} className="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-50">{t('adminSuppliers.create')}</button>
@@ -199,7 +201,7 @@ export default function AdminSuppliers() {
                     type="button"
                     onClick={() => toggle(s)}
                     className={`flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-semibold ${
-                      s.enabled ? 'bg-emerald-100 text-emerald-900' : 'bg-slate-200 text-slate-700'
+                      s.enabled ? 'bg-success-100 text-success-900' : 'bg-muted text-muted-foreground'
                     }`}
                   >
                     <Power className="h-3.5 w-3.5" /> {s.enabled ? t('adminSuppliers.enabled') : t('adminSuppliers.disabled')}

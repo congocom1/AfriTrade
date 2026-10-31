@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { KeyRound, Search, ShieldAlert, ShieldCheck } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import OpsHeader from '@/components/ops/OpsHeader';
@@ -103,7 +104,14 @@ export default function SecurityActivity() {
       <OpsHeader
         title="Activité de sécurité"
         subtitle="Actions sensibles enregistrées par l'application : accès refusés, demandes de données, mouvements financiers et opérations d'administration."
-      />
+      >
+        <Link
+          to="/admin/access-matrix"
+          className="inline-flex items-center gap-1.5 rounded-full border border-border px-3.5 py-1.5 text-xs font-semibold hover:bg-secondary"
+        >
+          <ShieldCheck className="h-3.5 w-3.5" /> Matrice des accès
+        </Link>
+      </OpsHeader>
 
       <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
         <StatCard label="Entrées chargées" value={logs.length} hint="200 plus récentes" />

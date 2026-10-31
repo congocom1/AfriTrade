@@ -1,0 +1,113 @@
+{
+  "name": "AirtableSource",
+  "type": "object",
+  "properties": {
+    "description": {
+      "type": "string",
+      "maxLength": 1000
+    },
+    "name": {
+      "type": "string"
+    },
+    "base_id": {
+      "type": "string"
+    },
+    "base_name": {
+      "type": "string"
+    },
+    "table_id": {
+      "type": "string"
+    },
+    "table_name": {
+      "type": "string"
+    },
+    "sku_field": {
+      "type": "string"
+    },
+    "title_field": {
+      "type": "string"
+    },
+    "price_field": {
+      "type": "string"
+    },
+    "stock_field": {
+      "type": "string"
+    },
+    "image_field": {
+      "type": "string"
+    },
+    "description_field": {
+      "type": "string"
+    },
+    "supplier_id": {
+      "type": "string"
+    },
+    "supplier_name": {
+      "type": "string"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    },
+    "last_synced_at": {
+      "type": "string"
+    },
+    "last_status": {
+      "type": "string",
+      "enum": [
+        "never",
+        "success",
+        "failed"
+      ],
+      "default": "never"
+    },
+    "last_error": {
+      "type": "string"
+    },
+    "last_rows": {
+      "type": "number",
+      "default": 0
+    },
+    "last_updated": {
+      "type": "number",
+      "default": 0
+    },
+    "last_created": {
+      "type": "number",
+      "default": 0
+    },
+    "last_unmatched": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "name",
+    "base_id",
+    "table_id"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

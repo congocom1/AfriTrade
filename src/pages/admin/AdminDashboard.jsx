@@ -1,78 +1,73 @@
-import React, { useEffect, useState } from 'react';
+import PortalRefresh from '@/components/portal/PortalRefresh';
+import React from 'react';
+import { usePortalData } from '@/hooks/usePortalData';
+import { loadRecordGroups } from '@/lib/portalData';
+import PortalStatus from '@/components/PortalStatus';
+
 import { Link } from 'react-router-dom';
 import { ShoppingBag, TrendingUp, AlertTriangle, Users, Package, Wallet as WalletIcon, Store, Coins } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import DashboardShell from '@/components/DashboardShell';
 import StatusBadge from '@/components/StatusBadge';
+import StatCard from '@/components/ops/StatCard';
 import AdminLiveOverview from '@/components/admin/AdminLiveOverview';
 import { ADMIN_LINKS } from '@/lib/navLinks';
-import { formatUSD, formatDateTime } from '@/lib/format';
+import { formatUsdAmount, formatDateTime } from '@/lib/format';
 import { useTranslation } from 'react-i18next';
 
 export default function AdminDashboard() {
   const { t } = useTranslation();
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { data, loading, error, reload, updatedAt } = usePortalData(['admin-dashboard'], () => loadRecordGroups({
+    orders: () => base44.entities.Order.list('-created_date', 200),
+    fulfillments: () => base44.entities.FulfillmentOrder.list('-created_date', 300),
+    products: () => base44.entities.Product.list('-created_date', 300),
+    sellers: () => base44.entities.Seller.list('name', 100),
+    returns: () => base44.entities.Return.list('-created_date', 100),
+    disputes: () => base44.entities.Dispute.list('-created_date', 100),
+    wallets: () => base44.entities.Wallet.filter({ owner_type: 'platform' }),
+    logs: () => base44.entities.AuditLog.list('-created_date', 15),
+  }));
+  if (loading || error || !data) return <DashboardShell nav={ADMIN_LINKS} title={t('adminDashboard.title')}><PortalStatus loading={loading} retry={reload} /></DashboardShell>;
 
-  useEffect(() => {
-    (async () => {
-      const [orders, fulfillments, products, sellers, returns, disputes, wallets, logs] = await Promise.all([
-        base44.entities.Order.list('-created_date', 200).catch(() => []),
-        base44.entities.FulfillmentOrder.list('-created_date', 300).catch(() => []),
-        base44.entities.Product.list('-created_date', 300).catch(() => []),
-        base44.entities.Seller.list('name', 100).catch(() => []),
-        base44.entities.Return.list('-created_date', 100).catch(() => []),
-        base44.entities.Dispute.list('-created_date', 100).catch(() => []),
-        base44.entities.Wallet.filter({ owner_type: 'platform' }).catch(() => []),
-        base44.entities.AuditLog.list('-created_date', 15).catch(() => []),
-      ]);
-      setData({ orders, fulfillments, products, sellers, returns, disputes, wallet: wallets[0] || null, logs });
-      setLoading(false);
-    })();
-  }, []);
-
-  if (loading || !data) return <div className="h-64 animate-pulse rounded-2xl bg-secondary" />;
-
-  const { orders, fulfillments, products, sellers, returns, disputes, wallet, logs } = data;
-  const gmv = orders.reduce((s, o) => s + (o.total_usd || 0), 0);
-  const revenue = fulfillments.reduce((s, f) => s + (f.platform_revenue_usd || 0), 0);
+  const { orders, fulfillments, products, sellers, returns, disputes, wallets, logs } = data;
+  const wallet = wallets[0] || null;
+  const gmv = orders.reduce((s, o) => s + (Number(o.total_usd) || 0), 0);
+  const revenue = fulfillments.reduce((s, f) => s + (Number(f.platform_revenue_usd) || 0), 0);
   const pendingFulfillments = fulfillments.filter((f) => !['DELIVERED', 'CANCELLED', 'RETURNED'].includes(f.status));
   const openReturns = returns.filter((r) => !['refunded', 'closed', 'rejected'].includes(r.status));
   const openDisputes = disputes.filter((d) => !['resolved_buyer', 'resolved_seller', 'closed'].includes(d.status));
 
   const kpis = [
-    { icon: TrendingUp, label: t('adminDashboard.gmv'), value: formatUSD(gmv) },
-    { icon: Coins, label: t('adminDashboard.revenue'), value: formatUSD(revenue) },
+    { icon: TrendingUp, label: t('adminDashboard.gmv'), value: formatUsdAmount(gmv) },
+    { icon: Coins, label: t('adminDashboard.revenue'), value: formatUsdAmount(revenue) },
     { icon: ShoppingBag, label: t('adminDashboard.orders'), value: orders.length },
     { icon: Package, label: t('adminDashboard.pendingShip'), value: pendingFulfillments.length },
     { icon: Store, label: t('adminDashboard.sellers'), value: sellers.length },
     { icon: Users, label: t('adminDashboard.products'), value: products.length },
     { icon: AlertTriangle, label: t('adminDashboard.openReturns'), value: openReturns.length },
-    { icon: WalletIcon, label: t('adminDashboard.treasury'), value: formatUSD(wallet?.balance_usd || 0) },
+    { icon: WalletIcon, label: t('adminDashboard.treasury'), value: formatUsdAmount(wallet?.balance_usd || 0) },
   ];
 
   return (
     <DashboardShell nav={ADMIN_LINKS} title={t('adminDashboard.title')}>
-      <AdminLiveOverview />
+      <PortalRefresh onRefresh={reload} updatedAt={updatedAt} />
+      <p className="text-xs text-muted-foreground">{t('portalComponents.recordScope')}</p>
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         {kpis.map((k) => (
-          <div key={k.label} className="rounded-xl border border-border bg-card p-3.5">
-            <k.icon className="h-4 w-4 text-primary" />
-            <p className="mt-1.5 text-lg font-bold">{k.value}</p>
-            <p className="text-[11px] text-muted-foreground">{k.label}</p>
-          </div>
+          <StatCard key={k.label} label={k.label} value={k.value} />
         ))}
       </div>
 
       {openDisputes.length > 0 && (
-        <Link to="/admin/returns" className="flex items-center gap-2 rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
+        <Link to="/admin/disputes" className="flex items-center gap-2 rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
           <AlertTriangle className="h-4 w-4" />
           {t('adminDashboard.disputeBanner', { count: openDisputes.length })}
         </Link>
       )}
 
-      <section className="rounded-2xl border border-border bg-card p-4">
+      <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+      <section className="min-w-0 rounded-xl border border-border bg-card p-5">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-sm font-bold">{t('adminDashboard.latestOrders')}</h2>
           <Link to="/admin/orders" className="text-xs font-semibold text-primary">{t('adminDashboard.viewAll')}</Link>
@@ -89,7 +84,7 @@ export default function AdminDashboard() {
               <div className="flex items-center gap-2">
                 <StatusBadge status={o.payment_status} />
                 <StatusBadge status={o.status} />
-                <span className="text-sm font-semibold">{formatUSD(o.total_usd)}</span>
+                <span className="text-sm font-semibold">{formatUsdAmount(o.total_usd)}</span>
               </div>
             </div>
           ))}
@@ -97,7 +92,7 @@ export default function AdminDashboard() {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-border bg-card p-4">
+      <section className="min-w-0 rounded-xl border border-border bg-card p-5">
         <h2 className="mb-3 text-sm font-bold">{t('adminDashboard.audit')}</h2>
         <div className="space-y-1.5">
           {logs.map((l) => (
@@ -110,6 +105,8 @@ export default function AdminDashboard() {
           {!logs.length && <p className="text-xs text-muted-foreground">{t('adminDashboard.noLogs')}</p>}
         </div>
       </section>
+      </div>
+      <AdminLiveOverview />
     </DashboardShell>
   );
 }

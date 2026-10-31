@@ -1,16 +1,56 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { UserPlus, Mail, Lock, Loader2 } from "lucide-react";
+import { UserPlus, Mail, Lock, Loader2, Eye, EyeOff, Check } from "lucide-react";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
 import { toast } from "@/components/ui/use-toast";
 import { safeReturnTo } from "@/lib/authReturnTo";
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/** 0–4 score: length, case mix, digits, symbols. */
+function passwordScore(pw) {
+  if (!pw) return 0;
+  let score = 0;
+  if (pw.length >= 8) score += 1;
+  if (pw.length >= 12) score += 1;
+  if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) score += 1;
+  if (/\d/.test(pw)) score += 1;
+  if (/[^A-Za-z0-9]/.test(pw)) score += 1;
+  return Math.min(4, score);
+}
+
+function PasswordStrength({ password, t }) {
+  const score = passwordScore(password);
+  if (!password) return null;
+  const labels = [
+    t('auth.strengthWeak'),
+    t('auth.strengthWeak'),
+    t('auth.strengthFair'),
+    t('auth.strengthGood'),
+    t('auth.strengthStrong'),
+  ];
+  const colors = ['bg-destructive', 'bg-destructive', 'bg-amber-500', 'bg-emerald-500', 'bg-emerald-600'];
+  return (
+    <div className="space-y-1" aria-live="polite">
+      <div className="flex gap-1" aria-hidden="true">
+        {[0, 1, 2, 3].map((i) => (
+          <span
+            key={i}
+            className={`h-1 flex-1 rounded-full ${i < score ? colors[score] : 'bg-secondary'}`}
+          />
+        ))}
+      </div>
+      <p className="text-xs text-muted-foreground">{labels[score]}</p>
+    </div>
+  );
+}
 
 export default function Register() {
   const { t } = useTranslation();
@@ -21,10 +61,31 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [showOtp, setShowOtp] = useState(false);
   const [otpCode, setOtpCode] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [touched, setTouched] = useState({ email: false, password: false, confirm: false });
+
+  const emailInvalid = touched.email && email.length > 0 && !EMAIL_RE.test(email);
+  const passwordTooShort = touched.password && password.length > 0 && password.length < 8;
+  const confirmMismatch = touched.confirm && confirmPassword.length > 0 && password !== confirmPassword;
+  const confirmMatch = confirmPassword.length > 0 && password === confirmPassword;
+
+  const benefits = useMemo(
+    () => [t('auth.benefit1'), t('auth.benefit2'), t('auth.benefit3')],
+    [t]
+  );
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setTouched({ email: true, password: true, confirm: true });
+    if (!EMAIL_RE.test(email)) {
+      setError(t('auth.emailInvalid'));
+      return;
+    }
+    if (password.length < 8) {
+      setError(t('auth.passwordTooShort'));
+      return;
+    }
     if (password !== confirmPassword) {
       setError(t('auth.passwordsMismatch'));
       return;
@@ -34,7 +95,8 @@ export default function Register() {
       await base44.auth.register({ email, password });
       setShowOtp(true);
     } catch (err) {
-      setError(err.message || t('auth.registerError'));
+      const apiError = err?.response?.data?.error || err?.response?.data?.message;
+      setError(apiError || err.message || t('auth.registerError'));
     } finally {
       setLoading(false);
     }
@@ -50,7 +112,8 @@ export default function Register() {
       }
       window.location.href = safeReturnTo();
     } catch (err) {
-      setError(err.message || t('auth.codeInvalid'));
+      const apiError = err?.response?.data?.error || err?.response?.data?.message;
+      setError(apiError || err.message || t('auth.codeInvalid'));
     } finally {
       setLoading(false);
     }
@@ -65,7 +128,8 @@ export default function Register() {
         description: t('auth.codeSentDesc'),
       });
     } catch (err) {
-      setError(err.message || t('auth.resendFailed'));
+      const apiError = err?.response?.data?.error || err?.response?.data?.message;
+      setError(apiError || err.message || t('auth.resendFailed'));
     }
   };
 
@@ -132,6 +196,8 @@ export default function Register() {
       icon={UserPlus}
       title={t('auth.registerTitle')}
       subtitle={t('auth.registerSubtitle')}
+      benefits={benefits}
+      proof={t('auth.registerProof')}
       footer={
         <>
           {t('auth.hasAccount')}{" "}
@@ -182,10 +248,16 @@ export default function Register() {
               placeholder="vous@exemple.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              onBlur={() => setTouched((s) => ({ ...s, email: true }))}
               className="pl-10 h-12"
+              aria-invalid={emailInvalid || undefined}
+              aria-describedby={emailInvalid ? 'email-error' : undefined}
               required
             />
           </div>
+          {emailInvalid && (
+            <p id="email-error" className="text-xs text-destructive">{t('auth.emailInvalid')}</p>
+          )}
         </div>
         <div className="space-y-2">
           <Label htmlFor="password">{t('common.password')}</Label>
@@ -193,15 +265,31 @@ export default function Register() {
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
             <Input
               id="password"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               autoComplete="new-password"
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="pl-10 h-12"
+              onBlur={() => setTouched((s) => ({ ...s, password: true }))}
+              className="pl-10 pr-10 h-12"
+              aria-invalid={passwordTooShort || undefined}
+              aria-describedby={passwordTooShort ? 'password-error' : 'password-hint'}
               required
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              aria-label={showPassword ? t('auth.hidePassword') : t('auth.showPassword')}
+            >
+              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </button>
           </div>
+          <p id="password-hint" className="text-xs text-muted-foreground">{t('auth.passwordHint')}</p>
+          {passwordTooShort && (
+            <p id="password-error" className="text-xs text-destructive">{t('auth.passwordTooShort')}</p>
+          )}
+          <PasswordStrength password={password} t={t} />
         </div>
         <div className="space-y-2">
           <Label htmlFor="confirm">{t('auth.confirmPassword')}</Label>
@@ -209,15 +297,24 @@ export default function Register() {
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
             <Input
               id="confirm"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               autoComplete="new-password"
               placeholder="••••••••"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="pl-10 h-12"
+              onBlur={() => setTouched((s) => ({ ...s, confirm: true }))}
+              className="pl-10 pr-10 h-12"
+              aria-invalid={confirmMismatch || undefined}
+              aria-describedby={confirmMismatch ? 'confirm-error' : undefined}
               required
             />
+            {confirmMatch && (
+              <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-600" aria-hidden="true" />
+            )}
           </div>
+          {confirmMismatch && (
+            <p id="confirm-error" className="text-xs text-destructive">{t('auth.passwordsMismatch')}</p>
+          )}
         </div>
         <Button type="submit" size="lg" className="w-full font-medium" disabled={loading}>
           {loading ? (

@@ -1,4 +1,4 @@
-# CONGO COMMERCE — design brief
+# AFRITRADE — design brief
 
 **Design read.** A continental commerce operating system for African sellers,
 creators and enterprises, in a premium-technology register: confident,
@@ -34,7 +34,7 @@ after the journey continues the same idea in a different layout family.
 | error | `#DE6152` | |
 | info | `#4E86C9` | |
 
-Defense: the Congo's actual material DNA is cobalt and copper country, so the
+Defense: the DRC's actual material DNA is cobalt and copper country, so the
 brand is built from a metal, not a stereotype. A deep jade signal on an
 ink-green-black ground reads as premium African technology while dodging the
 four generic looks the brief bans: it is not the banking blue, not the

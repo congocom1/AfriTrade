@@ -1,9 +1,10 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import React, { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AlertTriangle, Banknote, MessageSquare, PackageCheck, Paperclip, Send, ShieldCheck, X } from 'lucide-react';
 import StatusBadge from '@/components/StatusBadge';
 import DisputeProofUpload from '@/components/disputes/DisputeProofUpload';
-import { formatUSD, formatDateTime } from '@/lib/format';
+import { formatUsdAmount, formatDateTime } from '@/lib/format';
 import {
   DISPUTE_TYPES,
   OPEN_STATUSES,
@@ -79,7 +80,7 @@ export default memo(function DisputeCaseCard({ dispute, ticket, isAdmin, actor, 
         <div className="flex items-center gap-2">
           <StatusBadge status={dispute.priority} />
           <StatusBadge status={dispute.status} />
-          <span className="text-sm font-bold">{formatUSD(dispute.amount_usd)}</span>
+          <span className="text-sm font-bold">{formatUsdAmount(dispute.amount_usd)}</span>
         </div>
       </div>
 
@@ -138,10 +139,10 @@ export default memo(function DisputeCaseCard({ dispute, ticket, isAdmin, actor, 
                 amount: dispute.amount_usd,
                 note,
                 reviewer: actor,
-              }), t('disputeCase.refundDone', { amount: formatUSD(dispute.amount_usd) }))}
+              }), t('disputeCase.refundDone', { amount: formatUsdAmount(dispute.amount_usd) }))}
               className="flex items-center gap-1.5 rounded-full bg-emerald-100 px-3.5 py-1.5 text-xs font-semibold text-emerald-900 disabled:opacity-50"
             >
-              <Banknote className="h-3.5 w-3.5" /> {t('disputeCase.refundAction', { amount: formatUSD(dispute.amount_usd) })}
+              <Banknote className="h-3.5 w-3.5" /> {t('disputeCase.refundAction', { amount: formatUsdAmount(dispute.amount_usd) })}
             </button>
             <button
               type="button"
@@ -197,13 +198,13 @@ export default memo(function DisputeCaseCard({ dispute, ticket, isAdmin, actor, 
           {!isAdmin ? (
             <label className="block text-[11px] font-semibold">
               {t('disputeCase.proposedResolution')}
-              <select
+              <LegacySelect
                 value={resolution}
                 onChange={(e) => setResolution(e.target.value)}
                 className="mt-1 h-9 w-full rounded-lg border border-input bg-card px-2 text-xs"
               >
                 {RESOLUTIONS.map((r) => <option key={r.id} value={r.id}>{t(r.labelKey)}</option>)}
-              </select>
+              </LegacySelect>
             </label>
           ) : null}
           {isAdmin ? (

@@ -91,7 +91,7 @@ function productToFlutter(p: any) {
     compare_at_usd: p.compare_at_usd ?? null,
     stock: p.stock ?? 0,
     weight_kg: p.weight_kg ?? null,
-    origin_country: p.origin_country ?? "NG",
+    origin_country: p.origin_country ?? "CD",
     status: p.status ?? "published",
     is_featured: p.is_featured ?? false,
     is_flash_sale: p.is_flash_sale ?? false,
@@ -127,6 +127,7 @@ export default async function (req: Request): Promise<Response> {
     const clientKey = getClientKey(req) || "unidentified";
     const limited = await checkRateLimit(db, clientKey, {
       keyPrefix: `rest_${parsed.resource}`,
+        failClosed: true,
       limit: RATE_LIMIT_PER_HOUR,
       windowMs: RATE_WINDOW_MS,
     });
@@ -257,6 +258,11 @@ export default async function (req: Request): Promise<Response> {
     if (resource === "products" && id && action === "reviews") {
       const product = await db.entities.Product.get(id).catch(() => null);
       if (!product || product.status !== "published") return fail("Product not found", 404);
+      // Reviews hold reviewer names/contact details and the Review entity's read
+      // rule is admin-only. This route reads via the service role, which would
+      // otherwise publish those rows to anyone; enforce the same boundary here.
+      const caller = await base44.auth.me().catch(() => null);
+      if (!caller || caller.role !== "admin") return fail("Not authorized", 403);
       const reviews = await db.entities.Review
         .filter({ product_id: id, status: "published" }, "-created_date", 100)
         .catch(() => []);
@@ -294,8 +300,6 @@ export default async function (req: Request): Promise<Response> {
         suppliers: (all || []).map((s: any) => ({
           id: s.id ?? "",
           name: s.name ?? "",
-          code: s.code ?? "",
-          adapter: s.adapter ?? "manual",
           type: s.type ?? "international",
           country: s.country ?? "CN",
           logo_url: s.logo_url ?? null,
@@ -303,7 +307,6 @@ export default async function (req: Request): Promise<Response> {
           enabled: s.enabled ?? true,
           avg_shipping_days: s.avg_shipping_days ?? 18,
           shipping_base_usd: s.shipping_base_usd ?? 9,
-          default_markup_percent: s.default_markup_percent ?? 45,
           products_count: s.products_count ?? 0,
           last_sync_at: s.last_sync_at ?? null,
         })),

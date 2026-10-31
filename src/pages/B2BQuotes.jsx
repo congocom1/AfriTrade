@@ -27,7 +27,8 @@ export default function B2BQuotes() {
     try {
       setQuotes(await base44.entities.QuoteRequest.filter({ buyer_email: user.email }, '-created_date', 100));
     } catch (err) {
-      setError(err?.message || 'Unable to load your quote requests.');
+      const apiError = err?.response?.data?.error || err?.response?.data?.message;
+      setError(apiError || err?.message || 'Unable to load your quote requests.');
     } finally {
       setLoading(false);
     }
@@ -48,7 +49,8 @@ export default function B2BQuotes() {
       setQuotes((items) => items.map((item) => item.id === data.quote.id ? data.quote : item));
       setActionState({ id: '', error: '' });
     } catch (actionError) {
-      setActionState({ id: quote.id, error: actionError?.message || 'That quote could not be updated. Please try again.' });
+      const apiError = actionError?.response?.data?.error || actionError?.response?.data?.message;
+      setActionState({ id: quote.id, error: apiError || actionError?.message || 'That quote could not be updated. Please try again.' });
     }
   };
 

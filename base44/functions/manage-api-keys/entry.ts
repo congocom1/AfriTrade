@@ -73,36 +73,31 @@ export default async function (req: Request) {
       return rateLimitErrorResponse(rateLimitResult);
     }
 
-    if (method === 'POST' && typeof body?.method === 'string') {
-      const rpcMethod = body.method.toUpperCase();
-      const rpcBody = body.body && typeof body.body === 'object' ? body.body : body;
-      if (rpcMethod === 'GET') {
-        return listKeys(db, rpcBody.tenant_id || url.searchParams.get('tenant_id') || undefined);
-      }
-      if (rpcMethod === 'POST') {
-        return createKey(db, rpcBody);
-      }
-      if (rpcMethod === 'DELETE') {
-        return revokeKey(db, String(rpcBody.id || ''), rpcBody.reason);
-      }
+    // SDK functions.invoke always POSTs to the function URL. Keep the existing
+    // REST routes, and expose explicit actions under the same admin/rate gate.
+    if (method === 'POST' && typeof body.action === 'string') {
+      if (body.action === 'list') return await listKeys(db, body.tenant_id || undefined);
+      if (body.action === 'create') return await createKey(db, body);
+      if (body.action === 'revoke' && String(body.id || '').trim()) return await revokeKey(db, String(body.id), body.reason);
+      return addSecurityHeaders(Response.json({ error: 'Action invalide' }, { status: 400 }));
     }
 
     if (method === 'POST' && url.pathname === '/api-keys') {
-      return createKey(db, body);
+      return await createKey(db, body);
     }
     if (method === 'GET' && url.pathname === '/api-keys') {
-      return listKeys(db, url.searchParams.get('tenant_id') || undefined);
+      return await listKeys(db, url.searchParams.get('tenant_id') || undefined);
     }
     if (method === 'GET' && url.pathname.startsWith('/api-keys/')) {
       const id = url.pathname.split('/').pop();
-      return getKey(db, id);
+      return await getKey(db, id);
     }
     if (method === 'DELETE' && url.pathname.startsWith('/api-keys/')) {
       const id = url.pathname.split('/').pop();
-      return revokeKey(db, id, body.reason);
+      return await revokeKey(db, id, body.reason);
     }
     if (method === 'POST' && url.pathname === '/api-keys/rotate') {
-      return rotateKey(db, body);
+      return await rotateKey(db, body);
     }
 
     return addSecurityHeaders(Response.json({ error: `méthode non gérée : ${method} ${url.pathname}` }, { status: 405 }));
@@ -122,6 +117,7 @@ async function createKey(db: any, body: any) {
   const scopes = Array.isArray(body.scopes) ? body.scopes.filter(Boolean) : [];
   const rateLimitRph = Math.max(0, Number(body.rate_limit_rph) || 300);
   const rateLimitRpm = Math.max(0, Number(body.rate_limit_rpm) || 60);
+  if (body.expires_at && !Number.isFinite(new Date(body.expires_at).getTime())) return addSecurityHeaders(Response.json({ error: 'Date invalide' }, { status: 400 }));
   const expiresAt = body.expires_at ? new Date(body.expires_at).toISOString() : '';
   const description = String(body.description || '').slice(0, 1000);
 
@@ -170,7 +166,7 @@ async function createKey(db: any, body: any) {
 
 async function listKeys(db: any, tenantId?: string) {
   const filter = tenantId ? { tenant_id: tenantId } : {};
-  const keys = await db.entities.ApiKey.filter(filter, 'created_at', 200).catch(() => []);
+  const keys = await db.entities.ApiKey.filter(filter, 'created_at', 200);
   return addSecurityHeaders(Response.json({
     keys: keys.map((k: any) => ({
       id: k.id,

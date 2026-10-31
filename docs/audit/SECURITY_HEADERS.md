@@ -18,7 +18,7 @@ Added comprehensive security headers to Vite build process to protect the AfriTr
    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
    font-src 'self' https://fonts.gstatic.com data:;
    img-src 'self' data: https: blob:;
-   connect-src 'self' https://*.base44.app https://api.base44.com wss://*.base44.app;
+   connect-src 'self' https://base44.app https://*.base44.app https://api.base44.com wss://*.base44.app;
    frame-ancestors 'none';
    base-uri 'self';
    form-action 'self';
@@ -90,7 +90,8 @@ Added comprehensive security headers to Vite build process to protect the AfriTr
 1. **Unsafe-inline/Unsafe-eval:** Required for React and dynamic applications
 2. **cdn.jsdelivr.net/unpkg:** Third-party library CDNs for dependencies
 3. **fonts.googleapis.com.gstatic.com:** Google Fonts for international marketplace (French/English/Lingala/Kiswahili)
-4. **https://*.base44.app:** Base44 platform API and WebSocket endpoints
+4. **https://base44.app:** Base44 SDK API origin (apex domain; not matched by `*.base44.app`)
+5. **https://*.base44.app:** Base44 subdomain APIs and WebSocket endpoints
 5. **frame-ancestors 'none':** Prevents iframe embedding for payment pages
 6. **form-action 'self':** Ensures forms only submit to same origin
 7. **No camera/microphone/geolocation:** Marketplace doesn't require device access

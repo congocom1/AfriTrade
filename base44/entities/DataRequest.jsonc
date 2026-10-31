@@ -62,6 +62,8 @@
       "type": "string",
       "enum": [
         "sent",
+        "sending",
+        "delivery_unknown",
         "failed",
         "skipped"
       ]

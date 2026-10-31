@@ -11,6 +11,11 @@ function SkeletonRect({ className = '', ...props }) {
   );
 }
 
+/** Base shimmer block, exported under the plain name consumers import. */
+function Skeleton({ className = '', ...props }) {
+  return <SkeletonRect className={className} {...props} />;
+}
+
 function SkeletonCircle({ className = '', ...props }) {
   return (
     <div
@@ -128,7 +133,7 @@ function SkeletonOrderList({ className = '', ...props }) {
 }
 
 export {
-  SkeletonRect as Skeleton,
+  Skeleton,
   SkeletonRect,
   SkeletonCircle,
   SkeletonText,

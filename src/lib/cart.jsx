@@ -1,28 +1,16 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { trackEvent } from '@/lib/tracking';
+import { productImage } from '@/lib/productImages';
 
 const CartContext = createContext(null);
-const KEY = 'congo_commerce:cart';
-
-function readCart() {
-  try {
-    const raw = localStorage.getItem(KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
+import { CART_STORAGE_KEY as KEY, MAX_CART_QUANTITY, normalizeCartQuantity, readCart } from './cartStorage';
 
 function lineKey(productId, variant) {
   return `${productId}::${variant || ''}`;
 }
 
 export function CartProvider({ children }) {
-  const [items, setItems] = useState([]);
-
-  useEffect(() => {
-    setItems(readCart());
-  }, []);
+  const [items, setItems] = useState(readCart);
 
   useEffect(() => {
     try {
@@ -33,13 +21,15 @@ export function CartProvider({ children }) {
   }, [items]);
 
   const addItem = useCallback((product, quantity = 1, variant = null) => {
+    quantity = normalizeCartQuantity(quantity);
+    if (!product?.id || !quantity) return;
     trackEvent('cart_add', { product_id: product.id, value_usd: product.price_usd });
     setItems((prev) => {
       const key = lineKey(product.id, variant);
       const existing = prev.find((i) => lineKey(i.product_id, i.variant) === key);
       if (existing) {
         return prev.map((i) =>
-          lineKey(i.product_id, i.variant) === key ? { ...i, quantity: i.quantity + quantity } : i,
+          lineKey(i.product_id, i.variant) === key ? { ...i, quantity: Math.min(MAX_CART_QUANTITY, i.quantity + quantity) } : i,
         );
       }
       return [
@@ -48,7 +38,7 @@ export function CartProvider({ children }) {
           product_id: product.id,
           slug: product.slug || null,
           title: product.title,
-          image: product.images?.[0] || '',
+          image: productImage(product),
           price_usd: Number(product.price_usd) || 0,
           source_type: product.source_type,
           seller_id: product.seller_id || null,
@@ -67,7 +57,7 @@ export function CartProvider({ children }) {
     setItems((prev) =>
       prev
         .map((i) =>
-          lineKey(i.product_id, i.variant) === lineKey(productId, variant) ? { ...i, quantity: Math.max(0, quantity) } : i,
+          lineKey(i.product_id, i.variant) === lineKey(productId, variant) ? { ...i, quantity: normalizeCartQuantity(quantity) } : i,
         )
         .filter((i) => i.quantity > 0),
     );

@@ -1,0 +1,90 @@
+{
+  "name": "LaunchTask",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "maxLength": 160
+    },
+    "detail": {
+      "type": "string",
+      "maxLength": 4000
+    },
+    "track": {
+      "type": "string",
+      "enum": [
+        "web",
+        "app",
+        "shared"
+      ],
+      "default": "shared"
+    },
+    "area": {
+      "type": "string",
+      "maxLength": 80
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "todo",
+        "in_progress",
+        "blocked",
+        "done"
+      ],
+      "default": "todo"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "critical",
+        "high",
+        "normal"
+      ],
+      "default": "normal"
+    },
+    "evidence": {
+      "type": "string",
+      "maxLength": 2000
+    },
+    "owner": {
+      "type": "string"
+    },
+    "source_agent": {
+      "type": "string"
+    },
+    "due_date": {
+      "type": "string"
+    },
+    "completed_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "title",
+    "track",
+    "status",
+    "priority"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

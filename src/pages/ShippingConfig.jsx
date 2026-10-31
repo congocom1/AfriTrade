@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Globe, Plus, Save, Trash2 } from 'lucide-react';
@@ -10,12 +11,13 @@ import { formatUSD } from '@/lib/format';
 
 const GLOBAL_FIELD_IDS = ['volumetric_divisor', 'handling_fee_usd', 'cod_fee_usd', 'fuel_surcharge_percent', 'remote_area_surcharge_usd', 'free_shipping_threshold_usd', 'import_duty_percent', 'import_vat_percent'];
 
-const USD_CENTS_FIELDS = new Set([
-  'handling_fee_usd',
-  'cod_fee_usd',
-  'remote_area_surcharge_usd',
-  'free_shipping_threshold_usd',
-]);
+// Money settings are stored as integer cents; the form shows and edits dollars.
+const MONEY_FIELD_CENTS = {
+  handling_fee_usd: 'handling_fee_usd_cents',
+  cod_fee_usd: 'cod_fee_usd_cents',
+  remote_area_surcharge_usd: 'remote_area_surcharge_usd_cents',
+  free_shipping_threshold_usd: 'free_shipping_threshold_usd_cents',
+};
 
 export default function ShippingConfig() {
   const { t } = useTranslation();
@@ -37,24 +39,6 @@ export default function ShippingConfig() {
 
   const set = (patch) => setConfig((prev) => ({ ...prev, ...patch }));
 
-  const getFieldValue = (field) => {
-    if (USD_CENTS_FIELDS.has(field)) {
-      const centsKey = `${field}_cents`;
-      if (config[field] !== undefined) return config[field];
-      return (Number(config[centsKey]) || 0) / 100;
-    }
-    return config[field] ?? 0;
-  };
-
-  const setFieldValue = (field, rawValue) => {
-    const val = Number(rawValue);
-    if (USD_CENTS_FIELDS.has(field)) {
-      set({ [field]: val, [`${field}_cents`]: Math.round((val || 0) * 100) });
-    } else {
-      set({ [field]: val });
-    }
-  };
-
   const save = async () => {
     setSaving(true);
     try {
@@ -68,7 +52,7 @@ export default function ShippingConfig() {
   const addSurcharge = (event) => {
     event.preventDefault();
     if (!draft.destination.trim()) return;
-    set({ regional_surcharges: [...(config.regional_surcharges || []), { ...draft, surcharge_usd: Number(draft.surcharge_usd) || 0 }] });
+    set({ regional_surcharges: [...(config.regional_surcharges || []), { destination: draft.destination.trim(), surcharge_usd_cents: Math.round((Number(draft.surcharge_usd) || 0) * 100) }] });
     setDraft({ destination: '', surcharge_usd: 0 });
   };
 
@@ -79,14 +63,12 @@ export default function ShippingConfig() {
   if (loading) return <div className="h-64 animate-pulse rounded-2xl bg-secondary" />;
 
   const duty = dutyEstimate({ goodsUsdCents: Math.round((Number(estimate.goodsUsd) || 0) * 100), config, originCountry: estimate.originCountry });
-  const handlingFeeCents = config.handling_fee_usd_cents ?? Math.round((Number(config.handling_fee_usd) || 0) * 100);
-
   return (
     <div className="space-y-5 pb-8">
       <DashboardNav title={t('shippingConfig.title')} links={ADMIN_LINKS} />
 
       <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
-        <StatCard label={t('shippingConfig.statHandling')} value={formatUSD(handlingFeeCents)} hint={t('shippingConfig.statHandlingHint')} />
+        <StatCard label={t('shippingConfig.statHandling')} value={formatUSD(config.handling_fee_usd_cents)} hint={t('shippingConfig.statHandlingHint')} />
         <StatCard label={t('shippingConfig.statFuel')} value={`${config.fuel_surcharge_percent} %`} hint={t('shippingConfig.statFuelHint')} />
         <StatCard label={t('shippingConfig.statDuty')} value={`${config.import_duty_percent} %`} hint={t('shippingConfig.statDutyHint', { rate: config.import_vat_percent })} />
         <StatCard label={t('shippingConfig.statZones')} value={(config.regional_surcharges || []).length} hint={t('shippingConfig.statZonesHint')} />
@@ -112,9 +94,16 @@ export default function ShippingConfig() {
               {f.label}
               <input
                 type="number"
-                step="0.1"
-                value={getFieldValue(f.field)}
-                onChange={(e) => setFieldValue(f.field, e.target.value)}
+                step={MONEY_FIELD_CENTS[f.field] ? '0.01' : '0.1'}
+                value={MONEY_FIELD_CENTS[f.field]
+                  ? (Number(config[MONEY_FIELD_CENTS[f.field]]) || 0) / 100
+                  : config[f.field] ?? 0}
+                onChange={(e) => {
+                  const raw = e.target.value;
+                  const centsKey = MONEY_FIELD_CENTS[f.field];
+                  if (centsKey) set({ [centsKey]: Math.round((Number(raw) || 0) * 100) });
+                  else set({ [f.field]: Number(raw) });
+                }}
                 className="mt-1 h-11 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground"
               />
               <span className="mt-0.5 block text-[10px]">{f.hint}</span>
@@ -199,14 +188,14 @@ export default function ShippingConfig() {
           </label>
           <label className="text-[11px] text-muted-foreground">
             {t('shippingConfig.origin')}
-            <select
+            <LegacySelect
               value={estimate.originCountry}
               onChange={(e) => setEstimate({ ...estimate, originCountry: e.target.value })}
               className="mt-1 h-11 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground"
             >
               <option value="CN">{t('shippingConfig.originImport')}</option>
               <option value="CD">{t('shippingConfig.originLocal')}</option>
-            </select>
+            </LegacySelect>
           </label>
         </div>
         <div className="space-y-1 rounded-xl bg-secondary/50 p-3 text-xs">

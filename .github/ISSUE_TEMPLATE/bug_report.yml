@@ -1,0 +1,43 @@
+name: Bug report
+description: Report a reproducible AfriTrade defect (never share secrets or real customer data)
+title: 'fix: '
+labels: ['bug']
+body:
+  - type: textarea
+    id: impact
+    attributes:
+      label: User impact and affected workspace
+      description: State buyer, seller, supplier, employee, finance, logistics or admin impact.
+      placeholder: Describe what customers or staff cannot do.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction steps
+      description: Include browser/platform and synthetic inputs. Redact IDs and tokens.
+      placeholder: '1. Open ... 2. Click ... 3. Observe ...'
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected vs actual behavior
+    validations:
+      required: true
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - P0 - blocks checkout, payments, security or production operation
+        - P1 - major workflow or widespread UX regression
+        - P2 - limited behavior or visual issue
+        - P3 - polish or low-impact defect
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Safe evidence
+      description: Screenshots, sanitized logs, environment, commit SHA, test failures.

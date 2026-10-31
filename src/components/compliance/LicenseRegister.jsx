@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import React, { useState } from 'react';
 import { FileText, Paperclip, Plus, ShieldCheck, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -33,7 +34,7 @@ export default function LicenseRegister({ entries, onSave }) {
     valid: { label: t('licenseRegister.statusValid'), className: 'bg-emerald-100 text-emerald-900' },
     expiring: { label: t('licenseRegister.statusExpiring'), className: 'bg-amber-100 text-amber-900' },
     expired: { label: t('licenseRegister.statusExpired'), className: 'bg-red-100 text-red-900' },
-    draft: { label: t('licenseRegister.statusDraft'), className: 'bg-slate-200 text-slate-700' },
+    draft: { label: t('licenseRegister.statusDraft'), className: 'bg-muted text-muted-foreground' },
   };
   const [draft, setDraft] = useState(EMPTY);
   const [adding, setAdding] = useState(false);
@@ -99,13 +100,13 @@ export default function LicenseRegister({ entries, onSave }) {
       {adding ? (
         <div className="space-y-2.5 rounded-xl bg-secondary/50 p-3">
           <div className="grid gap-2.5 md:grid-cols-2">
-            <select
+            <LegacySelect
               value={draft.kind}
               onChange={(e) => setDraft({ ...draft, kind: e.target.value })}
               className="h-10 rounded-lg border border-input bg-card px-2 text-xs"
             >
               {KINDS.map((k) => <option key={k.id} value={k.id}>{k.label}</option>)}
-            </select>
+            </LegacySelect>
             <input
               value={draft.label}
               onChange={(e) => setDraft({ ...draft, label: e.target.value })}
@@ -125,13 +126,13 @@ export default function LicenseRegister({ entries, onSave }) {
               className="h-10 rounded-lg border border-input bg-card px-3 text-xs"
             />
             {draft.kind === 'policy' ? (
-              <select
+              <LegacySelect
                 value={draft.policy_status}
                 onChange={(e) => setDraft({ ...draft, policy_status: e.target.value })}
                 className="h-10 rounded-lg border border-input bg-card px-2 text-xs"
               >
                 {POLICY_STATUSES.map((s) => <option key={s} value={s}>{POLICY_LABELS[s]}</option>)}
-              </select>
+              </LegacySelect>
             ) : (
               <label className="text-[11px] text-muted-foreground">
                 {t('licenseRegister.expiry')}
@@ -186,13 +187,13 @@ export default function LicenseRegister({ entries, onSave }) {
                 <div className="flex items-center gap-2">
                   <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${style.className}`}>{style.label}</span>
                   {e.kind === 'policy' ? (
-                    <select
+                    <LegacySelect
                       value={e.policy_status || 'published'}
                       onChange={(ev) => patch(e.id, { policy_status: ev.target.value })}
                       className="h-8 rounded-lg border border-border bg-background px-2 text-[11px]"
                     >
                       {POLICY_STATUSES.map((s) => <option key={s} value={s}>{POLICY_LABELS[s]}</option>)}
-                    </select>
+                    </LegacySelect>
                   ) : null}
                   <button type="button" onClick={() => remove(e.id)} className="rounded-lg p-1.5 text-muted-foreground hover:text-destructive">
                     <Trash2 className="h-3.5 w-3.5" />

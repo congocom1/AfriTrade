@@ -28,7 +28,9 @@ export default function Login() {
       await base44.auth.loginViaEmailPassword(email, password);
       window.location.href = returnTo;
     } catch (err) {
-      setError(err.message || t('auth.loginError'));
+      // Extract user-friendly error from API response if available
+      const apiError = err?.response?.data?.error || err?.response?.data?.message;
+      setError(apiError || err.message || t('auth.loginError'));
     } finally {
       setLoading(false);
     }

@@ -87,7 +87,21 @@
         "role": "admin"
       }
     },
-    "read": null,
+    "read": {
+      "$or": [
+        {
+          "data.enabled": true
+        },
+        {
+          "data.tenant_owner_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
     "update": {
       "user_condition": {
         "role": "admin"

@@ -20,10 +20,10 @@ export const ResponsiveImage = React.forwardRef(
         data-base44-image-src={src}
       >
         {/* Contain both image layers inside the padded content box without adding an edit target. */}
-        <span data-source-location={undefined} className="block relative w-full h-full overflow-hidden">
+        <span  className="block relative w-full h-full overflow-hidden">
           {options && !loaded && (
             <img
-              data-source-location={undefined}
+              
               src={buildTransformUrl(parsed, {
                 ...options,
                 width: 20,
@@ -44,7 +44,7 @@ export const ResponsiveImage = React.forwardRef(
           )}
           {options && (
             <img
-              data-source-location={undefined}
+              
               ref={imgRef}
               src={buildTransformUrl(parsed, options)}
               srcSet={buildSrcSet(parsed, options)}

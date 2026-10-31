@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import { ShieldCheck, ShieldAlert, ShieldX, Eye } from 'lucide-react';
-import { formatUSD } from '@/lib/format';
+import { formatUsdAmount, } from '@/lib/format';
 import { useTranslation } from 'react-i18next';
 
 const LEVEL_STYLE = {
@@ -43,7 +43,7 @@ export default memo(function FraudReviewQueue({ events, busyId, onReview }) {
               {LEVEL_LABEL[e.risk_level] || e.risk_level} · {e.risk_score}
             </span>
             <span className="text-sm font-semibold">{e.order_number || t('fraudReviewQueue.noOrder')}</span>
-            <span className="text-xs text-muted-foreground">{formatUSD(e.amount_usd)}</span>
+            <span className="text-xs text-muted-foreground">{formatUsdAmount(e.amount_usd)}</span>
             <span className="ml-auto text-[11px] font-semibold text-muted-foreground">
               {STATUS_LABEL[e.status] || e.status}
             </span>

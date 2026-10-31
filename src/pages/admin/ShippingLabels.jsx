@@ -1,4 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import LegacySelect from '@/components/ui/legacy-select';
+import { usePortalData } from '@/hooks/usePortalData';
+import { functionData } from '@/lib/portalData';
+import PortalStatus from '@/components/PortalStatus';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Printer, Download, RefreshCw, Search } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
@@ -6,7 +10,7 @@ import { DashboardNav } from '@/components/DashboardNav';
 import { ADMIN_LINKS } from '@/lib/navLinks';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { formatUSD, formatDate } from '@/lib/format';
+import { formatUsdAmount, formatDate } from '@/lib/format';
 
 const STATUS_STYLES = {
   pending: 'bg-amber-100 text-amber-800',
@@ -23,27 +27,20 @@ const CARRIER_ICONS = {
 
 export default function ShippingLabelsPage() {
   const { t } = useTranslation();
-  const [labels, setLabels] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [errors, setErrors] = useState({});
-
-  const load = async () => {
-    setLoading(true);
-    try {
-      const res = await base44.functions.invoke('shippingLabel', { action: 'list' });
-      setLabels(res?.labels || []);
-    } catch (e) {
-      setErrors((p) => ({ ...p, load: e?.message || 'Erreur' }));
-    }
-    setLoading(false);
-  };
-
-  useEffect(() => { load(); }, []);
+  const { data, loading, error, reload: load } = usePortalData(['shipping-labels'], async () => {
+    const payload = functionData(await base44.functions.invoke('shippingLabel', { action: 'list' }));
+    if (!Array.isArray(payload.labels)) throw new Error('Invalid shipping labels');
+    return payload;
+  });
+  const labels = data?.labels || [];
 
   const handlePrint = async (ids) => {
+    if (saving) return;
+    setErrors({});
     setSaving(true);
     try {
       await base44.functions.invoke('shippingLabel', { action: 'print', label_ids: ids });
@@ -62,12 +59,12 @@ export default function ShippingLabelsPage() {
 
   const filtered = labels.filter((l) => {
     const q = search.toLowerCase();
-    const matchSearch = !q || l.order_number.toLowerCase().includes(q) || l.tracking_number.toLowerCase().includes(q) || (l.recipient?.name || '').toLowerCase().includes(q);
+    const matchSearch = !q || String(l.order_number || '').toLowerCase().includes(q) || String(l.tracking_number || '').toLowerCase().includes(q) || (l.recipient?.name || '').toLowerCase().includes(q);
     const matchStatus = !statusFilter || l.status === statusFilter;
     return matchSearch && matchStatus;
   });
 
-  if (loading) return <div className="h-64 animate-pulse rounded-2xl bg-secondary" />;
+  if (loading || error) return <PortalStatus loading={loading} retry={load} />;
 
   return (
     <div className="mx-auto max-w-6xl space-y-5 px-3 py-5 md:px-6">
@@ -78,14 +75,14 @@ export default function ShippingLabelsPage() {
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input placeholder={t('common.search')} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 h-10" />
         </div>
-        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="h-10 rounded-lg border border-border bg-background px-3 text-sm">
+        <LegacySelect value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="h-10 rounded-lg border border-border bg-background px-3 text-sm">
           <option value="">{t('common.allStatus')}</option>
           <option value="pending">Pending</option>
           <option value="generated">Generated</option>
           <option value="printed">Printed</option>
           <option value="in_transit">In Transit</option>
           <option value="delivered">Delivered</option>
-        </select>
+        </LegacySelect>
         <Button onClick={load} variant="outline" size="sm" className="gap-1.5"><RefreshCw className="h-4 w-4" /> {t('common.refresh')}</Button>
         <Button onClick={handlePrintAll} disabled={saving || !labels.filter((l) => l.status !== 'printed' && l.status !== 'delivered').length} className="gap-1.5">
           <Printer className="h-4 w-4" /> {t('common.printAll')}
@@ -108,7 +105,7 @@ export default function ShippingLabelsPage() {
 
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <span>{CARRIER_ICONS[label.carrier] || '📦'} {label.carrier?.replace('_', ' ')}</span>
-              {label.shipping_cost_usd > 0 && <span>· {formatUSD(label.shipping_cost_usd)}</span>}
+              {label.shipping_cost_usd > 0 && <span>· {formatUsdAmount(label.shipping_cost_usd)}</span>}
             </div>
 
             {label.recipient && (

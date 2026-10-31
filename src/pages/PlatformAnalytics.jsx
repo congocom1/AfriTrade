@@ -1,4 +1,8 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { usePortalData } from '@/hooks/usePortalData';
+import { loadRecordGroups } from '@/lib/portalData';
+import PortalStatus from '@/components/PortalStatus';
+import PortalRefresh from '@/components/portal/PortalRefresh';
+import React, { useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import OpsHeader from '@/components/ops/OpsHeader';
 import StatCard from '@/components/ops/StatCard';
@@ -8,30 +12,19 @@ import CategoryRanking from '@/components/analytics/CategoryRanking';
 import { compactNumber, formatUSD, round2Cents } from '@/lib/format';
 
 const DAYS = 14;
-const dayKey = (date) => new Date(date).toISOString().slice(0, 10);
+const dayKey = (date) => { const value = new Date(date); return Number.isFinite(value.getTime()) ? value.toISOString().slice(0, 10) : ''; };
 
 export default function PlatformAnalytics() {
-  const [events, setEvents] = useState([]);
-  const [orders, setOrders] = useState([]);
-  const [products, setProducts] = useState([]);
-  const [sellers, setSellers] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    Promise.all([
-      base44.entities.AnalyticsEvent.list('-created_date', 1000).catch(() => []),
-      base44.entities.Order.list('-created_date', 500).catch(() => []),
-      base44.entities.Product.list('-sold_count', 500).catch(() => []),
-      base44.entities.Seller.list('name', 200).catch(() => []),
-    ])
-      .then(([e, o, p, s]) => {
-        setEvents(e);
-        setOrders(o);
-        setProducts(p);
-        setSellers(s);
-      })
-      .finally(() => setLoading(false));
-  }, []);
+  const { data, loading, error, reload, updatedAt } = usePortalData(['platform-analytics'], () => loadRecordGroups({
+    events: () => base44.entities.AnalyticsEvent.list('-created_date', 1000),
+    orders: () => base44.entities.Order.list('-created_date', 500),
+    products: () => base44.entities.Product.list('-sold_count', 500),
+    sellers: () => base44.entities.Seller.list('name', 200),
+  }));
+  const events = data?.events || [];
+  const orders = data?.orders || [];
+  const products = data?.products || [];
+  const sellers = data?.sellers || [];
 
   const series = useMemo(() => {
     const buckets = {};
@@ -85,7 +78,7 @@ export default function PlatformAnalytics() {
         const name = p.category_name || 'Non classé';
         if (!map[name]) map[name] = { name, units: 0, revenue: 0 };
         map[name].units += Number(p.sold_count) || 0;
-        map[name].revenue = round2Cents(map[name].revenue + round2Cents(Number(p.sold_count) || 0) * round2Cents(Number(p.price_usd) || 0));
+        map[name].revenue = round2Cents(map[name].revenue + (Number(p.sold_count) || 0) * round2Cents((Number(p.price_usd) || 0) * 100));
       });
     }
     return Object.values(map).sort((a, b) => b.revenue - a.revenue).slice(0, 8);
@@ -111,10 +104,12 @@ export default function PlatformAnalytics() {
 
   const publishedProducts = products.filter((p) => String(p.status || '') === 'published').length;
 
-  if (loading) return <div className="h-64 animate-pulse rounded-2xl bg-secondary" />;
+  if (loading || error) return <PortalStatus loading={loading} retry={reload} />;
 
   return (
     <div className="space-y-5 pb-8">
+      <PortalRefresh onRefresh={reload} updatedAt={updatedAt} />
+      <p className="text-xs text-muted-foreground">Résultats calculés sur les enregistrements chargés, pas sur l’historique complet.</p>
       <OpsHeader
         title="Analytique plateforme"
         subtitle="Vue d'ensemble de la plateforme sur les 14 derniers jours : audience, volume de transactions et catégories qui tirent les ventes."

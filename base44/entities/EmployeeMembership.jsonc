@@ -1,0 +1,81 @@
+{
+  "name": "EmployeeMembership",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "display_name": {
+      "type": "string"
+    },
+    "departments": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "sales",
+          "support",
+          "warehouse",
+          "logistics",
+          "finance",
+          "administration",
+          "procurement",
+          "marketing",
+          "people",
+          "technology"
+        ]
+      }
+    },
+    "access_scope": {
+      "type": "string",
+      "enum": [
+        "assigned",
+        "department"
+      ],
+      "default": "assigned"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "user_id",
+    "email",
+    "departments",
+    "access_scope",
+    "active"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -1,3 +1,5 @@
+import LegacySelect from '@/components/ui/legacy-select';
+import AccountDeletionRequest from '@/components/settings/AccountDeletionRequest';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -7,12 +9,15 @@ import {
 import { fetchMyOrders } from '@/lib/customerAccount';
 import { getProfile, saveProfile } from '@/lib/session';
 import { getCities } from '@/lib/config';
+import { useAuth } from '@/lib/AuthContext';
+import { isAdmin } from '@/lib/roles';
 import StatusBadge from '@/components/StatusBadge';
-import { formatUSD, formatDate } from '@/lib/format';
+import { formatUsdAmount, formatDate } from '@/lib/format';
 import BackButton from '@/components/BackButton';
 
 export default function Profile() {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const LINKS = [
     { to: '/wallet', label: t('profile.linkWallet'), icon: Wallet },
     { to: '/coupons', label: t('profile.linkCoupons'), icon: Ticket },
@@ -42,14 +47,6 @@ export default function Profile() {
     setTimeout(() => setSaved(false), 2000);
   };
 
-  const handleDeleteAccount = () => {
-    if (window.confirm(t('profile.deleteConfirm'))) {
-      // TODO: Call backend cleanup function
-      alert(t('profile.deleteSuccess'));
-      window.location.href = '/';
-    }
-  };
-
     return (
       <div className="space-y-5 pb-6">
         <BackButton fallback="/" className="md:hidden" />
@@ -77,7 +74,7 @@ export default function Profile() {
               placeholder={t('profile.emailPh')}
               className="h-11 rounded-lg border border-border bg-background px-3 text-sm"
             />
-            <select
+            <LegacySelect
               value={profile.city}
               onChange={(e) => setProfile({ ...profile, city: e.target.value })}
               className="h-11 rounded-lg border border-border bg-background px-3 text-sm"
@@ -85,7 +82,7 @@ export default function Profile() {
               {getCities().map((c) => (
                 <option key={c} value={c}>{c}</option>
               ))}
-            </select>
+            </LegacySelect>
           </div>
           <textarea
             value={profile.address}
@@ -123,7 +120,7 @@ export default function Profile() {
                 </div>
                 <div className="flex items-center gap-2">
                   <StatusBadge status={o.status} />
-                  <span className="text-sm font-semibold">{formatUSD(o.total_usd)}</span>
+                  <span className="text-sm font-semibold">{formatUsdAmount(o.total_usd)}</span>
                 </div>
               </Link>
             ))}
@@ -168,20 +165,16 @@ export default function Profile() {
             <p className="text-[11px] text-muted-foreground">{t('profile.courierSub')}</p>
           </div>
         </Link>
-        <Link to="/admin" className="flex items-center gap-3 rounded-xl border border-border bg-card p-3.5">
-          <ShieldCheck className="h-4 w-4 text-primary" />
-          <div>
-            <p className="text-sm font-semibold">{t('profile.adminSpace')}</p>
-            <p className="text-[11px] text-muted-foreground">{t('profile.adminSub')}</p>
-          </div>
-        </Link>
-        <Link to="#" className="flex items-center gap-3 rounded-xl border border-border bg-card p-3.5 text-red-500" onClick={handleDeleteAccount}>
-          <RotateCcw className="h-4 w-4 text-red-500" />
-          <div>
-            <p className="text-sm font-semibold text-red-500">{t('profile.deleteAccount')}</p>
-            <p className="text-[11px] text-muted-foreground">{t('profile.deleteAccountSub')}</p>
-          </div>
-        </Link>
+        {isAdmin(user) && (
+          <Link to="/admin" className="flex items-center gap-3 rounded-xl border border-border bg-card p-3.5">
+            <ShieldCheck className="h-4 w-4 text-primary" />
+            <div>
+              <p className="text-sm font-semibold">{t('profile.adminSpace')}</p>
+              <p className="text-[11px] text-muted-foreground">{t('profile.adminSub')}</p>
+            </div>
+          </Link>
+        )}
+        <AccountDeletionRequest />
       </section>
     </div>
   );

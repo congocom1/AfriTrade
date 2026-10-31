@@ -8,6 +8,7 @@ export default [
   {
     ignores: [
       "node_modules/**",
+      ".agents/**",
       "dist/**",
       "build/**",
       ".dart_tool/**",

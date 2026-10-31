@@ -6,7 +6,7 @@ import { Image } from '@/components/ui/image';
 import StatusBadge from '@/components/StatusBadge';
 import { getProfile, getOrderIds } from '@/lib/session';
 import { fetchMyOrder } from '@/lib/customerAccount';
-import { formatUSD, formatDateTime } from '@/lib/format';
+import { formatUsdAmount, formatDateTime } from '@/lib/format';
 import { SHIPMENT_STATUS_LABELS } from '@/lib/logistics';
 import BackButton from '@/components/BackButton';
 
@@ -94,7 +94,7 @@ export default function CheckoutSuccess() {
         ) : (
           <div className="space-y-2 text-xs text-muted-foreground">
             <p>
-              {t('checkoutSuccess.reservedText', { total: formatUSD(order.total_usd) })}
+              {t('checkoutSuccess.reservedText', { total: formatUsdAmount(order.total_usd) })}
             </p>
             <p className="rounded-lg bg-secondary/60 px-3 py-2">
               {t('checkoutSuccess.refLabel', { ref: order.payment_reference || order.order_number })}
@@ -182,12 +182,12 @@ export default function CheckoutSuccess() {
                 {it.variant ? `${it.variant} · ` : ''}× {it.quantity} · {it.seller_name}
               </p>
             </div>
-            <span className="text-sm font-semibold">{formatUSD(it.line_total_usd)}</span>
+            <span className="text-sm font-semibold">{formatUsdAmount(it.line_total_usd)}</span>
           </div>
         ))}
         <div className="flex justify-between border-t border-border pt-2 text-base font-bold">
           <span>{t('checkoutSuccess.total')}</span>
-          <span className="text-primary">{formatUSD(order.total_usd)}</span>
+          <span className="text-primary">{formatUsdAmount(order.total_usd)}</span>
         </div>
       </section>
 

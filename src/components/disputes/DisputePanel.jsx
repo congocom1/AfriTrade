@@ -1,10 +1,11 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Gavel, AlertCircle } from 'lucide-react';
 import StatusBadge from '@/components/StatusBadge';
 import { openDispute, fetchMyDisputes } from '@/lib/customerAccount';
 import { getProfile } from '@/lib/session';
-import { formatUSD, formatDate } from '@/lib/format';
+import { formatUsdAmount, formatDate } from '@/lib/format';
 
 export default function DisputePanel() {
   const { t } = useTranslation();
@@ -24,13 +25,16 @@ export default function DisputePanel() {
     { id: 'closed', label: t('disputePanel.stageClosed') },
   ];
   const profile = getProfile();
+  // A return escalated from /returns arrives with ?order=…&phone=…&reason=…,
+  // so the dispute form opens already filled in.
   const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams();
+  const requestedType = params.get('reason') || '';
   const [disputes, setDisputes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({
-    order_number: params.get('order') || '',
-    type: 'not_received',
-    description: params.get('reason') || '',
+    order_number: (params.get('order') || '').toUpperCase(),
+    type: TYPES.some((x) => x.id === requestedType) ? requestedType : 'not_received',
+    description: '',
     phone: params.get('phone') || profile.phone || '',
   });
   const [submitting, setSubmitting] = useState(false);
@@ -95,7 +99,7 @@ export default function DisputePanel() {
               className="h-11 rounded-lg border border-border bg-background px-3 text-sm"
             />
           </div>
-          <select
+          <LegacySelect
             value={form.type}
             onChange={(e) => setForm({ ...form, type: e.target.value })}
             className="h-11 w-full rounded-lg border border-border bg-background px-3 text-sm"
@@ -103,7 +107,7 @@ export default function DisputePanel() {
             {TYPES.map((tx) => (
               <option key={tx.id} value={tx.id}>{tx.label}</option>
             ))}
-          </select>
+          </LegacySelect>
           <textarea
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
@@ -141,7 +145,7 @@ export default function DisputePanel() {
                     <p className="text-sm font-semibold">{d.order_number}</p>
                     <div className="flex items-center gap-2">
                       <StatusBadge status={d.status} />
-                      <span className="text-sm font-semibold">{formatUSD(d.amount_usd)}</span>
+                      <span className="text-sm font-semibold">{formatUsdAmount(d.amount_usd)}</span>
                     </div>
                   </div>
                   <p className="text-[11px] text-muted-foreground">

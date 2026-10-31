@@ -4,7 +4,7 @@ import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 
 export function feedHealth(s) {
-  if (!s.enabled) return ['healthDisabled', 'bg-slate-200 text-slate-700'];
+  if (!s.enabled) return ['healthDisabled', 'bg-muted text-muted-foreground'];
   if (!s.last_sync_at) return ['healthNever', 'bg-amber-100 text-amber-900'];
   const h = (Date.now() - new Date(s.last_sync_at)) / 36e5;
   if (h < 24) return ['healthOk', 'bg-emerald-100 text-emerald-900'];
@@ -12,7 +12,7 @@ export function feedHealth(s) {
   return ['healthStale', 'bg-red-100 text-red-900'];
 }
 
-export default memo(function SupplierHealthCard({ supplier: s, check, checking, onCheck, onToggle }) {
+export default memo(function SupplierHealthCard({ supplier: s, check, checking, updating, onCheck, onToggle }) {
   const { t } = useTranslation();
   const [labelKey, cls] = feedHealth(s);
   const label = t(`supplierHealthCard.${labelKey}`);
@@ -23,7 +23,7 @@ export default memo(function SupplierHealthCard({ supplier: s, check, checking, 
           <p className="text-sm font-bold">{s.name} <span className="text-[11px] font-normal text-muted-foreground">{s.code} · {s.country}</span></p>
           <p className="text-[11px] text-muted-foreground">{s.type === 'local_warehouse' ? t('supplierHealthCard.warehouse') : t('supplierHealthCard.intl')} · {t('supplierHealthCard.connector', { adapter: s.adapter })}{s.is_mock ? t('supplierHealthCard.demoSuffix') : ''}</p>
         </div>
-        <Switch checked={s.enabled} onCheckedChange={onToggle} aria-label={t('supplierHealthCard.toggleAria')} />
+        <Switch disabled={updating} checked={Boolean(s.enabled)} onCheckedChange={onToggle} aria-label={t('supplierHealthCard.toggleAria')} />
       </div>
       <div className="mt-3 flex flex-wrap gap-2 text-[11px]">
         <span className={`rounded-full px-2 py-0.5 font-semibold ${cls}`}>{label}</span>

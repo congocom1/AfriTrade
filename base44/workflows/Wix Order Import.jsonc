@@ -1,0 +1,43 @@
+{
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "connector",
+      "events": [
+        "wix.ecom.v1.order_created",
+        "wix.ecom.v1.order_updated",
+        "wix.ecom.v1.order_canceled"
+      ],
+      "integration_type": "wix",
+      "resource_id": null
+    }
+  },
+  "description": "Importe en temps reel chaque commande Wix dans le registre de commandes de la plateforme.",
+  "name": "Wix Order Import",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "wix_order_import",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "import_order": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "importWixOrders",
+            "args": {
+              "order": "${ .trigger.data.entity }"
+            }
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Importer la commande Wix",
+            "description": "Enregistre la vente dans le registre"
+          }
+        }
+      }
+    ]
+  }
+}

@@ -1,11 +1,11 @@
-# CONGO COMMERCE — BRAND
+# AFRITRADE — BRAND
 
 Mise à jour : 2026-09-27. Reflete l'implémentation réelle (`public/brand/`, `src/index.css`, `src/components/BrandLogo.jsx`).
 
 ## 1. Concept
 
-Connexion + commerce + mouvement + réseau digital. Monogramme C/C abstrait :
-un C vert ouvert vers un second arc blanc, point central = la transaction.
+Connexion + commerce + mouvement + réseau digital. Monogramme A/T abstrait :
+un A vert ouvert vers un second arc blanc, point central = la transaction.
 Jamais de carte de l'Afrique en logo principal.
 
 ## 2. Fichiers (`public/brand/`)

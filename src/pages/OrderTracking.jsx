@@ -6,7 +6,7 @@ import StatusBadge from '@/components/StatusBadge';
 import IntlApprovalCard from '@/components/tracking/IntlApprovalCard';
 import { getOrderIds, getProfile } from '@/lib/session';
 import { lookupOrder } from '@/lib/orderLookup';
-import { formatUSD, formatDateTime } from '@/lib/format';
+import { formatUsdAmount, formatDateTime } from '@/lib/format';
 import { SHIPMENT_STATUS_FLOW, SHIPMENT_STATUS_LABELS, INTL_TRACKING_FLOW } from '@/lib/logistics';
 import BackButton from '@/components/BackButton';
 
@@ -129,7 +129,7 @@ export default function OrderTracking({ initialOrderNumber: initialOrderNumberPr
                   <p className="text-sm font-semibold">{h.order_number}</p>
                   <p className="text-[11px] text-muted-foreground">{formatDateTime(h.created_date)}</p>
                 </div>
-                <span className="text-sm font-semibold">{formatUSD(h.total_usd)}</span>
+                <span className="text-sm font-semibold">{formatUsdAmount(h.total_usd)}</span>
               </button>
             ))}
           </div>
@@ -157,7 +157,7 @@ export default function OrderTracking({ initialOrderNumber: initialOrderNumberPr
                 {order.delivery_method === 'pickup_point' ? order.pickup_point_name || t('orderTracking.pickupFallback') : `${order.address || '—'}, ${order.city || ''}`}
               </span>
               <span className="font-semibold text-foreground">
-                {t('orderTracking.totalLabel', 'Total')} {formatUSD(order.total_usd)}
+                {t('orderTracking.totalLabel', 'Total')} {formatUsdAmount(order.total_usd)}
               </span>
             </p>
             {order.payment_method && (
@@ -195,7 +195,7 @@ export default function OrderTracking({ initialOrderNumber: initialOrderNumberPr
                   <div>
                     <p className="text-sm font-bold">{f.seller_name || f.supplier_name || 'AfriTrade'}</p>
                     <p className="text-[11px] text-muted-foreground">
-                      {f.fulfillment_number} · {isIntl ? t('trackOrder.importIntl', 'Import international') : t('trackOrder.localDrc', 'Local RDC')}
+                      {f.fulfillment_number} · {isIntl ? t('trackOrder.importIntl', 'Import international') : t('trackOrder.localDrc', 'Local')}
                     </p>
                   </div>
                   <StatusBadge status={f.status} />

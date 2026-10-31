@@ -23,27 +23,50 @@ const RATE_WINDOW_MS = 3600 * 1000;
 export default async function (req) {
   try {
     const base44 = createClientFromRequest(req);
+    // Fail closed: reject anonymous callers before consuming a rate-limit slot
+    // or touching the request. They get 401 rather than 400, and no slot burns.
+    const auth = await requireAdmin(base44);
+    if (!auth.ok) return addSecurityHeaders(auth.response);
+
     const body = await req.json().catch(() => ({}));
     const fulfillmentId = String(body.fulfillment_id || '').trim();
-    if (!fulfillmentId) return Response.json({ error: 'fulfillment_id is required' }, { status: 400 });
+    if (!fulfillmentId) return addSecurityHeaders(Response.json({ error: 'fulfillment_id is required' }, { status: 400 }));
 
-    // Posts a payment reminder to a customer, so only the follow-up workflow
-    // (or an administrator) may trigger it.
-    const auth = await requireAdmin(base44);
-    if (!auth.ok) return auth.response;
+    // The workflow runs on schedule; cap raw calls per IP as outbound traffic.
+    const clientKey = getClientKey(req);
+    const rateLimitResult = await checkRateLimit(
+      base44.asServiceRole,
+      clientKey || 'unidentified',
+      {
+        keyPrefix: 'send_unpaid_reminder',
+        limit: SEND_UNPAID_REMINDER_RATE_LIMIT_PER_HOUR,
+        windowMs: RATE_WINDOW_MS,
+        failClosed: true,
+      }
+    );
+    if (!rateLimitResult.ok) {
+      return rateLimitErrorResponse(rateLimitResult);
+    }
 
     const { fulfillment, order } = await resolveFulfillment(base44, fulfillmentId);
     if (!fulfillment) return Response.json({ error: 'FulfillmentOrder not found' }, { status: 404 });
 
+    // Missing parent state is not evidence of an unpaid order. Never send a
+    // customer reminder or issue a discount while payment status is unknown.
+    if (!order?.id || !order.payment_status) {
+      return addSecurityHeaders(Response.json({ error: 'Authoritative payment state unavailable' }, { status: 503, headers: { 'Retry-After': '120' } }));
+    }
     const state = paymentState(fulfillment, order);
     if (state.paid) return Response.json({ skipped: true, reason: 'already paid', payment_status: state.payment_status });
     if (state.closed) return Response.json({ skipped: true, reason: `order is ${state.payment_status || state.fulfillment_status}` });
 
+    if (!fulfillment.created_date || hoursSince(fulfillment.created_date) < 1) {
+      return addSecurityHeaders(Response.json({ skipped: true, reason: '1-hour waiting period not reached' }));
+    }
     const reference = orderNumber(fulfillment, order);
     const title = `Rappel : votre commande ${reference} n'est pas encore réglée`;
     const existing = await base44.asServiceRole.entities.Notification
-      .filter({ title, order_number: reference })
-      .catch(() => []);
+      .filter({ title, order_number: reference });
     if (existing.length) return Response.json({ skipped: true, reason: 'reminder already sent', notification_id: existing[0].id });
 
     const hours = hoursSince(fulfillment.created_date);
@@ -79,6 +102,7 @@ export default async function (req) {
       hours_since_creation: hours,
     });
   } catch (error) {
-    return Response.json({ error: String(error?.message || error) }, { status: 500 });
+    console.error('[sendUnpaidReminder] failed', { error: String(error?.message || error).slice(0, 200) });
+    return addSecurityHeaders(Response.json({ error: 'Reminder unavailable' }, { status: 503, headers: { 'Retry-After': '120' } }));
   }
 }

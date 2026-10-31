@@ -24,6 +24,7 @@ export default async function(req) {
       clientKey || "unidentified",
       {
         keyPrefix: "commerce_ai",
+        failClosed: true,
         limit: clientKey ? LLM_RATE_LIMIT_PER_HOUR : LLM_RATE_LIMIT_UNIDENTIFIED_PER_HOUR,
         windowMs: RATE_WINDOW_MS,
       }

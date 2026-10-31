@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import React, { useEffect, useState } from 'react';
 import { Save, ShieldCheck, Receipt, Inbox, AlertTriangle } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
@@ -7,6 +8,7 @@ import { DEFAULT_COMPANY_CONFIG, DEFAULT_TAX_CONFIG, loadPlatformConfig } from '
 import LicenseRegister from '@/components/compliance/LicenseRegister';
 import { formatDateTime } from '@/lib/format';
 import { useTranslation } from 'react-i18next';
+import { notifyLoadError } from '@/lib/safeList';
 
 const COMPANY_KEYS = ['legal_name', 'trade_name', 'legal_form', 'rccm', 'nif', 'vat_number', 'capital', 'address', 'city', 'country', 'email', 'phone', 'publisher', 'data_contact', 'host_name', 'host_address', 'host_contact'];
 
@@ -31,11 +33,11 @@ export default function AdminCompliance() {
   const [saved, setSaved] = useState('');
 
   const loadRequests = () =>
-    base44.entities.DataRequest.list('-created_date', 50).then(setRequests).catch(() => []);
+    base44.entities.DataRequest.list('-created_date', 50).then(setRequests).catch(notifyLoadError);
 
   useEffect(() => {
     (async () => {
-      const rows = await base44.entities.PlatformSetting.list().catch(() => []);
+      const rows = await base44.entities.PlatformSetting.list().catch(notifyLoadError);
       const ids = {};
       rows.forEach((r) => {
         ids[r.key] = r.id;
@@ -196,7 +198,7 @@ export default function AdminCompliance() {
                       {r.name} · {r.email || r.phone || '—'} · {formatDateTime(r.created_date)}
                     </p>
                   </div>
-                  <select
+                  <LegacySelect
                     value={r.status}
                     onChange={(e) => updateRequest(r, { status: e.target.value })}
                     className="h-9 rounded-lg border border-border bg-background px-2 text-xs"
@@ -204,7 +206,7 @@ export default function AdminCompliance() {
                     {Object.entries(REQUEST_STATUSES).map(([k, v]) => (
                       <option key={k} value={k}>{v}</option>
                     ))}
-                  </select>
+                  </LegacySelect>
                 </div>
                 {r.details && <p className="mt-1.5 text-[11px] text-muted-foreground">{r.details}</p>}
                 <div className="mt-2 flex gap-2">

@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Banknote, Wallet as WalletIcon, Clock, CheckCircle2, XCircle } from 'lucide-react';
@@ -130,7 +131,7 @@ export default function PayoutRequests() {
             <form onSubmit={submit} className="space-y-3">
               <div className="grid gap-3 md:grid-cols-3">
                 {wallets.length > 1 && (
-                  <select
+                  <LegacySelect
                     value={selected}
                     onChange={(e) => setSelected(e.target.value)}
                     className="h-11 rounded-lg border border-border bg-background px-3 text-sm"
@@ -140,7 +141,7 @@ export default function PayoutRequests() {
                         {w.owner_name} — {w.owner_type} ({format(w.balance_usd || 0)})
                       </option>
                     ))}
-                  </select>
+                  </LegacySelect>
                 )}
                 <input
                   type="number"
@@ -150,7 +151,7 @@ export default function PayoutRequests() {
                   placeholder="Montant en USD"
                   className="h-11 rounded-lg border border-border bg-background px-3 text-sm"
                 />
-                <select
+                <LegacySelect
                   value={method}
                   onChange={(e) => setMethod(e.target.value)}
                   className="h-11 rounded-lg border border-border bg-background px-3 text-sm"
@@ -158,7 +159,7 @@ export default function PayoutRequests() {
                   {METHODS.map((m) => (
                     <option key={m} value={m}>{m}</option>
                   ))}
-                </select>
+                </LegacySelect>
               </div>
               {error && <p className="text-xs text-destructive">{error}</p>}
               {message && <p className="text-xs text-primary">{message}</p>}

@@ -1,4 +1,7 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import PortalStatus from '@/components/PortalStatus';
+import PortalRefresh from '@/components/portal/PortalRefresh';
+import { mergeRealtimeRecord } from '@/lib/portalData';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Activity, AlertTriangle, CheckCircle2, Radio } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { base44 } from '@/api/base44Client';
@@ -13,28 +16,24 @@ export default function AdminEvents() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
+  const [error, setError] = useState(false);
 
-  useEffect(() => {
-    let alive = true;
-    base44.entities.PlatformEvent.list('-created_date', 150)
-      .then((rows) => {
-        if (alive) setEvents(rows);
-      })
-      .catch(() => {})
-      .finally(() => {
-        if (alive) setLoading(false);
-      });
-
-    const unsubscribe = base44.entities.PlatformEvent.subscribe((event) => {
-      if (event.type === 'create') setEvents((prev) => [event.data, ...prev]);
-      if (event.type === 'update') setEvents((prev) => prev.map((e) => (e.id === event.data.id ? event.data : e)));
-    });
-
-    return () => {
-      alive = false;
-      unsubscribe();
-    };
+  const load = useCallback(async () => {
+    setError(false); setLoading(true);
+    try {
+      const rows = await base44.entities.PlatformEvent.list('-created_date', 150);
+      if (!Array.isArray(rows)) throw new Error('Invalid event response');
+      setEvents(rows.reduce((all, row) => mergeRealtimeRecord(all, { type: 'create', data: row }, 150), []));
+    } catch { setError(true); }
+    finally { setLoading(false); }
   }, []);
+  useEffect(() => {
+    void load();
+    const unsubscribe = base44.entities.PlatformEvent.subscribe(event => {
+      setEvents(previous => mergeRealtimeRecord(previous, event, 150));
+    });
+    return () => unsubscribe();
+  }, [load]);
 
   const counts = useMemo(
     () =>
@@ -49,7 +48,7 @@ export default function AdminEvents() {
   );
 
   const attention = useMemo(
-    () => events.filter((e) => e.status === 'failed' || e.severity !== 'info').length,
+    () => events.filter((e) => e.status === 'failed' || ['warning', 'error', 'critical'].includes(e.severity)).length,
     [events],
   );
 
@@ -58,11 +57,12 @@ export default function AdminEvents() {
     [events, filter],
   );
 
-  if (loading) return <div className="h-64 animate-pulse rounded-2xl bg-secondary" />;
+  if (loading || error) return <PortalStatus loading={loading} retry={load} />;
 
   return (
     <div className="space-y-5 pb-8">
       <DashboardNav title={t('adminEvents.title')} links={ADMIN_LINKS} />
+      <PortalRefresh onRefresh={load} />
 
       <section className="grid gap-3 md:grid-cols-3">
         <div className="rounded-2xl border border-border bg-card p-4">

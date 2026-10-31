@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft } from 'lucide-react';
 import { ButtonWithSpring } from './ButtonWithSpring';
@@ -12,17 +12,16 @@ const BackButton = ({
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const handleClick = (e) => {
-    if (
-      window.history.length > 1 &&
-      document.referrer &&
-      new URL(document.referrer).origin === window.location.origin
-    ) {
-      e.preventDefault();
+  const handleClick = () => {
+    // React Router navigation provides a reliable same-app history index.
+    // A direct visit or external referrer always uses the safe fallback.
+    const index = window.history.state?.idx;
+    if (typeof index === 'number' && index > 0) {
       navigate(-1);
     } else {
-      navigate(fallback);
+      navigate(fallback, { replace: location.pathname === fallback });
     }
   };
 
@@ -37,6 +36,7 @@ const BackButton = ({
 
   return (
     <ButtonWithSpring
+      type="button"
       onClick={handleClick}
       className={`${baseStyles} ${variantStyles[variant]} ${className}`}
       aria-label={t('common.back')}

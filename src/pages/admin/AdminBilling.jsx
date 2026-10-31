@@ -1,3 +1,4 @@
+import { formatUsdAmount } from '@/lib/format';
 import React, { useEffect, useState } from 'react';
 import { CreditCard, TrendingUp, AlertTriangle, RefreshCw } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
@@ -7,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { useTranslation } from 'react-i18next';
 import { formatDate, formatUSD } from '@/lib/format';
 import { monthlyRecurring, annualRunRate } from '@/lib/saas';
+import { notifyLoadError } from '@/lib/safeList';
 
 export default function AdminBilling() {
   const { t } = useTranslation();
@@ -19,8 +21,8 @@ export default function AdminBilling() {
 
   const load = async () => {
     const [inv, subs] = await Promise.all([
-      base44.entities.TenantInvoice.list('-issued_at', 100).catch(() => []),
-      base44.entities.Subscription.list('-created_date', 200).catch(() => []),
+      base44.entities.TenantInvoice.list('-issued_at', 100).catch(notifyLoadError),
+      base44.entities.Subscription.list('-created_date', 200).catch(notifyLoadError),
     ]);
     setInvoices(inv);
     setSubscriptions(subs);
@@ -43,7 +45,8 @@ export default function AdminBilling() {
       );
       await load();
     } catch (err) {
-      setMessage(t('adminBilling.generateError', { error: err?.message || 'Erreur inconnue' }));
+      const apiError = err?.response?.data?.error || err?.response?.data?.message;
+      setMessage(t('adminBilling.generateError', { error: apiError || err?.message || 'Erreur inconnue' }));
     } finally {
       setGenerating(false);
     }
@@ -61,7 +64,8 @@ export default function AdminBilling() {
       );
       await load();
     } catch (err) {
-      setMessage(t('adminBilling.dunningError', { error: err?.message || 'Erreur inconnue' }));
+      const apiError = err?.response?.data?.error || err?.response?.data?.message;
+      setMessage(t('adminBilling.dunningError', { error: apiError || err?.message || 'Erreur inconnue' }));
     } finally {
       setDunning(false);
     }
@@ -123,7 +127,7 @@ export default function AdminBilling() {
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-xs font-semibold uppercase">{inv.status}</span>
-                <span className="text-sm font-semibold">{formatUSD(inv.total_usd)}</span>
+                <span className="text-sm font-semibold">{formatUsdAmount(inv.total_usd)}</span>
               </div>
             </div>
           ))}
@@ -146,7 +150,7 @@ export default function AdminBilling() {
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-xs font-semibold uppercase">{sub.status}</span>
-                <span className="text-sm font-semibold">{formatUSD(sub.amount_usd)}</span>
+                <span className="text-sm font-semibold">{formatUsdAmount(sub.amount_usd)}</span>
               </div>
             </div>
           ))}

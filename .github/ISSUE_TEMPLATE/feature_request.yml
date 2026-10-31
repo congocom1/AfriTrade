@@ -1,0 +1,24 @@
+name: Feature request
+description: Propose a scoped enhancement for a marketplace, supplier, logistics or admin workflow
+title: 'feat: '
+labels: ['enhancement']
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem and target user
+      description: Explain the problem rather than only the preferred solution.
+    validations:
+      required: true
+  - type: textarea
+    id: success
+    attributes:
+      label: Acceptance criteria
+      description: Include observable behaviors, accessibility/localization, error and permission scenarios.
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies, rollout and risks
+      description: List external APIs, provider contracts, data schema migrations and operator training.

@@ -6,10 +6,11 @@ import StatusBadge from '@/components/StatusBadge';
 import { ADMIN_LINKS } from '@/lib/navLinks';
 import { advanceFulfillment } from '@/lib/orderService';
 import { SHIPMENT_STATUS_LABELS } from '@/lib/logistics';
-import { formatUSD, formatDateTime } from '@/lib/format';
+import { formatUsdAmount, formatDateTime } from '@/lib/format';
 import { printShippingLabels } from '@/lib/shippingLabels';
 import BulkActionBar from '@/components/orders/BulkActionBar';
 import { useTranslation } from 'react-i18next';
+import { notifyLoadError } from '@/lib/safeList';
 
 const FLOW = ['PENDING', 'CONFIRMED', 'PROCESSING', 'READY_FOR_PICKUP', 'PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED'];
 
@@ -25,8 +26,8 @@ export default function AdminOrders() {
   useEffect(() => {
     (async () => {
       const [o, f] = await Promise.all([
-        base44.entities.Order.list('-created_date', 100).catch(() => []),
-        base44.entities.FulfillmentOrder.list('-created_date', 300).catch(() => []),
+        base44.entities.Order.list('-created_date', 100).catch(notifyLoadError),
+        base44.entities.FulfillmentOrder.list('-created_date', 300).catch(notifyLoadError),
       ]);
       setOrders(o);
       setFulfillments(f);
@@ -44,7 +45,7 @@ export default function AdminOrders() {
     if (!target) return;
     setBusy(f.id);
     try {
-      const updated = await advanceFulfillment(f, target);
+      const updated = await advanceFulfillment(base44, f, target);
       setFulfillments((prev) => prev.map((x) => (x.id === f.id ? updated : x)));
       if (target === 'DELIVERED') {
         const orderFul = fulfillments.filter((x) => x.order_id === f.order_id && x.id !== f.id);
@@ -162,16 +163,16 @@ export default function AdminOrders() {
                 <div className="flex flex-wrap items-center gap-2">
                   <StatusBadge status={o.payment_status} />
                   <StatusBadge status={o.status} />
-                  <span className="text-sm font-bold">{formatUSD(o.total_usd)}</span>
+                  <span className="text-sm font-bold">{formatUsdAmount(o.total_usd)}</span>
                 </div>
               </button>
 
               {open && (
                 <div className="space-y-3 border-t border-border p-4">
                   <div className="grid grid-cols-2 gap-2 text-xs md:grid-cols-4">
-                    <div><p className="text-muted-foreground">{t('adminOrders.subtotal')}</p><p className="font-semibold">{formatUSD(o.subtotal_usd)}</p></div>
-                    <div><p className="text-muted-foreground">{t('adminOrders.shipping')}</p><p className="font-semibold">{formatUSD(o.shipping_usd)}</p></div>
-                    <div><p className="text-muted-foreground">{t('adminOrders.discount')}</p><p className="font-semibold">{formatUSD(o.discount_usd)}</p></div>
+                    <div><p className="text-muted-foreground">{t('adminOrders.subtotal')}</p><p className="font-semibold">{formatUsdAmount(o.subtotal_usd)}</p></div>
+                    <div><p className="text-muted-foreground">{t('adminOrders.shipping')}</p><p className="font-semibold">{formatUsdAmount(o.shipping_usd)}</p></div>
+                    <div><p className="text-muted-foreground">{t('adminOrders.discount')}</p><p className="font-semibold">{formatUsdAmount(o.discount_usd)}</p></div>
                     <div><p className="text-muted-foreground">{t('adminOrders.payment')}</p><p className="font-semibold">{o.payment_method}</p></div>
                   </div>
                   {o.affiliate_code && (
@@ -182,7 +183,7 @@ export default function AdminOrders() {
                       type="button"
                       disabled={busy === o.id}
                       onClick={() => confirmPayment(o)}
-                      className="rounded-full bg-emerald-600 px-3.5 py-1.5 text-xs font-semibold text-white disabled:opacity-50"
+                      className="rounded-full bg-success-600 px-3.5 py-1.5 text-xs font-semibold text-success-50 disabled:opacity-50"
                     >
                       {t('adminOrders.confirmPayment', { method: o.payment_method })}
                     </button>
@@ -201,8 +202,8 @@ export default function AdminOrders() {
                       </div>
                       <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-[11px] text-muted-foreground">
                         <span className="flex items-center gap-1"><Truck className="h-3 w-3" /> {f.tracking_number || '—'}</span>
-                        <span className="flex items-center gap-1"><Coins className="h-3 w-3" /> {t('adminOrders.platformRevenue', { amount: formatUSD(f.platform_revenue_usd) })}</span>
-                        <span>{t('adminOrders.sellerPayout', { amount: formatUSD(f.seller_payout_usd), state: f.payout_released ? t('adminOrders.released') : t('adminOrders.pending') })}</span>
+                        <span className="flex items-center gap-1"><Coins className="h-3 w-3" /> {t('adminOrders.platformRevenue', { amount: formatUsdAmount(f.platform_revenue_usd) })}</span>
+                        <span>{t('adminOrders.sellerPayout', { amount: formatUsdAmount(f.seller_payout_usd), state: f.payout_released ? t('adminOrders.released') : t('adminOrders.pending') })}</span>
                       </div>
                       <div className="mt-2 flex flex-wrap gap-2">
                         {nextStatus(f.status) && (

@@ -1,13 +1,15 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import React, { useEffect, useState } from 'react';
 import { UserPlus, Plus, BadgeCheck, Power } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import DashboardNav from '@/components/DashboardNav';
 import StatusBadge from '@/components/StatusBadge';
 import { ADMIN_LINKS } from '@/lib/navLinks';
-import { formatUSD } from '@/lib/format';
+import { formatUsdAmount, formatUSD } from '@/lib/format';
 import { getCities } from '@/lib/config';
 import TenantEmailField from '@/components/admin/TenantEmailField';
 import { useTranslation } from 'react-i18next';
+import { notifyLoadError } from '@/lib/safeList';
 
 const TAB_IDS = ['sellers', 'creators', 'couriers', 'team'];
 
@@ -29,10 +31,10 @@ export default function AdminUsers() {
 
   const load = async () => {
     const [s, c, k, cl] = await Promise.all([
-      base44.entities.Seller.list('name', 100).catch(() => []),
-      base44.entities.Creator.list('name', 100).catch(() => []),
-      base44.entities.Courier.list('name', 50).catch(() => []),
-      base44.entities.AffiliateClick.list('-created_date', 500).catch(() => []),
+      base44.entities.Seller.list('name', 100).catch(notifyLoadError),
+      base44.entities.Creator.list('name', 100).catch(notifyLoadError),
+      base44.entities.Courier.list('name', 50).catch(notifyLoadError),
+      base44.entities.AffiliateClick.list('-created_date', 500).catch(notifyLoadError),
     ]);
     setSellers(s);
     setCreators(c);
@@ -150,11 +152,11 @@ export default function AdminUsers() {
           {showSellerForm && (
             <form onSubmit={createSeller} className="grid gap-3 rounded-2xl border border-border bg-card p-4 md:grid-cols-2">
               <input value={newSeller.name} onChange={(e) => setNewSeller({ ...newSeller, name: e.target.value })} placeholder={t('adminUsers.shopName')} required className="h-11 rounded-lg border border-border bg-background px-3 text-sm" />
-              <select value={newSeller.city} onChange={(e) => setNewSeller({ ...newSeller, city: e.target.value })} className="h-11 rounded-lg border border-border bg-background px-3 text-sm">
+              <LegacySelect value={newSeller.city} onChange={(e) => setNewSeller({ ...newSeller, city: e.target.value })} className="h-11 rounded-lg border border-border bg-background px-3 text-sm">
                 {getCities().map((c) => (
                   <option key={c} value={c}>{c}</option>
                 ))}
-              </select>
+              </LegacySelect>
               <input value={newSeller.phone} onChange={(e) => setNewSeller({ ...newSeller, phone: e.target.value })} placeholder={t('adminUsers.phone')} className="h-11 rounded-lg border border-border bg-background px-3 text-sm" />
               <input type="email" value={newSeller.email} onChange={(e) => setNewSeller({ ...newSeller, email: e.target.value })} placeholder={t('adminUsers.sellerEmail')} className="h-11 rounded-lg border border-border bg-background px-3 text-sm" />
               <input type="number" value={newSeller.commission_rate} onChange={(e) => setNewSeller({ ...newSeller, commission_rate: Number(e.target.value) })} placeholder={t('adminUsers.commission')} className="h-11 rounded-lg border border-border bg-background px-3 text-sm" />
@@ -236,7 +238,7 @@ export default function AdminUsers() {
                   {k.name} {k.is_mock && <span className="ml-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-900">{t('adminUsers.demo')}</span>}
                 </p>
                 <p className="text-[11px] text-muted-foreground">
-                  {t('adminUsers.courierMeta', { code: k.code, base: formatUSD(k.base_rate_usd), perKg: formatUSD(k.per_kg_usd), days: k.avg_days, zones: (k.service_areas || []).join(', ') })}
+                  {t('adminUsers.courierMeta', { code: k.code, base: formatUsdAmount(k.base_rate_usd), perKg: formatUsdAmount(k.per_kg_usd), days: k.avg_days, zones: (k.service_areas || []).join(', ') })}
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
@@ -245,7 +247,7 @@ export default function AdminUsers() {
                   type="button"
                   onClick={() => toggleCourier(k)}
                   className={`flex items-center gap-1 rounded-full px-3.5 py-1.5 text-xs font-semibold ${
-                    k.active ? 'bg-emerald-100 text-emerald-900' : 'bg-slate-200 text-slate-700'
+                    k.active ? 'bg-success-100 text-success-900' : 'bg-muted text-muted-foreground'
                   }`}
                 >
                   <Power className="h-3.5 w-3.5" /> {k.active ? t('adminUsers.active') : t('adminUsers.inactive')}
@@ -269,10 +271,10 @@ export default function AdminUsers() {
               placeholder="adresse@exemple.cd"
               className="h-11 rounded-lg border border-border bg-background px-3 text-sm"
             />
-            <select value={invite.role} onChange={(e) => setInvite({ ...invite, role: e.target.value })} className="h-11 rounded-lg border border-border bg-background px-3 text-sm">
+            <LegacySelect value={invite.role} onChange={(e) => setInvite({ ...invite, role: e.target.value })} className="h-11 rounded-lg border border-border bg-background px-3 text-sm">
               <option value="user">{t('adminUsers.roleUser')}</option>
               <option value="admin">{t('adminUsers.roleAdmin')}</option>
-            </select>
+            </LegacySelect>
           </div>
           <button type="submit" disabled={savingInvite} className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground disabled:opacity-50">{savingInvite ? t('common.saving') : t('adminUsers.sendInvite')}</button>
           <p className="text-[11px] text-muted-foreground">

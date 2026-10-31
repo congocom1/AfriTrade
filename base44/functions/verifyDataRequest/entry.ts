@@ -34,38 +34,35 @@ function page(status, title, message) {
     </main>
   </body>
 </html>`;
-  return addSecurityHeaders(new Response(html, { status, headers: { 'Content-Type': 'text/html; charset=utf-8' } }));
+  return addSecurityHeaders(new Response(html, { status, headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer' } }));
 }
 
 export default async function (req) {
   try {
+    if (req.method !== 'GET') return page(405, 'Méthode non autorisée', 'Ce lien ne peut être ouvert que dans un navigateur.');
     const base44 = createClientFromRequest(req);
     const token = String(new URL(req.url).searchParams.get('token') || '').trim();
+    // Limit malformed capability lookups before they ever reach the database.
+    if (token.length > 128) return page(400, 'Lien invalide', 'Le jeton de vérification est invalide.');
     if (!token) {
       return page(400, 'Lien incomplet', "Ce lien ne contient pas de jeton de vérification. Ouvrez le lien reçu par e-mail.");
     }
 
-    // Rate limiting for verifyDataRequest - check before auth
-    const clientKey = getClientKey(req);
-    if (!clientKey) {
-      console.warn(
-        "[verifyDataRequest] no client address on the request — applying shared rate limit",
-      );
-    }
-
+    // This is a public capability-token endpoint: enforce the real, database-
+    // backed quota BEFORE the privileged token lookup, including bad tokens.
+    // The previous `checkRateLimit(null, ...)` skipped the check entirely.
+    const clientKey = getClientKey(req) || "unidentified";
     const rateLimitResult = await checkRateLimit(
-      null, // We'll check this later after we have db
-      clientKey || "unidentified",
+      base44.asServiceRole,
+      clientKey,
       {
         keyPrefix: "verify_data_request",
+        failClosed: true,
         limit: VERIFY_DATA_REQUEST_RATE_LIMIT_PER_HOUR,
         windowMs: RATE_WINDOW_MS,
       }
     );
-
-    if (!rateLimitResult.ok) {
-      return rateLimitErrorResponse(rateLimitResult);
-    }
+    if (!rateLimitResult.ok) return rateLimitErrorResponse(rateLimitResult);
 
     const rows = await base44.asServiceRole.entities.DataRequest.filter({ verification_token: token }).catch(() => []);
     const request = rows[0];
@@ -75,21 +72,6 @@ export default async function (req) {
 
     if (request.verified_at) {
       return page(200, 'Demande déjà vérifiée', 'Votre adresse est déjà confirmée. Notre équipe conformité traite votre demande.');
-    }
-
-    // Re-check rate limit now that we have db connection
-    const rateLimitResultDb = await checkRateLimit(
-      base44.asServiceRole,
-      clientKey || "unidentified",
-      {
-        keyPrefix: "verify_data_request",
-        limit: VERIFY_DATA_REQUEST_RATE_LIMIT_PER_HOUR,
-        windowMs: RATE_WINDOW_MS,
-      }
-    );
-
-    if (!rateLimitResultDb.ok) {
-      return rateLimitErrorResponse(rateLimitResultDb);
     }
 
     await base44.asServiceRole.entities.DataRequest.update(request.id, {

@@ -1,4 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useAuth } from '@/lib/AuthContext';
+import { usePortalData } from '@/hooks/usePortalData';
+import { loadRecordGroups } from '@/lib/portalData';
+import PortalStatus from '@/components/PortalStatus';
+import PortalRefresh from '@/components/portal/PortalRefresh';
+import React, { useMemo, useState } from 'react';
 import { Download, FileText, Receipt } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useActiveSeller } from '@/lib/seller';
@@ -7,7 +12,7 @@ import StatCard from '@/components/ops/StatCard';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { downloadCsv, downloadPdf } from '@/lib/export';
-import { formatUSD } from '@/lib/format';
+import { formatUsdAmount } from '@/lib/format';
 
 const isoDay = (date) => date.toISOString().slice(0, 10);
 
@@ -21,33 +26,25 @@ const COLUMNS = [
 ];
 
 export default function TaxReports() {
-  const { seller, loading: loadingSeller } = useActiveSeller();
-  const [user, setUser] = useState(null);
-  const [orders, setOrders] = useState([]);
-  const [txs, setTxs] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  const { seller, loading: loadingSeller, error: scopeError, reload: reloadScope } = useActiveSeller();
+  const { data, loading, error, reload, updatedAt } = usePortalData(['tax-report', seller?.id], async () => {
+    const groups = await loadRecordGroups({
+      orders: () => base44.entities.Order.filter({ seller_ids: seller.id }, '-created_date', 500),
+      wallets: () => base44.entities.Wallet.filter({ owner_type: 'seller', owner_id: seller.id }),
+    });
+    if (groups.wallets.length > 1) throw new Error('Ambiguous wallet');
+    const transactions = await loadRecordGroups({ txs: () => groups.wallets[0]
+      ? base44.entities.WalletTransaction.filter({ wallet_id: groups.wallets[0].id, status: 'posted' }, '-created_date', 300)
+      : Promise.resolve([]) });
+    return { ...groups, ...transactions };
+  }, { enabled: Boolean(seller) });
+  // Never attribute the whole value of a multi-seller invoice to one shop.
+  const orders = (data?.orders || []).filter(order => Array.isArray(order.seller_ids) && order.seller_ids.length === 1 && order.seller_ids[0] === seller?.id);
+  const txs = data?.txs || [];
   const [from, setFrom] = useState(isoDay(new Date(Date.now() - 90 * 86400000)));
   const [to, setTo] = useState(isoDay(new Date()));
   const [paidOnly, setPaidOnly] = useState(true);
-
-  useEffect(() => {
-    base44.auth.me().then(setUser).catch(() => setUser(null));
-  }, []);
-
-  useEffect(() => {
-    Promise.all([
-      base44.entities.Order.list('-created_date', 500).catch(() => []),
-      seller
-        ? base44.entities.Wallet.filter({ owner_name: seller.name }).catch(() => [])
-        : Promise.resolve([]),
-    ]).then(async ([allOrders, wallets]) => {
-      setOrders(allOrders);
-      if (wallets[0]) {
-        const rows = await base44.entities.WalletTransaction.filter({ wallet_id: wallets[0].id, status: { $ne: 'preparing' } }, '-created_date', 300).catch(() => []);
-        setTxs(rows);
-      }
-    }).finally(() => setLoading(false));
-  }, [seller]);
 
   const inRange = useMemo(() => {
     const start = new Date(`${from}T00:00:00`).getTime();
@@ -80,15 +77,19 @@ export default function TaxReports() {
     date: new Date(o.created_date).toLocaleDateString('fr-FR'),
     invoice: o.invoice_number || '',
     order: o.order_number || '',
-    ht: Number(o.total_ht_usd) || 0,
+    ht: o.total_ht_usd == null ? Math.max(0, (Number(o.total_usd) || 0) - (Number(o.vat_usd) || 0)) : Number(o.total_ht_usd),
     vat: Number(o.vat_usd) || 0,
     total: Number(o.total_usd) || 0,
   }));
 
-  if (loadingSeller || loading) return <div className="h-64 animate-pulse rounded-2xl bg-secondary" />;
+  if (loadingSeller || scopeError) return <PortalStatus loading={loadingSeller} retry={reloadScope} />;
+  if (!seller) return <p>Aucune boutique associée à ce compte.</p>;
+  if (loading || error) return <PortalStatus loading={loading} retry={reload} />;
 
   return (
     <div className="space-y-5 pb-8">
+      <PortalRefresh onRefresh={reload} updatedAt={updatedAt} />
+      <p className="rounded-lg border border-border p-3 text-xs text-muted-foreground">Rapport partiel : factures chargées attribuées uniquement à cette boutique. Les commandes multi-vendeurs nécessitent une ventilation comptable et sont exclues. Les mouvements incluent uniquement les écritures validées.</p>
       <OpsHeader
         title="Rapports fiscaux"
         subtitle="Synthèse de vos ventes, de la TVA collectée, des commissions et de vos versements sur la période choisie."
@@ -132,10 +133,10 @@ export default function TaxReports() {
       </section>
 
       <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
-        <StatCard label="Ventes HT" value={formatUSD(totals.ht)} hint={`${totals.orders} commande(s)`} />
-        <StatCard label="TVA collectée" value={formatUSD(totals.vat)} hint="16 % — à reverser" tone={totals.vat ? 'warn' : 'default'} />
-        <StatCard label="Total TTC" value={formatUSD(totals.total)} />
-        <StatCard label="Commissions plateforme" value={formatUSD(totals.commissions)} hint="frais déduits de vos ventes" />
+        <StatCard label="Ventes HT" value={formatUsdAmount(totals.ht)} hint={`${totals.orders} commande(s)`} />
+        <StatCard label="TVA collectée" value={formatUsdAmount(totals.vat)} hint="montants enregistrés" tone={totals.vat ? 'warn' : 'default'} />
+        <StatCard label="Total TTC" value={formatUsdAmount(totals.total)} />
+        <StatCard label="Commissions plateforme" value={formatUsdAmount(totals.commissions)} hint="frais déduits de vos ventes" />
       </div>
 
       <section className="rounded-2xl border border-border bg-card p-4">
@@ -143,15 +144,15 @@ export default function TaxReports() {
         <dl className="mt-3 grid gap-2 text-xs md:grid-cols-3">
           <div className="rounded-xl bg-secondary/50 p-3">
             <dt className="text-muted-foreground">Chiffre d'affaires HT</dt>
-            <dd className="text-base font-bold">{formatUSD(totals.ht)}</dd>
+            <dd className="text-base font-bold">{formatUsdAmount(totals.ht)}</dd>
           </div>
           <div className="rounded-xl bg-secondary/50 p-3">
-            <dt className="text-muted-foreground">TVA collectée (16 %)</dt>
-            <dd className="text-base font-bold">{formatUSD(totals.vat)}</dd>
+            <dt className="text-muted-foreground">TVA enregistrée</dt>
+            <dd className="text-base font-bold">{formatUsdAmount(totals.vat)}</dd>
           </div>
           <div className="rounded-xl bg-secondary/50 p-3">
             <dt className="text-muted-foreground">Versements reçus</dt>
-            <dd className="text-base font-bold">{formatUSD(totals.payouts)}</dd>
+            <dd className="text-base font-bold">{formatUsdAmount(totals.payouts)}</dd>
           </div>
         </dl>
         <p className="mt-3 text-[11px] text-muted-foreground">
@@ -170,8 +171,8 @@ export default function TaxReports() {
               <span className="text-muted-foreground">{r.date}</span>
               <span className="font-semibold">{r.invoice || '—'}</span>
               <span>{r.order}</span>
-              <span className="text-right">{formatUSD(r.ht)}</span>
-              <span className="text-right font-semibold">{formatUSD(r.vat)}</span>
+              <span className="text-right">{formatUsdAmount(r.ht)}</span>
+              <span className="text-right font-semibold">{formatUsdAmount(r.vat)}</span>
             </div>
           )) : (
             <p className="px-4 py-6 text-center text-xs text-muted-foreground">Aucune commande sur cette période.</p>

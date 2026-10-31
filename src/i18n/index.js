@@ -9,16 +9,30 @@ export const LANGUAGES = [
   { id: 'sw', label: 'SW', name: 'Kiswahili' },
 ];
 
-const STORAGE_KEY = 'cc:lang';
+const STORAGE_KEY = 'afritrade:language';
+const LEGACY_STORAGE_KEY = 'cc:lang';
+
+export const resolveLanguage = (value) => {
+  const base = String(value || '').trim().toLowerCase().split(/[-_]/)[0];
+  return LANGUAGES.some((language) => language.id === base) ? base : null;
+};
 
 function initialLanguage() {
   try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved && LANGUAGES.some((l) => l.id === saved)) return saved;
-    const nav = String(navigator.language || '').slice(0, 2).toLowerCase();
-    if (LANGUAGES.some((l) => l.id === nav)) return nav;
+    // Preserve the previous selection when upgrading older AfriTrade builds.
+    const saved = resolveLanguage(localStorage.getItem(STORAGE_KEY))
+      || resolveLanguage(localStorage.getItem(LEGACY_STORAGE_KEY));
+    if (saved) return saved;
   } catch {
-    // private mode / SSR — fall through to French
+    // Storage can be unavailable in private browsing.
+  }
+  try {
+    for (const locale of navigator.languages || [navigator.language]) {
+      const supported = resolveLanguage(locale);
+      if (supported) return supported;
+    }
+  } catch {
+    // Server-side rendering or restricted browser environment.
   }
   return 'fr';
 }
@@ -32,15 +46,19 @@ i18n.use(initReactI18next).init({
   },
   lng: initialLanguage(),
   fallbackLng: 'fr',
+  supportedLngs: LANGUAGES.map(({ id }) => id),
+  load: 'languageOnly',
   interpolation: { escapeValue: false },
 });
 
 if (typeof document !== 'undefined') {
-  document.documentElement.lang = i18n.language;
+  document.documentElement.lang = resolveLanguage(i18n.language) || 'fr';
   i18n.on('languageChanged', (lng) => {
-    document.documentElement.lang = lng;
+    const language = resolveLanguage(lng) || 'fr';
+    document.documentElement.lang = language;
     try {
-      localStorage.setItem(STORAGE_KEY, lng);
+      localStorage.setItem(STORAGE_KEY, language);
+      localStorage.removeItem(LEGACY_STORAGE_KEY);
     } catch {
       // ignore persistence failures
     }
@@ -48,7 +66,9 @@ if (typeof document !== 'undefined') {
 }
 
 export function setLanguage(id) {
-  if (LANGUAGES.some((l) => l.id === id)) i18n.changeLanguage(id);
+  const supported = resolveLanguage(id);
+  if (supported) return i18n.changeLanguage(supported);
+  return Promise.resolve();
 }
 
 export default i18n;

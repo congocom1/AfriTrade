@@ -59,13 +59,15 @@ export default async function(req: Request): Promise<Response> {
 
     const body = await req.json().catch(() => ({}));
     const action = String(body.action || '');
+    if (body.days != null && (!Number.isInteger(body.days) || body.days < 1 || body.days > 366)) return fail('Période invalide', 400);
+    if (body.limit != null && (!Number.isInteger(body.limit) || body.limit < 1 || body.limit > 100)) return fail('Limite invalide', 400);
 
     switch (action) {
-      case 'dashboard': return dashboard(db, body);
-      case 'conversion-funnel': return conversionFunnel(db, body);
-      case 'cohort': return cohort(db, body);
-      case 'revenue': return revenue(db, body);
-      case 'top-products': return topProducts(db, body);
+      case 'dashboard': return await dashboard(db, body);
+      case 'conversion-funnel': return await conversionFunnel(db, body);
+      case 'cohort': return await cohort(db, body);
+      case 'revenue': return await revenue(db, body);
+      case 'top-products': return await topProducts(db, body);
       default: return fail('Action invalide');
     }
   } catch(e) {
@@ -78,10 +80,10 @@ async function dashboard(db, body) {
   const { days = 30 } = body;
   const since = new Date(Date.now() - days * 86400000).toISOString();
   const [orders, revenues, customers, products] = await Promise.all([
-    db.entities.Order.filter({ created_date: { $gte: since } }, '-created_date', 500).catch(() => []),
-    db.entities.TenantInvoice.filter({ issued_at: { $gte: since }, status: 'paid' }, '-issued_at', 200).catch(() => []),
-    db.entities.User.list('-created_date', 500).catch(() => []),
-    db.entities.Product.list('title', 200).catch(() => []),
+    db.entities.Order.filter({ created_date: { $gte: since } }, '-created_date', 500),
+    db.entities.TenantInvoice.filter({ issued_at: { $gte: since }, status: 'paid' }, '-issued_at', 200),
+    db.entities.User.filter({ created_date: { $gte: since } }, '-created_date', 500),
+    db.entities.Product.list('title', 200),
   ]);
   const totalRevenue = revenues.reduce((s, r) => s + (Number(r.total_usd) || 0), 0);
   const paidOrders = orders.filter((o) => o.payment_status === 'PAID');
@@ -101,25 +103,20 @@ async function dashboard(db, body) {
 async function conversionFunnel(db, body) {
   const { days = 30 } = body;
   const since = new Date(Date.now() - days * 86400000).toISOString();
-  const orders = await db.entities.Order.filter({ created_date: { $gte: since } }, '', 1000).catch(() => []);
-  const sessions = Math.max(orders.length * 4, 100);
-  const cartAdds = Math.round(orders.length * 2.5);
-  const checkoutStarted = Math.round(orders.length * 1.4);
-  const paymentAttempted = Math.round(orders.length * 1.1);
-  const completed = orders.filter((o) => o.payment_status === 'PAID').length;
+  const events = await db.entities.AnalyticsEvent.filter({ created_date: { $gte: since } }, '-created_date', 1000);
+  const sessions = new Set(events.map(e => e.session_id).filter(Boolean));
+  const count = (name) => new Set(events.filter(e => e.name === name).map(e => e.session_id).filter(Boolean)).size;
+  const step = (label, value) => ({ step: label, count: value, rate: sessions.size ? Math.round(value / sessions.size * 1000) / 10 : 0 });
   return Response.json({
-    funnel: [
-      { step: 'Visite', count: sessions, rate: 100 },
-      { step: 'Ajout panier', count: cartAdds, rate: Math.round(cartAdds / sessions * 1000) / 10 },
-      { step: 'Checkout', count: checkoutStarted, rate: Math.round(checkoutStarted / sessions * 1000) / 10 },
-      { step: 'Paiement', count: paymentAttempted, rate: Math.round(paymentAttempted / sessions * 1000) / 10 },
-      { step: 'Confirmé', count: completed, rate: Math.round(completed / sessions * 1000) / 10 },
-    ],
+    funnel: [step('Sessions suivies', sessions.size), step('Ajout panier', count('cart_add')), step('Checkout', count('order_checkout_started'))],
+    source: 'recorded_analytics_events',
+    truncated: events.length === 1000,
   });
 }
 
 async function cohort(db, body) {
-  const orders = await db.entities.Order.filter({}, '-created_date', 500).catch(() => []);
+  const since = new Date(Date.now() - (body.days || 90) * 86400000).toISOString();
+  const orders = await db.entities.Order.filter({ created_date: { $gte: since } }, '-created_date', 500);
   const cohorts = {};
   for (const o of orders) {
     const month = (o.created_date || '').slice(0, 7);
@@ -128,13 +125,13 @@ async function cohort(db, body) {
     cohorts[month].count++;
     if (o.payment_status === 'PAID') { cohorts[month].paid++; cohorts[month].revenue += Number(o.total_usd) || 0; }
   }
-  return Response.json({ cohort: Object.entries(cohorts).map(([month, d]) => ({ month, ...d })).reverse() });
+  return Response.json({ cohort: Object.entries(cohorts).sort(([a], [b]) => a.localeCompare(b)).map(([month, d]) => ({ month, ...d })) });
 }
 
 async function revenue(db, body) {
   const { days = 30 } = body;
   const since = new Date(Date.now() - days * 86400000).toISOString();
-  const invoices = await db.entities.TenantInvoice.filter({ issued_at: { $gte: since } }, '-issued_at', 200).catch(() => []);
+  const invoices = await db.entities.TenantInvoice.filter({ issued_at: { $gte: since } }, '-issued_at', 200);
   const byStatus = { paid: 0, open: 0, past_due: 0, draft: 0 };
   for (const inv of invoices) { if (byStatus[inv.status] !== undefined) byStatus[inv.status] += Number(inv.total_usd) || 0; }
   return Response.json({ revenue_by_status: byStatus, total: Object.values(byStatus).reduce((a, b) => a + b, 0) });
@@ -142,6 +139,6 @@ async function revenue(db, body) {
 
 async function topProducts(db, body) {
   const { limit = 10 } = body;
-  const products = await db.entities.Product.list('-created_date', limit * 2).catch(() => []);
+  const products = await db.entities.Product.list('-created_date', limit * 2);
   return Response.json({ products: products.slice(0, limit).map((p) => ({ id: p.id, title: p.title, stock: p.stock, price_usd: p.price_usd, status: p.status })) });
 }

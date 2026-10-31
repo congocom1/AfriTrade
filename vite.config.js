@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import fs from 'node:fs';
 import path from 'node:path';
+import { securityHeadersPlugin } from './scripts/security-headers-plugin.js';
 
 const SRC = path.resolve(process.cwd(), 'src');
 
@@ -12,8 +13,7 @@ const buildAnalyzerPlugin = () => {
     return {
       name: 'vite-bundle-analyzer',
       generateBundle(options, bundle) {
-        const distDir = path.join(process.cwd(), 'dist');
-        const statsPath = path.join(distDir, 'stats.json');
+        const statsPath = path.join(process.cwd(), 'dist', 'stats.json');
         const stats = {
           assets: Object.values(bundle)
             .filter(chunk => chunk.type === 'asset' || chunk.type === 'chunk')
@@ -27,7 +27,7 @@ const buildAnalyzerPlugin = () => {
           }, 0)
         };
 
-        fs.mkdirSync(distDir, { recursive: true });
+        fs.mkdirSync(path.dirname(statsPath), { recursive: true });
         fs.writeFileSync(statsPath, JSON.stringify(stats, null, 2));
         console.log('\n📊 Bundle analysis saved to dist/stats.json');
       }
@@ -71,29 +71,6 @@ const performanceMonitorPlugin = () => {
   };
 };
 
-// Security headers plugin
-const securityHeadersPlugin = () => {
-  return {
-    name: 'security-headers',
-    transformIndexHtml(html) {
-      if (process.env.NODE_ENV !== 'production') return html;
-      const securityMetaTags = [
-        '    <!-- Security Headers (Production) -->',
-        '    <meta http-equiv="X-Content-Type-Options" content="nosniff" />',
-        '    <meta name="referrer" content="strict-origin-when-cross-origin" />',
-      ].join('\n');
-      return html.replace('</head>', `${securityMetaTags}\n  </head>`);
-    },
-    configureServer(server) {
-      server.middlewares.use((req, res, next) => {
-        res.setHeader('X-Content-Type-Options', 'nosniff');
-        res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-        next();
-      });
-    }
-  };
-};
-
 export default defineConfig({
   server: {
     host: '0.0.0.0',
@@ -127,60 +104,80 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom', 'debug'],
+    // Pre-bundle every client dependency up front. Without this, Vite discovers
+    // packages used only by lazy-loaded route chunks after the app has already
+    // started, re-optimizes, and hands out new dependency hashes mid-session —
+    // the running page keeps the old hashes and its lazy imports then fail with
+    // "504 Outdated Optimize Dep" / "Failed to fetch dynamically imported module".
+    include: [
+      'react', 'react-dom', 'react-router-dom', 'debug',
+      '@tanstack/react-query', 'react-i18next', 'i18next',
+      'react-hook-form', '@hookform/resolvers', 'zod',
+      'lucide-react', 'clsx', 'tailwind-merge', 'class-variance-authority',
+      'framer-motion', 'date-fns',
+      'recharts', 'jspdf', 'three', 'react-leaflet',
+      'react-markdown', 'embla-carousel-react', 'cmdk', 'vaul',
+      'sonner', 'react-hot-toast', 'next-themes', 'input-otp',
+      'react-day-picker', 'react-resizable-panels',
+      '@radix-ui/react-accordion', '@radix-ui/react-alert-dialog',
+      '@radix-ui/react-aspect-ratio', '@radix-ui/react-avatar',
+      '@radix-ui/react-checkbox', '@radix-ui/react-collapsible',
+      '@radix-ui/react-context-menu', '@radix-ui/react-dialog',
+      '@radix-ui/react-dropdown-menu', '@radix-ui/react-focus-scope',
+      '@radix-ui/react-hover-card', '@radix-ui/react-label',
+      '@radix-ui/react-menubar', '@radix-ui/react-navigation-menu',
+      '@radix-ui/react-popover', '@radix-ui/react-progress',
+      '@radix-ui/react-radio-group', '@radix-ui/react-scroll-area',
+      '@radix-ui/react-select', '@radix-ui/react-separator',
+      '@radix-ui/react-slider', '@radix-ui/react-slot',
+      '@radix-ui/react-switch', '@radix-ui/react-tabs',
+      '@radix-ui/react-toast', '@radix-ui/react-toggle',
+      '@radix-ui/react-toggle-group', '@radix-ui/react-tooltip',
+      '@mainmoneyapp/js-core', '@mainmoneyapp/js-http', '@mainmoneyapp/js-checkout',
+    ],
     exclude: ['@base44/sdk'],
   },
   build: {
     target: 'es2020',
     cssCodeSplit: true,
-    chunkSizeWarningLimit: 1200,
-    rollupOptions: {
+    chunkSizeWarningLimit: 500,
+    rolldownOptions: {
       output: {
-        manualChunks(id) {
-          if (!id.includes('node_modules')) return undefined;
-          if (
-            id.includes('/react/') ||
-            id.includes('/react-dom/') ||
-            id.includes('/react-router') ||
-            id.includes('/@tanstack/react-query') ||
-            id.includes('/react-i18next/') ||
-            id.includes('/i18next/') ||
-            id.includes('/next-themes/') ||
-            id.includes('/framer-motion/')
-          ) {
-            return 'react-vendor';
-          }
-          if (id.includes('/@base44/sdk/')) {
-            return 'base44-sdk';
-          }
-          if (id.includes('/@radix-ui/')) {
-            return 'radix-ui';
-          }
-          if (id.includes('/date-fns/')) {
-            return 'date-utils';
-          }
-          if (
-            id.includes('/react-hook-form/') ||
-            id.includes('/@hookform/resolvers/') ||
-            id.includes('/zod/')
-          ) {
-            return 'form-utils';
-          }
-          if (id.includes('/recharts/') || id.includes('/d3-')) {
-            return 'chart-utils';
-          }
-          if (id.includes('/leaflet/') || id.includes('/react-leaflet/')) {
-            return 'map-utils';
-          }
-          if (id.includes('/three/')) {
-            return 'three-vendor';
-          }
-          if (id.includes('/jspdf/') || id.includes('/cmdk/')) {
-            return 'lib-utils';
-          }
-          return undefined;
-        }
-      }
-    }
-  }
+        codeSplitting: {
+          groups: [
+            // React first. A group absorbs the dependencies of the modules it
+            // matches, so without its own group React is folded into whichever
+            // dependency cluster is emitted first (charts, three) and shipped
+            // twice.
+            { name: 'react-core', test: /node_modules\/(react|react-dom|scheduler)\// },
+            // Three.js: three.core.js (the engine) and three.module.js (the engine
+            // plus the WebGL renderer) are two separate build files, and the
+            // examples/addons directory is a third. Keeping them apart means a page
+            // that only needs the core does not download the renderer or the addons.
+            { name: 'three-engine-core', test: /node_modules\/three\/build\/three\.core\.js$/ },
+            { name: 'three-engine-module', test: /node_modules\/three\/build\/three\.module\.js$/ },
+            { name: 'three-addons', test: /node_modules\/three\/examples\/jsm\// },
+            { name: 'three-other', test: /node_modules\/three\// },
+            // Charts: the d3 modules recharts builds on get their own chunk, so a
+            // chart page fetches recharts and its maths in parallel instead of as
+            // one oversized bundle.
+            { name: 'charts-d3', test: /node_modules\/d3-[^/]+\// },
+            { name: 'charts-recharts', test: /node_modules\/(recharts|victory-vendor|react-smooth|fast-equals|decimal\.js-light)\// },
+            { name: 'pdf', test: /node_modules\/jspdf\// },
+            { name: 'html2canvas', test: /node_modules\/html2canvas\// },
+            { name: 'pdf-deps', test: /node_modules\/(fflate|canvg|@babel)\// },
+            // Translations: one chunk per locale instead of a single ~330KB
+            // bundle, plus a chunk for the shared copy patches that every locale
+            // consumes. Order matters: the locale patterns must come first.
+            { name: 'locale-fr', test: /src\/i18n\/(fr|fr-extended)\.js$/ },
+            { name: 'locale-en', test: /src\/i18n\/en\.js$/ },
+            { name: 'locale-ln', test: /src\/i18n\/ln\.js$/ },
+            { name: 'locale-sw', test: /src\/i18n\/sw\.js$/ },
+            { name: 'i18n-copy', test: /src\/i18n\// },
+          ],
+        },
+      },
+    },
+  },
 });
+

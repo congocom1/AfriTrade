@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Plus } from 'lucide-react';
@@ -52,11 +53,11 @@ export default function RateForm({ couriers = [], destinations = [], onSubmit, b
         <Plus className="h-4 w-4 text-primary" /> {t('rateForm.title')}
       </h2>
       <div className="grid gap-3 md:grid-cols-3">
-        <select value={draft.destination_type} onChange={(e) => set({ destination_type: e.target.value })} className="h-11 rounded-lg border border-border bg-background px-3 text-sm">
+        <LegacySelect value={draft.destination_type} onChange={(e) => set({ destination_type: e.target.value })} className="h-11 rounded-lg border border-border bg-background px-3 text-sm">
           <option value="city">{t('rateForm.destCity')}</option>
           <option value="country">{t('rateForm.destCountry')}</option>
           <option value="zone">{t('rateForm.destZone')}</option>
-        </select>
+        </LegacySelect>
         <input
           value={draft.destination}
           onChange={(e) => set({ destination: e.target.value })}
@@ -67,10 +68,10 @@ export default function RateForm({ couriers = [], destinations = [], onSubmit, b
         <datalist id="rate-destinations">
           {destinations.map((d) => <option key={d} value={d} />)}
         </datalist>
-        <select value={draft.courier_id} onChange={(e) => set({ courier_id: e.target.value })} className="h-11 rounded-lg border border-border bg-background px-3 text-sm">
+        <LegacySelect value={draft.courier_id} onChange={(e) => set({ courier_id: e.target.value })} className="h-11 rounded-lg border border-border bg-background px-3 text-sm">
           <option value="">{t('rateForm.carrierPh')}</option>
           {couriers.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-        </select>
+        </LegacySelect>
         {FIELDS.map((f) => (
           <label key={f.field} className="text-[11px] text-muted-foreground">
             {f.label}

@@ -1,3 +1,7 @@
+import LegacySelect from '@/components/ui/legacy-select';
+import { usePortalData } from '@/hooks/usePortalData';
+import { loadRecordGroups } from '@/lib/portalData';
+import PortalStatus from '@/components/PortalStatus';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { base44 } from '@/api/base44Client';
@@ -10,34 +14,40 @@ export default function ReceivingPanel() {
   const [form, setForm] = useState({ product_id: '', quantity: 1, location: '', note: '' });
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    base44.entities.Product.list('title', 500).then(setProducts);
-    base44.entities.StockMovement.list('-created_date', 30).then(setMoves);
-  }, []);
+  const [actionError, setActionError] = useState(false);
+  const { data, loading, error, reload } = usePortalData(['stock-receiving'], () => loadRecordGroups({
+    products: () => base44.entities.Product.list('title', 500),
+    moves: () => base44.entities.StockMovement.list('-created_date', 30),
+  }));
+  useEffect(() => { setProducts(data?.products || []); setMoves(data?.moves || []); }, [data]);
 
   const submit = async (e) => {
     e.preventDefault();
     const p = products.find((x) => x.id === form.product_id);
     const qty = Number(form.quantity);
-    if (!p || !qty) return;
-    setSaving(true);
+    if (saving || !p || !qty || !Number.isInteger(qty)) return;
+    setSaving(true); setActionError(false);
+    try {
     const stock = (Number(p.stock) || 0) + qty;
     await base44.entities.Product.update(p.id, { stock });
     const m = await base44.entities.StockMovement.create({ product_id: p.id, product_title: p.title, type: qty > 0 ? 'receipt' : 'adjustment', quantity: qty, stock_after: stock, location: form.location, note: form.note });
     setProducts((prev) => prev.map((x) => (x.id === p.id ? { ...x, stock } : x)));
     setMoves((prev) => [m, ...prev]);
     setForm({ product_id: '', quantity: 1, location: '', note: '' });
-    setSaving(false);
+    } catch { setActionError(true); } finally { setSaving(false); }
   };
+
+  if (loading || error) return <PortalStatus loading={loading} retry={reload} />;
 
   const field = 'h-10 rounded-xl border border-border bg-background px-3 text-sm';
   return (
     <div className="space-y-4">
+      {actionError && <p role="alert" className="text-sm text-destructive">{t('portalStatus.actionFailed')}</p>}
       <form onSubmit={submit} className="grid gap-2 rounded-2xl border border-border bg-card p-3 md:grid-cols-[2fr_100px_1fr_1fr_auto]">
-        <select required value={form.product_id} onChange={(e) => setForm({ ...form, product_id: e.target.value })} className={field}>
+        <LegacySelect required value={form.product_id} onChange={(e) => setForm({ ...form, product_id: e.target.value })} className={field}>
           <option value="">{t('receivingPanel.productPh')}</option>
           {products.map((p) => <option key={p.id} value={p.id}>{p.title} (stock {p.stock ?? 0})</option>)}
-        </select>
+        </LegacySelect>
         <input type="number" value={form.quantity} onChange={(e) => setForm({ ...form, quantity: e.target.value })} className={field} title={t('receivingPanel.qtyTitle')} />
         <input placeholder={t('receivingPanel.locationPh')} value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} className={field} />
         <input placeholder={t('receivingPanel.notePh')} value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} className={field} />

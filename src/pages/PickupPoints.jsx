@@ -4,10 +4,10 @@ import { useTranslation } from 'react-i18next';
 import { MapPin, Clock, Phone, Wallet, Navigation, Store } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import InfoPage, { InfoSection } from '@/components/InfoPage';
-import { formatUSD } from '@/lib/format';
+import { formatUsdAmount, } from '@/lib/format';
 
 function mapUrl(point) {
-  const query = [point.name, point.commune, point.address, point.city, 'RDC'].filter(Boolean).join(', ');
+  const query = [point.name, point.commune, point.address, point.city, 'AfriTrade'].filter(Boolean).join(', ');
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
 }
 
@@ -80,7 +80,7 @@ export default function PickupPoints() {
                           <Clock className="h-3.5 w-3.5" /> {p.hours || '08:00 - 18:00'}
                         </span>
                         <span className="inline-flex items-center gap-1">
-                          <Wallet className="h-3.5 w-3.5" /> {formatUSD(p.fee_usd || 0)}
+                          <Wallet className="h-3.5 w-3.5" /> {formatUsdAmount(p.fee_usd || 0)}
                         </span>
                         {p.phone && (
                           <a href={`tel:${p.phone}`} className="inline-flex items-center gap-1 font-semibold text-primary">

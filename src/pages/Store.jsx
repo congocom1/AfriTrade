@@ -10,6 +10,7 @@ import EmptyState from '@/components/EmptyState';
 import { getFollowedIds, toggleFollowId } from '@/lib/session';
 import { compactNumber } from '@/lib/format';
 import { inTenantScope, resolveStorefrontScope, scopeRecords } from '@/lib/tenancy';
+import { SHOP_BANNER_PHOTO, SHOP_PHOTO } from '@/lib/unsplashImages';
 
 export default function Store() {
   const { t } = useTranslation();
@@ -24,6 +25,7 @@ export default function Store() {
     let alive = true;
     (async () => {
       setLoading(true);
+      setNotFound(false); // A failed prior slug must not hide a subsequently valid store.
       try {
         let rows = await base44.entities.Seller.filter({ slug });
         if (!rows.length) rows = await base44.entities.Seller.filter({ id: slug }).catch(() => []);
@@ -51,13 +53,32 @@ export default function Store() {
 
   const toggleFollow = async () => {
     if (!seller) return;
+    const previousSeller = seller;
+    const previousFollowing = following;
     const next = toggleFollowId(seller.id);
     const nowFollowing = next.includes(seller.id);
+
+    // Optimistic: the button and the follower count move on the tap, before the
+    // profile call answers.
     setFollowing(nowFollowing);
+    setSeller((current) => ({
+      ...current,
+      followers_count: Math.max(0, (current.followers_count || 0) + (nowFollowing ? 1 : -1)),
+    }));
+
     const user = await base44.auth.me().catch(() => null);
-    if (user) {
-      const response = await base44.functions.invoke('sellerProfile', { action: 'follow', seller_id: seller.id, follow: nowFollowing }).catch(() => null);
+    // Visitors have no account to store a follow against, so the local list is
+    // the whole state and there is nothing to confirm.
+    if (!user) return;
+
+    try {
+      const response = await base44.functions.invoke('sellerProfile', { action: 'follow', seller_id: seller.id, follow: nowFollowing });
       if (response?.data?.seller) setSeller(response.data.seller);
+    } catch {
+      // The server refused the change: put the previous state back.
+      toggleFollowId(seller.id);
+      setFollowing(previousFollowing);
+      setSeller(previousSeller);
     }
   };
 
@@ -81,11 +102,11 @@ export default function Store() {
   return (
     <div className="space-y-5 pb-6">
       <div className="relative overflow-hidden rounded-2xl">
-        <Image src={seller.banner_url} alt={seller.name} className="h-36 w-full object-cover md:h-52" />
+        <Image src={seller.banner_url || SHOP_BANNER_PHOTO} alt={seller.name} className="h-36 w-full object-cover md:h-52" />
         <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 to-transparent" />
         <div className="absolute bottom-3 left-3 right-3 flex items-end gap-3">
           <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl border-2 border-background bg-secondary md:h-20 md:w-20">
-            <Image src={seller.logo_url} alt={seller.name} className="h-full w-full object-cover" />
+            <Image src={seller.logo_url || SHOP_PHOTO} alt={seller.name} className="h-full w-full object-cover" />
           </div>
           <div className="flex-1 pb-1 text-background">
             <p className="flex items-center gap-1 text-base font-bold md:text-xl">

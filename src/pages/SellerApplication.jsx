@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
@@ -184,9 +185,9 @@ export default function SellerApplication() {
                 <input value={form.owner_name} onChange={(e) => set({ owner_name: e.target.value })} placeholder={t('sellerApplication.phOwner')} className="h-11 rounded-lg border border-border bg-background px-3 text-sm" />
                 <input value={form.phone} onChange={(e) => set({ phone: e.target.value })} placeholder={t('sellerApplication.phPhone')} className="h-11 rounded-lg border border-border bg-background px-3 text-sm" />
                 <input value={form.email} onChange={(e) => set({ email: e.target.value })} placeholder={t('sellerApplication.phEmail')} className="h-11 rounded-lg border border-border bg-background px-3 text-sm" />
-                <select value={form.city} onChange={(e) => set({ city: e.target.value })} className="h-11 rounded-lg border border-border bg-background px-3 text-sm">
+                <LegacySelect value={form.city} onChange={(e) => set({ city: e.target.value })} className="h-11 rounded-lg border border-border bg-background px-3 text-sm">
                   {CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
-                </select>
+                </LegacySelect>
                 <input value={form.commune} onChange={(e) => set({ commune: e.target.value })} placeholder={t('sellerApplication.phCommune')} className="h-11 rounded-lg border border-border bg-background px-3 text-sm" />
                 <input value={form.activity} onChange={(e) => set({ activity: e.target.value })} placeholder={t('sellerApplication.phActivity')} className="h-11 rounded-lg border border-border bg-background px-3 text-sm" />
                 <input value={form.rccm} onChange={(e) => set({ rccm: e.target.value })} placeholder={t('sellerApplication.phRccm')} className="h-11 rounded-lg border border-border bg-background px-3 text-sm" />
@@ -196,9 +197,9 @@ export default function SellerApplication() {
             {step === 1 ? (
               <div className="space-y-3">
                 <div className="grid gap-3 md:grid-cols-2">
-                  <select value={form.id_type} onChange={(e) => set({ id_type: e.target.value })} className="h-11 rounded-lg border border-border bg-background px-3 text-sm">
+                  <LegacySelect value={form.id_type} onChange={(e) => set({ id_type: e.target.value })} className="h-11 rounded-lg border border-border bg-background px-3 text-sm">
                     {ID_TYPES.map((t) => <option key={t.id} value={t.id}>{t.label}</option>)}
-                  </select>
+                  </LegacySelect>
                   <input value={form.id_number} onChange={(e) => set({ id_number: e.target.value })} placeholder={t('sellerApplication.phIdNumber')} className="h-11 rounded-lg border border-border bg-background px-3 text-sm" />
                 </div>
                 <DocumentUploadField

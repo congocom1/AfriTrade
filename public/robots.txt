@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /seller
+Disallow: /employee
+Disallow: /checkout
+Disallow: /cart
+Disallow: /profile
+Disallow: /login
+Disallow: /register
+Disallow: /account
+Disallow: /notifications
+Disallow: /messages
+Disallow: /api/
+Sitemap: https://afritrade-1.base44.app/sitemap.xml

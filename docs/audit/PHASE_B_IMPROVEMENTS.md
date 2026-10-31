@@ -1,7 +1,7 @@
 # Phase B Improvements - Visual Audit Implementation
 
 ## Summary
-This document describes the implementation of Phase B improvements following the Phase A visual audit. This addresses all 5 identified inconsistencies and implements the design system enhancements for the CongoCommerce/AfriTrade marketplace.
+This document describes the implementation of Phase B improvements following the Phase A visual audit. This addresses all 5 identified inconsistencies and implements the design system enhancements for the AfriTrade marketplace.
 
 ## Addressed Inconsistencies
 

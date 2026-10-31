@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ShoppingBag, Heart, Truck, ShieldCheck, Store as StoreIcon, ChevronRight, PackageCheck, Zap, Share2 } from 'lucide-react';
+import { ShoppingBag, Heart, Truck, ShieldCheck, Store as StoreIcon, ChevronRight, PackageCheck, Zap, Share2, Box, Image as ImageIcon } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Image } from '@/components/ui/image';
 import { useCart } from '@/lib/cart';
@@ -16,6 +16,8 @@ import MobileActionBar from '@/components/MobileActionBar';
 import ProductRow from '@/components/ProductRow';
 import ProductReviews from '@/components/ProductReviews';
 import Product3DViewer from '@/components/Product3DViewer';
+import { resolveProduct3D } from '@/lib/product3d/registry';
+import { productImage } from '@/lib/productImages';
 import SectionHeader from '@/components/SectionHeader';
 import { compactNumber } from '@/lib/format';
 import { inTenantScope, resolveStorefrontScope, scopeRecords } from '@/lib/tenancy';
@@ -55,6 +57,13 @@ export default function ProductDetail() {
     let alive = true;
     setLoading(true);
     setNotFound(false);
+    setProduct(null);
+    setRelated([]);
+    setZone(null);
+    setSellerSlug('');
+    setCategorySlug('');
+    setSelection({});
+    setQty(1);
     setView3d(false);
     setActiveImage(0);
 
@@ -177,6 +186,17 @@ export default function ProductDetail() {
 
   const isIntl = product.source_type === 'international_supplier';
   const outOfStock = Number(product.stock) <= 0;
+  const model3d = resolveProduct3D(product);
+  // A product can also ship a real .glb/.gltf file; the viewer prefers it.
+  const modelFile = product.model_3d_url || '';
+  const has3d = Boolean(model3d || modelFile);
+  // Products arrive from CSV imports and suppliers without a photo of their own,
+  // so the gallery falls back to real photography of the department.
+  const heroPhoto = product.images?.[activeImage] || productImage(product);
+  const hasDiscount = Number(product.compare_at_usd) > Number(product.price_usd);
+  const discountPct = hasDiscount
+    ? Math.round((1 - product.price_usd / product.compare_at_usd) * 100)
+    : 0;
 
   return (
     <div className="space-y-6 pb-28 md:pb-6">
@@ -189,29 +209,37 @@ export default function ProductDetail() {
 
       <div className="grid gap-5 md:grid-cols-2 md:gap-8">
         <div className="space-y-2">
-          {product.model_3d_url && (
-            <div className="flex gap-2">
+          {has3d && (
+            <div className="inline-flex rounded-full bg-secondary p-0.5" role="group" aria-label={t('productDetail.media')}>
               <button
                 type="button"
+                aria-pressed={!view3d}
                 onClick={() => setView3d(false)}
-                className={`rounded-full px-3 py-1 text-xs font-semibold ${!view3d ? 'bg-primary text-primary-foreground' : 'border border-border'}`}
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring ${!view3d ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
               >
-                {t('productDetail.photo')}
+                <ImageIcon className="h-3.5 w-3.5" aria-hidden="true" /> {t('productDetail.photo')}
               </button>
               <button
                 type="button"
+                aria-pressed={view3d}
                 onClick={() => setView3d(true)}
-                className={`rounded-full px-3 py-1 text-xs font-semibold ${view3d ? 'bg-primary text-primary-foreground' : 'border border-border'}`}
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring ${view3d ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
               >
-                {t('productDetail.view3d')}
+                <Box className="h-3.5 w-3.5" aria-hidden="true" /> {t('productDetail.view3d')}
               </button>
             </div>
           )}
           <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-secondary">
-            {view3d && product.model_3d_url ? (
-              <Product3DViewer modelUrl={product.model_3d_url} fallbackImage={product.images?.[activeImage]} title={product.title} />
+            {view3d && has3d ? (
+              <Product3DViewer
+                modelKey={model3d}
+                modelUrl={modelFile || undefined}
+                fallbackImage={heroPhoto}
+                photo={heroPhoto}
+                title={product.title}
+              />
             ) : (
-              <Image src={product.images?.[activeImage]} alt={`${product.title} - image principale`} className="h-full w-full object-cover" />
+              <Image src={heroPhoto} alt={product.title} className="h-full w-full object-cover" />
             )}
             <button
               type="button"
@@ -273,16 +301,19 @@ export default function ProductDetail() {
             </div>
           </div>
 
-          <div className="rounded-2xl bg-secondary/60 p-3">
-            <div className="flex items-end gap-2">
+          <div className="rounded-2xl bg-secondary/60 p-4">
+            <div className="flex flex-wrap items-end gap-2">
               <span className="text-2xl font-black text-primary md:text-3xl">{format(product.price_usd)}</span>
-              {product.compare_at_usd > product.price_usd && (
-                <span className="pb-1 text-sm text-muted-foreground line-through">{format(product.compare_at_usd)}</span>
+              {hasDiscount && (
+                <>
+                  <span className="pb-1 text-sm text-muted-foreground line-through">{format(product.compare_at_usd)}</span>
+                  <span className="mb-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-bold text-primary">
+                    −{discountPct}%
+                  </span>
+                </>
               )}
             </div>
-            <p className="mt-1 text-[11px] text-muted-foreground">
-              {t('productDetail.finalPriceNote')}
-            </p>
+            <p className="mt-1.5 text-[11px] text-muted-foreground">{t('productDetail.finalPriceNote')}</p>
           </div>
 
           {(product.variants || []).map((variant) => (
@@ -319,7 +350,7 @@ export default function ProductDetail() {
               type="button"
               disabled={outOfStock}
               onClick={() => add(false)}
-              className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-full border border-primary py-3 text-sm font-semibold text-primary disabled:opacity-40 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-full border border-primary py-3 text-sm font-semibold text-primary transition-colors hover:bg-primary/5 disabled:opacity-40 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-label={t('productDetail.addToCart')}
             >
               <ShoppingBag className="h-4 w-4" aria-hidden="true" /> {t('productDetail.addToCart')}
@@ -328,15 +359,15 @@ export default function ProductDetail() {
               type="button"
               disabled={outOfStock}
               onClick={() => add(true)}
-              className="flex min-h-11 flex-1 items-center justify-center rounded-full bg-primary py-3 text-sm font-semibold text-primary-foreground disabled:opacity-40 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="flex min-h-11 flex-1 items-center justify-center rounded-full bg-primary py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-40 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-label={t('productDetail.buyNow')}
             >
               {t('productDetail.buyNow')}
             </button>
           </div>
 
-          <div className="space-y-2 rounded-xl border border-border bg-card p-3 text-xs">
-            <div className="flex items-start gap-2">
+          <div className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card text-xs">
+            <div className="flex items-start gap-2.5 p-3">
               <Truck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
               <div>
                 <p className="font-semibold">
@@ -344,20 +375,20 @@ export default function ProductDetail() {
                     ? t('productDetail.importEta', { eta: product.estimated_delivery || t('productDetail.defaultIntlEta') })
                     : t('productDetail.deliveryEta', { eta: product.estimated_delivery || t('productDetail.defaultLocalEta') })}
                 </p>
-                <p className="text-muted-foreground">
+                <p className="mt-0.5 text-muted-foreground">
                   {zone
                     ? t('productDetail.zoneEta', { name: zone.name, fee: zone.fee_usd, days: zone.eta_days })
                     : t('productDetail.shippingCalc')}
                 </p>
               </div>
             </div>
-            <div className="flex items-start gap-2">
+            <div className="flex items-start gap-2.5 p-3">
               <PackageCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
               <p className="text-muted-foreground">
                 {t('productDetail.pickupNote')}
               </p>
             </div>
-            <div className="flex items-start gap-2">
+            <div className="flex items-start gap-2.5 p-3">
               <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
               <p className="text-muted-foreground">
                 {t('productDetail.buyerProtection')}

@@ -1,6 +1,9 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import PortalRefresh from '@/components/portal/PortalRefresh';
+import { usePortalData } from '@/hooks/usePortalData';
+import { functionData } from '@/lib/portalData';
+import PortalStatus from '@/components/PortalStatus';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Truck } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { respondToShipment, courierUpdateShipment } from '@/lib/orderService';
 import { useTenantScope } from '@/lib/tenant';
@@ -14,7 +17,7 @@ const TERMINAL = ['DELIVERED', 'FAILED', 'RETURNED', 'CANCELLED'];
 
 export default function CourierConsole() {
   const { t } = useTranslation();
-  const { tenants: couriers, tenant: courier, isAdmin, loading: loadingCourier, selectTenant } = useTenantScope('Courier');
+  const { tenants: couriers, tenant: courier, isAdmin, loading: loadingCourier, selectTenant, error: scopeError, reload: reloadScope } = useTenantScope('Courier');
   const [user, setUser] = useState(null);
   const [shipments, setShipments] = useState([]);
   const [fulfillments, setFulfillments] = useState({});
@@ -22,7 +25,6 @@ export default function CourierConsole() {
   const [wallet, setWallet] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [tab, setTab] = useState('offers');
-  const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState('');
   const [error, setError] = useState('');
 
@@ -35,63 +37,36 @@ export default function CourierConsole() {
   const fleetNames = useMemo(() => fleets.map((f) => f.name).filter(Boolean), [fleets]);
   const fleetKey = fleets.map((f) => f.id).join(',');
 
-  const load = useCallback(async (names) => {
-    if (!names.length) {
-      setShipments([]);
-      setFulfillments({});
-      setOrders({});
-      setWallet(null);
-      setTransactions([]);
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    try {
+  const { data, loading, error: loadError, reload, updatedAt } = usePortalData(['courier', fleetKey], async () => {
+    const names = fleetNames;
+    if (!names.length) return { ships: [], fulfillments: {}, orders: {}, wallet: null, transactions: [] };
       const [shipGroups, foGroups, allOrders, walletGroups] = await Promise.all([
-        Promise.all(names.map((n) => base44.entities.Shipment.filter({ courier_name: n }, '-created_date', 100).catch(() => []))),
-        Promise.all(names.map((n) => base44.entities.FulfillmentOrder.filter({ courier_name: n }, '-created_date', 100).catch(() => []))),
+        Promise.all(names.map((n) => base44.entities.Shipment.filter({ courier_name: n }, '-created_date', 100))),
+        Promise.all(names.map((n) => base44.entities.FulfillmentOrder.filter({ courier_name: n }, '-created_date', 100))),
         base44.functions
           .invoke('deliveryDesk', { action: 'orders', courier_names: names })
-          .then((r) => r?.data?.orders || [])
-          .catch(() => []),
-        Promise.all(names.map((n) => base44.entities.Wallet.filter({ owner_type: 'courier', owner_name: n }).catch(() => []))),
+          .then((r) => { const payload = functionData(r); if (!Array.isArray(payload.orders)) throw new Error('Invalid orders'); return payload.orders; })
+          ,
+        Promise.all(names.map((n) => base44.entities.Wallet.filter({ owner_type: 'courier', owner_name: n }))),
       ]);
 
-      const ships = shipGroups
-        .flat()
-        .sort((a, b) => String(b.created_date || '').localeCompare(String(a.created_date || '')));
-      const fos = foGroups.flat();
-      setShipments(ships);
-      setFulfillments(Object.fromEntries(fos.map((f) => [f.id, f])));
-      setOrders(Object.fromEntries(allOrders.map((o) => [o.order_number, o])));
-
-      const wallets = walletGroups.flat();
-      setWallet(
-        wallets.length
-          ? {
-              balance_usd: wallets.reduce((s, w) => s + (w.balance_usd || 0), 0),
-              lifetime_credit_usd: wallets.reduce((s, w) => s + (w.lifetime_credit_usd || 0), 0),
-            }
-          : null,
-      );
-
-      const txGroups = await Promise.all(
-        wallets.map((w) => base44.entities.WalletTransaction.filter({ wallet_id: w.id, status: { $ne: 'preparing' } }, '-created_date', 20).catch(() => [])),
-      );
-      setTransactions(
-        txGroups
-          .flat()
-          .sort((a, b) => String(b.created_date || '').localeCompare(String(a.created_date || '')))
-          .slice(0, 20),
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
+    const wallets = walletGroups.flat();
+    const txGroups = await Promise.all(wallets.map((wallet) => base44.entities.WalletTransaction.filter({ wallet_id: wallet.id, status: { $ne: 'preparing' } }, '-created_date', 20)));
+    return {
+      ships: shipGroups.flat().sort((a, b) => String(b.created_date || '').localeCompare(String(a.created_date || ''))),
+      fulfillments: Object.fromEntries(foGroups.flat().map((row) => [row.id, row])),
+      orders: Object.fromEntries(allOrders.map((order) => [order.order_number, order])),
+      wallet: wallets.length ? {
+        balance_usd: wallets.reduce((sum, wallet) => sum + (Number(wallet.balance_usd) || 0), 0),
+        lifetime_credit_usd: wallets.reduce((sum, wallet) => sum + (Number(wallet.lifetime_credit_usd) || 0), 0),
+      } : null,
+      transactions: txGroups.flat().sort((a, b) => String(b.created_date || '').localeCompare(String(a.created_date || ''))).slice(0, 20),
+    };
+  }, { enabled: !loadingCourier && !scopeError });
   useEffect(() => {
-    load(fleetNames);
-  }, [fleetKey, load]);
+    setShipments(data?.ships || []); setFulfillments(data?.fulfillments || {}); setOrders(data?.orders || {});
+    setWallet(data?.wallet || null); setTransactions(data?.transactions || []);
+  }, [data]);
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
@@ -114,7 +89,7 @@ export default function CourierConsole() {
     setBusy(shipment.id);
     setError('');
     try {
-      const updated = await respondToShipment({ shipment, accepted });
+      const updated = await respondToShipment(base44, { shipment, accepted });
       setShipments((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
       if (accepted) setTab('active');
       return true;
@@ -130,14 +105,14 @@ export default function CourierConsole() {
     setBusy(shipment.id);
     setError('');
     try {
-      await courierUpdateShipment({
+      await courierUpdateShipment(base44, {
         shipment,
         fulfillment: fulfillments[shipment.fulfillment_order_id],
         status,
         label,
         extra,
       });
-      await load(fleetNames);
+      await reload();
       return true;
     } catch {
       setError(t('courierConsole.actionFailed'));
@@ -156,13 +131,12 @@ export default function CourierConsole() {
 
   const visible = buckets[tab];
 
+  if (scopeError || loadError) return <DashboardShell nav={[]} title={t('courierConsole.title')}><PortalStatus retry={scopeError ? reloadScope : reload} /></DashboardShell>;
+
   return (
     <DashboardShell nav={[]} title={t('courierConsole.title')}>
       <>
-        <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight md:text-3xl">
-          <Truck className="h-5 w-5 text-primary" /> {t('courierConsole.title')}
-        </h1>
-
+        <PortalRefresh onRefresh={reload} updatedAt={updatedAt} />
         {!loadingCourier && (
           <CourierHeader
             user={user}
@@ -181,6 +155,7 @@ export default function CourierConsole() {
             <button
               key={tx.id}
               type="button"
+              aria-pressed={tab === tx.id}
               onClick={() => setTab(tx.id)}
               className={`rounded-full px-3.5 py-1.5 text-xs font-semibold ${
                 tab === tx.id ? 'bg-primary text-primary-foreground' : 'bg-secondary'
@@ -192,7 +167,7 @@ export default function CourierConsole() {
         </div>
 
         {error && (
-          <p className="rounded-xl border border-destructive bg-card p-3 text-xs font-medium text-destructive">{error}</p>
+          <p role="alert" className="rounded-xl border border-destructive bg-card p-3 text-xs font-medium text-destructive">{error}</p>
         )}
 
         {loading || loadingCourier ? (

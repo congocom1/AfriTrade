@@ -1,3 +1,4 @@
+import AccountDeletionRequest from '@/components/settings/AccountDeletionRequest';
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -87,19 +88,7 @@ export default function PrivacySettings() {
         <p>
           {t('privacySettings.accountText')}
         </p>
-        <button
-          type="button"
-          onClick={() => {
-            if (window.confirm(t('privacySettings.deleteConfirm'))) {
-              // TODO: Implement actual account deletion API call
-              alert(t('privacySettings.deleteSuccess'));
-              window.location.href = '/';
-            }
-          }}
-          className="inline-flex items-center gap-1.5 rounded-full border border-destructive px-4 py-2 text-xs font-semibold text-destructive"
-        >
-          <Trash2 className="h-3.5 w-3.5" /> {t('privacySettings.deleteAccount')}
-        </button>
+        <AccountDeletionRequest />
       </InfoSection>
 
       <InfoSection title={t('privacySettings.rightsTitle')}>

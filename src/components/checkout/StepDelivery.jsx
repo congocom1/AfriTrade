@@ -1,8 +1,9 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MapPin, Store, Truck, Split, Plane } from 'lucide-react';
 import { getCities } from '@/lib/config';
-import { formatUSD } from '@/lib/format';
+import { formatUsdAmount, formatUSD } from '@/lib/format';
 import { intlFee } from '@/lib/intlDelivery';
 import IntlShippingBreakdown from '@/components/checkout/IntlShippingBreakdown';
 
@@ -62,7 +63,7 @@ export default function StepDelivery({
           aria-label={t('checkout.emailOptional')}
           className={FIELD}
         />
-        <select
+        <LegacySelect
           aria-label="Ville de livraison"
           value={profile.city}
           onChange={(e) => setProfile({ ...profile, city: e.target.value })}
@@ -71,7 +72,7 @@ export default function StepDelivery({
           {getCities().map((c) => (
             <option key={c} value={c}>{c}</option>
           ))}
-        </select>
+        </LegacySelect>
       </div>
 
       <div className="flex gap-2">
@@ -120,7 +121,7 @@ export default function StepDelivery({
                   <p className="text-sm font-semibold">{p.name}</p>
                   <p className="text-[11px] text-muted-foreground">{p.address}, {p.commune} · {p.hours}</p>
                 </div>
-                <span className="text-xs font-semibold">{formatUSD(p.fee_usd || 0)}</span>
+                <span className="text-xs font-semibold">{formatUsdAmount(p.fee_usd || 0)}</span>
               </button>
             ))
           ) : (

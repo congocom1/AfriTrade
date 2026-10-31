@@ -19,7 +19,7 @@ export const STATUS_STYLES = {
   WAITING: 'bg-amber-100 text-amber-900',
   COMPLETED: 'bg-emerald-100 text-emerald-900',
   FAILED: 'bg-red-100 text-red-900',
-  CANCELLED: 'bg-slate-200 text-slate-700',
+  CANCELLED: 'bg-muted text-muted-foreground',
   RETRYING: 'bg-indigo-100 text-indigo-900',
 };
 

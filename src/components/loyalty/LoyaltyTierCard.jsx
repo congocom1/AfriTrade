@@ -5,10 +5,12 @@ import { Sparkles, Trophy } from 'lucide-react';
 /** Membership tier, points balance and progress to the next level. */
 export default function LoyaltyTierCard({ summary }) {
   const { t } = useTranslation();
-  const { tier, next, balance, pending, missingToNext, progress, lifetimeUsd, lifetimeUsdCents, affordable } = summary;
-  const lifetimeDollars = typeof lifetimeUsd === 'number' ? lifetimeUsd : (Number(lifetimeUsdCents) || 0) / 100;
-  const perks = t(tier.perksKey, { returnObjects: true });
-  const perkList = Array.isArray(perks) ? perks : [];
+  const { tier, next, balance, pending, missingToNext, progress, affordable } = summary;
+  // Dollar view of the lifetime spend; fall back to cents so the card can never
+  // render a crash on a summary that omits the dollar field.
+  const lifetimeDollars = Number(summary.lifetimeUsd ?? (summary.lifetimeUsdCents || 0) / 100) || 0;
+  const perksValue = t(tier.perksKey, { returnObjects: true });
+  const perks = Array.isArray(perksValue) ? perksValue : [];
 
   return (
     <section className="space-y-4 rounded-2xl border border-border bg-card p-5">
@@ -41,7 +43,7 @@ export default function LoyaltyTierCard({ summary }) {
       {next ? (
         <div>
           <div className="flex items-center justify-between text-[11px]">
-            <span className="font-semibold">{t('loyaltyTierCard.nextLevel', { name: next.name || t(next.nameKey) })}</span>
+            <span className="font-semibold">{t('loyaltyTierCard.nextLevel', { name: t(next.nameKey) })}</span>
             <span className="text-muted-foreground">{t('loyaltyTierCard.pointsToGo', { count: missingToNext.toLocaleString('fr-FR') })}</span>
           </div>
           <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-secondary">
@@ -55,7 +57,7 @@ export default function LoyaltyTierCard({ summary }) {
       )}
 
       <ul className="space-y-1 text-[11px] text-muted-foreground">
-        {perkList.map((perk) => (
+        {perks.map((perk) => (
           <li key={perk}>• {perk}</li>
         ))}
       </ul>

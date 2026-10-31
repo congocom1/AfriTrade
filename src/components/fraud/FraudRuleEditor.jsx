@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import React, { memo } from 'react';
 import { Save } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -51,14 +52,14 @@ export default memo(function FraudRuleEditor({ rules, drafts, savingId, onDraft,
               </label>
               <label className="text-[11px] font-semibold">
                 {t('fraudRuleEditor.recommendation')}
-                <select
+                <LegacySelect
                   value={value.action}
                   onChange={(e) => onDraft(rule.id, { ...value, action: e.target.value })}
                   className="mt-0.5 block h-8 rounded-lg border border-border bg-background px-2 text-sm"
                 >
                   <option value="review">{t('fraudRuleEditor.review')}</option>
                   <option value="block">{t('fraudRuleEditor.block')}</option>
-                </select>
+                </LegacySelect>
               </label>
               <button
                 type="button"

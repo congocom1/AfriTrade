@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:congo_commerce_flutter/core/services/api_client.dart';
-import 'package:congo_commerce_flutter/core/services/token_storage.dart';
-import 'package:congo_commerce_flutter/core/services/product_repository.dart';
-import 'package:congo_commerce_flutter/core/providers/providers.dart';
+import 'package:afritrade/core/services/api_client.dart';
+import 'package:afritrade/core/services/token_storage.dart';
+import 'package:afritrade/core/services/product_repository.dart';
+import 'package:afritrade/core/providers/providers.dart';
 
 void main() {
   test('catalog repository decodes REST envelopes across every read method', () async {

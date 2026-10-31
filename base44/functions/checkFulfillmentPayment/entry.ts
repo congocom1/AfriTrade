@@ -19,36 +19,18 @@ const RATE_WINDOW_MS = 3600 * 1000;
 export default async function (req) {
   try {
     const base44 = createClientFromRequest(req);
+    // Sensitive data: establish administrator identity before parsing input or
+    // consuming rate-limit resources.
+    const auth = await requireAdmin(base44);
+    if (!auth.ok) return addSecurityHeaders(auth.response);
+    if (req.method !== 'POST') return addSecurityHeaders(Response.json({ error: 'Method not allowed' }, { status: 405 }));
     const body = await req.json().catch(() => ({}));
     const fulfillmentId = String(body.fulfillment_id || '').trim();
     if (!fulfillmentId) return addSecurityHeaders(Response.json({ error: 'fulfillment_id is required' }, { status: 400 }));
-
-    // Rate limiting for checkFulfillmentPayment
     const clientKey = getClientKey(req);
-    if (!clientKey) {
-      console.warn(
-        "[checkFulfillmentPayment] no client address on the request — applying shared rate limit",
-      );
-    }
-
-    const rateLimitResult = await checkRateLimit(
-      null, // We'll check this later after we have db
-      clientKey || "unidentified",
-      {
-        keyPrefix: "check_fulfillment_payment",
-        limit: CHECK_FULFILLMENT_PAYMENT_RATE_LIMIT_PER_HOUR,
-        windowMs: RATE_WINDOW_MS,
-      }
-    );
-
-    if (!rateLimitResult.ok) {
-      return rateLimitErrorResponse(rateLimitResult);
-    }
-
+    if (!clientKey) console.warn('[checkFulfillmentPayment] applying shared unidentified rate limit');
     // A payment status for an arbitrary order: only the follow-up workflow (or
     // an administrator) may read it.
-    const auth = await requireAdmin(base44);
-    if (!auth.ok) return addSecurityHeaders(auth.response);
     const db = base44.asServiceRole;
 
     // Re-check rate limit now that we have db connection
@@ -59,6 +41,7 @@ export default async function (req) {
         keyPrefix: "check_fulfillment_payment",
         limit: CHECK_FULFILLMENT_PAYMENT_RATE_LIMIT_PER_HOUR,
         windowMs: RATE_WINDOW_MS,
+        failClosed: true,
       }
     );
 
@@ -69,6 +52,11 @@ export default async function (req) {
     const { fulfillment, order } = await resolveFulfillment(base44, fulfillmentId);
     if (!fulfillment) return addSecurityHeaders(Response.json({ error: 'FulfillmentOrder not found' }, { status: 404 }));
 
+    // Unknown parent payment status is NOT proof that the order is unpaid.
+    // A 503 fails the managed workflow rather than branching into customer reminders.
+    if (!order?.id || !order.payment_status) {
+      return addSecurityHeaders(Response.json({ error: 'Authoritative payment state unavailable' }, { status: 503, headers: { 'Retry-After': '120' } }));
+    }
     const state = paymentState(fulfillment, order);
 
     return addSecurityHeaders(Response.json({
@@ -80,6 +68,7 @@ export default async function (req) {
       fulfillment_status: state.fulfillment_status,
     }));
   } catch (error) {
-    return addSecurityHeaders(Response.json({ error: String(error?.message || error) }, { status: 500 }));
+    console.error('[checkFulfillmentPayment] payment lookup failed', { type: error?.name || 'unknown' });
+    return addSecurityHeaders(Response.json({ error: 'Payment status temporarily unavailable' }, { status: 503, headers: { 'Retry-After': '120' } }));
   }
 }

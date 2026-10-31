@@ -5,6 +5,7 @@ import DashboardNav from '@/components/DashboardNav';
 import { ADMIN_LINKS } from '@/lib/navLinks';
 import { formatUSD, formatDateTime } from '@/lib/format';
 import { useTranslation } from 'react-i18next';
+import { notifyLoadError } from '@/lib/safeList';
 
 const TAB_IDS = ['pending', 'posted', 'reversed'];
 
@@ -21,7 +22,7 @@ export default function AdminPayouts() {
       { type: 'PAYOUT', direction: 'debit', status: { $ne: 'preparing' } },
       '-created_date',
       100,
-    ).catch(() => []);
+    ).catch(notifyLoadError);
     setRequests(rows);
     setLoading(false);
   };

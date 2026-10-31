@@ -6,9 +6,9 @@
 //
 // It receives Wix `ORDER_APPROVED` events (and optional subscription lifecycle events),
 // verifies the RS256 JWT, resolves the buyer's pending Purchase by checkout id, and marks
-// it paid exactly once. It pairs with `create-checkout`, which MUST persist
-// `checkoutSession.id` on the Purchase — Wix has no custom-metadata field, so the checkout
-// id is the ONLY correlation key back to this app's user.
+// it paid exactly once. It pairs with authenticated `place-order`, which persists
+// the Wix `checkoutSession.id` on Base44Purchase. The legacy standalone
+// `create-checkout` handler is disabled and must not be used for new payments.
 
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.31";
 import { importSPKI, jwtVerify } from "npm:jose@5.9.6";
@@ -43,9 +43,8 @@ function extractOrder(eventData: any): any | null {
   return eventData?.actionEvent?.body?.order ?? eventData?.order ?? eventData?.entity ?? null;
 }
 
-// The buyer's email, as entered on Wix's hosted checkout page. This is the ONLY identity for an
-// anonymous buyer (one who wasn't signed in when create-checkout ran, so appUserId is null). Wix
-// exposes it in a few places depending on the flow; check the common ones.
+// The Wix buyer email is a fallback for reconciling older pending purchases.
+// New purchases have a verified appUserId and buyerEmail from place-order.
 function extractBuyerEmail(order: any): string | null {
   return (
     order?.buyerInfo?.email ??
@@ -99,38 +98,11 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // ===== PROVIDER SIGNATURE VERIFICATION =====
-    // Verify the provider's signature on the JWT payload (e.g., Wix specific signer).
-    // This ensures the event originated from Wix and hasn't been tampered with.
-    // The provider verification is provider-specific and needs to be implemented
-    // according to the specific payment provider's requirements.
-    // Example implementation (replace with actual provider verification):
-
-    // For Wix: Validate provider-specific claims, event version, and issuer
-    // const provider = 'WIX';
-    // const expectedIssuer = 'wix.com/webhooks';
-    // const expectedEventVersion = 'v1';
-    //
-    // if (typeof payload === 'object' && payload !== null) {
-    //   if (payload.iss !== expectedIssuer) {
-    //     console.error("payments-webhook: Invalid issuer", { issuer: payload.iss, expected: expectedIssuer });
-    //     return addSecurityHeaders(new Response("Invalid provider", { status: 401 }));
-    //   }
-    //   if (payload.event_version !== expectedEventVersion) {
-    //     console.error("payments-webhook: Invalid event version", { version: payload.event_version, expected: expectedEventVersion });
-    //     return addSecurityHeaders(new Response("Invalid event version", { status: 401 }));
-    //   }
-    // }
-
-    // For additional providers (e.g., Stripe, PayPal):
-    // if (provider === 'STRIPE') {
-    //   const requiredStripeClaim = 'webhook_signature'; // example
-    //   if (!payload.hasOwnProperty(requiredStripeClaim)) {
-    //     return addSecurityHeaders(new Response("Missing provider signature claim", { status: 401 }));
-    //   }
-    // }
-
-    console.log('payments-webhook: provider signature verification completed', { provider: 'WIX' });
+    // Provider authentication IS the RS256 signature check above: Wix signs the
+    // whole JWT with the registered webhook key, so a valid signature proves the
+    // event came from Wix and was not tampered with. There is no separate provider
+    // signature to add. A wrong/absent key fails closed (500) and a bad signature
+    // is rejected (401); both before any purchase or wallet state is read.
 
     const { eventType, eventData } = parseWixEnvelope(payload);
     const base44 = createClientFromRequest(req);
@@ -192,12 +164,12 @@ async function handleOrderApproved(db: any, eventData: any): Promise<Response> {
     return new Response("OK", { status: 200 });
   }
 
-  // Resolve the pending purchase created by `create-checkout` (join key: checkoutSessionId).
+  // Resolve the pending purchase created by authenticated place-order (checkoutSessionId).
   const matches = await db.entities.Base44Purchase.filter({ checkoutSessionId: checkoutId });
   const purchase = matches?.[0];
 
   if (!purchase) {
-    // The pending Base44Purchase is written by create-checkout before the buyer pays, so a miss
+    // The pending Base44Purchase is written before the buyer pays, so a miss
     // here is a transient race (entity not yet visible) — return 500 so Wix retries, rather
     // than ACKing a paid order we can't fulfill. (Wix stops after its retry window.)
     console.warn("payments-webhook: no Base44Purchase for checkoutId yet, asking Wix to retry", { checkoutId, orderId });
@@ -212,15 +184,16 @@ async function handleOrderApproved(db: any, eventData: any): Promise<Response> {
     return new Response("OK", { status: 200 });
   }
 
-  // The buyer's email: from create-checkout if they were signed in, otherwise from the Wix order
-  // (the only identity an anonymous buyer has). Persisted below and used by the grant block.
+  // Prefer the verified buyer email saved by place-order. Older purchases can
+  // fall back to the Wix order email for reconciliation.
   const buyerEmail: string | null = purchase.buyerEmail ?? extractBuyerEmail(order);
 
   // ===== IDEMPOTENCY GUARD =====
   // Wix may retry ORDER_APPROVED; a second run must not double-grant.
   const idemKey = `payments-webhook:${checkoutId}`
   const existing = await db.entities.IdempotencyKey.filter({ key: idemKey }).catch(() => [])
-  if (existing.length && existing[0].used_at) {
+  // `status` is the schema-defined marker field (IdempotencyKey has no used_at field).
+  if (existing.length && existing[0].status === "completed") {
     console.log('payments-webhook: idempotent skip', { checkoutId, key: idemKey })
     return new Response('Already processed', { status: 200 })
   }
@@ -240,7 +213,7 @@ async function handleOrderApproved(db: any, eventData: any): Promise<Response> {
   //   - one-time side effects (email/webhook): guard them the same way — record a marker keyed
   //     on purchase.id and skip if it already exists, so a duplicate delivery can't send twice.
   //   - QUANTITY: for a multi-unit purchase grant `purchase.quantity` (seats/credits/items), not a
-  //     single unit — it's the validated count create-checkout charged for. Fixed-entitlement = 1.
+  //     single unit — the count must match the server-validated order. Fixed-entitlement = 1.
   //   - subscriptions:      subscriptionId is persisted automatically below, for later revoke.
   //   - GRANT TARGET: use purchase.appUserId when set (the built-in `User` entity — there is no
   //     `AppUser`). For an anonymous buyer (appUserId null) match `buyerEmail` (resolved above)
@@ -317,8 +290,10 @@ async function handleOrderApproved(db: any, eventData: any): Promise<Response> {
   try {
     await db.entities.IdempotencyKey.create({
       key: idemKey,
-      used_at: new Date().toISOString(),
-      context: `checkout:${checkoutId}|order:${orderId}`,
+      scope: "payments_webhook",
+      status: "completed",
+      attempts: 1,
+      result: { used_at: new Date().toISOString(), checkout_id: checkoutId, order_id: orderId ?? null },
     });
   } catch (err) {
     // Duplicate key = replay attempt; log metric for monitoring.
@@ -333,7 +308,7 @@ async function handleOrderApproved(db: any, eventData: any): Promise<Response> {
     orderId: orderId ?? purchase.orderId ?? null,
     subscriptionId: subscriptionId ?? purchase.subscriptionId ?? null,
     // Persist the buyer email (backfilled from the Wix order for anonymous buyers) so the record
-    // always shows who paid, even when create-checkout had no signed-in user.
+    // preserves buyer context for historical purchases as well.
     buyerEmail: buyerEmail ?? purchase.buyerEmail ?? null,
     paidAt: new Date().toISOString(),
   });

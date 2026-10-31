@@ -52,9 +52,11 @@ export function scoreSignals(signals, rules) {
   (signals || []).forEach((s) => {
     const rule = (rules || []).find((r) => r.active !== false && r.signal === s.signal);
     if (!rule) return;
-    const threshold = Number(rule.threshold) || 0;
-    const value = Number(s.value) || 0;
-    if (value < threshold) return;
+    // Clamp threshold to non-negative to prevent edge cases with negative thresholds
+    const threshold = Math.max(0, Number(rule.threshold) || 0);
+    // Clamp value to non-negative; NaN becomes 0
+    const value = Math.max(0, Number(s.value) || 0);
+    if (value < threshold) return; // inclusive: value >= threshold triggers
     const points = Number(rule.score) || 0;
     score += points;
     matched.push({ code: rule.code, label: rule.label, signal: s.signal, value, threshold, points });
@@ -75,7 +77,11 @@ export async function collectSignals(client, { amountUsd = 0, sessionId = '', ph
 
 
   // Convert amountUsd to cents for consistency with thresholds
-  const amountUsdCents = Math.round(parseFloat(amountUsd) * 100);
+  // Handle edge cases: NaN, negative, non-numeric input
+  const amountUsdNum = Number(amountUsd);
+  const amountUsdCents = Number.isFinite(amountUsdNum) && amountUsdNum > 0
+    ? Math.round(amountUsdNum * 100)
+    : 0;
   if (amountUsdCents > 0) signals.push({ signal: 'high_value', value: amountUsdCents });
   if (phone) {
     // For phone_velocity, we need to know how many previous orders this phone has

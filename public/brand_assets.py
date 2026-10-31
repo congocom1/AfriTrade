@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""CONGO COMMERCE — logo SVG files, favicon/head kit, OG + cover cards."""
+"""AfriTrade — logo SVG files, favicon/head kit, OG + cover cards."""
 
 import math
 import pathlib
@@ -41,7 +41,7 @@ def font(name: str, size: int, weight: int | None = None):
 # --------------------------------------------------------------- logo SVG --
 
 def mark_svg(stroke_a="#12A87A", stroke_b="#EDF2EE", node="#19C48D", size=64):
-    return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{size}" height="{size}" viewBox="0 0 64 64" role="img" aria-label="CONGO COMMERCE">
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{size}" height="{size}" viewBox="0 0 64 64" role="img" aria-label="AfriTrade">
   <path d="M33.03 43.47 A14 14 0 1 1 33.03 20.53" fill="none" stroke="{stroke_a}" stroke-width="7" stroke-linecap="round"/>
   <path d="M30.97 43.47 A14 14 0 1 0 30.97 20.53" fill="none" stroke="{stroke_b}" stroke-width="7" stroke-linecap="round"/>
   <circle cx="32" cy="32" r="3.6" fill="{node}"/>
@@ -51,31 +51,31 @@ def mark_svg(stroke_a="#12A87A", stroke_b="#EDF2EE", node="#19C48D", size=64):
 
 WORDMARK = (
     '<text x="0" y="0" font-family="Sora, Segoe UI, sans-serif" font-weight="700" '
-    'font-size="26" letter-spacing="1.7" fill="#EDF2EE">CONGO</text>'
+    'font-size="26" letter-spacing="1.7" fill="#EDF2EE">AfriTrade</text>'
 )
 
 
 def horizontal_svg():
-    return """<svg xmlns="http://www.w3.org/2000/svg" width="330" height="64" viewBox="0 0 330 64" role="img" aria-label="CONGO COMMERCE">
+    return """<svg xmlns="http://www.w3.org/2000/svg" width="330" height="64" viewBox="0 0 330 64" role="img" aria-label="AfriTrade">
   <g>
     <path d="M33.03 43.47 A14 14 0 1 1 33.03 20.53" fill="none" stroke="#12A87A" stroke-width="7" stroke-linecap="round"/>
     <path d="M30.97 43.47 A14 14 0 1 0 30.97 20.53" fill="none" stroke="#EDF2EE" stroke-width="7" stroke-linecap="round"/>
     <circle cx="32" cy="32" r="3.6" fill="#19C48D"/>
   </g>
-  <text x="76" y="41" font-family="Sora, Segoe UI, sans-serif" font-weight="700" font-size="25" letter-spacing="2" fill="#EDF2EE">CONGO <tspan fill="#12A87A">COMMERCE</tspan></text>
+  <text x="76" y="41" font-family="Sora, Segoe UI, sans-serif" font-weight="700" font-size="25" letter-spacing="2" fill="#EDF2EE">AfriTrade</text>
 </svg>
 """
 
 
 def stacked_svg():
-    return """<svg xmlns="http://www.w3.org/2000/svg" width="240" height="180" viewBox="0 0 240 180" role="img" aria-label="CONGO COMMERCE">
+    return """<svg xmlns="http://www.w3.org/2000/svg" width="240" height="180" viewBox="0 0 240 180" role="img" aria-label="AfriTrade">
   <g transform="translate(88,16)">
     <path d="M33.03 43.47 A14 14 0 1 1 33.03 20.53" fill="none" stroke="#12A87A" stroke-width="7" stroke-linecap="round"/>
     <path d="M30.97 43.47 A14 14 0 1 0 30.97 20.53" fill="none" stroke="#EDF2EE" stroke-width="7" stroke-linecap="round"/>
     <circle cx="32" cy="32" r="3.6" fill="#19C48D"/>
   </g>
-  <text x="120" y="122" text-anchor="middle" font-family="Sora, Segoe UI, sans-serif" font-weight="700" font-size="26" letter-spacing="4" fill="#EDF2EE">CONGO</text>
-  <text x="120" y="150" text-anchor="middle" font-family="Sora, Segoe UI, sans-serif" font-weight="600" font-size="17" letter-spacing="5" fill="#12A87A">COMMERCE</text>
+  <text x="120" y="122" text-anchor="middle" font-family="Sora, Segoe UI, sans-serif" font-weight="700" font-size="26" letter-spacing="4" fill="#EDF2EE">AfriTrade</text>
+  <text x="120" y="150" text-anchor="middle" font-family="Sora, Segoe UI, sans-serif" font-weight="600" font-size="17" letter-spacing="5" fill="#12A87A">Marketplace</text>
 </svg>
 """
 
@@ -163,9 +163,9 @@ ico.save(BRAND / "favicon.ico", sizes=[(16, 16), (32, 32), (48, 48)])
 
 (BRAND / "site.webmanifest").write_text(
     """{
-  "name": "CONGO COMMERCE",
-  "short_name": "CONGO",
-  "description": "One operating system for modern commerce.",
+  "name": "AfriTrade",
+  "short_name": "AfriTrade",
+  "description": "Pan-African B2B and B2C marketplace.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#080D0B",
@@ -221,9 +221,7 @@ def og_card(path, w, h, title_lines, kicker=None, sub=None):
     f_sub = font("manrope", int(h * 0.035), 600)
 
     wx = int(w * 0.068) + int(h * 0.235)
-    d.text((wx, int(h * 0.156)), "CONGO", font=f_word, fill=INK)
-    ww = d.textlength("CONGO ", font=f_word)
-    d.text((wx + ww, int(h * 0.156)), "COMMERCE", font=f_word, fill=JADE)
+    d.text((wx, int(h * 0.156)), "AfriTrade", font=f_word, fill=INK)
 
     if kicker:
         d.rectangle(
@@ -245,7 +243,7 @@ def og_card(path, w, h, title_lines, kicker=None, sub=None):
         [int(w * 0.068), int(h * 0.845), int(w * 0.068) + int(w * 0.045), int(h * 0.845) + 4],
         fill=JADE,
     )
-    d.text((int(w * 0.068) + int(w * 0.058), int(h * 0.826)), "congo-commerce", font=f_kick, fill=MUTED)
+    d.text((int(w * 0.068) + int(w * 0.058), int(h * 0.826)), "afritrade", font=f_kick, fill=MUTED)
 
     img.convert("RGB").save(path, format="PNG", optimize=True)
     print(path.name, round(path.stat().st_size / 1024), "KB")
@@ -262,7 +260,7 @@ og_card(
     BRAND / "cover.png",
     1500,
     1000,
-    ["CONGO", "COMMERCE"],
+    ["AfriTrade", "Marketplace"],
     kicker="Commerce, reimagined",
     sub="Build, discover, sell, market, fulfill and scale from one intelligent commerce platform.",
 )

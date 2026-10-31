@@ -1,11 +1,14 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import React, { useEffect, useState } from 'react';
 import { Plus, Trash2, Zap, Power } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import DashboardNav from '@/components/DashboardNav';
 import { Image } from '@/components/ui/image';
 import { ADMIN_LINKS } from '@/lib/navLinks';
-import { formatUSD, formatDate } from '@/lib/format';
+import { formatUsdAmount, formatUSD, formatDate } from '@/lib/format';
+import { productImage } from '@/lib/productImages';
 import { useTranslation } from 'react-i18next';
+import { notifyLoadError } from '@/lib/safeList';
 
 const EMPTY = { code: '', description: '', type: 'percent', value: 10, min_order_usd: 0, max_discount_usd: 0, usage_limit: 0, expires_at: '' };
 
@@ -21,8 +24,8 @@ export default function AdminPromotions() {
 
   const load = async () => {
     const [c, p] = await Promise.all([
-      base44.entities.Coupon.list('-created_date', 100).catch(() => []),
-      base44.entities.Product.filter({ status: 'published' }, '-created_date', 60).catch(() => []),
+      base44.entities.Coupon.list('-created_date', 100).catch(notifyLoadError),
+      base44.entities.Product.filter({ status: 'published' }, '-created_date', 60).catch(notifyLoadError),
     ]);
     setCoupons(c);
     setProducts(p);
@@ -87,11 +90,11 @@ export default function AdminPromotions() {
       {showForm && (
         <form onSubmit={create} className="grid gap-3 rounded-2xl border border-border bg-card p-4 md:grid-cols-3">
           <input value={draft.code} onChange={(e) => setDraft({ ...draft, code: e.target.value.toUpperCase() })} placeholder="CODE" required className="h-11 rounded-lg border border-border bg-background px-3 text-sm uppercase" />
-          <select value={draft.type} onChange={(e) => setDraft({ ...draft, type: e.target.value })} className="h-11 rounded-lg border border-border bg-background px-3 text-sm">
+          <LegacySelect value={draft.type} onChange={(e) => setDraft({ ...draft, type: e.target.value })} className="h-11 rounded-lg border border-border bg-background px-3 text-sm">
             <option value="percent">{t('adminPromotions.percent')}</option>
             <option value="fixed">{t('adminPromotions.fixed')}</option>
             <option value="free_shipping">{t('adminPromotions.freeShipping')}</option>
-          </select>
+          </LegacySelect>
           <input type="number" step="0.01" value={draft.value} onChange={(e) => setDraft({ ...draft, value: Number(e.target.value) })} placeholder={t('adminPromotions.value')} className="h-11 rounded-lg border border-border bg-background px-3 text-sm" />
           <input type="number" step="0.01" value={draft.min_order_usd} onChange={(e) => setDraft({ ...draft, min_order_usd: Number(e.target.value) })} placeholder={t('adminPromotions.minOrder')} className="h-11 rounded-lg border border-border bg-background px-3 text-sm" />
           <input type="number" step="0.01" value={draft.max_discount_usd} onChange={(e) => setDraft({ ...draft, max_discount_usd: Number(e.target.value) })} placeholder={t('adminPromotions.maxDiscount')} className="h-11 rounded-lg border border-border bg-background px-3 text-sm" />
@@ -109,7 +112,7 @@ export default function AdminPromotions() {
               <p className="text-sm font-bold">{c.code}</p>
               <p className="text-[11px] text-muted-foreground">
                 {c.type === 'percent' ? `${c.value}%` : c.type === 'fixed' ? formatUSD(c.value) : t('adminPromotions.freeShipping')}
-                {c.min_order_usd ? t('adminPromotions.minSuffix', { amount: formatUSD(c.min_order_usd) }) : ''} · {t('adminPromotions.used', { count: c.usage_count || 0 })}
+                {c.min_order_usd ? t('adminPromotions.minSuffix', { amount: formatUsdAmount(c.min_order_usd) }) : ''} · {t('adminPromotions.used', { count: c.usage_count || 0 })}
                 {c.expires_at ? t('adminPromotions.expires', { date: formatDate(c.expires_at) }) : ''}
               </p>
             </div>
@@ -118,7 +121,7 @@ export default function AdminPromotions() {
                 type="button"
                 onClick={() => toggle(c)}
                 className={`flex items-center gap-1 rounded-full px-3.5 py-1.5 text-xs font-semibold ${
-                  c.active ? 'bg-emerald-100 text-emerald-900' : 'bg-slate-200 text-slate-700'
+                  c.active ? 'bg-success-100 text-success-900' : 'bg-muted text-muted-foreground'
                 }`}
               >
                 <Power className="h-3.5 w-3.5" /> {c.active ? t('adminPromotions.active') : t('adminPromotions.inactive')}
@@ -141,11 +144,11 @@ export default function AdminPromotions() {
           {products.map((p) => (
             <div key={p.id} className="flex items-center gap-3 rounded-xl border border-border bg-card p-2.5">
               <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-secondary">
-                <Image src={p.images?.[0]} alt={p.title} className="h-full w-full object-cover" />
+                <Image src={productImage(p)} alt={p.title} className="h-full w-full object-cover" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">{p.title}</p>
-                <p className="text-[11px] text-muted-foreground">{formatUSD(p.price_usd)} · {p.seller_name || p.supplier_name}</p>
+                <p className="text-[11px] text-muted-foreground">{formatUsdAmount(p.price_usd)} · {p.seller_name || p.supplier_name}</p>
               </div>
               <button
                 type="button"

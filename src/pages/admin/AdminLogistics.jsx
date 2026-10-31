@@ -1,3 +1,4 @@
+import LegacySelect from '@/components/ui/legacy-select';
 import React, { useEffect, useState } from 'react';
 import { Plus, Trash2, Truck, MapPin, Store } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
@@ -5,8 +6,9 @@ import { Image } from '@/components/ui/image';
 import DashboardNav from '@/components/DashboardNav';
 import { ADMIN_LINKS } from '@/lib/navLinks';
 import { getCities } from '@/lib/config';
-import { formatUSD } from '@/lib/format';
+import { formatUsdAmount, } from '@/lib/format';
 import { useTranslation } from 'react-i18next';
+import AsyncState from '@/components/ui/async-state';
 
 const TAB_IDS = ['couriers', 'zones', 'pickups'];
 
@@ -17,7 +19,8 @@ export default function AdminLogistics() {
   const [couriers, setCouriers] = useState([]);
   const [zones, setZones] = useState([]);
   const [pickups, setPickups] = useState([]);
-  const [loading, _setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [drafts, setDrafts] = useState({
     zones: { name: '', city: getCities()[0], fee_usd: 2.5, eta_days: '2-4' },
     pickups: { name: '', city: getCities()[0], commune: '', address: '', phone: '', fee_usd: 0.5 },
@@ -26,21 +29,30 @@ export default function AdminLogistics() {
   const [savingPickup, setSavingPickup] = useState(false);
 
   const load = async () => {
-    const asArray = (r) => (Array.isArray(r) ? r : (r?.items || []));
-    const [cs, zs, ps] = await Promise.all([
-      base44.entities.Courier.list('name', 100),
-      base44.entities.DeliveryZone.list('name', 100),
-      base44.entities.PickupPoint.list('name', 100),
-    ]);
-    setCouriers(asArray(cs));
-    setZones(asArray(zs));
-    setPickups(asArray(ps));
-    _setLoading(false);
+    setLoading(true);
+    setLoadError(false);
+    try {
+      const asArray = (r) => {
+        const records = Array.isArray(r) ? r : r?.items;
+        if (!Array.isArray(records)) throw new Error('Invalid logistics response');
+        return records;
+      };
+      const [cs, zs, ps] = await Promise.all([
+        base44.entities.Courier.list('name', 100),
+        base44.entities.DeliveryZone.list('name', 100),
+        base44.entities.PickupPoint.list('name', 100),
+      ]);
+      setCouriers(asArray(cs));
+      setZones(asArray(zs));
+      setPickups(asArray(ps));
+    } catch {
+      setLoadError(true);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  useEffect(() => {
-    load();
-  }, []);
+  useEffect(() => { load(); }, []);
 
   const patchCourier = async (c, field, value) => {
     const updated = await base44.entities.Courier.update(c.id, { [field]: Number(value) || 0 });
@@ -88,7 +100,8 @@ export default function AdminLogistics() {
     setPickups((prev) => prev.filter((x) => x.id !== p.id));
   };
 
-  if (loading) return <div className="h-64 animate-pulse rounded-2xl bg-secondary" />;
+  if (loading) return <AsyncState loading />;
+  if (loadError) return <div className="space-y-4"><DashboardNav title={t('adminLogistics.title')} links={ADMIN_LINKS} /><AsyncState error onRetry={load} /></div>;
 
   return (
     <div className="space-y-5 pb-8">
@@ -161,11 +174,11 @@ export default function AdminLogistics() {
         <>
           <form onSubmit={addZone} className="grid gap-3 rounded-2xl border border-border bg-card p-4 md:grid-cols-4">
             <input value={drafts.zones.name} onChange={(e) => setDrafts({ ...drafts, zones: { ...drafts.zones, name: e.target.value } })} placeholder={t('adminLogistics.zoneName')} required className="h-11 rounded-lg border border-border bg-background px-3 text-sm" />
-            <select value={drafts.zones.city} onChange={(e) => setDrafts({ ...drafts, zones: { ...drafts.zones, city: e.target.value } })} className="h-11 rounded-lg border border-border bg-background px-3 text-sm">
+            <LegacySelect value={drafts.zones.city} onChange={(e) => setDrafts({ ...drafts, zones: { ...drafts.zones, city: e.target.value } })} className="h-11 rounded-lg border border-border bg-background px-3 text-sm">
               {getCities().map((c) => (
                 <option key={c} value={c}>{c}</option>
               ))}
-            </select>
+            </LegacySelect>
             <input type="number" step="0.1" value={drafts.zones.fee_usd} onChange={(e) => setDrafts({ ...drafts, zones: { ...drafts.zones, fee_usd: Number(e.target.value) } })} placeholder={t('adminLogistics.feeUsd')} className="h-11 rounded-lg border border-border bg-background px-3 text-sm" />
             <input value={drafts.zones.eta_days} onChange={(e) => setDrafts({ ...drafts, zones: { ...drafts.zones, eta_days: e.target.value } })} placeholder={t('adminLogistics.eta')} className="h-11 rounded-lg border border-border bg-background px-3 text-sm" />
             <button type="submit" disabled={savingZone} className="flex items-center justify-center gap-1.5 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground md:col-span-4 disabled:opacity-50">
@@ -177,7 +190,7 @@ export default function AdminLogistics() {
               <div key={z.id} className="flex items-center justify-between rounded-xl border border-border bg-card p-3.5">
                 <div>
                   <p className="flex items-center gap-2 text-sm font-semibold"><MapPin className="h-4 w-4 text-primary" /> {z.name}</p>
-                  <p className="text-[11px] text-muted-foreground">{t('adminLogistics.zoneMeta', { city: z.city, country: z.country, fee: formatUSD(z.fee_usd), eta: z.eta_days })}</p>
+                  <p className="text-[11px] text-muted-foreground">{t('adminLogistics.zoneMeta', { city: z.city, country: z.country, fee: formatUsdAmount(z.fee_usd), eta: z.eta_days })}</p>
                 </div>
                 <button type="button" onClick={() => removeZone(z)} className="rounded-lg p-2 text-destructive hover:bg-secondary" aria-label={t('adminLogistics.delete')}>
                   <Trash2 className="h-4 w-4" />
@@ -192,11 +205,11 @@ export default function AdminLogistics() {
         <>
           <form onSubmit={addPickup} className="grid gap-3 rounded-2xl border border-border bg-card p-4 md:grid-cols-3">
             <input value={drafts.pickups.name} onChange={(e) => setDrafts({ ...drafts, pickups: { ...drafts.pickups, name: e.target.value } })} placeholder={t('adminLogistics.pickupName')} required className="h-11 rounded-lg border border-border bg-background px-3 text-sm" />
-            <select value={drafts.pickups.city} onChange={(e) => setDrafts({ ...drafts, pickups: { ...drafts.pickups, city: e.target.value } })} className="h-11 rounded-lg border border-border bg-background px-3 text-sm">
+            <LegacySelect value={drafts.pickups.city} onChange={(e) => setDrafts({ ...drafts, pickups: { ...drafts.pickups, city: e.target.value } })} className="h-11 rounded-lg border border-border bg-background px-3 text-sm">
               {getCities().map((c) => (
                 <option key={c} value={c}>{c}</option>
               ))}
-            </select>
+            </LegacySelect>
             <input value={drafts.pickups.commune} onChange={(e) => setDrafts({ ...drafts, pickups: { ...drafts.pickups, commune: e.target.value } })} placeholder={t('adminLogistics.commune')} className="h-11 rounded-lg border border-border bg-background px-3 text-sm" />
             <input value={drafts.pickups.address} onChange={(e) => setDrafts({ ...drafts, pickups: { ...drafts.pickups, address: e.target.value } })} placeholder={t('adminLogistics.address')} className="h-11 rounded-lg border border-border bg-background px-3 text-sm md:col-span-2" />
             <input value={drafts.pickups.phone} onChange={(e) => setDrafts({ ...drafts, pickups: { ...drafts.pickups, phone: e.target.value } })} placeholder={t('adminLogistics.phone')} className="h-11 rounded-lg border border-border bg-background px-3 text-sm" />
@@ -209,7 +222,7 @@ export default function AdminLogistics() {
               <div key={p.id} className="flex items-center justify-between rounded-xl border border-border bg-card p-3.5">
                 <div>
                   <p className="flex items-center gap-2 text-sm font-semibold"><Store className="h-4 w-4 text-primary" /> {p.name}</p>
-                  <p className="text-[11px] text-muted-foreground">{p.address}, {p.commune} · {p.city} · {p.phone} · {formatUSD(p.fee_usd)}</p>
+                  <p className="text-[11px] text-muted-foreground">{p.address}, {p.commune} · {p.city} · {p.phone} · {formatUsdAmount(p.fee_usd)}</p>
                 </div>
                 <button type="button" onClick={() => removePickup(p)} className="rounded-lg p-2 text-destructive hover:bg-secondary" aria-label={t('adminLogistics.delete')}>
                   <Trash2 className="h-4 w-4" />

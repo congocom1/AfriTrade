@@ -1,0 +1,45 @@
+{
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 * * * *",
+      "one_time_date": null,
+      "timezone": "America/New_York",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "airtable_product_sync",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "sync_airtable": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "syncAirtableProducts",
+            "args": {}
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Synchroniser Airtable",
+            "description": "Airtable \u2192 produits et stocks"
+          }
+        }
+      }
+    ]
+  },
+  "name": "Airtable Product Sync",
+  "description": "Every hour, reads the connected Airtable tables and updates product stock, price and details."
+}

@@ -29,7 +29,13 @@ export default async function (req) {
   try {
     const base44 = createClientFromRequest(req);
 
-    // Rate limiting for emailDataReport - check before auth
+    // This report carries a person's whole purchase history. Require an
+    // administrator before parsing input, reading data, or consuming a slot.
+    const auth = await requireAdmin(base44);
+    if (!auth.ok) return addSecurityHeaders(auth.response);
+
+    // The client address keys the rate limit counter. It is only read once the
+    // administrator check above has passed, so a rejected caller never burns a slot.
     const clientKey = getClientKey(req);
     if (!clientKey) {
       console.warn(
@@ -37,37 +43,36 @@ export default async function (req) {
       );
     }
 
-    const rateLimitResult = await checkRateLimit(
-      null, // We'll check this later after we have db
+    const body = await req.json().catch(() => ({}));
+    const requestId = String(body.request_id || '').trim();
+    if (!requestId) return addSecurityHeaders(Response.json({ error: 'request_id is required' }, { status: 400 }));
+
+    // The cap is applied against the service-role client, so every call is counted
+    // — a check without a database would silently count nothing.
+    const rateLimitResultDb = await checkRateLimit(
+      base44.asServiceRole,
       clientKey || "unidentified",
       {
         keyPrefix: "email_data_report",
         limit: EMAIL_DATA_REPORT_RATE_LIMIT_PER_HOUR,
         windowMs: RATE_WINDOW_MS,
+        failClosed: true,
       }
     );
 
-    if (!rateLimitResult.ok) {
-      return rateLimitErrorResponse(rateLimitResult);
+    if (!rateLimitResultDb.ok) {
+      return rateLimitErrorResponse(rateLimitResultDb);
     }
 
-    const body = await req.json().catch(() => ({}));
-    const requestId = String(body.request_id || '').trim();
-    if (!requestId) return addSecurityHeaders(Response.json({ error: 'request_id is required' }, { status: 400 }));
-
-    // This report carries a person's whole purchase history, so an administrator
-    // must ask for it on every path. The platform's own lifecycle calls this
-    // function with the administrator session it runs under (as it does for the
-    // sibling steps of that same workflow), so an anonymous caller who merely
-    // knows a request id can no longer trigger the report once compliance has
-    // marked it ready.
-    const auth = await requireAdmin(base44);
-    if (!auth.ok) return auth.response;
-
     const service = base44.asServiceRole;
-    const request = await service.entities.DataRequest.get(requestId).catch(() => null);
+    const request = await service.entities.DataRequest.get(requestId);
     if (!request) return Response.json({ error: 'DataRequest not found' }, { status: 404 });
     if (request.report_sent_at) return Response.json({ skipped: true, reason: 'report already sent' });
+    if (request.status !== 'ready') return addSecurityHeaders(Response.json({ error: 'Data request is not ready for export' }, { status: 409 }));
+    // A send interrupted after the provider accepts it must not be repeated blindly.
+    if (['sending', 'delivery_unknown'].includes(String(request.email_status || ''))) {
+      return addSecurityHeaders(Response.json({ error: 'Delivery outcome requires compliance review' }, { status: 409 }));
+    }
 
     const reference = request.request_number || requestId;
     const email = String(request.email || '').trim();
@@ -82,11 +87,11 @@ export default async function (req) {
     }
 
     const [byEmail, byPhone, returns, disputes, requests] = await Promise.all([
-      email ? service.entities.Order.filter({ customer_email: email }, '-created_date', LIMIT).catch(() => []) : [],
-      phone ? service.entities.Order.filter({ customer_phone: phone }, '-created_date', LIMIT).catch(() => []) : [],
-      phone ? service.entities.Return.filter({ customer_phone: phone }, '-created_date', LIMIT).catch(() => []) : [],
-      phone ? service.entities.Dispute.filter({ customer_phone: phone }, '-created_date', LIMIT).catch(() => []) : [],
-      email ? service.entities.DataRequest.filter({ email }, '-created_date', 50).catch(() => []) : [],
+      email ? service.entities.Order.filter({ customer_email: email }, '-created_date', LIMIT) : [],
+      phone ? service.entities.Order.filter({ customer_phone: phone }, '-created_date', LIMIT) : [],
+      phone ? service.entities.Return.filter({ customer_phone: phone }, '-created_date', LIMIT) : [],
+      phone ? service.entities.Dispute.filter({ customer_phone: phone }, '-created_date', LIMIT) : [],
+      email ? service.entities.DataRequest.filter({ email }, '-created_date', 50) : [],
     ]);
     const orders = dedupeById([...byEmail, ...byPhone]);
 
@@ -138,6 +143,8 @@ export default async function (req) {
 
     const filename = `rapport-donnees-${String(reference).replace(/[^A-Za-z0-9-]/g, '')}.csv`;
 
+    // Durable attempt marker: a crash or timeout must prompt review, not a blind resend.
+    await service.entities.DataRequest.update(requestId, { email_status: 'sending', email_error: '' });
     try {
       await service.integrations.Core.SendEmail({
         to: email,
@@ -147,15 +154,13 @@ export default async function (req) {
         from_name: 'AfriTrade',
         attachments: [{ filename, content: toBase64(csv) }],
       });
-      await service.entities.DataRequest.update(requestId, {
-        status: 'completed',
-        report_sent_at: new Date().toISOString(),
-        email_status: 'sent',
-        email_error: '',
-      });
+      // Mark accepted delivery before any unrelated audit write. If this update fails,
+      // `sending` remains and the next run requires review instead of duplicating mail.
     } catch (error) {
+      const status = Number(error?.status || error?.statusCode || error?.response?.status || 0);
+      const retryable = status === 429; // 503 may have occurred after mail acceptance: require human review
       await service.entities.DataRequest.update(requestId, {
-        email_status: 'failed',
+        email_status: retryable ? 'failed' : 'delivery_unknown',
         email_error: String(error?.message || error).slice(0, 500),
       });
       await service.entities.AuditLog.create({
@@ -167,8 +172,17 @@ export default async function (req) {
         severity: 'warning',
         details: { error: String(error?.message || error).slice(0, 300) },
       });
-      return Response.json({ sent: false, reason: 'email refused', rows: rows.length });
+      return addSecurityHeaders(Response.json({ sent: false, retryable, reason: 'email delivery failed; review delivery ledger', rows: rows.length }, { status: retryable ? status : 503, headers: { 'Retry-After': retryable ? '120' : '3600', 'Cache-Control': 'no-store' } }));
     }
+
+    // If this write fails after provider acceptance, the sending marker remains
+    // and recovery must be handled by compliance (not an automatic re-send).
+    await service.entities.DataRequest.update(requestId, {
+      status: 'completed',
+      report_sent_at: new Date().toISOString(),
+      email_status: 'sent',
+      email_error: '',
+    });
 
     await service.entities.AuditLog.create({
       action: 'privacy.report_sent',
@@ -182,6 +196,7 @@ export default async function (req) {
 
     return Response.json({ sent: true, reference, to: email, rows: rows.length });
   } catch (error) {
-    return Response.json({ error: String(error?.message || error) }, { status: 500 });
+    console.error('[emailDataReport] operation failed', { error: String(error?.message || error).slice(0, 200) });
+    return addSecurityHeaders(Response.json({ error: 'Data report unavailable; retry only after verifying delivery status' }, { status: 503, headers: { 'Retry-After': '120', 'Cache-Control': 'no-store' } }));
   }
 }

@@ -535,6 +535,69 @@ async function resolveTenantId(client, slug) {
   return rows[0]?.id ?? null;
 }
 
+/**
+ * Construct a Wix card checkout ONLY after a verified signed-in buyer has
+ * submitted an order through place-order. Never expose this as a callable
+ * standalone public function or accept price, amount or email from its caller.
+ */
+export async function startVerifiedCardCheckout(db, order, { buyerId, buyerEmail, appUrl }) {
+  if (!buyerId || !buyerEmail) throw new ClientInputError("Connectez-vous pour payer par carte.");
+  const apiKey = Deno.env.get("WIX_CHECKOUT_API_KEY");
+  const siteId = Deno.env.get("WIX_CHECKOUT_SITE_ID");
+  if (!apiKey || !siteId || !appUrl) throw new Error("Card payments not configured");
+  let origin;
+  try {
+    const parsed = new URL(appUrl);
+    if (parsed.protocol !== "https:" || parsed.username || parsed.password || parsed.search || parsed.hash || (parsed.pathname !== "/" && parsed.pathname !== "")) {
+      throw new Error("Invalid hosted checkout origin");
+    }
+    origin = parsed.origin;
+  } catch {
+    throw new Error("Invalid hosted checkout origin");
+  }
+
+  const cents = Number(order.total_cents);
+  if (!Number.isSafeInteger(cents) || cents < 50) throw new ClientInputError("Card total must be at least $0.50");
+  const amount = (cents / 100).toFixed(2);
+  const checkoutResponse = await fetch("https://www.wixapis.com/payments/platform/v1/checkout-sessions/construct", {
+    method: "POST",
+    headers: { Authorization: apiKey, "wix-site-id": siteId, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      cart: {
+        items: [{ name: `Commande ${order.order_number}`, quantity: 1, price: amount }],
+        customerInfo: { email: buyerEmail },
+      },
+      callbackUrls: {
+        thankYouPageUrl: `${origin}/order/${encodeURIComponent(order.order_number)}`,
+        postFlowUrl: `${origin}/`,
+      },
+    }),
+  });
+  if (!checkoutResponse.ok) {
+    console.error("place-order: Wix checkout construction failed", { status: checkoutResponse.status });
+    throw new Error("Card checkout unavailable");
+  }
+  const session = (await checkoutResponse.json())?.checkoutSession;
+  if (!session?.id || !session?.redirectUrl) throw new Error("Card checkout unavailable");
+  const redirect = new URL(session.redirectUrl);
+  if (redirect.protocol !== "https:") throw new Error("Invalid card provider redirect");
+
+  // Record the exact checkout session id required by the verified Wix webhook.
+  await db.entities.Base44Purchase.create({
+    checkoutSessionId: session.id,
+    status: "pending",
+    appUserId: buyerId,
+    buyerEmail,
+    created_by_id: buyerId,
+    productId: order.order_number,
+    productName: `Commande ${order.order_number}`,
+    quantity: 1,
+    amount,
+    currency: "USD",
+  });
+  return session.redirectUrl;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Main engine — placeOrder(db, params)
 // db: asServiceRole Base44 client (all writes bypass RLS).
@@ -551,7 +614,15 @@ export async function placeOrder(db, params) {
     paymentPhone = null,
     consent = {},
     authenticatedUserId = "",
+    authenticatedUserEmail = "",
+    trustedCheckoutAppUrl = "",
   } = params ?? {};
+
+  // Card sessions spend provider API credits: require a verified app account
+  // before ANY Order or Base44Purchase record can be created.
+  if (paymentMethodId === "card" && (!authenticatedUserId || !authenticatedUserEmail)) {
+    throw new ClientInputError("Connectez-vous pour payer par carte.");
+  }
 
   const cfg = getPricingConfig();
 
@@ -694,7 +765,7 @@ export async function placeOrder(db, params) {
     order_number: orderNumber,
     status: "PENDING",
     payment_method: paymentMethodId ?? "",
-    // create-checkout and payments-webhook both gate card fulfilment on this
+    // Verified card checkout and payments-webhook gate card fulfilment on this
     // field, so it has to be written here or a paid card order can never be
     // machine-fulfilled.
     payment_provider: paymentMethodId ?? "",
@@ -759,12 +830,11 @@ export async function placeOrder(db, params) {
   let redirectUrl = null;
   if (paymentMethodId === "card") {
     try {
-      const checkout = await db.functions.invoke("create-checkout", {
-        productId: orderNumber,
-        quantity: 1,
+      redirectUrl = await startVerifiedCardCheckout(db, order, {
+        buyerId: authenticatedUserId,
+        buyerEmail: authenticatedUserEmail,
+        appUrl: trustedCheckoutAppUrl,
       });
-      redirectUrl = checkout?.data?.redirectUrl ?? null;
-      if (!redirectUrl) throw new Error("Hosted checkout did not return a redirect URL");
     } catch (err) {
       await db.entities.Order.update(order.id, {
         status: "CANCELLED",
@@ -1171,6 +1241,7 @@ export default async function (request) {
       clientKey || "unidentified",
       {
         keyPrefix: "place_order",
+        failClosed: true,
         limit: clientKey ? ORDER_RATE_LIMIT_PER_HOUR : ORDER_RATE_LIMIT_UNIDENTIFIED_PER_HOUR,
         windowMs: RATE_WINDOW_MS,
       }
@@ -1179,9 +1250,41 @@ export default async function (request) {
       return rateLimitErrorResponse(rateLimitResult);
     }
 
+    // Refuse unauthenticated card requests before user-keyed quotas or writes.
+    if (intent.paymentMethodId === "card" && (!user?.id || !user?.email)) {
+      return addSecurityHeaders(Response.json(
+        { error: "Sign in before paying by card." },
+        { status: 401, headers: { "Cache-Control": "no-store" } },
+      ));
+    }
+
+    // An additional, tighter account quota protects the billable Wix API.
+    // This is defense in depth; configure an atomic provider/edge quota too,
+    // because entity-based counters can race under concurrent requests.
+    if (intent.paymentMethodId === "card") {
+      const cardLimit = await checkRateLimit(db, `buyer:${user.id}`, {
+        keyPrefix: "verified_card_checkout",
+        failClosed: true,
+        limit: 6,
+        windowMs: RATE_WINDOW_MS,
+      });
+      if (!cardLimit.ok) return rateLimitErrorResponse(cardLimit);
+    }
+
     const result = await placeOrder(db, {
       ...intent,
+      // For card payments the email and identity must come from auth.me(),
+      // never from a browser-supplied profile or user id.
+      profile: intent.paymentMethodId === "card"
+        ? { ...(intent.profile || {}), email: user.email }
+        : intent.profile,
       authenticatedUserId: user?.id ?? "",
+      authenticatedUserEmail: user?.email ?? "",
+      // The card-checkout callback origin is trusted configuration only: it is
+      // read from the server-side environment variable, never from a
+      // client-controlled request header. When it is unset the checkout fails
+      // closed (see startVerifiedCardCheckout) instead of trusting the caller.
+      trustedCheckoutAppUrl: Deno.env.get("WIX_CHECKOUT_APP_URL") || "",
     });
 
     return addSecurityHeaders(

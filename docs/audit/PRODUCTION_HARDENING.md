@@ -1,5 +1,33 @@
 # AfriTrade production hardening
 
+## Correction — 2026-10-20: NOT READY
+
+This correction supersedes the historical build-time protection claims below.
+HTML meta tags do NOT configure arbitrary HTTP response headers. The plugin
+now places CSP in the head using Vite's HTML transform, preserves its existing
+allowlist pending staging review, and uses supported referrer metadata.
+Unsupported header meta tags and the meta-only frame-ancestors directive are
+removed. Development and preview middleware send actual local headers; neither
+configures production hosting. No production header protection is verified.
+
+Required release steps:
+1. Confirm approved staging/production origins and the hosting owner.
+2. Configure actual CSP (including frame-ancestors), X-Frame-Options,
+   X-Content-Type-Options, Referrer-Policy and Permissions-Policy through the
+   host's supported mechanism. Do not guess its hosting provider.
+3. Confirm HTTPS/subdomain ownership before HSTS; preload and includeSubDomains
+   require a separate domain-owner decision.
+4. Exercise auth, payments, embeds and assets in staging before enforcing CSP.
+   Existing unsafe-inline/unsafe-eval allowances remain a separate review item.
+5. Record real HTTP response headers on approved HTML/assets/errors/redirects.
+   Local tests or HTML metadata are not production evidence.
+
+CI correction: the current workflow runs on main pushes and pull requests, not
+manual dispatch. Staging smoke requires a pull request and STAGING_BASE_URL.
+Skipped staging checks are not passes. Hosted results remain unverified.
+
+## Historical record — superseded implementation and claims
+
 Status on 2026-10-17: repository preparation only. No deployment or live
 configuration has been changed or verified by this work.
 

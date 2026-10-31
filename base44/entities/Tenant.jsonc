@@ -84,11 +84,25 @@
     "slug"
   ],
   "rls": {
-    "read": { "user_condition": { "role": "admin" } },
-    "create": {
+    "read": {
       "$or": [
         {
           "data.owner_email": "{{user.email}}"
+        },
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
         },
         {
           "user_condition": {
@@ -99,6 +113,9 @@
     },
     "update": {
       "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
         {
           "data.owner_email": "{{user.email}}"
         },
@@ -111,6 +128,9 @@
     },
     "delete": {
       "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
         {
           "data.owner_email": "{{user.email}}"
         },

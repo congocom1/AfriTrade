@@ -1,0 +1,58 @@
+<mjml>
+  <mj-head>
+    <mj-title>{{headline}} · commande {{order_number}}</mj-title>
+    <mj-preview>Votre commande {{order_number}} est prévue le {{date_long}}.</mj-preview>
+    <mj-attributes>
+      <mj-all font-family="Manrope, Arial, Helvetica, sans-serif" />
+      <mj-section background-color="#ffffff" padding="0 36px" />
+      <mj-text color="#0d0d0d" font-size="15px" line-height="1.6" padding="0" />
+      <mj-button background-color="#008066" color="#ffffff" border-radius="8px" font-weight="700" inner-padding="14px 28px" align="left" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body background-color="#f7f7f7">
+    <mj-section background-color="#008066" padding="22px 36px">
+      <mj-column>
+        <mj-text color="#ffffff" font-size="18px" font-weight="700">AfriTrade</mj-text>
+      </mj-column>
+    </mj-section>
+
+    <mj-section padding="40px 36px 10px">
+      <mj-column>
+        <mj-text font-size="28px" font-weight="700" line-height="1.2">{{headline}}</mj-text>
+        <mj-text color="#008066" font-size="15px" padding-top="10px">{{detail_line}}</mj-text>
+      </mj-column>
+    </mj-section>
+
+    <mj-section padding="14px 36px">
+      <mj-column background-color="#f7f7f7" border="1px solid #e5e7eb" border-radius="8px" padding="22px 24px">
+        <mj-text color="#008066" font-size="11px" font-weight="700" padding-bottom="3px">Commande</mj-text>
+        <mj-text font-size="15px" font-weight="700" padding-bottom="16px">{{order_number}}</mj-text>
+
+        <mj-text color="#008066" font-size="11px" font-weight="700" padding-bottom="3px">Colis</mj-text>
+        <mj-text font-size="15px" font-weight="700" padding-bottom="16px">{{fulfillment_number}}</mj-text>
+
+        <mj-text color="#008066" font-size="11px" font-weight="700" padding-bottom="3px">{{kind_label}}</mj-text>
+        <mj-text font-size="15px" font-weight="700" padding-bottom="16px">{{date_long}}</mj-text>
+
+        <mj-text color="#008066" font-size="11px" font-weight="700" padding-bottom="3px">{{place_label}}</mj-text>
+        <mj-text font-size="15px" font-weight="700">{{place_value}}</mj-text>
+      </mj-column>
+    </mj-section>
+
+    <mj-section padding="10px 36px 34px">
+      <mj-column>
+        <mj-button href="{{action_url}}">Suivre mes commandes</mj-button>
+      </mj-column>
+    </mj-section>
+
+    <mj-section background-color="#ffffff" padding="0 36px 36px">
+      <mj-column>
+        <mj-divider border-color="#e5e7eb" padding="0 0 18px 0" />
+        <mj-text color="#008066" font-size="12px">AfriTrade · la place de marché de la RDC</mj-text>
+        <mj-text color="#008066" font-size="12px" padding-top="6px">
+          <a href="https://afrixtrade.com" style="color:#008066;">afrixtrade.com</a>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { formatUSD } from '@/lib/format';
+import { formatUsdAmount } from '@/lib/format';
 import { useTranslation } from 'react-i18next';
 
 /** Per payment-method totals: collected vs still awaiting payment. */
@@ -22,9 +22,9 @@ export default memo(function ReconciliationTable({ rows }) {
             <tr key={r.provider} className="border-t border-border">
               <td className="p-3 font-semibold">{r.label}</td>
               <td className="p-3">{r.count}</td>
-              <td className="p-3 font-semibold text-emerald-700">{formatUSD(r.paid)}</td>
-              <td className="p-3 text-amber-700">{formatUSD(r.pending)}</td>
-              <td className="p-3 text-muted-foreground">{formatUSD(r.failed)}</td>
+              <td className="p-3 font-semibold text-emerald-700">{formatUsdAmount(r.paid)}</td>
+              <td className="p-3 text-amber-700">{formatUsdAmount(r.pending)}</td>
+              <td className="p-3 text-muted-foreground">{formatUsdAmount(r.failed)}</td>
             </tr>
           ))}
           {!rows.length && (

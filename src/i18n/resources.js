@@ -5,6 +5,19 @@ import ln from './ln.js';
 import sw from './sw.js';
 import intlShipment from './intlShipment.js';
 import homeCollections from './homeCollections.js';
+import commerceIntro from './commerceIntro.js';
+import portalStatus from './portalStatus.js';
+import portalComponents from './portalComponents.js';
+import workforce from './workforce.js';
+import loyalty from './loyalty.js';
+import home from './home.js';
+import categories from './categories.js';
+import mobileMoney from './mobileMoney.js';
+import portals from './portals.js';
+import productPage from './productPage.js';
+import deliveryCalendar from './deliveryCalendar.js';
+import copyFixes from './copyFixes.js';
+import threeD from './threeD.js';
 
 export const mergeNamespaces = (base, extra) =>
   Object.entries(extra).reduce((out, [ns, values]) => ({ ...out, [ns]: { ...(out[ns] || {}), ...values } }), { ...base });
@@ -22,9 +35,15 @@ const frWithExtensions = mergeNamespaces(fr, frExtended);
  * does. Lingala and Kiswahili fall back to the French copy for the newer
  * namespaces.
  */
-export const translations = {
-  fr: mergeNamespaces(mergeNamespaces(frWithExtensions, intlShipment.fr), homeCollections.fr),
-  en: mergeNamespaces(mergeNamespaces(en, intlShipment.en), homeCollections.en),
-  ln: mergeNamespaces(mergeNamespaces(mergeNamespaces(ln, frExtended), intlShipment.fr), homeCollections.fr),
-  sw: mergeNamespaces(mergeNamespaces(mergeNamespaces(sw, frExtended), intlShipment.fr), homeCollections.fr),
+const baseTranslations = {
+  fr: mergeNamespaces(mergeNamespaces(mergeNamespaces(mergeNamespaces(mergeNamespaces(frWithExtensions, intlShipment.fr), homeCollections.fr), mobileMoney.fr), productPage.fr), threeD.fr),
+  en: mergeNamespaces(mergeNamespaces(mergeNamespaces(mergeNamespaces(mergeNamespaces(en, intlShipment.en), homeCollections.en), mobileMoney.en), productPage.en), threeD.en),
+  ln: mergeNamespaces(mergeNamespaces(mergeNamespaces(mergeNamespaces(mergeNamespaces(mergeNamespaces(ln, frExtended), intlShipment.fr), homeCollections.fr), mobileMoney.fr), productPage.fr), threeD.fr),
+  sw: mergeNamespaces(mergeNamespaces(mergeNamespaces(mergeNamespaces(mergeNamespaces(mergeNamespaces(sw, frExtended), intlShipment.fr), homeCollections.fr), mobileMoney.fr), productPage.fr), threeD.fr),
 };
+
+export const translations = Object.fromEntries(
+  Object.entries(baseTranslations).map(([language, dictionary]) => [
+    language, mergeNamespaces(mergeNamespaces(mergeNamespaces(mergeNamespaces(mergeNamespaces(mergeNamespaces(mergeNamespaces(mergeNamespaces(mergeNamespaces(mergeNamespaces(dictionary, commerceIntro[language] || commerceIntro.fr), portalStatus[language] || portalStatus.fr), portalComponents[language] || portalComponents.fr), workforce[language] || workforce.fr), loyalty[language] || loyalty.fr), home[language] || home.fr), categories[language] || categories.fr), portals[language] || portals.fr), deliveryCalendar[language] || deliveryCalendar.fr), copyFixes[language] || copyFixes.fr),
+  ]),
+);

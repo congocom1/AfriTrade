@@ -19,7 +19,7 @@ import CheckoutSteps from '@/components/checkout/CheckoutSteps';
 import StepDelivery from '@/components/checkout/StepDelivery';
 import StepPayment from '@/components/checkout/StepPayment';
 import StepReview from '@/components/checkout/StepReview';
-import BackButton from '@/components/BackButton';
+import MainMoneyCheckout from '@/components/checkout/MainMoneyCheckout';
 
 const STEP_KEYS = ['checkout.stepDelivery', 'checkout.stepPayment', 'checkout.stepReview'];
 const STEP_COMPONENTS = [StepDelivery, StepPayment, StepReview];
@@ -45,21 +45,28 @@ export default function Checkout() {
   const [pickupPoints, setPickupPoints] = useState([]);
   const [quote, setQuote] = useState(null);
   const [loadingQuote, setLoadingQuote] = useState(true);
+  const [quoteError, setQuoteError] = useState(false);
+  const [quoteRetry, setQuoteRetry] = useState(0);
   const [consent, setConsent] = useState({ terms: false, marketing: false });
   const [vatRate, setVatRate] = useState(getVatRate());
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [step, setStep] = useState(0);
+  const [mainMoneyOrder, setMainMoneyOrder] = useState(null);
 
   const providers = useMemo(
-    () => listPaymentProviders().filter((provider) => ['card', 'cod'].includes(provider.id)),
+    () => listPaymentProviders().filter((provider) => ['card', 'cod', 'mainmoney'].includes(provider.id)),
     [],
   );
   const activeProvider = providers.find((p) => p.id === paymentMethod) || providers[0];
-  const isMobileMoney = activeProvider?.kind === 'mobile_money';
+  // The MainMoney wizard collects the payer's phone number itself.
+  const isMainMoney = paymentMethod === 'mainmoney';
+  const isMobileMoney = activeProvider?.kind === 'mobile_money' && !isMainMoney;
 
   useEffect(() => {
-    loadPlatformConfig().then(() => setVatRate(getVatRate()));
+    loadPlatformConfig().then(() => setVatRate(getVatRate())).catch(() => {
+      // Fall back to the configured VAT rate; server pricing is authoritative.
+    });
     (async () => {
       const [z, p] = await Promise.all([
         base44.entities.DeliveryZone.filter({ active: true }).catch(() => []),
@@ -87,17 +94,20 @@ export default function Checkout() {
 
   useEffect(() => {
     if (!items.length) {
+      setQuote(null);
+      setQuoteError(false);
       setLoadingQuote(false);
       return;
     }
     let alive = true;
     setLoadingQuote(true);
-    buildCheckoutQuote({ items, deliveryFee, coupon, intlOption: selectedIntlOption })
+    setQuoteError(false);
+    buildCheckoutQuote(base44, { items, deliveryFee, coupon, intlOption: selectedIntlOption })
       .then((q) => {
-        if (alive) setQuote(q);
+        if (alive) { setQuote(q); setQuoteError(false); }
       })
       .catch(() => {
-        if (alive) setQuote(null);
+        if (alive) { setQuote(null); setQuoteError(true); }
       })
       .finally(() => {
         if (alive) setLoadingQuote(false);
@@ -105,7 +115,7 @@ export default function Checkout() {
     return () => {
       alive = false;
     };
-  }, [items, deliveryFee, coupon, selectedIntlOption?.id]);
+  }, [items, deliveryFee, coupon, selectedIntlOption?.id, quoteRetry]);
 
   const groups = useMemo(() => {
     if (!quote?.lines?.length) return [];
@@ -127,9 +137,24 @@ export default function Checkout() {
 
   /** Blocks the buyer on the current step instead of showing every error at once. */
   const validateStep = (index) => {
+    // Phone validation for DRC format (+243XXXXXXXXX or 0XXXXXXXXX)
+    const validatePhone = (phone) => {
+      if (!phone?.trim()) return false;
+      const cleaned = phone.replace(/\s+/g, '');
+      // DRC phone: +243XXXXXXXXX (12 digits with country code) or 0XXXXXXXXX (10 digits local)
+      const drcPhoneRegex = /^(\+243|0)[0-9]{9}$/;
+      return drcPhoneRegex.test(cleaned);
+    };
+
     if (index === 0) {
       if (!profile.name?.trim() || !profile.phone?.trim()) {
         return t('checkout.needNamePhone');
+      }
+      if (!validatePhone(profile.phone)) {
+        return t('checkout.invalidPhone');
+      }
+      if (!profile.city) {
+        return t('checkout.cityRequired');
       }
       if (deliveryMethod === 'home_delivery' && !profile.address?.trim()) {
         return t('checkout.needAddress');
@@ -167,7 +192,13 @@ export default function Checkout() {
 
   const applyCoupon = async () => {
     setCouponMessage('');
-    const found = await findCoupon(couponInput);
+    let found;
+    try {
+      found = await findCoupon(base44, couponInput);
+    } catch {
+      setCouponMessage(t('checkout.couponUnavailable'));
+      return;
+    }
     if (!found) {
       setCoupon(null);
       setCouponMessage(t('checkout.couponInvalid'));
@@ -189,6 +220,15 @@ export default function Checkout() {
       }
     }
     setError('');
+    if (paymentMethod === 'card' || isMainMoney) {
+      try {
+        const buyer = await base44.auth.me();
+        if (!buyer?.id || !buyer?.email) throw new Error('Sign-in required');
+      } catch {
+        setError(isMainMoney ? t('pay.mainmoneyLoginRequired') : t('checkout.cardLoginRequired'));
+        return;
+      }
+    }
     const chargePhone = isMobileMoney
       ? validateMobileMoneyNumber(paymentMethod, payPhone).phone
       : profile.phone;
@@ -212,6 +252,10 @@ export default function Checkout() {
         paymentPhone: chargePhone,
         consent,
       });
+      base44.analytics.track({
+        eventName: 'order_placed',
+        properties: { order_number: result.order.order_number },
+      });
       // Hosted checkout (card) is now handled inside the server function — it
       // returns redirectUrl when the provider requires a redirect. The client-side
       // create-checkout call is removed: prices and splits are locked down
@@ -219,6 +263,12 @@ export default function Checkout() {
       if (result.redirectUrl) {
         clear();
         window.location.href = result.redirectUrl;
+        return;
+      }
+      // Mobile money is approved on the phone: keep the buyer on the wizard
+      // until the deposit is confirmed server-side.
+      if (isMainMoney) {
+        setMainMoneyOrder(result.order);
         return;
       }
       clear();
@@ -277,17 +327,26 @@ export default function Checkout() {
 
   return (
       <form onSubmit={submit} className="space-y-5 pb-32 md:pb-6">
-        <BackButton fallback="/cart" className="md:hidden" />
         <div className="space-y-2">
-        <Link to="/cart" className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" />{t('checkout.backToCart')}</Link>
+        <Link to="/cart" className="hidden min-h-11 items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground md:inline-flex"><ArrowLeft className="h-4 w-4" />{t('checkout.backToCart')}</Link>
         <h1 className="text-2xl font-bold tracking-tight md:text-3xl">{t('checkout.title')}</h1>
       </div>
 
       <CheckoutSteps steps={STEPS} current={step} />
 
+      {quoteError && (
+        <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-destructive/40 bg-destructive/10 p-4 text-sm">
+          <p>{t('checkout.quoteUnavailable')}</p>
+          <button type="button" className="min-h-11 rounded-full bg-primary px-4 font-semibold text-primary-foreground" onClick={() => setQuoteRetry((n) => n + 1)}>
+            {t('common.retry')}
+          </button>
+        </div>
+      )}
+
       {error && (
         <div role="alert" className="flex items-start gap-2 rounded-xl border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
-          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" /> {error}
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+          <span>{error} {error === t('checkout.cardLoginRequired') && <Link to="/login" className="font-semibold underline">{t('checkout.signIn')}</Link>}</span>
         </div>
       )}
 
@@ -306,7 +365,7 @@ export default function Checkout() {
         </div>
         <aside className="min-w-0 space-y-5 lg:sticky lg:top-40">
           <StepReview {...stepProps[2]} />
-          <button type="submit" disabled={submitting || loadingQuote} className="flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-primary px-4 py-4 text-sm font-bold text-primary-foreground disabled:opacity-50">
+          <button type="submit" disabled={submitting || loadingQuote || !quote} className="flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-primary px-4 py-4 text-sm font-bold text-primary-foreground disabled:opacity-50">
             <ShieldCheck className="h-4 w-4 shrink-0" />
             {submitting ? t('checkout.processing') : t('checkout.payAmount', { total: quote ? formatUSD(quote.total) : '' })}
           </button>
@@ -349,7 +408,7 @@ export default function Checkout() {
         ) : (
           <button
             type="submit"
-            disabled={submitting || loadingQuote}
+            disabled={submitting || loadingQuote || !quote}
             className="flex h-11 items-center gap-2 rounded-full bg-primary px-6 text-sm font-bold text-primary-foreground disabled:opacity-50"
           >
             <ShieldCheck className="h-4 w-4" />
@@ -357,6 +416,18 @@ export default function Checkout() {
           </button>
         )}
       </MobileActionBar>
+
+      {mainMoneyOrder && (
+        <MainMoneyCheckout
+          order={mainMoneyOrder}
+          onPaid={(paidOrder) => {
+            clear();
+            setMainMoneyOrder(null);
+            navigate(`/order/${paidOrder.order_number}`);
+          }}
+          onClose={() => setMainMoneyOrder(null)}
+        />
+      )}
     </form>
   );
 }

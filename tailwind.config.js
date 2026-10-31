@@ -1,4 +1,13 @@
 /** @type {import('tailwindcss').Config} */
+
+/* One status ramp per semantic role, driven by the tokens in src/index.css.
+   `success-100` is a soft tint, `success-900` its ink, `success-500/600` the
+   solid fill — the scales invert in dark mode, so the same class pair reads
+   correctly in both. */
+const RAMP_STEPS = ['50', '100', '200', '300', '400', '500', '600', '700', '800', '900', '950'];
+const ramp = (name) =>
+  Object.fromEntries(RAMP_STEPS.map((step) => [step, `hsl(var(--${name}-${step}))`]));
+
 module.exports = {
     darkMode: ["class"],
     content: ["./index.html", "./src/**/*.{ts,tsx,js,jsx}"],
@@ -6,7 +15,10 @@ module.exports = {
   	extend: {
   		opacity: Object.fromEntries(Array.from({ length: 101 }, (_, i) => [i, `${i / 100}`])),
   		borderRadius: {
-  			lg: 'var(--radius)',
+      '3xl': 'calc(var(--radius) + 4px)',
+      '2xl': 'calc(var(--radius) + 2px)',
+      xl: 'var(--radius)',
+      lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
   		},
@@ -36,7 +48,8 @@ module.exports = {
   			},
   			primary: {
   				DEFAULT: 'hsl(var(--primary))',
-  				foreground: 'hsl(var(--primary-foreground))'
+  				foreground: 'hsl(var(--primary-foreground))',
+  				hover: 'hsl(var(--primary-hover))'
   			},
   			secondary: {
   				DEFAULT: 'hsl(var(--secondary))',
@@ -52,23 +65,49 @@ module.exports = {
   			},
   			destructive: {
   				DEFAULT: 'hsl(var(--destructive))',
-  				foreground: 'hsl(var(--destructive-foreground))'
+  				foreground: 'hsl(var(--destructive-foreground))',
+  				hover: 'hsl(var(--destructive-hover))',
+  				...ramp('destructive')
   			},
   			border: 'hsl(var(--border))',
   			input: 'hsl(var(--input))',
   			ring: 'hsl(var(--ring))',
   			success: {
   				DEFAULT: 'hsl(var(--success))',
-  				foreground: 'hsl(var(--success-foreground))'
+  				foreground: 'hsl(var(--success-foreground))',
+  				...ramp('success')
   			},
   			warning: {
   				DEFAULT: 'hsl(var(--warning))',
-  				foreground: 'hsl(var(--warning-foreground))'
+  				foreground: 'hsl(var(--warning-foreground))',
+  				...ramp('warning')
   			},
   			info: {
   				DEFAULT: 'hsl(var(--info))',
-  				foreground: 'hsl(var(--info-foreground))'
+  				foreground: 'hsl(var(--info-foreground))',
+  				...ramp('info')
   			},
+
+  			/* Migration bridge: the raw Tailwind palettes still used across older
+  			   screens resolve to the semantic ramps above, so every one of them
+  			   follows the theme today. New code should use the semantic names
+  			   (success / warning / destructive / info); these aliases can be
+  			   dropped once no screen references them. */
+  			emerald: ramp('success'),
+  			green: ramp('success'),
+  			lime: ramp('success'),
+  			amber: ramp('warning'),
+  			yellow: ramp('warning'),
+  			orange: ramp('warning'),
+  			red: ramp('destructive'),
+  			rose: ramp('destructive'),
+  			sky: ramp('info'),
+  			blue: ramp('info'),
+  			indigo: ramp('info'),
+  			violet: ramp('info'),
+  			purple: ramp('info'),
+  			cyan: ramp('info'),
+  			teal: ramp('info'),
 
   			chart: {
   				'1': 'hsl(var(--chart-1))',
@@ -118,5 +157,5 @@ module.exports = {
   		}
   	}
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [],
 }

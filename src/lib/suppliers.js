@@ -16,23 +16,10 @@ import { round2Cents } from './format';
  *   getTracking(id)       -> TrackingInformation
  *
  * ─────────────────────────────────────────────────────────────────────────────
- * HYBRID ADAPTERS — real implementations when env vars are set, otherwise
- * clearly isolated mock adapters labelled `isMock: true`.
+ * DEMO ADAPTERS — explicitly mock-labelled. Live supplier API keys and calls
+ * must be implemented behind authenticated Base44 server functions.
  * ─────────────────────────────────────────────────────────────────────────────
  */
-
-/**
- * Helper to get environment variable with fallback.
- * In Vite, env vars are exposed via import.meta.env.
- */
-function getEnvVar(key, defaultValue) {
-  // @ts-ignore
-  const env = (typeof import.meta !== 'undefined' && import.meta.env) || {};
-  if (env[key]) {
-    return env[key];
-  }
-  return defaultValue;
-}
 
 // Mock catalog (unchanged)
 const MOCK_CATALOG = {
@@ -156,86 +143,14 @@ function createMockProvider(adapterCode) {
   };
 }
 
-/**
- * Create a real provider stub.
- * In a real implementation, you would replace the placeholder URLs and logic
- * with actual HTTP calls to the supplier's API, using env vars for credentials.
- * For now, we keep the mock behavior but log a warning.
- */
-function createRealProvider(adapterCode, _config) {
-  // _config would contain baseUrl, apiKey, etc. from env vars.
-  return {
-    adapterCode,
-    isMock: false, // indicates real provider
-    async searchProducts(query, supplier) {
-      // TODO: Implement real HTTP call to supplier's search endpoint
-      // Fallback to mock for now
-      const mock = createMockProvider(adapterCode);
-      return await mock.searchProducts(query, supplier);
-    },
-    async getProduct(externalId, supplier) {
-      // TODO: Implement real HTTP call to supplier's getProduct endpoint
-      const mock = createMockProvider(adapterCode);
-      return await mock.getProduct(externalId, supplier);
-    },
-    async getInventory(externalId) {
-      // TODO: Implement real HTTP call to supplier's getInventory endpoint
-      const mock = createMockProvider(adapterCode);
-      return await mock.getInventory(externalId);
-    },
-    async getVariants(externalId, supplier) {
-      // TODO: Implement real HTTP call to supplier's getVariants endpoint
-      const mock = createMockProvider(adapterCode);
-      return await mock.getVariants(externalId, supplier);
-    },
-    async calculateShipping({ externalProductId, quantity = 1, supplier }) {
-      // TODO: Implement real HTTP call to supplier's calculateShipping endpoint
-      const mock = createMockProvider(adapterCode);
-      return await mock.calculateShipping({ externalProductId, quantity, supplier });
-    },
-    async createOrder({ externalProductId, quantity, supplier }) {
-      // TODO: Implement real HTTP call to supplier's createOrder endpoint
-      const mock = createMockProvider(adapterCode);
-      return await mock.createOrder({ externalProductId, quantity, supplier });
-    },
-    async cancelOrder(supplierOrderId) {
-      // TODO: Implement real HTTP call to supplier's cancelOrder endpoint
-      const mock = createMockProvider(adapterCode);
-      return await mock.cancelOrder(supplierOrderId);
-    },
-    async getTracking(supplierOrderId) {
-      // TODO: Implement real HTTP call to supplier's getTracking endpoint
-      const mock = createMockProvider(adapterCode);
-      return await mock.getTracking(supplierOrderId);
-    },
-  };
-}
-
-/**
- * Registry — suppliers are registered here based on env vars.
- * If env vars for a real supplier are set, we use the real provider; otherwise mock.
- */
+/** Demo providers are registered explicitly; real providers require backend integration. */
 export const SUPPLIER_REGISTRY = {};
 
-(() => {
-  // Supplier A
-  const supplierAUrl = getEnvVar('VITE_SUPPLIER_A_URL', '');
-  const supplierAKey = getEnvVar('VITE_SUPPLIER_A_KEY', '');
-  if (supplierAUrl && supplierAKey) {
-    SUPPLIER_REGISTRY.mock_supplier_a = createRealProvider('mock_supplier_a', { url: supplierAUrl, key: supplierAKey });
-  } else {
-    SUPPLIER_REGISTRY.mock_supplier_a = createMockProvider('mock_supplier_a');
-  }
-
-  // Supplier B
-  const supplierBUrl = getEnvVar('VITE_SUPPLIER_B_URL', '');
-  const supplierBKey = getEnvVar('VITE_SUPPLIER_B_KEY', '');
-  if (supplierBUrl && supplierBKey) {
-    SUPPLIER_REGISTRY.mock_supplier_b = createRealProvider('mock_supplier_b', { url: supplierBUrl, key: supplierBKey });
-  } else {
-    SUPPLIER_REGISTRY.mock_supplier_b = createMockProvider('mock_supplier_b');
-  }
-})();
+// Explicit demo-only adapters. Real integrations must be registered from a
+// verified server-backed implementation; frontend environment variables must
+// never contain provider API credentials.
+SUPPLIER_REGISTRY.mock_supplier_a = createMockProvider('mock_supplier_a');
+SUPPLIER_REGISTRY.mock_supplier_b = createMockProvider('mock_supplier_b');
 
 export function getSupplierAdapter(adapterCode) {
   const adapter = SUPPLIER_REGISTRY[adapterCode];

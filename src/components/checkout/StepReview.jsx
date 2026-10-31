@@ -1,7 +1,8 @@
 import React, { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image } from '@/components/ui/image';
-import { formatUSD } from '@/lib/format';
+import { formatUsdAmount, formatUSD } from '@/lib/format';
+import { productImage } from '@/lib/productImages';
 import { splitVat } from '@/lib/tax';
 import CheckoutConsent from '@/components/CheckoutConsent';
 
@@ -20,13 +21,13 @@ export default memo(function StepReview({ quote, loadingQuote, coupon, vatRate, 
               {quote.lines.map((l) => (
                 <div key={`${l.product.id}-${l.variant || ''}`} className="flex items-center gap-2">
                   <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-secondary">
-                    <Image src={l.product.images?.[0]} alt={l.product.title} className="h-full w-full object-cover" />
+                    <Image src={productImage(l.product)} alt={l.product.title} className="h-full w-full object-cover" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-xs font-medium">{l.product.title}</p>
                     <p className="text-[11px] text-muted-foreground">× {l.quantity}</p>
                   </div>
-                  <span className="shrink-0 text-xs font-semibold">{formatUSD(l.line_total_usd)}</span>
+                  <span className="shrink-0 text-xs font-semibold">{formatUsdAmount(l.line_total_usd)}</span>
                 </div>
               ))}
             </div>

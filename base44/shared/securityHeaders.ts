@@ -37,7 +37,7 @@ export const DEFAULT_CSP = [
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com data:",
   "img-src 'self' data: https: blob:",
-  "connect-src 'self' https://*.base44.app https://api.base44.com wss://*.base44.app",
+  "connect-src 'self' https://base44.app https://*.base44.app https://api.base44.com wss://*.base44.app",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
@@ -150,12 +150,15 @@ export interface RateLimitConfig {
   limit: number;
   windowMs: number;
   unidentifiedLimit?: number;
+  /** For sensitive operations, deny when counter storage is unavailable. */
+  failClosed?: boolean;
 }
 
 export interface RateLimitResult {
   ok: boolean;
   used: number;
   limit: number;
+  unavailable?: boolean;
 }
 
 export async function checkRateLimit(
@@ -163,9 +166,11 @@ export async function checkRateLimit(
   clientKey: string,
   config: RateLimitConfig
 ): Promise<RateLimitResult> {
-  // If db is not available (e.g., pre-auth check), skip rate limiting gracefully
+  // Sensitive endpoints must never bypass enforcement if the counter is unavailable.
   if (!db) {
-    return { ok: true, used: 0, limit: config.limit };
+    return config.failClosed
+      ? { ok: false, used: 0, limit: config.limit, unavailable: true }
+      : { ok: true, used: 0, limit: config.limit };
   }
 
   const key_prefix = `${config.keyPrefix}:${clientKey}`;
@@ -173,31 +178,36 @@ export async function checkRateLimit(
     Math.floor(Date.now() / config.windowMs) * config.windowMs,
   ).toISOString();
 
-  const rows = await db.entities.ApiRateLimit
-    .filter({ key_prefix, window_start })
-    .catch(() => []);
-  const row = rows?.[0] ?? null;
-  const used = Number(row?.request_count ?? 0);
+  try {
+    const rows = await db.entities.ApiRateLimit.filter({ key_prefix, window_start });
+    const row = rows?.[0] ?? null;
+    const used = Number(row?.request_count ?? 0);
+    if (!Number.isFinite(used) || used < 0) throw new Error('Invalid rate limit count');
+    if (used >= config.limit) {
+      return { ok: false, used, limit: config.limit };
+    }
 
-  if (used >= config.limit) {
-    return { ok: false, used, limit: config.limit };
+    const next = used + 1;
+    const payload = {
+      request_count: next,
+      last_reset_at: new Date().toISOString(),
+    };
+    if (row) {
+      await db.entities.ApiRateLimit.update(row.id, payload);
+    } else {
+      await db.entities.ApiRateLimit.create({ key_prefix, window_start, ...payload });
+    }
+    return { ok: true, used: next, limit: config.limit };
+  } catch (error) {
+    // A missing counter table or failed write MUST NOT authorize financial
+    // and paid API operations. Other (legacy) paths retain their previous
+    // availability behavior until their infrastructure can be validated.
+    console.error('Rate limit storage unavailable', { keyPrefix: config.keyPrefix, failure: error instanceof Error ? error.name : 'unknown' });
+    if (config.failClosed) {
+      return { ok: false, used: 0, limit: config.limit, unavailable: true };
+    }
+    return { ok: true, used: 0, limit: config.limit };
   }
-
-  const next = used + 1;
-  const payload = {
-    request_count: next,
-    last_reset_at: new Date().toISOString(),
-  };
-
-  if (row) {
-    await db.entities.ApiRateLimit.update(row.id, payload).catch(() => {});
-  } else {
-    await db.entities.ApiRateLimit
-      .create({ key_prefix, window_start, ...payload })
-      .catch(() => {});
-  }
-
-  return { ok: true, used: next, limit: config.limit };
 }
 
 /**
@@ -217,13 +227,16 @@ export function rateLimitErrorResponse(
   message: string = "Trop de requêtes. Réessayez plus tard.",
   options?: SecurityHeadersOptions
 ): Response {
+  if (result.unavailable) {
+    return secureJsonResponse(
+      { error: "Service temporairement indisponible.", status: "unavailable" },
+      { status: 503, headers: { "Cache-Control": "no-store", "Retry-After": "120" } },
+      options
+    );
+  }
   return secureJsonResponse(
-    {
-      error: message,
-      status: "rate_limited",
-      limit: result.limit,
-    },
-    { status: 429 },
+    { error: message, status: "rate_limited", limit: result.limit },
+    { status: 429, headers: { "Cache-Control": "no-store", "Retry-After": "3600" } },
     options
   );
 }

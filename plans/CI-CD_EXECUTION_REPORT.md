@@ -5,7 +5,7 @@
 
 ## Summary
 
-Successfully implemented the GitHub Actions CI/CD pipeline for the CongoCommerce/AfriTrade marketplace following the systematic execution plan. The pipeline provides automated testing, linting, type checking, and builds to ensure production readiness.
+Successfully implemented the GitHub Actions CI/CD pipeline for the AfriTrade marketplace following the systematic execution plan. The pipeline provides automated testing, linting, type checking, and builds to ensure production readiness.
 
 ## Implementation Details
 
