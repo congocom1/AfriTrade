@@ -3,13 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:dio/dio.dart';
 
-import 'package:congo_commerce_flutter/core/models/user_model.dart';
-import 'package:congo_commerce_flutter/core/providers/providers.dart';
-import 'package:congo_commerce_flutter/core/services/auth_service.dart';
-import 'package:congo_commerce_flutter/core/services/token_storage.dart';
-import 'package:congo_commerce_flutter/core/services/api_client.dart';
-import 'package:congo_commerce_flutter/features/auth/screens/login_screen.dart';
-import 'package:congo_commerce_flutter/routes/app_router.dart';
+import 'package:afritrade/core/models/user_model.dart';
+import 'package:afritrade/core/providers/providers.dart';
+import 'package:afritrade/core/services/auth_service.dart';
+import 'package:afritrade/core/services/token_storage.dart';
+import 'package:afritrade/core/services/api_client.dart';
+import 'package:afritrade/features/auth/screens/login_screen.dart';
+import 'package:afritrade/routes/app_router.dart';
 
 /// Fake auth service that answers without network, so the routing guard can be
 /// driven deterministically.
