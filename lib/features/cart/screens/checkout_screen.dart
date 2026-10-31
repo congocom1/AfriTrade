@@ -49,15 +49,20 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         },
       );
       final data = response.data;
-      final number = data is Map ? data['order']?['order_number'] : null;
+      final order = data is Map ? data['order'] : null;
+      final number = order is Map ? order['order_number'] : null;
       if (number is! String || number.isEmpty) throw StateError('Missing order confirmation');
       ref.read(cartProvider.notifier).clear();
-      if (mounted) setState(() => orderNumber = number);
+      if (mounted) {
+        setState(() => orderNumber = number);
+      }
     } on DioException catch (e) {
-      if (mounted) setState(() {
-        uncertain = e.response == null || (e.response?.statusCode ?? 500) >= 500;
-        error = uncertain ? 'The order outcome is unknown. Check your orders before trying again; your cart has been kept.' : 'Order rejected. Check your details and try again.';
-      });
+      if (mounted) {
+        setState(() {
+          uncertain = e.response == null || (e.response?.statusCode ?? 500) >= 500;
+          error = uncertain ? 'The order outcome is unknown. Check your orders before trying again; your cart has been kept.' : 'Order rejected. Check your details and try again.';
+        });
+      }
     } catch (_) {
       if (mounted) setState(() { uncertain = true; error = 'Confirmation could not be read. Check your orders before trying again.'; });
     } finally {
@@ -76,7 +81,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     return Scaffold(appBar: AppBar(title: const Text('Checkout')), body: orderNumber != null
       ? Center(child: Column(mainAxisSize: MainAxisSize.min, children: [Text('Order $orderNumber received'), const Text('Cash on delivery — payment is pending.'), TextButton(onPressed: () => openHostedFeature(context, '/order-history'), child: const Text('View orders on the web'))]))
       : cart.isEmpty ? const Center(child: Text('Your cart is empty'))
-      : Form(key: formKey, child: ListView(padding: const EdgeInsets.all(16), children: [
+      : Form(key: formKey, child: SafeArea(top: false, child: ListView(padding: const EdgeInsets.all(16), children: [
         ...cart.items.map((i) => ListTile(title: Text(i.productName), subtitle: Text('Quantity: ${i.quantity}'), trailing: Text(formatUSD(i.lineTotalUsd)))),
         Text('Items subtotal: ${formatUSD(cart.subtotalUsd)}'),
         const Text('Standard delivery: \$3.50 for orders below \$30, otherwise free. The server validates stock and prices.'),
@@ -88,6 +93,6 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         if (error != null) Text(error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
         ElevatedButton(onPressed: busy || uncertain ? null : submit, child: Text(busy ? 'Submitting…' : 'Place cash-on-delivery order')),
         if (uncertain) TextButton(onPressed: () => openHostedFeature(context, '/order-history'), child: const Text('Check orders on the web')),
-      ])));
+      ]))));
   }
 }

@@ -113,11 +113,11 @@ class AppShell extends ConsumerWidget {
   const AppShell({super.key, required this.child});
   
   static const _navItems = [
-    (icon: Icons.home_outlined, activeIcon: Icons.home, label: 'Accueil', path: '/'),
-    (icon: Icons.explore_outlined, activeIcon: Icons.explore, label: 'Découvrir', path: '/discover'),
-    (icon: Icons.grid_view_outlined, activeIcon: Icons.grid_view, label: 'Produits', path: '/products'),
-    (icon: Icons.shopping_bag_outlined, activeIcon: Icons.shopping_bag, label: 'Panier', path: '/cart'),
-    (icon: Icons.person_outline, activeIcon: Icons.person, label: 'Profil', path: '/profile'),
+    (icon: Icons.home_outlined, activeIcon: Icons.home, label: 'Home', path: '/'),
+    (icon: Icons.explore_outlined, activeIcon: Icons.explore, label: 'Discover', path: '/discover'),
+    (icon: Icons.grid_view_outlined, activeIcon: Icons.grid_view, label: 'Products', path: '/products'),
+    (icon: Icons.shopping_bag_outlined, activeIcon: Icons.shopping_bag, label: 'Cart', path: '/cart'),
+    (icon: Icons.person_outline, activeIcon: Icons.person, label: 'Profile', path: '/profile'),
   ];
   
   @override

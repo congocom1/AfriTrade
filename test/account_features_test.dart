@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:congo_commerce_flutter/core/providers/providers.dart';
-import 'package:congo_commerce_flutter/core/models/product_model.dart';
-import 'package:congo_commerce_flutter/features/profile/screens/favorites_screen.dart';
-import 'package:congo_commerce_flutter/features/profile/screens/app_settings_screen.dart';
+import 'package:afritrade/core/providers/providers.dart';
+import 'package:afritrade/core/models/product_model.dart';
+import 'package:afritrade/features/profile/screens/favorites_screen.dart';
+import 'package:afritrade/features/profile/screens/app_settings_screen.dart';
 
 void main() {
   testWidgets('favorites can be removed from the native list', (tester) async {
