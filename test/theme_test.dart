@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:congo_commerce_flutter/core/config/app_theme.dart';
+import 'package:afritrade/core/config/app_theme.dart';
 
 void main() {
   for (final dark in [false, true]) {

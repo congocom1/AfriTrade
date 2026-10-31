@@ -29,7 +29,7 @@ const productSchema = z.object({
   origin_country: z.string().length(2).default('CD'),
 }).superRefine((data, context) => {
   if (data.is_b2b && !(data.wholesale_price_usd > 0)) {
-    context.addIssue({ code: z.ZodIssueCode.custom, path: ['wholesale_price_usd'], message: 'Enter a wholesale unit price greater than zero.' });
+    context.addIssue({ code: 'custom', path: ['wholesale_price_usd'], message: 'Enter a wholesale unit price greater than zero.' });
   }
 });
 

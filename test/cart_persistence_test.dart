@@ -2,10 +2,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:congo_commerce_flutter/core/models/cart_model.dart';
-import 'package:congo_commerce_flutter/core/models/product_model.dart';
-import 'package:congo_commerce_flutter/core/providers/providers.dart';
-import 'package:congo_commerce_flutter/core/services/cart_persistence.dart';
+import 'package:afritrade/core/models/cart_model.dart';
+import 'package:afritrade/core/models/product_model.dart';
+import 'package:afritrade/core/providers/providers.dart';
+import 'package:afritrade/core/services/cart_persistence.dart';
 
 ProductModel _product({
   required String id,
