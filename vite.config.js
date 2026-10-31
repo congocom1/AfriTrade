@@ -76,6 +76,15 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 5174,
     allowedHosts: true,
+    // Native projects and generated SDK trees share this repository, but are
+    // not Vite inputs. Do not follow their plugin trees and exhaust inotify.
+    watch: {
+      ignored: [
+        '**/android/**', '**/ios/**', '**/windows/**',
+        '**/.dart_tool/**', '**/build/**', '**/oracleJdk-27/**',
+        '**/test/e2e/visual-regression/diff/**',
+      ],
+    },
   },
   preview: {
     host: '0.0.0.0',

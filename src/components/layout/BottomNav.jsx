@@ -32,6 +32,8 @@ export default function BottomNav() {
   // returns to the root. Opening another tab hands the history to it, so the
   // page it restores belongs to that tab from then on.
   const handleTabClick = (event, path, active) => {
+    // Leave new-tab/window clicks to the browser without changing this tab's history.
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     if (!active) {
       activateTab(path);
       return;

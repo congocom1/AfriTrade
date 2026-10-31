@@ -16,6 +16,9 @@ test('profile recovers invalid saved data and saves usable fields', async ({ pag
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   await page.goto('/profile', { waitUntil: 'domcontentloaded' });
+  // DOMContentLoaded precedes the lazy route import. Let it finish before
+  // reloading, otherwise WebKit reports the cancelled module as a page error.
+  await expect(page.getByRole('heading', { name: 'My profile', exact: true })).toBeVisible();
   await page.evaluate(() => localStorage.setItem('afritrade:profile', 'null'));
   await page.reload({ waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('heading', { name: 'My profile', exact: true })).toBeVisible();
