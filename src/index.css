@@ -1168,8 +1168,14 @@ button, [role="button"], [role="tab"], .header-icon-button {
     z-index: 81 !important;
   }
   [data-webview-select-backdrop] {
-    display: block !important;
+    display: none !important;
     z-index: 80;
+  }
+  /* Radix's Portal remains mounted while Content is closed. Only show its
+     sibling backdrop when this selector actually has open content. */
+  [data-webview-select-backdrop]:has(+ [data-radix-popper-content-wrapper] [data-webview-select-content][data-state="open"]),
+  [data-webview-select-backdrop]:has(+ [data-webview-select-content][data-state="open"]) {
+    display: block !important;
   }
   [data-webview-select-content] {
     width: 100% !important;

@@ -47,6 +47,25 @@ describe('getProfile / saveProfile', () => {
     assert.equal(p.phone, '+243812345678');
     assert.equal(p.city, 'Goma');
   });
+
+  it('recovers malformed persisted profiles without breaking form fields', () => {
+    for (const value of [null, [], 'invalid', 42, { name: null, phone: {}, city: false }]) {
+      ls.setItem('afritrade:profile', JSON.stringify(value));
+      assert.deepEqual(getProfile(), { name: '', phone: '', email: '', city: 'Kinshasa', address: '' });
+    }
+  });
+
+  it('fills missing fields in legacy profiles and preserves saved information', () => {
+    ls.clear();
+    ls.setItem('congo_commerce:profile', JSON.stringify({ name: 'Test buyer' }));
+    assert.equal(getProfile().name, 'Test buyer');
+    assert.equal(getProfile().phone, '');
+    assert.equal(getProfile().city, 'Kinshasa');
+    saveProfile({ phone: '+243812345678' });
+    assert.equal(getProfile().name, 'Test buyer');
+    assert.equal(getProfile().phone, '+243812345678');
+    assert.equal(ls.getItem('congo_commerce:profile'), null);
+  });
 });
 
 describe('getOrderIds / rememberOrder', () => {
