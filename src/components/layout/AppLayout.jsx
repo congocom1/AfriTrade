@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Outlet, useLocation, useNavigationType } from 'react-router-dom';
+import { useOutlet, useLocation, useNavigationType } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { navigationDirection, routeMotion } from '@/lib/navigationDirection';
 import { applyTenantBranding, clearTenantBranding, resolveTenantByHost } from '@/lib/tenancy';
@@ -13,6 +13,9 @@ import LegalFooter from '@/components/legal/LegalFooter';
 
 export default function AppLayout() {
   const location = useLocation();
+  // Capture this route's element. A live <Outlet /> inside an exiting wrapper
+  // follows the new router context, mounting the next page twice during exit.
+  const outlet = useOutlet();
   // The shop keeps the storefront bar; a console portal gets its own header and
   // navigation, so an operator never sees shop links inside their console.
   // The front page carries its own masthead inside the hero, so the storefront
@@ -69,7 +72,7 @@ export default function AppLayout() {
             animate="animate"
             exit="exit"
           >
-            <Outlet />
+            {outlet}
           </motion.div>
         </AnimatePresence>
         <LegalFooter />

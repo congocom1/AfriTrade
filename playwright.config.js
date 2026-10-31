@@ -14,7 +14,10 @@ export default defineConfig({
   // BASE_URL selects the target; it must not disable server startup for localhost.
   // Playwright starts Vite for local smoke tests, but never starts a server for hosted staging.
   webServer: isLocal ? {
-    command: `npx base44 dev --port ${parsedURL.port || '5174'}`,
+    // API-mocked navigation tests need only the frontend, not a live backend.
+    command: process.env.E2E_MOCK_API === '1'
+      ? `npm run dev -- --host 127.0.0.1 --port ${parsedURL.port || '5174'} --strictPort`
+      : `npx base44 dev --port ${parsedURL.port || '5174'}`,
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
