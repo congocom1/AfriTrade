@@ -26,9 +26,17 @@ function transpile(source) {
   }).outputText;
 }
 
+const createdTestFiles = new Set();
+process.on('exit', () => {
+  for (const file of createdTestFiles) {
+    try { fs.unlinkSync(file); } catch { /* ignore */ }
+  }
+});
+
 function transpileFile(sourcePath, outputPath) {
   const source = fs.readFileSync(sourcePath, 'utf8');
   fs.writeFileSync(outputPath, transpile(source));
+  createdTestFiles.add(outputPath);
   return 'file://' + outputPath.replace(/\\/g, '/');
 }
 
@@ -91,6 +99,7 @@ function writeTestModule() {
   );
   const testModPath = path.join(__dirname, 'chinaToDomestic.testmod.mjs');
   fs.writeFileSync(testModPath, transpile(rewritten));
+  createdTestFiles.add(testModPath);
   return 'file://' + testModPath.replace(/\\/g, '/');
 }
 

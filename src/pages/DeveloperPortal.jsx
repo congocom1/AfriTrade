@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Code2, Plus, Trash2, Copy } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { base44 } from '@/api/base44Client';
@@ -60,6 +60,7 @@ export default function DeveloperPortal() {
 function ApiKeysTab({ tab, setTab }) {
   const { t } = useTranslation();
   const [apiKeys, setApiKeys] = useState([]);
+  const [keyError, setKeyError] = useState('');
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [generatedKey, setGeneratedKey] = useState(null);
@@ -74,15 +75,16 @@ function ApiKeysTab({ tab, setTab }) {
   const loadKeys = async () => {
     setLoading(true);
     try {
-      const keys = await base44.functions.invoke('manage-api-keys', { method: 'GET' });
-      setApiKeys(keys);
+      const res = await base44.functions.invoke('manage-api-keys', { method: 'GET' });
+      const list = Array.isArray(res) ? res : (res?.data?.keys ?? res?.keys ?? res?.data ?? []);
+      setApiKeys(Array.isArray(list) ? list : []);
     } catch {
       setApiKeys([]);
     }
     setLoading(false);
   };
 
-  useState(() => {
+  useEffect(() => {
     loadKeys();
   }, []);
 
@@ -92,17 +94,24 @@ function ApiKeysTab({ tab, setTab }) {
       method: 'POST',
       body: newKey,
     });
-    setGeneratedKey(result.api_key);
+    const data = result?.data ?? result;
+    setGeneratedKey(data?.api_key || null);
     setCreating(false);
     loadKeys();
   };
 
   const handleRevoke = async (id) => {
-    await base44.functions.invoke('manage-api-keys', {
-      method: 'DELETE',
-      body: { id },
-    });
-    loadKeys();
+    setKeyError('');
+    try {
+      const result = await base44.functions.invoke('manage-api-keys', {
+        method: 'DELETE',
+        body: { id },
+      });
+      if (!(result?.data ?? result)?.revoked) throw new Error('Revocation failed');
+      await loadKeys();
+    } catch {
+      setKeyError('La révocation a échoué. La clé peut encore être active. Réessayez.');
+    }
   };
 
   const copyToClipboard = (text) => {
@@ -142,6 +151,7 @@ function ApiKeysTab({ tab, setTab }) {
             </Button>
           </div>
 
+          {keyError && <p role="alert" className="mb-4 text-sm text-destructive">{keyError}</p>}
           {generatedKey && (
             <div className="mb-4 rounded-xl border border-border bg-secondary p-4">
               <div className="flex items-center justify-between">

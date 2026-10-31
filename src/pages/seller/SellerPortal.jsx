@@ -31,7 +31,9 @@ export default function SellerPortal() {
       const [p, f, wallets] = await Promise.all([
         base44.entities.Product.filter({ seller_id: seller.id }, '-created_date', 200).catch(() => []),
         base44.entities.FulfillmentOrder.filter({ seller_id: seller.id }, '-created_date', 50).catch(() => []),
-        base44.entities.Wallet.filter({ owner_type: 'seller', owner_name: seller.name }).catch(() => []),
+        base44.entities.Wallet.filter({ owner_type: 'seller', owner_id: seller.id })
+          .then((rows) => (rows && rows.length ? rows : base44.entities.Wallet.filter({ owner_type: 'seller', owner_name: seller.name })))
+          .catch(() => []),
       ]);
       if (!alive) return;
       setProducts(p);

@@ -11,7 +11,7 @@ const groups = [
 
 export default function BackofficeNav() {
   return <aside className="w-full shrink-0 border-b border-border bg-card p-4 md:min-h-screen md:w-56 md:border-b-0 md:border-r">
-    <Link to="/backoffice" className="block text-lg font-black tracking-tight">STACK+ <span className="text-xs font-medium text-muted-foreground">BACK-OFFICE</span></Link>
+    <Link to="/backoffice" className="block text-lg font-black tracking-tight">AfriTrade <span className="text-xs font-medium text-muted-foreground">BACK-OFFICE</span></Link>
     <nav aria-label="Navigation du back-office" className="mt-5 flex gap-4 overflow-x-auto md:block md:space-y-5">
       {groups.map(([group, links]) => <div key={group} className="min-w-max md:min-w-0">
         <h2 className="mb-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{group}</h2>

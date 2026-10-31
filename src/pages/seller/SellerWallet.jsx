@@ -32,7 +32,10 @@ export default function SellerWallet() {
   const [saving, setSaving] = useState(false);
 
   const load = async () => {
-    if (!seller) return;
+    if (!seller) {
+      setLoading(false);
+      return;
+    }
     const wallets = await base44.entities.Wallet.filter({ owner_type: 'seller', owner_id: seller.id }).catch(() => []);
     const mine = wallets[0] || null;
     setWallet(mine);

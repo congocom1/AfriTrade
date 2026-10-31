@@ -10,6 +10,13 @@ import { formatUSD } from '@/lib/format';
 
 const GLOBAL_FIELD_IDS = ['volumetric_divisor', 'handling_fee_usd', 'cod_fee_usd', 'fuel_surcharge_percent', 'remote_area_surcharge_usd', 'free_shipping_threshold_usd', 'import_duty_percent', 'import_vat_percent'];
 
+const USD_CENTS_FIELDS = new Set([
+  'handling_fee_usd',
+  'cod_fee_usd',
+  'remote_area_surcharge_usd',
+  'free_shipping_threshold_usd',
+]);
+
 export default function ShippingConfig() {
   const { t } = useTranslation();
   const GLOBAL_FIELDS = GLOBAL_FIELD_IDS.map((field) => ({ field, label: t(`shippingConfig.field_${field}`), hint: t(`shippingConfig.field_${field}_hint`) }));
@@ -29,6 +36,24 @@ export default function ShippingConfig() {
   }, []);
 
   const set = (patch) => setConfig((prev) => ({ ...prev, ...patch }));
+
+  const getFieldValue = (field) => {
+    if (USD_CENTS_FIELDS.has(field)) {
+      const centsKey = `${field}_cents`;
+      if (config[field] !== undefined) return config[field];
+      return (Number(config[centsKey]) || 0) / 100;
+    }
+    return config[field] ?? 0;
+  };
+
+  const setFieldValue = (field, rawValue) => {
+    const val = Number(rawValue);
+    if (USD_CENTS_FIELDS.has(field)) {
+      set({ [field]: val, [`${field}_cents`]: Math.round((val || 0) * 100) });
+    } else {
+      set({ [field]: val });
+    }
+  };
 
   const save = async () => {
     setSaving(true);
@@ -53,14 +78,15 @@ export default function ShippingConfig() {
 
   if (loading) return <div className="h-64 animate-pulse rounded-2xl bg-secondary" />;
 
-  const duty = dutyEstimate({ goodsUsd: Number(estimate.goodsUsd) || 0, config, originCountry: estimate.originCountry });
+  const duty = dutyEstimate({ goodsUsdCents: Math.round((Number(estimate.goodsUsd) || 0) * 100), config, originCountry: estimate.originCountry });
+  const handlingFeeCents = config.handling_fee_usd_cents ?? Math.round((Number(config.handling_fee_usd) || 0) * 100);
 
   return (
     <div className="space-y-5 pb-8">
       <DashboardNav title={t('shippingConfig.title')} links={ADMIN_LINKS} />
 
       <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
-        <StatCard label={t('shippingConfig.statHandling')} value={formatUSD(config.handling_fee_usd)} hint={t('shippingConfig.statHandlingHint')} />
+        <StatCard label={t('shippingConfig.statHandling')} value={formatUSD(handlingFeeCents)} hint={t('shippingConfig.statHandlingHint')} />
         <StatCard label={t('shippingConfig.statFuel')} value={`${config.fuel_surcharge_percent} %`} hint={t('shippingConfig.statFuelHint')} />
         <StatCard label={t('shippingConfig.statDuty')} value={`${config.import_duty_percent} %`} hint={t('shippingConfig.statDutyHint', { rate: config.import_vat_percent })} />
         <StatCard label={t('shippingConfig.statZones')} value={(config.regional_surcharges || []).length} hint={t('shippingConfig.statZonesHint')} />
@@ -87,8 +113,8 @@ export default function ShippingConfig() {
               <input
                 type="number"
                 step="0.1"
-                value={config[f.field] ?? 0}
-                onChange={(e) => set({ [f.field]: Number(e.target.value) })}
+                value={getFieldValue(f.field)}
+                onChange={(e) => setFieldValue(f.field, e.target.value)}
                 className="mt-1 h-11 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground"
               />
               <span className="mt-0.5 block text-[10px]">{f.hint}</span>
@@ -145,7 +171,7 @@ export default function ShippingConfig() {
             config.regional_surcharges.map((row, index) => (
               <div key={`${row.destination}-${index}`} className="flex items-center justify-between rounded-xl border border-border px-3 py-2.5">
                 <p className="text-xs font-semibold">
-                  {row.destination} <span className="font-normal text-muted-foreground">· +{formatUSD(row.surcharge_usd)}</span>
+                  {row.destination} <span className="font-normal text-muted-foreground">· +{formatUSD(row.surcharge_usd_cents ?? Math.round((Number(row.surcharge_usd) || 0) * 100))}</span>
                 </p>
                 <button type="button" onClick={() => removeSurcharge(index)} className="rounded-lg p-2 text-destructive hover:bg-secondary" aria-label={t('shippingConfig.removeAria')}>
                   <Trash2 className="h-4 w-4" />

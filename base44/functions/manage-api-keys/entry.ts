@@ -73,6 +73,20 @@ export default async function (req: Request) {
       return rateLimitErrorResponse(rateLimitResult);
     }
 
+    if (method === 'POST' && typeof body?.method === 'string') {
+      const rpcMethod = body.method.toUpperCase();
+      const rpcBody = body.body && typeof body.body === 'object' ? body.body : body;
+      if (rpcMethod === 'GET') {
+        return listKeys(db, rpcBody.tenant_id || url.searchParams.get('tenant_id') || undefined);
+      }
+      if (rpcMethod === 'POST') {
+        return createKey(db, rpcBody);
+      }
+      if (rpcMethod === 'DELETE') {
+        return revokeKey(db, String(rpcBody.id || ''), rpcBody.reason);
+      }
+    }
+
     if (method === 'POST' && url.pathname === '/api-keys') {
       return createKey(db, body);
     }
@@ -207,6 +221,7 @@ async function revokeKey(db: any, id: string, reason?: string) {
     active: false,
     description: `Révoked${reason ? ` — ${String(reason).slice(0, 200)}` : ''}`,
   }).catch(() => null);
+  if (!updated) return addSecurityHeaders(Response.json({ error: 'Key revocation failed' }, { status: 500 }));
   return addSecurityHeaders(Response.json({ id, revoked: true, active: false, description: updated?.description }));
 }
 

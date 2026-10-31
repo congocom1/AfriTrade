@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/providers/providers.dart';
+import '../features/profile/screens/app_settings_screen.dart';
+import '../features/profile/screens/favorites_screen.dart';
 import '../features/auth/screens/login_screen.dart';
 import '../features/auth/screens/register_screen.dart';
 import '../features/home/screens/home_screen.dart';
@@ -45,6 +47,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
+      GoRoute(path: '/settings', builder: (context, state) => const AppSettingsScreen()),
+      GoRoute(path: '/favorites', builder: (context, state) => const FavoritesScreen()),
       // ─── Auth routes ──────────────────────────────────────────────────────
       GoRoute(
         path: '/login',

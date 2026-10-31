@@ -9,7 +9,7 @@ export function printShippingLabels(orders, fulfillments = []) {
       ? `Point de retrait : ${esc(o.pickup_point_name)}<br/>Code : <b>${esc(o.pickup_code)}</b>`
       : `${esc(o.address)}<br/>${esc(o.city)}`;
     return `<div class="label">
-      <div class="head"><b>CONGO COMMERCE</b><span>${esc(o.order_number)}</span></div>
+      <div class="head"><b>AFRITRADE</b><span>${esc(o.order_number)}</span></div>
       <p class="to">À : <b>${esc(o.customer_name)}</b><br/>${esc(o.customer_phone)}<br/>${dest}</p>
       <p>${qty} article(s) · ${o.payment_provider === 'cod' && o.payment_status !== 'PAID' ? `<b>À encaisser : $${Number(o.total_usd || 0).toFixed(2)}</b>` : 'Payé'}</p>
       <p class="trk">Suivi : ${esc(tracking || '—')}</p>

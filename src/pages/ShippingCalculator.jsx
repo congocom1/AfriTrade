@@ -113,9 +113,9 @@ export default function ShippingCalculator() {
                 <p className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
                   <MapPin className="h-3.5 w-3.5 text-primary" /> {t('shippingCalculator.homeDelivery')}
                 </p>
-                <p className="mt-1.5 text-lg font-bold text-primary">{formatUSD(result.homeTotal)}</p>
+                <p className="mt-1.5 text-lg font-bold text-primary">{formatUSD(result.homeTotalCents)}</p>
                 <p className="mt-1 text-[11px]">
-                  {t('shippingCalculator.zoneFeePart', { fee: formatUSD(result.zoneFee) })}
+                  {t('shippingCalculator.zoneFeePart', { fee: formatUSD(result.zoneFeeCents) })}
                   {result.carrier ? t('shippingCalculator.carrierPart', { name: result.carrier.name, fee: formatUSD(result.carrier.quote.fee) }) : t('shippingCalculator.noCarrier')}
                 </p>
                 <p className="mt-1 flex items-center gap-1">
@@ -126,7 +126,7 @@ export default function ShippingCalculator() {
                 <p className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
                   <Store className="h-3.5 w-3.5 text-primary" /> {t('shippingCalculator.pickupTitle')}
                 </p>
-                <p className="mt-1.5 text-lg font-bold text-primary">{result.pickup ? formatUSD(result.pickup.fee_usd || 0) : t('shippingCalculator.unavailable')}</p>
+                <p className="mt-1.5 text-lg font-bold text-primary">{result.pickup ? formatUSD(Math.round((Number(result.pickup.fee_usd) || 0) * 100)) : t('shippingCalculator.unavailable')}</p>
                 <p className="mt-1 text-[11px]">
                   {result.pickup
                     ? `${result.pickup.name} · ${[result.pickup.commune, result.pickup.address].filter(Boolean).join(' · ')}`

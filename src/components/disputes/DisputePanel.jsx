@@ -24,9 +24,15 @@ export default function DisputePanel() {
     { id: 'closed', label: t('disputePanel.stageClosed') },
   ];
   const profile = getProfile();
+  const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams();
   const [disputes, setDisputes] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [form, setForm] = useState({ order_number: '', type: 'not_received', description: '', phone: profile.phone || '' });
+  const [form, setForm] = useState({
+    order_number: params.get('order') || '',
+    type: 'not_received',
+    description: params.get('reason') || '',
+    phone: params.get('phone') || profile.phone || '',
+  });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');

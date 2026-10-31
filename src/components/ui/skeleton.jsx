@@ -128,6 +128,7 @@ function SkeletonOrderList({ className = '', ...props }) {
 }
 
 export {
+  SkeletonRect as Skeleton,
   SkeletonRect,
   SkeletonCircle,
   SkeletonText,
