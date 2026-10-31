@@ -73,7 +73,14 @@ export function getSessionId() {
  * @returns {Object} User profile object
  */
 export function getProfile() {
-  return read('profile', { name: '', phone: '', email: '', city: 'Kinshasa', address: '' });
+  const defaults = { name: '', phone: '', email: '', city: 'Kinshasa', address: '' };
+  const stored = read('profile', null);
+  if (!stored || typeof stored !== 'object' || Array.isArray(stored)) return defaults;
+  // Older or malformed device data must never crash profile/checkout forms or
+  // turn their controlled inputs into undefined, null or object values.
+  return Object.fromEntries(Object.entries(defaults).map(([key, fallback]) => [
+    key, typeof stored[key] === 'string' ? stored[key] : fallback,
+  ]));
 }
 
 /**

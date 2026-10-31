@@ -29,7 +29,7 @@ export default function Profile() {
     { to: '/track', label: t('profile.linkTrack'), icon: MapPin },
     { to: '/support', label: t('profile.linkSupport'), icon: Headphones },
   ];
-  const [profile, setProfile] = useState(getProfile());
+  const [profile, setProfile] = useState(getProfile);
   const [saved, setSaved] = useState(false);
   const [orders, setOrders] = useState([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
