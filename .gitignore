@@ -12,6 +12,8 @@
 # Generated Playwright output (screenshots, traces and reports)
 /test-results/
 /playwright-report/
+/.playwright-mcp/
+/test/e2e/visual-regression/diff/*.png
 
 # Logs
 /logs
