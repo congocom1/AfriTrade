@@ -21,7 +21,7 @@ The repository implements a mature visual design system under the brand name **A
 | Source | Evidence |
 |--------|----------|
 | `BRAND.md` | "AfriTrade" named as the brand throughout; monogram "A/T"; never an Africa map |
-| `public/design-brief.md` | "The network that holds"; Sora/Manrope/JetBrains Mono; ≤32MiB desktop / ≤16MiB mobile |
+| `docs/design/design-brief.md` | "The network that holds"; Sora/Manrope/JetBrains Mono; ≤32MiB desktop / ≤16MiB mobile |
 | `index.html` | `<title>` and meta reference AfriTrade |
 | `src/components/BrandLogo.jsx` | Renders `Afri<span>Trade</span>`; LOGO_URL = `/brand/logo-primary.svg` |
 
@@ -220,7 +220,7 @@ Full suite under `src/components/ui/`: accordion, alert, alert-dialog, avatar, b
 ## Performance Considerations
 
 - **`src/scripts/performance-monitor.js`:** Bundle analysis script with oversized chunk detection (>500KB), vendor chunk analysis, CSS file count checks, and HTML report generation.
-- **Delivery budget:** ≤32MiB desktop / ≤16MiB mobile (per `public/design-brief.md`).
+- **Delivery budget:** ≤32MiB desktop / ≤16MiB mobile (per `docs/design/design-brief.md`).
 - **Code splitting:** App uses lazy-loaded routes via `React.lazy` + `Suspense` in `src/App.jsx` with `LoadingFallback` boundary.
 
 **Status:** Tooling exists; performance budget is defined.

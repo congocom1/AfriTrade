@@ -61,8 +61,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           onChanged: (value) => ref.read(searchQueryProvider.notifier).state = value,
         ),
       ),
-      body: Column(
-        children: [
+      body: SafeArea(
+        top: false,
+        child: Column(
+          children: [
           // Filters row
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
@@ -138,7 +140,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               error: (e, _) => Center(child: Text('Error: $e')),
             ),
           ),
-        ],
+          ],
+        ),
       ),
     );
   }

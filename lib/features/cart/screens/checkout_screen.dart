@@ -4,11 +4,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/utils/formatters.dart';
 
-class CheckoutScreen extends ConsumerWidget {
+class CheckoutScreen extends ConsumerStatefulWidget {
   const CheckoutScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<CheckoutScreen> createState() => _CheckoutScreenState();
+}
+
+class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
+  String _paymentMethod = 'mpesa';
+
+  @override
+  Widget build(BuildContext context) {
     final cart = ref.watch(cartProvider);
     final theme = Theme.of(context);
     
@@ -21,8 +28,10 @@ class CheckoutScreen extends ConsumerWidget {
     
     return Scaffold(
       appBar: AppBar(title: const Text('Checkout')),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
+      body: SafeArea(
+        top: false,
+        child: ListView(
+          padding: const EdgeInsets.all(16),
         children: [
           // Order summary
           Card(
@@ -97,29 +106,39 @@ class CheckoutScreen extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  RadioListTile<String>(
-                    value: 'mpesa',
-                    title: const Text('M-Pesa'),
-                    subtitle: const Text('Mobile money'),
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                  RadioListTile<String>(
-                    value: 'airtel',
-                    title: const Text('Airtel Money'),
-                    subtitle: const Text('Mobile money'),
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                  RadioListTile<String>(
-                    value: 'orange',
-                    title: const Text('Orange Money'),
-                    subtitle: const Text('Mobile money'),
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                  RadioListTile<String>(
-                    value: 'cod',
-                    title: const Text('Cash on delivery'),
-                    subtitle: const Text('Pay when you receive'),
-                    contentPadding: EdgeInsets.zero,
+                  RadioGroup<String>(
+                    groupValue: _paymentMethod,
+                    onChanged: (value) {
+                      if (value != null) setState(() => _paymentMethod = value);
+                    },
+                    child: Column(
+                      children: const [
+                        RadioListTile<String>(
+                          value: 'mpesa',
+                          title: Text('M-Pesa'),
+                          subtitle: Text('Mobile money'),
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                        RadioListTile<String>(
+                          value: 'airtel',
+                          title: Text('Airtel Money'),
+                          subtitle: Text('Mobile money'),
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                        RadioListTile<String>(
+                          value: 'orange',
+                          title: Text('Orange Money'),
+                          subtitle: Text('Mobile money'),
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                        RadioListTile<String>(
+                          value: 'cod',
+                          title: Text('Cash on delivery'),
+                          subtitle: Text('Pay when you receive'),
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -136,6 +155,7 @@ class CheckoutScreen extends ConsumerWidget {
             ),
           ),
         ],
+        ),
       ),
     );
   }

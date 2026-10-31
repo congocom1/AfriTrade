@@ -12,7 +12,7 @@ import {
   sortProducts,
   calculateFacets,
   getUniqueCategories
-} from '../lib/searchUtils';
+} from '../src/lib/searchUtils.js';
 
 describe('Search Utils', () => {
   describe('editDistance function', () => {
